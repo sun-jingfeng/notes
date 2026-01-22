@@ -1,10 +1,44 @@
-好的，按方案A重新生成三篇笔记。先发第一篇。
+## 一、Spring MVC 与 HTTP 基础
+
+### 1.1 Spring MVC 概述
+
+**Spring MVC** 是 Spring Framework 中的 Web 模块，是一个基于 MVC 设计模式的 Web 框架。
+
+*   **M（Model）**：数据模型，业务数据
+*   **V（View）**：视图，展示数据（前后端分离项目中通常返回 JSON）
+*   **C（Controller）**：控制器，处理请求、调用业务逻辑
+
+#### 核心组件
+
+| 组件                  | 说明                                            |
+| --------------------- | ----------------------------------------------- |
+| **DispatcherServlet** | 前端控制器，所有请求的入口                      |
+| **HandlerMapping**    | 处理器映射，根据 URL 找到对应的 Controller 方法 |
+| **HandlerAdapter**    | 处理器适配器，调用 Controller 方法              |
+| **Controller**        | 控制器，处理业务请求                            |
+| **ViewResolver**      | 视图解析器（前后端分离项目中较少使用）          |
+
+#### 请求处理流程
+
+    1. 客户端发送请求
+           ↓
+    2. DispatcherServlet 接收请求
+           ↓
+    3. HandlerMapping 查找 Handler（Controller 方法）
+           ↓
+    4. HandlerAdapter 调用 Handler
+           ↓
+    5. Controller 处理业务，返回数据
+           ↓
+    6. @ResponseBody 将对象序列化为 JSON
+           ↓
+    7. 响应返回客户端
+
+> 💡 Spring Boot 的 `spring-boot-starter-web` 已自动配置好 Spring MVC，开发者只需编写 Controller 即可。
 
 ***
 
-## 一、HTTP 协议与请求映射
-
-### 1.1 HTTP 协议基础
+### 1.2 HTTP 协议基础
 
 **HTTP（HyperText Transfer Protocol）** 超文本传输协议，是浏览器与服务器之间数据传输的规则。
 
@@ -30,13 +64,13 @@
 
 #### 请求方式
 
-| 方法         | 说明       | 请求体 | 幂等性 |
-| ---------- | -------- | --- | --- |
-| **GET**    | 获取资源     | ❌   | ✅   |
-| **POST**   | 新建资源     | ✅   | ❌   |
-| **PUT**    | 更新资源（全量） | ✅   | ✅   |
-| **PATCH**  | 更新资源（部分） | ✅   | ✅   |
-| **DELETE** | 删除资源     | ❌   | ✅   |
+| 方法       | 说明             | 请求体 | 幂等性 |
+| ---------- | ---------------- | ------ | ------ |
+| **GET**    | 获取资源         | ❌      | ✅      |
+| **POST**   | 新建资源         | ✅      | ❌      |
+| **PUT**    | 更新资源（全量） | ✅      | ✅      |
+| **PATCH**  | 更新资源（部分） | ✅      | ✅      |
+| **DELETE** | 删除资源         | ❌      | ✅      |
 
 #### 响应数据格式
 
@@ -53,22 +87,22 @@
 
 #### 常用状态码
 
-| 状态码   | 名称                    | 说明      |
-| ----- | --------------------- | ------- |
-| `200` | OK                    | 请求成功    |
-| `201` | Created               | 资源创建成功  |
-| `400` | Bad Request           | 请求参数错误  |
-| `401` | Unauthorized          | 未认证     |
-| `403` | Forbidden             | 无权限     |
-| `404` | Not Found             | 资源不存在   |
-| `405` | Method Not Allowed    | 请求方法不支持 |
-| `500` | Internal Server Error | 服务器内部错误 |
+| 状态码 | 名称                  | 说明           |
+| ------ | --------------------- | -------------- |
+| `200`  | OK                    | 请求成功       |
+| `201`  | Created               | 资源创建成功   |
+| `400`  | Bad Request           | 请求参数错误   |
+| `401`  | Unauthorized          | 未认证         |
+| `403`  | Forbidden             | 无权限         |
+| `404`  | Not Found             | 资源不存在     |
+| `405`  | Method Not Allowed    | 请求方法不支持 |
+| `500`  | Internal Server Error | 服务器内部错误 |
 
 ***
 
-### 1.2 请求映射
+## 二、请求映射与 RESTful
 
-#### @RequestMapping 详解
+### 2.1 @RequestMapping 详解
 
 `@RequestMapping` 是 Spring MVC 中用于**将 HTTP 请求映射到控制器方法**的核心注解。
 
@@ -93,26 +127,28 @@ public class UserController {
 
 **常用属性：**
 
-| 属性           | 说明               | 示例                                          |
-| ------------ | ---------------- | ------------------------------------------- |
-| `value/path` | 请求路径（可省略属性名）     | `@RequestMapping("/user")`                  |
-| `method`     | 请求方式             | `method = RequestMethod.GET`                |
-| `params`     | 请求参数条件           | `params = "id"` 必须有 id 参数                   |
-| `headers`    | 请求头条件            | `headers = "Content-Type=application/json"` |
-| `consumes`   | 请求的 Content-Type | `consumes = "application/json"`             |
-| `produces`   | 响应的 Content-Type | `produces = "application/json"`             |
+| 属性         | 说明                     | 示例                                        |
+| ------------ | ------------------------ | ------------------------------------------- |
+| `value/path` | 请求路径（可省略属性名） | `@RequestMapping("/user")`                  |
+| `method`     | 请求方式                 | `method = RequestMethod.GET`                |
+| `params`     | 请求参数条件             | `params = "id"` 必须有 id 参数              |
+| `headers`    | 请求头条件               | `headers = "Content-Type=application/json"` |
+| `consumes`   | 请求的 Content-Type      | `consumes = "application/json"`             |
+| `produces`   | 响应的 Content-Type      | `produces = "application/json"`             |
 
-#### 派生注解（推荐使用）
+***
+
+### 2.2 派生注解（推荐使用）
 
 Spring 4.3+ 提供了更简洁的派生注解：
 
-| 注解               | 等价于                                              | 用途     |
-| ---------------- | ------------------------------------------------ | ------ |
-| `@GetMapping`    | `@RequestMapping(method = RequestMethod.GET)`    | 查询     |
-| `@PostMapping`   | `@RequestMapping(method = RequestMethod.POST)`   | 新增     |
+| 注解             | 等价于                                           | 用途         |
+| ---------------- | ------------------------------------------------ | ------------ |
+| `@GetMapping`    | `@RequestMapping(method = RequestMethod.GET)`    | 查询         |
+| `@PostMapping`   | `@RequestMapping(method = RequestMethod.POST)`   | 新增         |
 | `@PutMapping`    | `@RequestMapping(method = RequestMethod.PUT)`    | 修改（全量） |
 | `@PatchMapping`  | `@RequestMapping(method = RequestMethod.PATCH)`  | 修改（部分） |
-| `@DeleteMapping` | `@RequestMapping(method = RequestMethod.DELETE)` | 删除     |
+| `@DeleteMapping` | `@RequestMapping(method = RequestMethod.DELETE)` | 删除         |
 
 **推荐用法：**
 
@@ -155,34 +191,36 @@ public class UserController {
 }
 ```
 
-#### 控制器注解对比
+***
 
-| 注解                | 说明             | 特点                                          |
-| ----------------- | -------------- | ------------------------------------------- |
-| `@Controller`     | 标识控制器          | 返回视图名称，需配合 `@ResponseBody`                  |
-| `@RestController` | 标识 RESTful 控制器 | 直接返回 JSON，= `@Controller` + `@ResponseBody` |
-| `@ResponseBody`   | 标识方法返回值作为响应体   | 将对象序列化为 JSON                                |
+### 2.3 控制器注解对比
+
+| 注解              | 说明                     | 特点                                             |
+| ----------------- | ------------------------ | ------------------------------------------------ |
+| `@Controller`     | 标识控制器               | 返回视图名称，需配合 `@ResponseBody`             |
+| `@RestController` | 标识 RESTful 控制器      | 直接返回 JSON，= `@Controller` + `@ResponseBody` |
+| `@ResponseBody`   | 标识方法返回值作为响应体 | 将对象序列化为 JSON                              |
 
 ***
 
-### 1.3 RESTful API 设计规范
+### 2.4 RESTful API 设计规范
 
 **RESTful** 是一种 API 设计风格，核心思想是将服务器资源以 URL 形式暴露。
 
 #### 设计原则
 
-| 原则             | 说明                              |
-| -------------- | ------------------------------- |
-| **资源导向**       | URL 表示资源，使用名词而非动词               |
+| 原则                | 说明                                       |
+| ------------------- | ------------------------------------------ |
+| **资源导向**        | URL 表示资源，使用名词而非动词             |
 | **HTTP 方法语义化** | GET 查询、POST 新增、PUT 修改、DELETE 删除 |
-| **统一响应格式**     | 使用统一的 JSON 响应结构                 |
-| **状态码规范**      | 使用合适的 HTTP 状态码                  |
+| **统一响应格式**    | 使用统一的 JSON 响应结构                   |
+| **状态码规范**      | 使用合适的 HTTP 状态码                     |
 
 #### 对比示例
 
-| 操作       | 传统风格                      | RESTful 风格                  |
-| -------- | ------------------------- | --------------------------- |
-| 查询所有用户   | GET `/user/findAll`       | GET `/users`                |
+| 操作         | 传统风格                  | RESTful 风格                |
+| ------------ | ------------------------- | --------------------------- |
+| 查询所有用户 | GET `/user/findAll`       | GET `/users`                |
 | 根据 ID 查询 | GET `/user/findById?id=1` | GET `/users/1`              |
 | 新增用户     | POST `/user/save`         | POST `/users`               |
 | 修改用户     | POST `/user/update`       | PUT `/users/1`              |
@@ -191,9 +229,9 @@ public class UserController {
 
 ***
 
-## 二、请求参数处理
+## 三、请求参数处理
 
-### 2.1 简单参数与 @RequestParam
+### 3.1 简单参数与 @RequestParam
 
 #### 简单参数
 
@@ -223,15 +261,15 @@ public String getUsers(@RequestParam List<Long> ids) {
 }
 ```
 
-| 属性             | 说明   | 默认值    |
-| -------------- | ---- | ------ |
+| 属性           | 说明     | 默认值 |
+| -------------- | -------- | ------ |
 | `value`        | 参数名称 | -      |
 | `required`     | 是否必须 | `true` |
-| `defaultValue` | 默认值  | -      |
+| `defaultValue` | 默认值   | -      |
 
 ***
 
-### 2.2 路径参数 @PathVariable
+### 3.2 路径参数 @PathVariable
 
 ```java
 // GET /user/1
@@ -256,7 +294,7 @@ public String getUser(@PathVariable("user_id") Integer userId) {
 
 ***
 
-### 2.3 JSON 参数 @RequestBody
+### 3.3 JSON 参数 @RequestBody
 
 ```java
 // POST /user
@@ -293,7 +331,7 @@ public class OrderDTO {
 
 ***
 
-### 2.4 请求头与 Cookie
+### 3.4 请求头与 Cookie
 
 #### @RequestHeader
 
@@ -318,7 +356,7 @@ public String getCookie(
 
 ***
 
-### 2.5 实体类接收参数
+### 3.5 实体类接收参数
 
 ```java
 // GET /user?name=张三&age=20&email=test@example.com
@@ -346,17 +384,17 @@ public Result delete(HttpServletRequest request) {
 }
 ```
 
-| 方法                          | 说明         |
-| --------------------------- | ---------- |
-| `getParameter(String name)` | 获取单个参数值    |
+| 方法                        | 说明                 |
+| --------------------------- | -------------------- |
+| `getParameter(String name)` | 获取单个参数值       |
 | `getParameterValues(name)`  | 获取同名参数的多个值 |
-| `getHeader(String name)`    | 获取请求头      |
-| `getMethod()`               | 获取请求方法     |
-| `getRequestURI()`           | 获取请求 URI   |
+| `getHeader(String name)`    | 获取请求头           |
+| `getMethod()`               | 获取请求方法         |
+| `getRequestURI()`           | 获取请求 URI         |
 
 ***
 
-### 2.6 日期时间处理
+### 3.6 日期时间处理
 
 #### @DateTimeFormat（请求参数）
 
@@ -413,12 +451,12 @@ public class Order {
 
 #### 两者的区别与组合使用
 
-| 特性     | @DateTimeFormat    | @JsonFormat         |
-| ------ | ------------------ | ------------------- |
-| **来源** | Spring 框架          | Jackson 库           |
-| **作用** | 接收参数时的格式转换         | JSON 序列化/反序列化时的格式转换 |
-| **适用** | URL 参数、表单参数        | JSON 请求体、JSON 响应体   |
-| **方向** | 仅入参（String → Date） | 双向（入参和出参）           |
+| 特性     | @DateTimeFormat         | @JsonFormat                      |
+| -------- | ----------------------- | -------------------------------- |
+| **来源** | Spring 框架             | Jackson 库                       |
+| **作用** | 接收参数时的格式转换    | JSON 序列化/反序列化时的格式转换 |
+| **适用** | URL 参数、表单参数      | JSON 请求体、JSON 响应体         |
+| **方向** | 仅入参（String → Date） | 双向（入参和出参）               |
 
 **组合使用：**
 
@@ -448,24 +486,24 @@ spring:
 
 ***
 
-### 2.7 参数获取方式总结
+### 3.7 参数获取方式总结
 
-| 注解/方式                | 数据来源        | 示例                            |
-| -------------------- | ----------- | ----------------------------- |
-| 无注解                  | URL 查询参数/表单 | `?name=张三`                    |
-| `@RequestParam`      | URL 查询参数    | `?name=张三`                    |
-| `@PathVariable`      | URL 路径参数    | `/user/1`                     |
-| `@RequestBody`       | 请求体（JSON）   | `{"name":"张三"}`               |
-| `@RequestHeader`     | 请求头         | `Authorization: Bearer token` |
-| `@CookieValue`       | Cookie      | `Cookie: JSESSIONID=xxx`      |
-| `@DateTimeFormat`    | 日期时间格式转换    | `?date=2024-01-15`            |
+| 注解/方式            | 数据来源          | 示例                          |
+| -------------------- | ----------------- | ----------------------------- |
+| 无注解               | URL 查询参数/表单 | `?name=张三`                  |
+| `@RequestParam`      | URL 查询参数      | `?name=张三`                  |
+| `@PathVariable`      | URL 路径参数      | `/user/1`                     |
+| `@RequestBody`       | 请求体（JSON）    | `{"name":"张三"}`             |
+| `@RequestHeader`     | 请求头            | `Authorization: Bearer token` |
+| `@CookieValue`       | Cookie            | `Cookie: JSESSIONID=xxx`      |
+| `@DateTimeFormat`    | 日期时间格式转换  | `?date=2024-01-15`            |
 | `HttpServletRequest` | 原始请求对象      | `request.getParameter("id")`  |
 
 ***
 
-## 三、响应数据处理
+## 四、响应数据处理
 
-### 3.1 错误码枚举（ResultCode）
+### 4.1 错误码枚举（ResultCode）
 
 统一管理错误码，便于维护和前后端对接：
 
@@ -505,7 +543,7 @@ public enum ResultCode {
 
 ***
 
-### 3.2 统一响应封装（Result）
+### 4.2 统一响应封装（Result）
 
 ```java
 @Data
@@ -577,7 +615,7 @@ if (result.isSuccess()) {
 
 ***
 
-### 3.3 分页响应（PageResult）
+### 4.3 分页响应（PageResult）
 
 ```java
 @Data
@@ -587,11 +625,6 @@ public class PageResult<T> {
     
     private Long total;       // 总记录数
     private List<T> rows;     // 当前页数据
-    
-    public PageResult(Long total, List<T> rows) {
-        this.total = total;
-        this.rows = rows;
-    }
     
     public static <T> PageResult<T> of(Long total, List<T> rows) {
         return new PageResult<>(total, rows);
@@ -605,7 +638,7 @@ public class PageResult<T> {
 
 ***
 
-### 3.4 分页查询示例
+### 4.4 分页查询示例
 
 **分页查询参数：**
 
@@ -653,7 +686,7 @@ public PageResult<User> page(UserQuery query) {
 
 ***
 
-### 3.5 响应结果示例
+### 4.5 响应结果示例
 
 ```json
 // 成功响应（无数据）
@@ -697,9 +730,9 @@ public PageResult<User> page(UserQuery query) {
 
 ***
 
-## 四、参数校验
+## 五、参数校验
 
-### 4.1 添加依赖
+### 5.1 添加依赖
 
 ```xml
 <dependency>
@@ -710,25 +743,25 @@ public PageResult<User> page(UserQuery query) {
 
 ***
 
-### 4.2 常用校验注解
+### 5.2 常用校验注解
 
-| 注解                 | 说明                   | 示例                                    |
-| ------------------ | -------------------- | ------------------------------------- |
-| `@NotNull`         | 不能为 null             | `@NotNull(message = "ID不能为空")`        |
-| `@NotEmpty`        | 不能为 null 且长度 > 0     | `@NotEmpty(message = "名称不能为空")`       |
-| `@NotBlank`        | 不能为 null 且去空格后长度 > 0 | `@NotBlank(message = "名称不能为空")`       |
-| `@Size(min, max)`  | 字符串/集合长度范围           | `@Size(min = 2, max = 10)`            |
-| `@Min(value)`      | 最小值                  | `@Min(value = 0)`                     |
-| `@Max(value)`      | 最大值                  | `@Max(value = 100)`                   |
-| `@Range(min, max)` | 数值范围                 | `@Range(min = 1, max = 150)`          |
-| `@Email`           | 邮箱格式                 | `@Email(message = "邮箱格式不正确")`         |
-| `@Pattern(regexp)` | 正则表达式                | `@Pattern(regexp = "^1[3-9]\\d{9}$")` |
-| `@Past`            | 必须是过去的日期             | `@Past`                               |
-| `@Future`          | 必须是将来的日期             | `@Future`                             |
+| 注解               | 说明                           | 示例                                  |
+| ------------------ | ------------------------------ | ------------------------------------- |
+| `@NotNull`         | 不能为 null                    | `@NotNull(message = "ID不能为空")`    |
+| `@NotEmpty`        | 不能为 null 且长度 > 0         | `@NotEmpty(message = "名称不能为空")` |
+| `@NotBlank`        | 不能为 null 且去空格后长度 > 0 | `@NotBlank(message = "名称不能为空")` |
+| `@Size(min, max)`  | 字符串/集合长度范围            | `@Size(min = 2, max = 10)`            |
+| `@Min(value)`      | 最小值                         | `@Min(value = 0)`                     |
+| `@Max(value)`      | 最大值                         | `@Max(value = 100)`                   |
+| `@Range(min, max)` | 数值范围                       | `@Range(min = 1, max = 150)`          |
+| `@Email`           | 邮箱格式                       | `@Email(message = "邮箱格式不正确")`  |
+| `@Pattern(regexp)` | 正则表达式                     | `@Pattern(regexp = "^1[3-9]\\d{9}$")` |
+| `@Past`            | 必须是过去的日期               | `@Past`                               |
+| `@Future`          | 必须是将来的日期               | `@Future`                             |
 
 ***
 
-### 4.3 实体类校验
+### 5.3 实体类校验
 
 ```java
 @Data
@@ -757,7 +790,7 @@ public class UserDTO {
 
 ***
 
-### 4.4 Controller 中使用
+### 5.4 Controller 中使用
 
 ```java
 @RestController
@@ -789,7 +822,7 @@ public class UserController {
 
 ***
 
-### 4.5 分组校验
+### 5.5 分组校验
 
 ```java
 // 1. 定义分组接口
@@ -828,51 +861,56 @@ public Result<Void> update(@PathVariable Long id,
 
 ***
 
-## 附录：基础注解速查表
+## 附录：常用注解速查表
 
-### Web 请求注解
+### 控制器与请求映射
 
-| 注解                | 说明        |
-| ----------------- | --------- |
-| `@RestController` | REST 控制器  |
-| `@RequestMapping` | 请求映射      |
-| `@GetMapping`     | GET 请求    |
-| `@PostMapping`    | POST 请求   |
-| `@PutMapping`     | PUT 请求    |
-| `@DeleteMapping`  | DELETE 请求 |
-| `@RequestBody`    | JSON 请求体  |
-| `@RequestParam`   | 请求参数      |
-| `@PathVariable`   | 路径参数      |
-| `@RequestHeader`  | 请求头       |
-| `@CookieValue`    | Cookie 值  |
+| 注解              | 说明                                           |
+| ----------------- | ---------------------------------------------- |
+| `@RestController` | REST 控制器，= `@Controller` + `@ResponseBody` |
+| `@Controller`     | 控制器（返回视图）                             |
+| `@RequestMapping` | 请求映射（类/方法级别）                        |
+| `@GetMapping`     | GET 请求                                       |
+| `@PostMapping`    | POST 请求                                      |
+| `@PutMapping`     | PUT 请求                                       |
+| `@DeleteMapping`  | DELETE 请求                                    |
+| `@ResponseBody`   | 方法返回值作为响应体                           |
 
-### 参数校验注解
+### 参数绑定
 
-| 注解                      | 说明    |
-| ----------------------- | ----- |
-| `@Valid` / `@Validated` | 触发校验  |
-| `@NotNull`              | 非空    |
-| `@NotBlank`             | 非空字符串 |
-| `@NotEmpty`             | 非空集合  |
-| `@Size`                 | 长度范围  |
-| `@Min` / `@Max`         | 数值范围  |
-| `@Email`                | 邮箱格式  |
-| `@Pattern`              | 正则匹配  |
+| 注解              | 说明                       |
+| ----------------- | -------------------------- |
+| `@RequestParam`   | URL 查询参数               |
+| `@PathVariable`   | URL 路径参数               |
+| `@RequestBody`    | JSON 请求体                |
+| `@RequestHeader`  | 请求头                     |
+| `@CookieValue`    | Cookie 值                  |
+| `@DateTimeFormat` | 日期格式转换（请求参数）   |
+| `@JsonFormat`     | JSON 日期格式（请求/响应） |
 
-### 日期注解
+### 参数校验
 
-| 注解                | 说明                 |
-| ----------------- | ------------------ |
-| `@DateTimeFormat` | 接收日期参数（URL/表单）     |
-| `@JsonFormat`     | JSON 日期格式（请求体/响应体） |
+| 注解                    | 说明                         |
+| ----------------------- | ---------------------------- |
+| `@Valid` / `@Validated` | 触发校验                     |
+| `@NotNull`              | 不能为 null                  |
+| `@NotBlank`             | 不能为空白（字符串）         |
+| `@NotEmpty`             | 不能为空（集合/数组/字符串） |
+| `@Size(min, max)`       | 长度范围                     |
+| `@Min` / `@Max`         | 数值范围                     |
+| `@Range(min, max)`      | 数值范围（Hibernate）        |
+| `@Email`                | 邮箱格式                     |
+| `@Pattern(regexp)`      | 正则匹配                     |
+| `@Past` / `@Future`     | 过去/将来的日期              |
 
-### Lombok 常用注解
+### Lombok
 
-| 注解                         | 说明                          |
-| -------------------------- | --------------------------- |
+| 注解                       | 说明                           |
+| -------------------------- | ------------------------------ |
 | `@Data`                    | 生成 getter/setter/toString 等 |
-| `@AllArgsConstructor`      | 全参构造                        |
-| `@NoArgsConstructor`       | 无参构造                        |
-| `@RequiredArgsConstructor` | final 字段构造                  |
-| `@Slf4j`                   | 日志注解                        |
-
+| `@AllArgsConstructor`      | 全参构造                       |
+| `@NoArgsConstructor`       | 无参构造                       |
+| `@RequiredArgsConstructor` | final 字段构造                 |
+| `@Slf4j`                   | 日志注解                       |
+| `@Getter` / `@Setter`      | 生成 getter/setter             |
+| `@Builder`                 | 构建者模式                     |

@@ -109,12 +109,12 @@ public class UserServiceImpl implements UserService {
 
 ### 1.5 数据对象规范
 
-| 类型     | 命名       | 用途     |
-| ------ | -------- | ------ |
-| Entity | 与表名对应    | 映射数据库表 |
-| DTO    | XxxDTO   | 接收请求参数 |
-| VO     | XxxVO    | 返回响应数据 |
-| Query  | XxxQuery | 查询条件参数 |
+| 类型   | 命名       | 用途         |
+| ------ | ---------- | ------------ |
+| Entity | 与表名对应 | 映射数据库表 |
+| DTO    | XxxDTO     | 接收请求参数 |
+| VO     | XxxVO      | 返回响应数据 |
+| Query  | XxxQuery   | 查询条件参数 |
 
 ```java
 // Entity - 数据库实体（包含所有字段）
@@ -152,10 +152,10 @@ public class UserVO {
 
 ### 2.1 核心注解
 
-| 注解                      | 说明                                              |
-| ----------------------- | ----------------------------------------------- |
+| 注解                    | 说明                                                    |
+| ----------------------- | ------------------------------------------------------- |
 | `@RestControllerAdvice` | 全局异常处理类，= `@ControllerAdvice` + `@ResponseBody` |
-| `@ExceptionHandler`     | 指定处理的异常类型                                       |
+| `@ExceptionHandler`     | 指定处理的异常类型                                      |
 
 ```java
 // 作用于所有 Controller
@@ -313,12 +313,16 @@ public class UserServiceImpl implements UserService {
 
 ### 3.1 对比概览
 
-| 特性         | 过滤器（Filter）          | 拦截器（Interceptor）       |
-| ---------- | -------------------- | ---------------------- |
-| **规范**     | Servlet              | Spring MVC             |
-| **执行时机**   | DispatcherServlet 之前 | DispatcherServlet 之后   |
-| **获取Bean** | 需要从容器获取              | 可以 @Autowired 注入       |
-| **路径排除**   | 不支持，需代码判断            | 支持 excludePathPatterns |
+| 特性         | 过滤器（Filter）                  | 拦截器（Interceptor）    |
+| ------------ | --------------------------------- | ------------------------ |
+| **规范**     | Servlet                           | Spring MVC               |
+| **执行时机** | DispatcherServlet 之前            | DispatcherServlet 之后   |
+| **依赖注入** | @WebFilter 不支持，需用其他方式 ① | 可直接 @Autowired 注入   |
+| **路径排除** | 不支持，需代码判断                | 支持 excludePathPatterns |
+
+> ① **Filter 依赖注入说明**：
+> - `@WebFilter` 注册的 Filter 不是 Spring Bean，`@Autowired` 不生效
+> - `FilterRegistrationBean` + `@Component` 方式注册的 Filter 可以正常使用 `@Autowired`
 
 ***
 
@@ -352,11 +356,11 @@ public class UserServiceImpl implements UserService {
 
 #### 生命周期方法
 
-| 方法         | 调用时机         | 调用次数 |
-| ---------- | ------------ | ---- |
-| `init`     | Web 服务器启动时   | 1 次  |
-| `doFilter` | 每次请求匹配 URL 时 | 多次   |
-| `destroy`  | Web 服务器关闭时   | 1 次  |
+| 方法       | 调用时机            | 调用次数 |
+| ---------- | ------------------- | -------- |
+| `init`     | Web 服务器启动时    | 1 次     |
+| `doFilter` | 每次请求匹配 URL 时 | 多次     |
+| `destroy`  | Web 服务器关闭时    | 1 次     |
 
 ```java
 public class DemoFilter implements Filter {
@@ -400,13 +404,29 @@ public class Application { }
 #### 配置方式二：FilterRegistrationBean（推荐）
 
 ```java
+// Filter 声明为 Spring Bean，支持依赖注入
+@Component
+public class DemoFilter implements Filter {
+    
+    @Autowired  // ✅ 可以正常注入
+    private UserService userService;
+    
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, 
+                         FilterChain chain) throws IOException, ServletException {
+        // 可以使用 userService
+        chain.doFilter(request, response);
+    }
+}
+
+// 配置类中注册
 @Configuration
 public class FilterConfig {
     
     @Bean
-    public FilterRegistrationBean<DemoFilter> demoFilter() {
+    public FilterRegistrationBean<DemoFilter> demoFilter(DemoFilter filter) {
         FilterRegistrationBean<DemoFilter> bean = new FilterRegistrationBean<>();
-        bean.setFilter(new DemoFilter());
+        bean.setFilter(filter);  // 注入 Spring 管理的 Filter
         bean.addUrlPatterns("/*");
         bean.setOrder(1);  // 值越小越先执行
         return bean;
@@ -420,11 +440,11 @@ public class FilterConfig {
 
 #### 生命周期方法
 
-| 方法                | 调用时机                 | 说明               |
-| ----------------- | -------------------- | ---------------- |
-| `preHandle`       | Controller 执行前       | 返回 false 则中断请求   |
-| `postHandle`      | Controller 执行后、视图渲染前 | 异常时不执行，REST 中较少用 |
-| `afterCompletion` | 请求完成后                | 无论是否异常都执行，用于清理   |
+| 方法              | 调用时机                      | 说明                         |
+| ----------------- | ----------------------------- | ---------------------------- |
+| `preHandle`       | Controller 执行前             | 返回 false 则中断请求        |
+| `postHandle`      | Controller 执行后、视图渲染前 | 异常时不执行，REST 中较少用  |
+| `afterCompletion` | 请求完成后                    | 无论是否异常都执行，用于清理 |
 
 ```java
 @Component
@@ -490,14 +510,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 ### 3.5 路径匹配规则对比
 
-| 模式        | Filter (urlPatterns) | Interceptor (pathPatterns) |
+| 模式      | Filter (urlPatterns) | Interceptor (pathPatterns) |
 | --------- | -------------------- | -------------------------- |
-| `/*`      | 匹配一级路径               | 匹配一级路径                     |
-| `/**`     | ❌ 不支持                | ✅ 匹配所有路径（含多级）              |
-| `/api/*`  | 匹配 /api/xxx          | 匹配 /api/xxx                |
-| `/api/**` | ❌ 不支持                | ✅ 匹配 /api/xxx/yyy/...      |
-| `*.do`    | ✅ 后缀匹配               | ✅ 后缀匹配                     |
-| 排除路径      | ❌ 需代码判断              | ✅ excludePathPatterns()    |
+| `/*`      | 匹配一级路径         | 匹配一级路径               |
+| `/**`     | ❌ 不支持             | ✅ 匹配所有路径（含多级）   |
+| `/api/*`  | 匹配 /api/xxx        | 匹配 /api/xxx              |
+| `/api/**` | ❌ 不支持             | ✅ 匹配 /api/xxx/yyy/...    |
+| `*.do`    | ✅ 后缀匹配           | ✅ 后缀匹配                 |
+| 排除路径  | ❌ 需代码判断         | ✅ excludePathPatterns()    |
 
 ***
 
@@ -520,12 +540,12 @@ registry.addInterceptor(interceptor2).order(2);
                                                                           ↓
     响应 ← Filter1 ← Filter2 ← Interceptor1.after ← Interceptor2.after ←──┘
 
-| 组件                          | 请求时      | 响应时            |
-| --------------------------- | -------- | -------------- |
+| 组件                        | 请求时     | 响应时                 |
+| --------------------------- | ---------- | ---------------------- |
 | Filter                      | order 升序 | order 升序（逆序出栈） |
-| Interceptor.preHandle       | order 升序 | -              |
-| Interceptor.postHandle      | -        | order 降序       |
-| Interceptor.afterCompletion | -        | order 降序       |
+| Interceptor.preHandle       | order 升序 | -                      |
+| Interceptor.postHandle      | -          | order 降序             |
+| Interceptor.afterCompletion | -          | order 降序             |
 
 ***
 
@@ -580,11 +600,11 @@ public CorsFilter corsFilter() {
 
 #### 三种方式对比
 
-| 方式                 | 粒度   | 优先级 | 适用场景      |
-| ------------------ | ---- | --- | --------- |
-| `@CrossOrigin`     | 类/方法 | 最高  | 个别接口特殊配置  |
-| `WebMvcConfigurer` | 全局   | 中   | 一般项目推荐    |
-| `CorsFilter`       | 全局   | 最低  | 需要最早处理跨域时 |
+| 方式               | 粒度    | 优先级 | 适用场景           |
+| ------------------ | ------- | ------ | ------------------ |
+| `@CrossOrigin`     | 类/方法 | 最高   | 个别接口特殊配置   |
+| `WebMvcConfigurer` | 全局    | 中     | 一般项目推荐       |
+| `CorsFilter`       | 全局    | 最低   | 需要最早处理跨域时 |
 
 #### 注意事项
 
@@ -603,15 +623,15 @@ if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
 ### 3.8 如何选择
 
-| 场景         | 推荐          | 原因                                 |
-| ---------- | ----------- | ---------------------------------- |
-| 登录/权限校验    | Interceptor | 可注入 Service，便于查库校验                 |
-| 跨域处理       | Filter      | 需在最早期处理，早于所有 Interceptor           |
-| 请求/响应日志    | 都可以         | Filter 更底层；Interceptor 可获取 handler |
-| 字符编码设置     | Filter      | Servlet 层面的通用处理                    |
-| 敏感词/XSS 过滤 | Filter      | 需修改请求体，与业务无关                       |
-| 接口耗时统计     | Interceptor | preHandle 记录开始，afterCompletion 计算  |
-| 静态资源放行     | Interceptor | excludePathPatterns 配置更方便          |
+| 场景            | 推荐        | 原因                                      |
+| --------------- | ----------- | ----------------------------------------- |
+| 登录/权限校验   | Interceptor | 可注入 Service，便于查库校验              |
+| 跨域处理        | Filter      | 需在最早期处理，早于所有 Interceptor      |
+| 请求/响应日志   | 都可以      | Filter 更底层；Interceptor 可获取 handler |
+| 字符编码设置    | Filter      | Servlet 层面的通用处理                    |
+| 敏感词/XSS 过滤 | Filter      | 需修改请求体，与业务无关                  |
+| 接口耗时统计    | Interceptor | preHandle 记录开始，afterCompletion 计算  |
+| 静态资源放行    | Interceptor | excludePathPatterns 配置更方便            |
 
 ***
 
@@ -619,12 +639,12 @@ if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
 ### 4.1 事务的 ACID 特性
 
-| 特性      | 说明        |
-| ------- | --------- |
+| 特性       | 说明               |
+| ---------- | ------------------ |
 | **原子性** | 全部成功或全部回滚 |
-| **一致性** | 数据保持一致状态  |
-| **隔离性** | 事务间互不干扰   |
-| **持久性** | 提交后永久保存   |
+| **一致性** | 数据保持一致状态   |
+| **隔离性** | 事务间互不干扰     |
+| **持久性** | 提交后永久保存     |
 
 ***
 
@@ -640,24 +660,24 @@ public void createOrder(OrderDTO dto) {
 
 **常用属性：**
 
-| 属性            | 说明      |
-| ------------- | ------- |
+| 属性          | 说明           |
+| ------------- | -------------- |
 | `rollbackFor` | 回滚的异常类型 |
-| `propagation` | 传播行为    |
-| `isolation`   | 隔离级别    |
-| `readOnly`    | 是否只读    |
+| `propagation` | 传播行为       |
+| `isolation`   | 隔离级别       |
+| `readOnly`    | 是否只读       |
 | `timeout`     | 超时时间（秒） |
 
 ***
 
 ### 4.3 传播行为
 
-| 传播行为            | 说明            |
-| --------------- | ------------- |
-| `REQUIRED`（默认）  | 有事务则加入，没有则新建  |
-| `REQUIRES_NEW`  | 总是新建独立事务      |
-| `SUPPORTS`      | 有事务则加入，没有则非事务 |
-| `NOT_SUPPORTED` | 非事务执行         |
+| 传播行为           | 说明                       |
+| ------------------ | -------------------------- |
+| `REQUIRED`（默认） | 有事务则加入，没有则新建   |
+| `REQUIRES_NEW`     | 总是新建独立事务           |
+| `SUPPORTS`         | 有事务则加入，没有则非事务 |
+| `NOT_SUPPORTED`    | 非事务执行                 |
 
 ```java
 // REQUIRES_NEW：独立事务，主事务回滚不影响
@@ -669,12 +689,12 @@ public void saveLog(String content) { }
 
 ### 4.4 事务失效场景
 
-| 场景                 | 原因             | 解决方案           |
-| ------------------ | -------------- | -------------- |
-| 方法不是 public        | AOP 只代理 public | 改为 public      |
-| 内部方法调用             | 未通过代理对象        | 注入自身调用         |
-| 异常被捕获              | 异常未抛出          | 重新抛出           |
-| 非 RuntimeException | 默认只回滚运行时异常     | 添加 rollbackFor |
+| 场景                | 原因                 | 解决方案         |
+| ------------------- | -------------------- | ---------------- |
+| 方法不是 public     | AOP 只代理 public    | 改为 public      |
+| 内部方法调用        | 未通过代理对象       | 注入自身调用     |
+| 异常被捕获          | 异常未抛出           | 重新抛出         |
+| 非 RuntimeException | 默认只回滚运行时异常 | 添加 rollbackFor |
 
 ```java
 // ❌ 内部调用，事务失效
@@ -874,37 +894,37 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 ### 5.4 本地存储 vs 云存储
 
-| 特性     | 本地存储      | 云存储（OSS）    |
-| ------ | --------- | ----------- |
-| 成本     | 服务器磁盘费用   | 按量付费，通常更便宜  |
-| 扩展性    | 受限于服务器磁盘  | 近乎无限        |
-| 可靠性    | 单点故障风险    | 多副本，高可用     |
-| CDN 加速 | 需自行配置     | 原生支持        |
-| 适用场景   | 开发测试、小型项目 | 生产环境、大量文件存储 |
+| 特性     | 本地存储           | 云存储（OSS）          |
+| -------- | ------------------ | ---------------------- |
+| 成本     | 服务器磁盘费用     | 按量付费，通常更便宜   |
+| 扩展性   | 受限于服务器磁盘   | 近乎无限               |
+| 可靠性   | 单点故障风险       | 多副本，高可用         |
+| CDN 加速 | 需自行配置         | 原生支持               |
+| 适用场景 | 开发测试、小型项目 | 生产环境、大量文件存储 |
 
 ***
 
 ### 5.5 文件校验要点
 
-| 校验项 | 说明                      |
-| --- | ----------------------- |
-| 非空  | `file.isEmpty()`        |
-| 大小  | `file.getSize()` 与限制值比较 |
-| 后缀  | 白名单校验，如 `.jpg`, `.png`  |
-| 文件头 | 通过 Magic Number 校验真实类型  |
+| 校验项 | 说明                           |
+| ------ | ------------------------------ |
+| 非空   | `file.isEmpty()`               |
+| 大小   | `file.getSize()` 与限制值比较  |
+| 后缀   | 白名单校验，如 `.jpg`, `.png`  |
+| 文件头 | 通过 Magic Number 校验真实类型 |
 
 ***
 
 ### 5.6 MultipartFile 常用方法
 
-| 方法                      | 说明       |
-| ----------------------- | -------- |
-| `isEmpty()`             | 是否为空     |
-| `getOriginalFilename()` | 原始文件名    |
-| `getContentType()`      | MIME 类型  |
+| 方法                    | 说明             |
+| ----------------------- | ---------------- |
+| `isEmpty()`             | 是否为空         |
+| `getOriginalFilename()` | 原始文件名       |
+| `getContentType()`      | MIME 类型        |
 | `getSize()`             | 文件大小（字节） |
-| `getInputStream()`      | 获取输入流    |
-| `transferTo(File)`      | 保存到指定位置  |
+| `getInputStream()`      | 获取输入流       |
+| `transferTo(File)`      | 保存到指定位置   |
 
 ***
 
@@ -912,57 +932,57 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 ### 异常处理
 
-| 注解                      | 说明      |
-| ----------------------- | ------- |
+| 注解                    | 说明           |
+| ----------------------- | -------------- |
 | `@RestControllerAdvice` | 全局异常处理类 |
-| `@ExceptionHandler`     | 异常处理方法  |
+| `@ExceptionHandler`     | 异常处理方法   |
 
 ### 事务管理
 
-| 注解/属性            | 说明     |
-| ---------------- | ------ |
-| `@Transactional` | 声明事务   |
+| 注解/属性        | 说明         |
+| ---------------- | ------------ |
+| `@Transactional` | 声明事务     |
 | `rollbackFor`    | 回滚异常类型 |
-| `propagation`    | 传播行为   |
-| `readOnly`       | 只读事务   |
-| `timeout`        | 超时时间   |
+| `propagation`    | 传播行为     |
+| `readOnly`       | 只读事务     |
+| `timeout`        | 超时时间     |
 
 ### 过滤器与拦截器
 
-| 注解/类                     | 说明              |
-| ------------------------ | --------------- |
-| `@WebFilter`             | 声明 Filter       |
+| 注解/类                  | 说明                  |
+| ------------------------ | --------------------- |
+| `@WebFilter`             | 声明 Filter           |
 | `@ServletComponentScan`  | 启用 Servlet 组件扫描 |
 | `FilterRegistrationBean` | 注册 Filter（推荐）   |
-| `@CrossOrigin`           | 跨域配置            |
+| `@CrossOrigin`           | 跨域配置              |
 
 ### 参数校验
 
-| 注解                      | 说明          |
-| ----------------------- | ----------- |
-| `@Valid` / `@Validated` | 触发校验        |
-| `@NotNull`              | 不能为 null    |
+| 注解                    | 说明                  |
+| ----------------------- | --------------------- |
+| `@Valid` / `@Validated` | 触发校验              |
+| `@NotNull`              | 不能为 null           |
 | `@NotBlank`             | 不能为空白（字符串）  |
 | `@NotEmpty`             | 不能为空（集合/数组） |
-| `@Size(min, max)`       | 长度范围        |
-| `@Min` / `@Max`         | 数值范围        |
-| `@Pattern`              | 正则匹配        |
-| `@Email`                | 邮箱格式        |
+| `@Size(min, max)`       | 长度范围              |
+| `@Min` / `@Max`         | 数值范围              |
+| `@Pattern`              | 正则匹配              |
+| `@Email`                | 邮箱格式              |
 
 ### 数据序列化
 
-| 注解              | 说明          |
-| --------------- | ----------- |
+| 注解            | 说明             |
+| --------------- | ---------------- |
 | `@JsonFormat`   | 日期格式化       |
-| `@JsonIgnore`   | 序列化时忽略      |
+| `@JsonIgnore`   | 序列化时忽略     |
 | `@JsonProperty` | 指定 JSON 字段名 |
 
 ### Lombok
 
-| 注解                         | 说明                     |
+| 注解                       | 说明                   |
 | -------------------------- | ---------------------- |
 | `@Data`                    | getter/setter/toString |
-| `@Slf4j`                   | 日志                     |
-| `@RequiredArgsConstructor` | final 字段构造             |
-| `@Builder`                 | 构建者模式                  |
+| `@Slf4j`                   | 日志                   |
+| `@RequiredArgsConstructor` | final 字段构造         |
+| `@Builder`                 | 构建者模式             |
 

@@ -6,13 +6,13 @@
 
 **核心特性：**
 
-| 特性        | 说明                                   |
-| --------- | ------------------------------------ |
-| 🎯 快速构建   | 提供各种起步依赖，简化构建配置                      |
-| 📦 内嵌服务器  | 内置 Tomcat、Jetty、Undertow，无需部署 WAR 文件 |
-| ⚙️ 自动配置   | 尽可能自动配置 Spring 和第三方库                 |
-| 🔧 无需 XML | 提倡使用 Java 配置，摆脱繁琐的 XML 配置            |
-| 📊 生产级特性  | 提供运行时监控、健康检查、外部化配置等功能                |
+| 特性         | 说明                                            |
+| ------------ | ----------------------------------------------- |
+| 🎯 快速构建   | 提供各种起步依赖，简化构建配置                  |
+| 📦 内嵌服务器 | 内置 Tomcat、Jetty、Undertow，无需部署 WAR 文件 |
+| ⚙️ 自动配置   | 尽可能自动配置 Spring 和第三方库                |
+| 🔧 无需 XML   | 提倡使用 Java 配置，摆脱繁琐的 XML 配置         |
+| 📊 生产级特性 | 提供运行时监控、健康检查、外部化配置等功能      |
 
 ***
 
@@ -113,11 +113,7 @@ curl http://localhost:8080/hello
 public @interface SpringBootApplication { }
 ```
 
-| 注解                         | 作用            |
-| -------------------------- | ------------- |
-| `@SpringBootConfiguration` | 标识当前类是一个配置类   |
-| `@EnableAutoConfiguration` | 启用自动配置机制      |
-| `@ComponentScan`           | 扫描当前包及其子包下的组件 |
+> 💡 详细解析见 [4.1 @SpringBootApplication 解析](#41-springbootapplication-解析)
 
 #### 起步依赖（Starter）
 
@@ -168,9 +164,9 @@ public @interface SpringBootApplication { }
 
 #### 核心概念
 
-| 概念      | 全称                   | 说明                |
-| ------- | -------------------- | ----------------- |
-| **IOC** | Inversion of Control | 对象的创建控制权由程序转移到容器  |
+| 概念    | 全称                 | 说明                               |
+| ------- | -------------------- | ---------------------------------- |
+| **IOC** | Inversion of Control | 对象的创建控制权由程序转移到容器   |
 | **DI**  | Dependency Injection | 容器为应用程序提供运行时依赖的资源 |
 
     ┌────────────────────────────────────────────────────────────────────┐
@@ -193,12 +189,12 @@ public @interface SpringBootApplication { }
 
 #### IOC 的优势
 
-| 优势       | 说明                   |
-| -------- | -------------------- |
-| **解耦**   | 组件之间不直接依赖，降低耦合度      |
-| **可测试**  | 依赖可以被 Mock 替换，便于单元测试 |
-| **可维护**  | 修改实现类无需修改调用方代码       |
-| **灵活配置** | 通过配置切换不同实现           |
+| 优势         | 说明                               |
+| ------------ | ---------------------------------- |
+| **解耦**     | 组件之间不直接依赖，降低耦合度     |
+| **可测试**   | 依赖可以被 Mock 替换，便于单元测试 |
+| **可维护**   | 修改实现类无需修改调用方代码       |
+| **灵活配置** | 通过配置切换不同实现               |
 
 ***
 
@@ -206,12 +202,12 @@ public @interface SpringBootApplication { }
 
 #### Bean 声明注解
 
-| 注解            | 说明            | 适用位置         |
-| ------------- | ------------- | ------------ |
-| `@Component`  | 声明 bean 的基础注解 | 通用           |
-| `@Controller` | 衍生注解          | Controller 层 |
-| `@Service`    | 衍生注解          | Service 层    |
-| `@Repository` | 衍生注解          | Dao 层        |
+| 注解          | 说明                 | 适用位置      |
+| ------------- | -------------------- | ------------- |
+| `@Component`  | 声明 bean 的基础注解 | 通用          |
+| `@Controller` | 衍生注解             | Controller 层 |
+| `@Service`    | 衍生注解             | Service 层    |
+| `@Repository` | 衍生注解             | Dao 层        |
 
 > 💡 四个注解功能完全相同，使用不同注解是为了**语义化**，便于区分组件类型。
 
@@ -248,11 +244,11 @@ public class AppConfig {
 
 **@Configuration vs @Component：**
 
-| 特性         | @Configuration      | @Component |
-| ---------- | ------------------- | ---------- |
-| 代理模式       | 默认使用 CGLIB 代理       | 无代理        |
-| @Bean 方法调用 | 返回同一个 Bean 实例（保证单例） | 每次调用创建新实例  |
-| 适用场景       | 定义 Bean 及其依赖关系      | 普通组件       |
+| 特性           | @Configuration                   | @Component         |
+| -------------- | -------------------------------- | ------------------ |
+| 代理模式       | 默认使用 CGLIB 代理              | 无代理             |
+| @Bean 方法调用 | 返回同一个 Bean 实例（保证单例） | 每次调用创建新实例 |
+| 适用场景       | 定义 Bean 及其依赖关系           | 普通组件           |
 
 **关键区别示例：**
 
@@ -291,24 +287,32 @@ public class FullConfig { }
 public class LiteConfig { }
 ```
 
-| 模式   | proxyBeanMethods | 特点         | 适用场景           |
-| ---- | ---------------- | ---------- | -------------- |
-| Full | true（默认）         | 保证单例，有代理开销 | @Bean 方法间有依赖调用 |
-| Lite | false            | 启动快，无代理    | @Bean 方法间无依赖调用 |
+| 模式 | proxyBeanMethods | 特点                 | 适用场景               |
+| ---- | ---------------- | -------------------- | ---------------------- |
+| Full | true（默认）     | 保证单例，有代理开销 | @Bean 方法间有依赖调用 |
+| Lite | false            | 启动快，无代理       | @Bean 方法间无依赖调用 |
 
 > 💡 **建议**：如果配置类中的 @Bean 方法之间没有互相调用，可使用 `@Configuration(proxyBeanMethods = false)` 提升启动性能。Spring Boot 的许多自动配置类都采用 Lite 模式。
 
 #### @Bean 注解
 
-用于在配置类中手动声明 Bean，适用于第三方类或需要自定义初始化的对象。
+`@Bean` 写在方法上，**把方法的返回值注册成 Bean**。适用于第三方类（无法加 `@Component`）或需要自定义初始化的对象。
+
+| 场景             | 方式         | 说明                   |
+| ---------------- | ------------ | ---------------------- |
+| 自己写的类       | `@Component` | 直接在类上加注解       |
+| 第三方库的类     | `@Bean`      | 在配置类的方法上加注解 |
+| 需要自定义初始化 | `@Bean`      | 方法内设置属性后再返回 |
+
+**基本用法：**
 
 ```java
 @Configuration
 public class AppConfig {
     
-    @Bean
+    @Bean  // Bean 名称默认是方法名：restTemplate
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        return new RestTemplate();  // 返回值注册成 Bean
     }
     
     @Bean("customDataSource")  // 指定 Bean 名称
@@ -321,6 +325,8 @@ public class AppConfig {
     }
 }
 ```
+
+> 💡 不管用 `@Component` 还是 `@Bean` 注册，使用时都一样通过 `@Autowired` 注入。
 
 #### 组件扫描机制
 
@@ -345,12 +351,12 @@ public class Application { }
 
 #### Bean 的作用域
 
-| 作用域         | 说明                   | 使用场景             |
-| ----------- | -------------------- | ---------------- |
-| `singleton` | 单例（默认），整个容器只有一个实例    | 无状态的 Service、Dao |
-| `prototype` | 原型，每次获取都创建新实例        | 有状态的 Bean        |
-| `request`   | 每个 HTTP 请求一个实例       | Web 应用           |
-| `session`   | 每个 HTTP Session 一个实例 | Web 应用           |
+| 作用域      | 说明                               | 使用场景              |
+| ----------- | ---------------------------------- | --------------------- |
+| `singleton` | 单例（默认），整个容器只有一个实例 | 无状态的 Service、Dao |
+| `prototype` | 原型，每次获取都创建新实例         | 有状态的 Bean         |
+| `request`   | 每个 HTTP 请求一个实例             | Web 应用              |
+| `session`   | 每个 HTTP Session 一个实例         | Web 应用              |
 
 ```java
 @Service
@@ -364,11 +370,11 @@ public class PrototypeService { }
 
 #### 注入方式对比
 
-| 方式        | 代码示例                    | 推荐程度     | 说明               |
-| --------- | ----------------------- | -------- | ---------------- |
-| 属性注入      | `@Autowired` 在字段上       | ⚠️ 不推荐   | 无法声明 final，不利于测试 |
-| 构造函数注入    | `@Autowired` 在构造器上      | ✅ **推荐** | 可声明 final，依赖明确   |
-| Setter 注入 | `@Autowired` 在 setter 上 | ⚠️ 可选    | 适合可选依赖           |
+| 方式         | 代码示例                  | 推荐程度   | 说明                       |
+| ------------ | ------------------------- | ---------- | -------------------------- |
+| 属性注入     | `@Autowired` 在字段上     | ⚠️ 不推荐   | 无法声明 final，不利于测试 |
+| 构造函数注入 | `@Autowired` 在构造器上   | ✅ **推荐** | 可声明 final，依赖明确     |
+| Setter 注入  | `@Autowired` 在 setter 上 | ⚠️ 可选     | 适合可选依赖               |
 
 **属性注入（不推荐）：**
 
@@ -434,12 +440,99 @@ private UserService userService;
 
 #### @Autowired vs @Resource
 
-| 特性   | @Autowired       | @Resource    |
-| ---- | ---------------- | ------------ |
-| 来源   | Spring 框架        | JDK（JSR-250） |
-| 注入方式 | 默认**按类型**        | 默认**按名称**    |
+| 特性     | @Autowired          | @Resource        |
+| -------- | ------------------- | ---------------- |
+| 来源     | Spring 框架         | JDK（JSR-250）   |
+| 注入方式 | 默认**按类型**      | 默认**按名称**   |
 | 指定名称 | 需配合 `@Qualifier` | 使用 `name` 属性 |
-| 推荐场景 | Spring 项目        | 需要按名称注入时     |
+| 推荐场景 | Spring 项目         | 需要按名称注入时 |
+
+***
+
+### 2.4 Bean 生命周期
+
+    1. 实例化（Instantiation）
+       - 调用构造函数创建对象
+          ↓
+    2. 属性注入（Populate Properties）
+       - @Autowired、@Value 等注入
+          ↓
+    3. Aware 接口回调
+       - BeanNameAware、BeanFactoryAware、ApplicationContextAware
+          ↓
+    4. BeanPostProcessor.postProcessBeforeInitialization()
+       - 初始化前置处理
+          ↓
+    5. @PostConstruct 方法
+       - JSR-250 标准注解
+          ↓
+    6. InitializingBean.afterPropertiesSet()
+       - Spring 接口方法
+          ↓
+    7. 自定义 init-method
+       - @Bean(initMethod = "init")
+          ↓
+    8. BeanPostProcessor.postProcessAfterInitialization()
+       - 初始化后置处理（AOP 代理在此生成）
+          ↓
+    9. Bean 就绪，可以使用
+          ↓
+       ────────── 容器关闭时 ──────────
+          ↓
+    10. @PreDestroy 方法
+       - JSR-250 标准注解
+          ↓
+    11. DisposableBean.destroy()
+       - Spring 接口方法
+          ↓
+    12. 自定义 destroy-method
+       - @Bean(destroyMethod = "cleanup")
+
+**示例：**
+
+```java
+@Component
+@Slf4j
+public class MyBean implements InitializingBean, DisposableBean, BeanNameAware {
+
+    private String beanName;
+
+    @Override
+    public void setBeanName(String name) {
+        this.beanName = name;
+        log.info("0. BeanNameAware.setBeanName: {}", name);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        log.info("1. @PostConstruct 执行");
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        log.info("2. InitializingBean.afterPropertiesSet 执行");
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        log.info("3. @PreDestroy 执行");
+    }
+
+    @Override
+    public void destroy() {
+        log.info("4. DisposableBean.destroy 执行");
+    }
+}
+```
+
+**输出顺序：**
+
+    0. BeanNameAware.setBeanName: myBean
+    1. @PostConstruct 执行
+    2. InitializingBean.afterPropertiesSet 执行
+    ... 应用运行中 ...
+    3. @PreDestroy 执行
+    4. DisposableBean.destroy 执行
 
 ***
 
@@ -449,9 +542,9 @@ private UserService userService;
 
 Spring Boot 支持两种配置文件格式：
 
-| 类型             | 文件名                      | 特点           |
-| -------------- | ------------------------ | ------------ |
-| **properties** | `application.properties` | 传统格式，键值对     |
+| 类型           | 文件名                   | 特点                     |
+| -------------- | ------------------------ | ------------------------ |
+| **properties** | `application.properties` | 传统格式，键值对         |
 | **yml/yaml**   | `application.yml`        | 层级结构，更简洁（推荐） |
 
 **位置：** `src/main/resources/`
@@ -493,13 +586,13 @@ spring:
 
 #### 语法规则
 
-| 规则         | 说明                             |
-| ---------- | ------------------------------ |
-| **冒号后空格**  | 数值前边必须有空格，作为分隔符。如 `port: 8080` |
-| **缩进表示层级** | 使用缩进表示层级关系，不允许使用 Tab 键，只能用空格   |
-| **对齐即可**   | 缩进的空格数目不重要，只要相同层级的元素左侧对齐即可     |
-| **# 表示注释** | `#` 表示注释，从这个字符一直到行尾，都会被解析器忽略   |
-| **大小写敏感**  | 属性名区分大小写，`Port` ≠ `port`       |
+| 规则             | 说明                                                 |
+| ---------------- | ---------------------------------------------------- |
+| **冒号后空格**   | 数值前边必须有空格，作为分隔符。如 `port: 8080`      |
+| **缩进表示层级** | 使用缩进表示层级关系，不允许使用 Tab 键，只能用空格  |
+| **对齐即可**     | 缩进的空格数目不重要，只要相同层级的元素左侧对齐即可 |
+| **# 表示注释**   | `#` 表示注释，从这个字符一直到行尾，都会被解析器忽略 |
+| **大小写敏感**   | 属性名区分大小写，`Port` ≠ `port`                    |
 
 #### 数据格式
 
@@ -737,12 +830,12 @@ server:
 
 #### 激活环境的方式
 
-| 方式    | 示例                              | 优先级 |
-| ----- | ------------------------------- | --- |
-| 配置文件  | `spring.profiles.active=dev`    | 低   |
-| 命令行参数 | `--spring.profiles.active=prod` | 高   |
-| 环境变量  | `SPRING_PROFILES_ACTIVE=prod`   | 中   |
-| JVM参数 | `-Dspring.profiles.active=prod` | 高   |
+| 方式       | 示例                            | 优先级 |
+| ---------- | ------------------------------- | ------ |
+| 配置文件   | `spring.profiles.active=dev`    | 低     |
+| 命令行参数 | `--spring.profiles.active=prod` | 高     |
+| 环境变量   | `SPRING_PROFILES_ACTIVE=prod`   | 中     |
+| JVM参数    | `-Dspring.profiles.active=prod` | 高     |
 
 ```bash
 # 命令行激活
@@ -758,14 +851,14 @@ java -Dspring.profiles.active=prod -jar app.jar
 
 Spring Boot 配置的加载顺序（优先级从高到低）：
 
-| 优先级   | 配置来源        | 示例                          |
-| ----- | ----------- | --------------------------- |
-| 1（最高） | 命令行参数       | `--server.port=9090`        |
-| 2     | Java 系统属性   | `-Dserver.port=9090`        |
-| 3     | 操作系统环境变量    | `SERVER_PORT=9090`          |
-| 4     | jar 包外的配置文件 | `./config/application.yml`  |
-| 5     | jar 包内的配置文件 | `classpath:application.yml` |
-| 6（最低） | 默认值         | 代码中的 `@Value` 默认值           |
+| 优先级    | 配置来源           | 示例                        |
+| --------- | ------------------ | --------------------------- |
+| 1（最高） | 命令行参数         | `--server.port=9090`        |
+| 2         | Java 系统属性      | `-Dserver.port=9090`        |
+| 3         | 操作系统环境变量   | `SERVER_PORT=9090`          |
+| 4         | jar 包外的配置文件 | `./config/application.yml`  |
+| 5         | jar 包内的配置文件 | `classpath:application.yml` |
+| 6（最低） | 默认值             | 代码中的 `@Value` 默认值    |
 
 **配置文件位置优先级：**
 
@@ -840,13 +933,13 @@ public class ConfigController {
 
 **@Value 常用写法：**
 
-| 写法                               | 说明              |
-| -------------------------------- | --------------- |
+| 写法                             | 说明                           |
+| -------------------------------- | ------------------------------ |
 | `@Value("${app.name}")`          | 直接注入，配置不存在则启动报错 |
-| `@Value("${app.name:默认值}")`      | 配置不存在时使用默认值     |
-| `@Value("${app.name:}")`         | 配置不存在时使用空字符串    |
-| `@Value("${app.count:0}")`       | 数值类型默认值         |
-| `@Value("${app.enabled:false}")` | 布尔类型默认值         |
+| `@Value("${app.name:默认值}")`   | 配置不存在时使用默认值         |
+| `@Value("${app.name:}")`         | 配置不存在时使用空字符串       |
+| `@Value("${app.count:0}")`       | 数值类型默认值                 |
+| `@Value("${app.enabled:false}")` | 布尔类型默认值                 |
 
 ***
 
@@ -919,14 +1012,14 @@ public class ConfigController {
 
 #### 两种方式对比
 
-| 特性         | @Value        | @ConfigurationProperties |
-| ---------- | ------------- | ------------------------ |
-| **适用场景**   | 注入少量配置        | 注入大量配置、复杂结构              |
-| **类型安全**   | 需手动指定类型       | 自动类型转换                   |
-| **默认值**    | 支持（使用 `:` 语法） | 支持（字段初始化）                |
-| **嵌套对象**   | 不支持           | 支持                       |
-| **列表/Map** | 支持（写法复杂）      | 支持（写法简单）                 |
-| **松散绑定**   | 不支持           | 支持（驼峰、下划线、短横线自动转换）       |
+| 特性         | @Value                | @ConfigurationProperties             |
+| ------------ | --------------------- | ------------------------------------ |
+| **适用场景** | 注入少量配置          | 注入大量配置、复杂结构               |
+| **类型安全** | 需手动指定类型        | 自动类型转换                         |
+| **默认值**   | 支持（使用 `:` 语法） | 支持（字段初始化）                   |
+| **嵌套对象** | 不支持                | 支持                                 |
+| **列表/Map** | 支持（写法复杂）      | 支持（写法简单）                     |
+| **松散绑定** | 不支持                | 支持（驼峰、下划线、短横线自动转换） |
 
 > 💡 **建议**：
 >
@@ -952,11 +1045,11 @@ public class Application {
 }
 ```
 
-| 注解                         | 作用                       |
-| -------------------------- | ------------------------ |
+| 注解                       | 作用                                    |
+| -------------------------- | --------------------------------------- |
 | `@SpringBootConfiguration` | 标识当前类是配置类，可包含 `@Bean` 方法 |
 | `@EnableAutoConfiguration` | 开启自动配置，根据依赖自动配置 Spring   |
-| `@ComponentScan`           | 组件扫描，默认扫描启动类所在包及子包       |
+| `@ComponentScan`           | 组件扫描，默认扫描启动类所在包及子包    |
 
 ***
 
@@ -1007,15 +1100,15 @@ public class Application {
 
 #### 条件注解
 
-| 注解                                | 说明                | 示例                        |
-| --------------------------------- | ----------------- | ------------------------- |
-| `@ConditionalOnClass`             | 类路径存在指定类时生效       | 有 DataSource 类时配置数据源      |
-| `@ConditionalOnMissingClass`      | 类路径不存在指定类时生效      |                           |
-| `@ConditionalOnBean`              | 容器中存在指定 Bean 时生效  |                           |
-| `@ConditionalOnMissingBean`       | 容器中不存在指定 Bean 时生效 | 用户未自定义时使用默认配置             |
-| `@ConditionalOnProperty`          | 配置属性满足条件时生效       | `spring.xxx.enabled=true` |
-| `@ConditionalOnWebApplication`    | Web 应用时生效         |                           |
-| `@ConditionalOnNotWebApplication` | 非 Web 应用时生效       |                           |
+| 注解                              | 说明                         | 示例                         |
+| --------------------------------- | ---------------------------- | ---------------------------- |
+| `@ConditionalOnClass`             | 类路径存在指定类时生效       | 有 DataSource 类时配置数据源 |
+| `@ConditionalOnMissingClass`      | 类路径不存在指定类时生效     |                              |
+| `@ConditionalOnBean`              | 容器中存在指定 Bean 时生效   |                              |
+| `@ConditionalOnMissingBean`       | 容器中不存在指定 Bean 时生效 | 用户未自定义时使用默认配置   |
+| `@ConditionalOnProperty`          | 配置属性满足条件时生效       | `spring.xxx.enabled=true`    |
+| `@ConditionalOnWebApplication`    | Web 应用时生效               |                              |
+| `@ConditionalOnNotWebApplication` | 非 Web 应用时生效            |                              |
 
 #### 自动配置示例
 
@@ -1062,94 +1155,7 @@ debug: true
 
 ***
 
-### 4.4 Bean 生命周期
-
-    1. 实例化（Instantiation）
-       - 调用构造函数创建对象
-          ↓
-    2. 属性注入（Populate Properties）
-       - @Autowired、@Value 等注入
-          ↓
-    3. Aware 接口回调
-       - BeanNameAware、BeanFactoryAware、ApplicationContextAware
-          ↓
-    4. BeanPostProcessor.postProcessBeforeInitialization()
-       - 初始化前置处理
-          ↓
-    5. @PostConstruct 方法
-       - JSR-250 标准注解
-          ↓
-    6. InitializingBean.afterPropertiesSet()
-       - Spring 接口方法
-          ↓
-    7. 自定义 init-method
-       - @Bean(initMethod = "init")
-          ↓
-    8. BeanPostProcessor.postProcessAfterInitialization()
-       - 初始化后置处理（AOP 代理在此生成）
-          ↓
-    9. Bean 就绪，可以使用
-          ↓
-       ────────── 容器关闭时 ──────────
-          ↓
-    10. @PreDestroy 方法
-       - JSR-250 标准注解
-          ↓
-    11. DisposableBean.destroy()
-       - Spring 接口方法
-          ↓
-    12. 自定义 destroy-method
-       - @Bean(destroyMethod = "cleanup")
-
-**示例：**
-
-```java
-@Component
-@Slf4j
-public class MyBean implements InitializingBean, DisposableBean, BeanNameAware {
-
-    private String beanName;
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-        log.info("0. BeanNameAware.setBeanName: {}", name);
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        log.info("1. @PostConstruct 执行");
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        log.info("2. InitializingBean.afterPropertiesSet 执行");
-    }
-
-    @PreDestroy
-    public void preDestroy() {
-        log.info("3. @PreDestroy 执行");
-    }
-
-    @Override
-    public void destroy() {
-        log.info("4. DisposableBean.destroy 执行");
-    }
-}
-```
-
-**输出顺序：**
-
-    0. BeanNameAware.setBeanName: myBean
-    1. @PostConstruct 执行
-    2. InitializingBean.afterPropertiesSet 执行
-    ... 应用运行中 ...
-    3. @PreDestroy 执行
-    4. DisposableBean.destroy 执行
-
-***
-
-### 4.5 启动时执行任务
+### 4.4 启动时执行任务
 
 Spring Boot 提供了多种方式在应用启动完成后执行初始化任务：
 
@@ -1231,10 +1237,10 @@ public class MyService {
 
 #### 适用场景
 
-| 方式                      | 适用场景              |
-| ----------------------- | ----------------- |
-| `@PostConstruct`        | 单个 Bean 的初始化      |
-| `CommandLineRunner`     | 需要命令行参数的初始化任务     |
+| 方式                    | 适用场景                     |
+| ----------------------- | ---------------------------- |
+| `@PostConstruct`        | 单个 Bean 的初始化           |
+| `CommandLineRunner`     | 需要命令行参数的初始化任务   |
 | `ApplicationRunner`     | 需要解析复杂命令行参数       |
 | `ApplicationReadyEvent` | 确保所有 Bean 都已就绪后执行 |
 
@@ -1244,56 +1250,56 @@ public class MyService {
 
 ### 启动与配置注解
 
-| 注解                         | 说明                        |
-| -------------------------- | ------------------------- |
-| `@SpringBootApplication`   | 启动类注解，组合了配置、自动配置、组件扫描     |
-| `@SpringBootConfiguration` | 标识配置类（等同于 @Configuration） |
-| `@EnableAutoConfiguration` | 开启自动配置                    |
-| `@ComponentScan`           | 组件扫描                      |
-| `@Configuration`           | 声明配置类，支持 @Bean 方法定义       |
-| `@Import`                  | 导入其他配置类                   |
-| `@ImportResource`          | 导入 XML 配置文件               |
+| 注解                       | 说明                                       |
+| -------------------------- | ------------------------------------------ |
+| `@SpringBootApplication`   | 启动类注解，组合了配置、自动配置、组件扫描 |
+| `@SpringBootConfiguration` | 标识配置类（等同于 @Configuration）        |
+| `@EnableAutoConfiguration` | 开启自动配置                               |
+| `@ComponentScan`           | 组件扫描                                   |
+| `@Configuration`           | 声明配置类，支持 @Bean 方法定义            |
+| `@Import`                  | 导入其他配置类                             |
+| `@ImportResource`          | 导入 XML 配置文件                          |
 
 ### Bean 声明注解
 
-| 注解            | 说明            |
-| ------------- | ------------- |
-| `@Component`  | 通用组件          |
-| `@Service`    | 业务层组件         |
-| `@Controller` | 控制器组件         |
-| `@Repository` | 数据层组件         |
+| 注解          | 说明                 |
+| ------------- | -------------------- |
+| `@Component`  | 通用组件             |
+| `@Service`    | 业务层组件           |
+| `@Controller` | 控制器组件           |
+| `@Repository` | 数据层组件           |
 | `@Bean`       | 在配置类中声明 Bean  |
-| `@Scope`      | 指定 Bean 作用域   |
-| `@Primary`    | 设置首选 Bean     |
-| `@Lazy`       | 延迟初始化 Bean    |
+| `@Scope`      | 指定 Bean 作用域     |
+| `@Primary`    | 设置首选 Bean        |
+| `@Lazy`       | 延迟初始化 Bean      |
 | `@DependsOn`  | 指定 Bean 的依赖顺序 |
 
 ### 依赖注入注解
 
-| 注解                         | 说明                       |
-| -------------------------- | ------------------------ |
-| `@Autowired`               | 按类型自动注入                  |
+| 注解                       | 说明                           |
+| -------------------------- | ------------------------------ |
+| `@Autowired`               | 按类型自动注入                 |
 | `@Qualifier`               | 配合 @Autowired 指定 Bean 名称 |
-| `@Resource`                | 按名称注入（JDK 标准）            |
-| `@Value`                   | 注入配置值                    |
-| `@ConfigurationProperties` | 批量绑定配置属性                 |
+| `@Resource`                | 按名称注入（JDK 标准）         |
+| `@Value`                   | 注入配置值                     |
+| `@ConfigurationProperties` | 批量绑定配置属性               |
 
 ### 生命周期注解
 
-| 注解               | 说明          |
-| ---------------- | ----------- |
+| 注解             | 说明              |
+| ---------------- | ----------------- |
 | `@PostConstruct` | Bean 初始化后执行 |
-| `@PreDestroy`    | Bean 销毁前执行  |
+| `@PreDestroy`    | Bean 销毁前执行   |
 | `@Order`         | 指定执行顺序      |
 
 ### 条件注解
 
-| 注解                             | 说明                |
-| ------------------------------ | ----------------- |
+| 注解                           | 说明                         |
+| ------------------------------ | ---------------------------- |
 | `@ConditionalOnClass`          | 类路径存在指定类时生效       |
-| `@ConditionalOnMissingClass`   | 类路径不存在指定类时生效      |
-| `@ConditionalOnBean`           | 容器中存在指定 Bean 时生效  |
+| `@ConditionalOnMissingClass`   | 类路径不存在指定类时生效     |
+| `@ConditionalOnBean`           | 容器中存在指定 Bean 时生效   |
 | `@ConditionalOnMissingBean`    | 容器中不存在指定 Bean 时生效 |
 | `@ConditionalOnProperty`       | 配置属性满足条件时生效       |
-| `@ConditionalOnWebApplication` | Web 应用时生效         |
+| `@ConditionalOnWebApplication` | Web 应用时生效               |
 
