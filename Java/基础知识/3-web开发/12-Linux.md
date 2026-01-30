@@ -430,12 +430,26 @@ sudo apt install nginx
 # 卸载软件
 sudo apt remove nginx           # 保留配置
 sudo apt purge nginx            # 删除配置
+sudo apt autoremove             # 清理不再需要的依赖包
 
 # 搜索软件
 apt search keyword
 
 # 查看已安装
 apt list --installed
+
+# 查看软件包信息
+apt show nginx
+```
+
+**安装前清理旧版本的场景**：
+
+当从第三方源安装软件时（如 Docker CE、Node.js），通常需要先卸载系统源中的旧版本，避免冲突：
+
+```bash
+# 示例：安装 Docker CE 前清理旧版
+sudo apt remove docker docker-engine docker.io containerd runc
+sudo apt autoremove
 ```
 
 ### 3.3 yum/dnf（CentOS/RHEL）
@@ -450,12 +464,23 @@ sudo yum update
 
 # 卸载软件
 sudo yum remove nginx
+sudo yum autoremove             # 清理不再需要的依赖包
 
 # 搜索软件
 yum search keyword
 
 # 查看已安装
 yum list installed
+
+# 查看软件包信息
+yum info nginx
+```
+
+**安装前清理旧版本的场景**：
+
+```bash
+# 示例：安装 Docker CE 前清理旧版
+sudo yum remove docker docker-client docker-common docker-engine
 ```
 
 ### 3.4 手动安装（二进制包）
