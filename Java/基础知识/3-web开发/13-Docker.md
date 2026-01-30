@@ -83,11 +83,11 @@ Docker 采用 **C/S 架构**：
 
 ## 二、Docker 安装
 
-### 2.1 卸载旧版本（重要）
+### 2.1 卸载旧版本（升级/重装时执行）
 
-在安装 Docker CE（官方版本）之前，**必须先卸载系统中可能存在的旧版本**，否则可能导致冲突或版本混乱。
+**首次安装可跳过本步**。从旧版 Docker 或第三方包升级到 Docker CE 时，建议先卸载旧版本，避免冲突。
 
-旧版 Docker 可能的包名：`docker`、`docker-engine`、`docker.io`、`containerd`、`runc`
+旧版可能出现的包名：`docker`、`docker-engine`、`docker.io`、`containerd`、`runc`
 
 #### Ubuntu / Debian
 
@@ -119,31 +119,37 @@ sudo yum remove docker \
 
 ### 2.2 在 Linux 上安装
 
-#### Ubuntu / Debian
+#### Ubuntu / Debian（当前官方推荐步骤）
 
 ```bash
-# 1. 更新软件包
+# 1. 更新并安装依赖
 sudo apt update
+sudo apt install -y ca-certificates curl gnupg
 
-# 2. 安装依赖
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+# 2. 添加 Docker 官方 GPG 密钥（使用 /etc/apt/keyrings）
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# 3. 添加 Docker 官方 GPG 密钥
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# 3. 添加 Docker 软件源（Ubuntu 用 ubuntu，Debian 改为 debian）
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# 4. 添加 Docker 软件源
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# 5. 安装 Docker
+# 4. 安装 Docker（含 buildx、compose 插件）
 sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# 6. 验证安装
-docker --version
-sudo docker run hello-world
+# 5. 启动并设置开机自启
+sudo systemctl enable --now docker
+
+# 6. 验证
+docker version
+docker run --rm hello-world
+docker compose version
 ```
 
-#### CentOS / RHEL
+> 若出现 `permission denied ... docker.sock`，执行 2.3 节「配置非 root 用户」后再验证。
+
+#### CentOS / RHEL / Rocky / Alma
 
 ```bash
 # 1. 安装依赖
@@ -152,69 +158,56 @@ sudo yum install -y yum-utils
 # 2. 添加 Docker 软件源
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-# 3. 安装 Docker
-sudo yum install -y docker-ce docker-ce-cli containerd.io
+# 3. 安装 Docker（含 buildx、compose 插件）
+sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# 4. 启动 Docker
-sudo systemctl start docker
-sudo systemctl enable docker
+# 4. 启动并设置开机自启
+sudo systemctl enable --now docker
 
 # 5. 验证
-docker --version
-sudo docker run hello-world
+docker version
+docker run --rm hello-world
+docker compose version
 ```
 
 ### 2.3 配置非 root 用户使用 Docker
 
-默认情况下，只有 root 用户可以运行 Docker 命令：
+默认只有 root 能访问 Docker 守护进程，普通用户会报 `permission denied ... docker.sock`。将当前用户加入 `docker` 组即可：
 
 ```bash
-# 创建 docker 用户组（通常已存在）
-sudo groupadd docker
-
-# 将当前用户添加到 docker 组
+# 将当前用户加入 docker 组（安装时已创建该组）
 sudo usermod -aG docker $USER
 
-# 重新登录或执行以下命令使更改生效
+# 使组生效：执行下面命令，或退出终端重新登录
 newgrp docker
 
-# 验证（不需要 sudo）
-docker run hello-world
+# 验证（无需 sudo）
+docker run --rm hello-world
 ```
 
-### 2.4 配置镜像加速
+> 若仍报权限错误，可执行 `groups` 确认是否含 `docker`；SSH 用户需重新登录后生效。
 
-国内访问 Docker Hub 较慢，可以配置镜像加速器：
+### 2.4 配置镜像加速（国内网络推荐）
+
+国内直连 Docker Hub 易超时，可配置镜像加速器：
 
 ```bash
-# 创建或编辑 Docker 配置文件
 sudo mkdir -p /etc/docker
-sudo nano /etc/docker/daemon.json
-```
-
-添加以下内容（以阿里云为例，需替换为自己的加速地址）：
-
-```json
+sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
 {
   "registry-mirrors": [
-    "https://xxxxx.mirror.aliyuncs.com",
-    "https://docker.mirrors.ustc.edu.cn",
-    "https://hub-mirror.c.163.com"
+    "https://docker.m.daocloud.io"
   ]
 }
-```
+EOF
 
-重启 Docker 使配置生效：
-
-```bash
 sudo systemctl daemon-reload
 sudo systemctl restart docker
-
-# 验证配置
-docker info | grep -A 5 "Registry Mirrors"
 ```
 
-### 2.4 Docker Desktop（Mac/Windows）
+可选镜像源（部分需自行注册获取地址）：阿里云容器镜像服务、DaoCloud、USTC、网易等。验证：`docker info | grep -A 5 "Registry Mirrors"`。
+
+### 2.5 Docker Desktop（Mac/Windows）
 
 Mac 和 Windows 用户可以安装 Docker Desktop：
 
@@ -789,26 +782,24 @@ Docker Compose 是一个定义和运行多容器 Docker 应用的工具。通过
 
 ### 8.2 安装 Docker Compose
 
-Docker Desktop 已包含 Docker Compose。Linux 需要单独安装：
+- **Docker Desktop（Mac/Windows）**：已内置。
+- **Linux 按 2.2 节从官方源安装**：已包含 `docker-compose-plugin`，直接使用 `docker compose`（有空格，V2 插件）即可，无需单独安装。
+- **未装插件时**：可单独安装 standalone 版 `docker-compose`（旧写法，命令带连字符）：
 
 ```bash
-# 下载 Docker Compose（v2 版本）
+# 仅当未安装 docker-compose-plugin 时可选
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-
-# 添加执行权限
 sudo chmod +x /usr/local/bin/docker-compose
-
-# 验证
 docker-compose --version
-
-# 或使用 Docker Compose V2 插件（推荐）
-docker compose version
 ```
+
+推荐使用 **V2 插件**：`docker compose version` / `docker compose up -d`。
 
 ### 8.3 docker-compose.yml 语法
 
 ```yaml
-version: '3.8'   # Compose 文件版本
+# version 在 Compose V2 中可选，可省略
+version: '3.8'
 
 services:        # 服务定义
   service-name:  # 服务名称
@@ -944,38 +935,40 @@ volumes:
 
 ### 8.5 Docker Compose 命令
 
+以下以 **V2 插件** `docker compose` 为例（若使用 standalone 则改为 `docker-compose`）：
+
 ```bash
 # 启动所有服务（后台）
-docker-compose up -d
+docker compose up -d
 
 # 启动并重新构建
-docker-compose up -d --build
+docker compose up -d --build
 
 # 查看服务状态
-docker-compose ps
+docker compose ps
 
 # 查看日志
-docker-compose logs
-docker-compose logs -f          # 实时跟踪
-docker-compose logs app         # 指定服务
+docker compose logs
+docker compose logs -f          # 实时跟踪
+docker compose logs app        # 指定服务
 
 # 停止服务
-docker-compose stop
+docker compose stop
 
 # 停止并删除容器、网络
-docker-compose down
+docker compose down
 
 # 停止并删除容器、网络、数据卷
-docker-compose down -v
+docker compose down -v
 
 # 重启服务
-docker-compose restart
+docker compose restart
 
 # 进入服务容器
-docker-compose exec app bash
+docker compose exec app bash
 
 # 查看服务配置
-docker-compose config
+docker compose config
 ```
 
 ***
@@ -1109,20 +1102,20 @@ scp -r project/ user@server:/home/user/
 cd /home/user/project
 
 # 3. 构建并启动
-docker-compose up -d --build
+docker compose up -d --build
 
 # 4. 查看状态
-docker-compose ps
+docker compose ps
 
 # 5. 查看日志
-docker-compose logs -f app
+docker compose logs -f app
 
 # 6. 访问应用
 curl http://localhost:8080
 
 # 7. 更新部署
-docker-compose down
-docker-compose up -d --build
+docker compose down
+docker compose up -d --build
 ```
 
 ***
@@ -1170,15 +1163,17 @@ docker-compose up -d --build
 
 ### 10.4 Docker Compose 命令
 
-| 命令                            | 说明         |
-| ------------------------------- | ------------ |
-| `docker-compose up -d`          | 启动所有服务 |
-| `docker-compose down`           | 停止并删除   |
-| `docker-compose ps`             | 查看服务状态 |
-| `docker-compose logs -f`        | 查看日志     |
-| `docker-compose exec 服务 bash` | 进入服务容器 |
-| `docker-compose restart`        | 重启服务     |
-| `docker-compose build`          | 构建服务     |
+推荐使用 **V2 插件**：`docker compose`（有空格）。旧版 standalone：`docker-compose`（连字符）。
+
+| 命令                             | 说明         |
+| -------------------------------- | ------------ |
+| `docker compose up -d`           | 启动所有服务 |
+| `docker compose down`            | 停止并删除   |
+| `docker compose ps`              | 查看服务状态 |
+| `docker compose logs -f`        | 查看日志     |
+| `docker compose exec 服务 bash`  | 进入服务容器 |
+| `docker compose restart`        | 重启服务     |
+| `docker compose build`           | 构建服务     |
 
 ### 10.5 清理命令
 

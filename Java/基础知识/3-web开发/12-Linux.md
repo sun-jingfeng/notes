@@ -55,9 +55,6 @@ Linux 采用树状目录结构，所有内容都从根目录 `/` 开始：
 # 基本语法
 ssh 用户名@服务器IP
 
-# 示例
-ssh 用户名@服务器IP
-
 # 指定端口（默认 22）
 ssh -p 2222 用户名@服务器IP
 
@@ -628,7 +625,7 @@ scp user@server:/remote/file local_path
 # 前台运行（关闭终端会停止）
 java -jar app.jar
 
-# 后台运行
+# 后台运行（推荐重定向到日志，便于排查）
 nohup java -jar app.jar > app.log 2>&1 &
 
 # 指定配置
@@ -769,7 +766,7 @@ sudo firewall-cmd --reload
 | **查找** | `find`、`grep`、`which`       | 查找文件/内容          |
 | **权限** | `chmod`、`chown`              | 修改权限/所有者        |
 | **进程** | `ps`、`top`、`kill`           | 查看/结束进程          |
-| **网络** | `ip addr`、`ping`、`curl`     | 网络信息/测试          |
+| **网络** | `ip addr`、`ping`、`curl`、`ss` | 网络信息/测试/端口     |
 | **系统** | `free`、`df`、`uname`         | 内存/磁盘/系统信息     |
 | **压缩** | `tar`、`zip`、`unzip`         | 打包/压缩/解压         |
 | **服务** | `systemctl`                   | 服务管理               |
