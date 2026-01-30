@@ -86,7 +86,7 @@ Docker 采用 **C/S 架构**：
 
 ### 2.1 卸载旧版本（升级/重装时执行）
 
-**首次安装可跳过本步**。从旧版 Docker 或第三方包升级到 Docker CE 时，建议先卸载旧版本，避免冲突。
+升级或重装时执行；首次安装可跳过。从旧版或第三方包升级时，先卸载旧版本以避免冲突。
 
 旧版可能出现的包名：`docker`、`docker-engine`、`docker.io`、`containerd`、`runc`
 
@@ -114,13 +114,13 @@ sudo yum remove docker \
                 docker-engine
 ```
 
-> **说明**：旧版 Docker 的数据（镜像、容器、卷）保存在 `/var/lib/docker/`，卸载时不会删除。如需全新安装，可手动删除该目录。
+旧版数据（镜像、容器、卷）位于 `/var/lib/docker/`，卸载不删除；全新安装时可手动删除该目录。
 
 ***
 
 ### 2.2 在 Linux 上安装
 
-#### Ubuntu / Debian（当前官方推荐步骤）
+#### Ubuntu / Debian
 
 ```bash
 # 1. 更新并安装依赖
@@ -148,7 +148,7 @@ docker run --rm hello-world
 docker compose version
 ```
 
-> 若出现 `permission denied ... docker.sock`，执行 2.3 节「配置非 root 用户」后再验证。
+出现 `permission denied ... docker.sock` 时，需将当前用户加入 docker 组后重试。
 
 #### CentOS / RHEL / Rocky / Alma
 
@@ -186,9 +186,9 @@ newgrp docker
 docker run --rm hello-world
 ```
 
-> 若仍报权限错误，可执行 `groups` 确认是否含 `docker`；SSH 用户需重新登录后生效。
+权限仍异常时，执行 `groups` 确认是否含 `docker`；SSH 会话需重新登录后生效。
 
-### 2.4 配置镜像加速（国内网络推荐）
+### 2.4 配置镜像加速
 
 国内直连 Docker Hub 易超时，可配置镜像加速器：
 
@@ -206,7 +206,8 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
-可选镜像源（部分需自行注册获取地址）：阿里云容器镜像服务、DaoCloud、USTC、网易等。验证：`docker info | grep -A 5 "Registry Mirrors"`。
+可选镜像源（部分需注册）：阿里云、DaoCloud、USTC、网易等。验证：`docker info | grep -A 5 "Registry Mirrors"`。  
+此处「镜像」指镜像源（registry mirror），与镜像（image）含义不同。
 
 ### 2.5 Docker Desktop（Mac/Windows）
 
@@ -220,9 +221,21 @@ Mac 和 Windows 用户可以安装 Docker Desktop：
 
 ## 三、Docker 镜像
 
-### 3.1 镜像基本操作
+### 3.1 镜像层
 
-`pull` 从仓库拉取；`search` 在仓库中搜索；`images` 列出本地镜像；`inspect` 查看详情；`history` 查看构建层；`rmi` 删除；`prune` 清理未使用。
+镜像由**多层只读层**组成，每一层对应一次文件系统变更（如安装包、复制文件）。Docker 使用**联合文件系统（UnionFS）**把这些层叠在一起，形成容器看到的完整根目录；容器运行时在其上增加一个可写层，修改不会写回镜像。
+
+**层带来的影响：**
+
+- **共享与复用**：相同层在不同镜像/容器间只存一份，拉取或启动时复用，节省空间和时间。
+- **构建缓存**：Dockerfile 每条指令（如 `RUN`、`COPY`）通常产生一层；再次构建时，若某层及之前内容未变，会直接使用缓存，否则从该层起重新执行。因此把不常变的指令（如 `COPY 依赖文件`）放前面、常变的（如 `COPY 源码`）放后面，能更好利用缓存。
+- **镜像体积**：层数多、每层写得多，镜像就大；合并 `RUN`、多阶段构建等可减少层数或每层内容，从而减小最终镜像。
+
+查看某镜像由哪些层组成：`docker history 镜像名或ID`。
+
+### 3.2 镜像基本操作
+
+`pull` 从仓库拉取；`search` 在仓库中搜索；`images` 列出本地镜像；`inspect` 查看详情；`history` 查看各层；`rmi` 删除；`prune` 清理未使用。
 
 ```bash
 # 搜索镜像
@@ -239,7 +252,7 @@ docker image ls
 # 查看镜像详细信息
 docker inspect nginx
 
-# 查看镜像历史（构建层）
+# 查看镜像各层（对应 Dockerfile 指令与缓存）
 docker history nginx
 
 # 删除镜像
@@ -252,7 +265,7 @@ docker image prune
 docker image prune -a           # 删除所有未被容器使用的镜像
 ```
 
-### 3.2 镜像命名规范
+### 3.3 镜像命名规范
 
 镜像的完整名称格式：
 
@@ -269,7 +282,7 @@ docker image prune -a           # 删除所有未被容器使用的镜像
 | `mysql:8.0`                                    | MySQL 8.0 版本                   |
 | `registry.cn-hangzhou.aliyuncs.com/xxx/app:v1` | 阿里云镜像仓库                   |
 
-### 3.3 镜像导入导出
+### 3.4 镜像导入导出
 
 ```bash
 # 导出镜像为文件
@@ -284,7 +297,7 @@ docker load < nginx.tar
 docker images
 ```
 
-### 3.4 常用官方镜像
+### 3.5 常用官方镜像
 
 | 镜像名称  | 说明                        | 常用标签                   |
 | --------- | --------------------------- | -------------------------- |
@@ -297,7 +310,7 @@ docker images
 | `ubuntu`  | Ubuntu 基础镜像             | `22.04`, `20.04`           |
 | `alpine`  | 超轻量 Linux 镜像（约 5MB） | `3.19`, `latest`           |
 
-> **提示**：带 `alpine` 标签的镜像基于 Alpine Linux，体积更小，适合生产环境。
+`alpine` 标签基于 Alpine Linux，镜像体积更小，适用于生产环境。
 
 ***
 
@@ -337,15 +350,15 @@ docker run -d -p 80:80 -p 443:443 nginx
 # 环境变量（-e）
 docker run -d -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0
 
-# 数据卷挂载（-v 宿主机路径:容器路径）
-docker run -d -v /data/nginx:/usr/share/nginx/html nginx
+# 数据卷挂载（-v 宿主机路径:容器路径；Linux 宿主机常规用 /srv/服务名）
+docker run -d -v /srv/nginx:/usr/share/nginx/html nginx
 
 # 综合示例：运行 MySQL
 docker run -d \
   --name mysql \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=123456 \
-  -v /data/mysql:/var/lib/mysql \
+  -v /srv/mysql:/var/lib/mysql \
   mysql:8.0
 ```
 
@@ -397,7 +410,7 @@ docker unpause 容器名或ID
 ### 4.5 进入容器
 
 ```bash
-# 进入运行中的容器（推荐使用 exec）
+# 进入运行中的容器（exec）
 docker exec -it 容器名或ID bash
 docker exec -it 容器名或ID /bin/sh   # Alpine 等没有 bash 的镜像
 
@@ -429,7 +442,7 @@ docker container prune
 docker rm -f $(docker ps -aq)
 ```
 
-### 4.7 容器与宿主机文件传输
+### 4.7 容器与 Linux 宿主机文件传输
 
 ```bash
 # 从容器复制到宿主机
@@ -455,7 +468,7 @@ docker run -d --restart=on-failure:3 nginx    # 失败时最多重启 3 次
 docker update --restart=always 容器名或ID
 ```
 
-重启策略说明：
+重启策略：
 
 | 策略             | 说明                             |
 | ---------------- | -------------------------------- |
@@ -471,6 +484,8 @@ docker update --restart=always 容器名或ID
 ### 5.1 什么是 Dockerfile
 
 Dockerfile 是一个文本文件，包含构建 Docker 镜像的所有指令。通过 `docker build` 命令可以根据 Dockerfile 构建自定义镜像。
+
+**基础镜像**：Dockerfile 的第一条指令必须是 `FROM`，用于指定**基础镜像**。基础镜像即当前镜像所基于的底层镜像，通常已包含操作系统和运行时（如 openjdk、node、nginx）；后续的 `RUN`、`COPY` 等指令在其上叠加新层，形成最终镜像。选好基础镜像（官方、带版本标签、体积合适）是构建的起点。
 
 ### 5.2 常用指令
 
@@ -514,7 +529,7 @@ EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
 ```
 
-#### 多阶段构建（推荐）
+#### 多阶段构建
 
 ```dockerfile
 # 第一阶段：构建
@@ -532,7 +547,7 @@ EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
 ```
 
-> **多阶段构建的优势**：最终镜像不包含构建工具（Maven、源码等），体积更小。
+多阶段构建使最终镜像不包含构建工具（Maven、源码等），体积更小。
 
 #### Node.js 应用
 
@@ -550,7 +565,7 @@ CMD ["node", "server.js"]
 
 ```dockerfile
 FROM nginx:alpine
-COPY dist/ /usr/share/nginx/html/
+COPY <静态资源目录>/ /usr/share/nginx/html/   # 如 dist、build 等
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
@@ -582,12 +597,12 @@ docker images | grep myapp
 3. **合并 RUN 指令**：减少镜像层数
 
 ```dockerfile
-# 不推荐
+# 不推荐：多层 RUN
 RUN apt update
 RUN apt install -y vim
 RUN apt install -y curl
 
-# 推荐
+# 推荐：合并并清理
 RUN apt update && apt install -y \
     vim \
     curl \
@@ -630,7 +645,7 @@ USER appuser
 | 类型           | 说明                               | 示例                            |
 | -------------- | ---------------------------------- | ------------------------------- |
 | **命名卷**     | 由 Docker 管理，存储在 Docker 目录 | `-v mydata:/app/data`           |
-| **绑定挂载**   | 挂载宿主机指定路径                 | `-v /host/path:/container/path` |
+| **绑定挂载**   | 挂载 Linux 宿主机指定路径（常规用 /srv/服务名） | `-v /srv/mysql:/var/lib/mysql` |
 | **tmpfs 挂载** | 存储在内存中，容器停止后消失       | `--tmpfs /app/cache`            |
 
 ### 6.3 数据卷操作
@@ -658,51 +673,109 @@ docker volume prune
 # 使用命名卷
 docker run -d -v mydata:/var/lib/mysql mysql:8.0
 
-# 使用绑定挂载
-docker run -d -v /data/mysql:/var/lib/mysql mysql:8.0
+# 使用绑定挂载（宿主机常规用 /srv/服务名）
+docker run -d -v /srv/mysql:/var/lib/mysql mysql:8.0
 
-# 只读挂载
-docker run -d -v /config/nginx.conf:/etc/nginx/nginx.conf:ro nginx
+# 只读挂载（配置可放 /srv/nginx 或 /etc）
+docker run -d -v /srv/nginx/nginx.conf:/etc/nginx/nginx.conf:ro nginx
 
-# 多个数据卷
+# 多个数据卷（数据用 /srv，日志用 /var/log）
 docker run -d \
-  -v /data/mysql:/var/lib/mysql \
-  -v /logs/mysql:/var/log/mysql \
+  -v /srv/mysql:/var/lib/mysql \
+  -v /var/log/mysql:/var/log/mysql \
   mysql:8.0
 ```
 
 ### 6.5 数据卷示例
 
-#### MySQL 数据持久化
+Nginx、MySQL 挂载示例如下；Redis 等在段末简述。以下宿主机路径为 **Linux 常规做法**：服务数据放 `/srv/服务名`，需先创建目录（`/srv` 通常需 root，故用 `sudo mkdir`）。
+
+---
+
+#### MySQL 挂载示例
+
+**挂载项**：数据目录（必）、配置文件（可选）、初始化脚本（可选）。
+
+| 挂载项     | 容器内路径                        | 说明                         |
+| ---------- | --------------------------------- | ---------------------------- |
+| 数据目录   | `/var/lib/mysql`                  | 必挂，否则容器删除后数据丢失 |
+| 配置文件   | `/etc/mysql/conf.d/` 或自定义路径 | 可选，自定义 my.cnf 等       |
+| 初始化脚本 | `/docker-entrypoint-initdb.d/`    | 可选，容器首次启动时执行 SQL |
+
+**宿主机目录（Linux）**：`/srv/mysql/data`、`/srv/mysql/conf`、`/srv/mysql/init`。
+
+**示例（绑定挂载）**：
 
 ```bash
-# 创建数据卷
-docker volume create mysql-data
+sudo mkdir -p /srv/mysql/data /srv/mysql/conf /srv/mysql/init
 
-# 运行 MySQL
 docker run -d \
   --name mysql \
   -p 3306:3306 \
-  -e MYSQL_ROOT_PASSWORD=123456 \
-  -v mysql-data:/var/lib/mysql \
+  -e MYSQL_ROOT_PASSWORD=密码 \
+  -e MYSQL_DATABASE=mydb \
+  -v /srv/mysql/data:/var/lib/mysql \
+  -v /srv/mysql/conf:/etc/mysql/conf.d \
+  -v /srv/mysql/init:/docker-entrypoint-initdb.d \
+  --restart unless-stopped \
   mysql:8.0
 ```
 
-#### Nginx 配置挂载
+`MYSQL_ROOT_PASSWORD` 必设。`/docker-entrypoint-initdb.d` 下 `.sql`、`.sh` 仅首次启动时执行。字符集可通过 `command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci` 指定。
+
+---
+
+#### Nginx 挂载示例
+
+**挂载项**：网站根目录（静态资源）、配置目录（或单文件）。
+
+| 挂载项     | 容器内路径              | 说明                 |
+| ---------- | ----------------------- | -------------------- |
+| 网站根目录 | `/usr/share/nginx/html` | 前端/静态资源        |
+| 配置       | `/etc/nginx/conf.d/`    | 挂载目录，放置 .conf 文件 |
+
+**宿主机目录（Linux）**：`/srv/nginx/html`、`/srv/nginx/conf.d`。
+
+**示例（绑定挂载）**：
 
 ```bash
-# 创建本地配置目录
-mkdir -p /data/nginx/conf.d
-mkdir -p /data/nginx/html
+sudo mkdir -p /srv/nginx/html /srv/nginx/conf.d
+```
 
-# 运行 Nginx
+在宿主机 `/srv/nginx/conf.d/default.conf` 新建配置（挂载会覆盖镜像内 conf.d，至少需一个 server 块）：
+
+```nginx
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+再启动容器：
+
+```bash
 docker run -d \
   --name nginx \
   -p 80:80 \
-  -v /data/nginx/conf.d:/etc/nginx/conf.d \
-  -v /data/nginx/html:/usr/share/nginx/html \
-  nginx
+  -v /srv/nginx/html:/usr/share/nginx/html:ro \
+  -v /srv/nginx/conf.d:/etc/nginx/conf.d:ro \
+  --restart unless-stopped \
+  nginx:alpine
 ```
+
+挂载 `conf.d` 会覆盖镜像内该目录，宿主机需提供至少一个 `server` 配置；静态资源可使用 `:ro` 只读挂载。
+
+---
+
+#### 其他常用镜像简述
+
+- **Redis**：持久化时挂载数据目录即可，例如 `-v /srv/redis:/data`，可选 `command: redis-server --appendonly yes`。
+- **应用类镜像**（如 Node、OpenJDK）：挂载由 Dockerfile 或 compose 定义，按项目需求配置即可。
 
 ***
 
@@ -718,7 +791,7 @@ Docker 提供多种网络模式：
 | `host`      | 容器直接使用宿主机网络                 | 需要高性能网络 |
 | `none`      | 无网络                                 | 安全隔离       |
 | `container` | 共享另一个容器的网络                   | 紧密耦合的容器 |
-| 自定义网络  | 用户创建的 bridge 网络，支持容器名通信 | 推荐使用       |
+| 自定义网络  | 用户创建的 bridge 网络，支持容器名通信 | 多数场景       |
 
 ### 7.2 网络操作
 
@@ -789,7 +862,7 @@ Docker Compose 是一个定义和运行多容器 Docker 应用的工具。通过
 ### 8.2 安装 Docker Compose
 
 - **Docker Desktop（Mac/Windows）**：已内置。
-- **Linux 按 2.2 节从官方源安装**：已包含 `docker-compose-plugin`，直接使用 `docker compose`（有空格，V2 插件）即可，无需单独安装。
+- **Linux 从官方源安装 Docker 时**：已包含 `docker-compose-plugin`，直接使用 `docker compose`（有空格，V2 插件）即可，无需单独安装。
 - **未装插件时**：可单独安装 standalone 版 `docker-compose`（旧写法，命令带连字符）：
 
 ```bash
@@ -799,7 +872,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-推荐使用 **V2 插件**：`docker compose version` / `docker compose up -d`。
+V2 插件：`docker compose version` / `docker compose up -d`。
 
 ### 8.3 docker-compose.yml 语法
 
@@ -904,7 +977,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./frontend/dist:/usr/share/nginx/html
+      - ./frontend/<静态资源目录>:/usr/share/nginx/html   # 如 dist、build
     depends_on:
       - backend
     networks:
@@ -983,7 +1056,7 @@ docker compose config
 
 ### 9.1 准备工作
 
-项目结构：
+项目结构（本地目录名可为 `project`；部署到 Linux 时建议放在 `/srv/app`）：
 
 ```
 project/
@@ -1100,12 +1173,14 @@ volumes:
 
 ### 9.4 部署步骤
 
+Linux 上建议将项目放在 `/srv/app`。先在服务器上创建目录并交给部署用户：`sudo mkdir -p /srv/app`，`sudo chown 用户名:用户名 /srv/app`。
+
 ```bash
-# 1. 上传项目到服务器
-scp -r project/ user@server:/home/user/
+# 1. 上传项目到服务器（将 project 目录内容上传到 /srv/app）
+scp -r project/. 用户名@服务器IP:/srv/app/
 
 # 2. 进入项目目录
-cd /home/user/project
+cd /srv/app
 
 # 3. 构建并启动
 docker compose up -d --build
@@ -1126,23 +1201,103 @@ docker compose up -d --build
 
 ***
 
-## 十、常用命令速查表
+## 十、实战：Linux 虚拟机 Docker Nginx 部署前后端
 
-以下为命令与常用参数速查；具体语法与更多选项可用 `docker 命令 --help` 或 `docker 子命令 --help` 查看。
+**前提**：Linux 已安装 Docker、可 SSH 传文件；前端已打包为静态资源目录，后端已有 Java 应用镜像；MySQL、Nginx 已创建并运行（数据与配置已挂载）。多个 Java 应用可共用同一 MySQL，用不同库名区分。
 
-### 10.1 镜像命令
+**目标**：浏览器访问 `http://Linux的IP` 得前端页面，`/api` 由 Nginx 转发至后端。
 
-| 命令                           | 说明           |
-| ------------------------------ | -------------- |
-| `docker images`                | 查看本地镜像   |
-| `docker pull 镜像名:标签`      | 拉取镜像       |
-| `docker rmi 镜像名`            | 删除镜像       |
-| `docker build -t 名称 .`       | 构建镜像       |
-| `docker save -o file.tar 镜像` | 导出镜像       |
-| `docker load -i file.tar`      | 导入镜像       |
-| `docker image prune`           | 清理未使用镜像 |
+---
 
-### 10.2 容器命令
+### 10.1 宿主机目录与 Nginx 配置
+
+宿主机目录：`/srv/app/frontend`（静态资源）、`/srv/app/nginx/conf.d`（Nginx 配置）。
+
+```bash
+sudo mkdir -p /srv/app/frontend /srv/app/nginx/conf.d
+```
+
+`/srv/app/nginx/conf.d/default.conf` 示例（`proxy_pass` 填后端容器名与端口，如 `http://tlias:8080`）：
+
+```nginx
+server {
+    listen       80;
+    server_name  localhost;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://tlias:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### 10.2 创建网络、接入 MySQL 与启动后端
+
+顺序：建网 → 将已有 MySQL 容器加入该网络 → 启动 Java 应用（同网）。多项目时在 MySQL 中为各项目建库，后端连接 `mysql:3306`、仅库名不同，容器名与宿主机端口按项目区分。
+
+**1. 创建网络**
+
+```bash
+docker network create app-net
+```
+
+**2. 将已有 MySQL 容器加入该网络**
+
+```bash
+docker network connect app-net <MySQL容器名>
+```
+
+**3. 多项目时在 MySQL 中建库**
+
+每个项目一个库：`docker exec -it mysql mysql -uroot -p -e "CREATE DATABASE 库名 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"`
+
+**4. 启动 Java 应用镜像**
+
+```bash
+docker run -d --name tlias --network app-net -p 8080:8080 tlias:1.0
+```
+
+应用内数据源：`jdbc:mysql://mysql:3306/tlias?useSSL=false&serverTimezone=Asia/Shanghai`。第二个项目：换容器名、宿主机端口与库名，如 `--name order -p 8081:8080`，连接串中库名改为 `order_system`。
+
+Nginx 未入该网络时：`docker network connect app-net nginx`。
+
+### 10.3 验证与访问
+
+访问 `http://Linux虚拟机IP` 可见前端，`/api/xxx` 经 Nginx 转发至后端。404/502 多为后端未运行、`proxy_pass` 容器名或端口错误、防火墙未放行 80/8080。
+
+### 10.4 日常维护
+
+改 Nginx 配置后执行 `docker exec nginx nginx -s reload`。更新前端：覆盖 `/srv/app/frontend/` 下文件。重建后端容器时保持与上述相同的网络、容器名、端口及数据源库名。
+
+***
+
+## 十一、常用命令速查表
+
+命令与常用参数速查；详细语法见 `docker 命令 --help` 或 `docker 子命令 --help`。
+
+### 11.1 镜像命令
+
+| 命令                           | 说明             |
+| ------------------------------ | ---------------- |
+| `docker images`                | 查看本地镜像     |
+| `docker pull 镜像名:标签`       | 拉取镜像         |
+| `docker rmi 镜像名`            | 删除镜像         |
+| `docker history 镜像`          | 查看镜像各层     |
+| `docker build -t 名称 .`       | 构建镜像         |
+| `docker save -o file.tar 镜像` | 导出镜像         |
+| `docker load -i file.tar`      | 导入镜像         |
+| `docker image prune`           | 清理未使用镜像   |
+
+### 11.2 容器命令
 
 | 命令                             | 说明             |
 | -------------------------------- | ---------------- |
@@ -1156,36 +1311,37 @@ docker compose up -d --build
 | `docker cp 源 目标`              | 文件复制         |
 | `docker inspect 容器`            | 查看容器详情     |
 
-### 10.3 常用参数
+### 11.3 常用参数
 
-多用于 `docker run` 或 docker-compose 中服务的配置：
+适用于 `docker run` 及 docker-compose 服务配置：
 
-| 参数                     | 说明         |
-| ------------------------ | ------------ |
-| `-d`                     | 后台运行     |
-| `-p 宿主机端口:容器端口` | 端口映射     |
-| `-v 宿主机路径:容器路径` | 数据卷挂载   |
-| `-e 变量=值`             | 设置环境变量 |
-| `--name 名称`            | 指定容器名称 |
-| `--network 网络名`       | 指定网络     |
-| `--restart always`       | 自动重启     |
-| `-it`                    | 交互式终端   |
+| 参数                     | 说明                                                   |
+| ------------------------ | ------------------------------------------------------ |
+| `-d`                     | 后台运行                                               |
+| `-p 宿主机端口:容器端口` | 端口映射                                               |
+| `-v 宿主机路径:容器路径` | 数据卷挂载                                             |
+| `-e 变量=值`             | 设置环境变量                                           |
+| `--name 名称`            | 指定容器名称                                           |
+| `--network 网络名`       | 指定网络                                               |
+| `--restart 策略`         | 自动重启                                               |
+| `--add-host 主机名:IP`   | 添加主机名解析（如 host.docker.internal:host-gateway） |
+| `-it`                    | 交互式终端                                             |
 
-### 10.4 Docker Compose 命令
+### 11.4 Docker Compose 命令
 
-推荐使用 **V2 插件**：`docker compose`（有空格）。旧版 standalone：`docker-compose`（连字符）。
+V2 插件：`docker compose`（有空格）；standalone：`docker-compose`（连字符）。
 
-| 命令                             | 说明         |
-| -------------------------------- | ------------ |
-| `docker compose up -d`           | 启动所有服务 |
-| `docker compose down`            | 停止并删除   |
-| `docker compose ps`              | 查看服务状态 |
+| 命令                            | 说明         |
+| ------------------------------- | ------------ |
+| `docker compose up -d`          | 启动所有服务 |
+| `docker compose down`           | 停止并删除   |
+| `docker compose ps`             | 查看服务状态 |
 | `docker compose logs -f`        | 查看日志     |
-| `docker compose exec 服务 bash`  | 进入服务容器 |
+| `docker compose exec 服务 bash` | 进入服务容器 |
 | `docker compose restart`        | 重启服务     |
-| `docker compose build`           | 构建服务     |
+| `docker compose build`          | 构建服务     |
 
-### 10.5 清理命令
+### 11.5 清理命令
 
 ```bash
 # 清理所有未使用的资源（镜像、容器、网络、数据卷）

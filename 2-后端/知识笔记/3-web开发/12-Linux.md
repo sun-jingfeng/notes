@@ -38,6 +38,7 @@ Linux 采用树状目录结构，所有内容都从根目录 `/` 开始：
 ├── lib         # 共享库文件
 ├── opt         # 第三方软件安装目录
 ├── root        # root 用户的家目录
+├── srv         # 本机提供的服务数据（如 /srv/mysql、/srv/nginx）
 ├── tmp         # 临时文件
 ├── usr         # 用户程序和数据
 │   ├── bin     # 用户命令
@@ -46,6 +47,8 @@ Linux 采用树状目录结构，所有内容都从根目录 `/` 开始：
 └── var         # 可变数据（日志、缓存、数据库等）
     └── log     # 系统日志
 ```
+
+常见但上表未列出的目录：`/proc`（进程与系统信息，虚拟文件系统）、`/run`（运行时数据）、`/mnt`（临时挂载点）、`/media`（可移动介质挂载）。不同发行版可能略有差异。
 
 ### 1.5 远程连接 Linux
 
@@ -179,6 +182,10 @@ mv file1 /path/to/      # 移动文件到指定目录
 rm file.txt             # 删除文件
 rm -r dirname           # 递归删除目录
 rm -rf dirname          # 强制递归删除（慎用！）
+
+# 软链接（常用，如指向当前版本目录）
+ln -s /path/to/target linkname    # 创建软链接
+ls -l linkname                    # 可看到指向目标
 ```
 
 > **警告**：`rm -rf /` 会删除整个系统，永远不要执行！
@@ -292,6 +299,19 @@ chown user:group file.txt        # 同时修改所有者和组
 chown -R user:group dirname      # 递归修改
 ```
 
+#### 2.6.3 用户与组（简要）
+
+```bash
+whoami                  # 当前用户名
+id                      # 当前用户 uid、gid、所属组
+id 用户名               # 指定用户信息
+groups                  # 当前用户所属组
+
+# 将用户加入组（需 root，常用于加入 docker 组以无 sudo 运行 Docker）
+sudo usermod -aG 组名 用户名
+# 修改后需重新登录或执行 newgrp 组名 才能生效
+```
+
 常见权限组合：
 
 | 数字 | 权限      | 常用场景                   |
@@ -381,9 +401,9 @@ unzip archive.zip -d /path/      # 解压到指定目录
 ```bash
 # 管道和重定向
 command1 | command2     # 管道：前一个命令的输出作为后一个的输入
-command > file          # 重定向：输出到文件（覆盖）
+command > file          # 重定向：标准输出到文件（覆盖）
 command >> file         # 追加到文件
-command 2>&1            # 错误输出也重定向
+command 2>&1            # 2 标准错误、1 标准输出；2>&1 表示错误也重定向到标准输出（常与 > file 合用）
 
 # 示例
 ps -ef | grep java      # 查找 Java 进程
@@ -595,7 +615,7 @@ systemctl list-units --type=service
 典型的 Java 项目部署流程：
 
 1. **准备环境**：安装 JDK、数据库、中间件等
-2. **上传项目**：将 jar/war 包上传到服务器
+2. **上传项目**：将 jar/war 包上传到服务器（宿主机目录建议用 `/srv/应用名`；若用 Docker 部署，宿主机挂载路径也建议 `/srv/服务名`）
 3. **配置项目**：修改配置文件（数据库连接、端口等）
 4. **启动项目**：运行 jar 或部署到 Tomcat
 5. **配置反向代理**：用 Nginx 代理，开放 80/443 端口
@@ -608,18 +628,23 @@ systemctl list-units --type=service
 scp local_file user@server:/remote/path
 scp -r local_dir user@server:/remote/path     # 目录
 
-# 示例
+# 示例（放用户家目录）
 scp target/app.jar 用户名@服务器IP:/home/用户名/
+
+# 示例（放 /srv/app 等目录时，需先在服务器上 sudo mkdir -p /srv/app 并 chown 给运行用户）
+scp target/app.jar 用户名@服务器IP:/srv/app/
 
 # 从服务器下载
 scp user@server:/remote/file local_path
 ```
 
-也可以用 SFTP 客户端（Royal TSX、FileZilla 等）图形化上传。
+也可以用 SFTP 客户端（Royal TSX、FileZilla 等）图形化上传。生产环境常用 `/srv/应用名` 或 `/opt` 存放应用，需 root 创建目录后 `chown 运行用户:组 /srv/应用名`，以便该用户写日志、改配置。
 
 ### 4.3 部署 Spring Boot 项目
 
 #### 4.3.1 直接运行 jar
+
+若项目放在 `/srv/app` 等需 root 创建的目录，建议 `sudo chown 运行用户:组 /srv/app`，以便该用户写日志、建临时文件。
 
 ```bash
 # 前台运行（关闭终端会停止）
@@ -733,8 +758,9 @@ sudo journalctl -u nginx -f  # 查看 nginx 服务日志
 sudo ufw status             # 查看状态
 sudo ufw allow 80           # 开放 80 端口
 sudo ufw allow 443          # 开放 443 端口
-sudo ufw allow 22           # 开放 SSH
+sudo ufw allow 22           # 开放 SSH（建议先开放 22 再 enable，避免锁死）
 sudo ufw enable             # 启用防火墙
+sudo ufw reload             # 规则修改后若未自动生效可执行
 
 # CentOS (firewalld)
 sudo firewall-cmd --list-all
@@ -757,17 +783,18 @@ sudo firewall-cmd --reload
 
 ## 五、常用命令速查表
 
-| 类别     | 命令                          | 说明                   |
-| -------- | ----------------------------- | ---------------------- |
-| **目录** | `cd`、`pwd`、`ls`、`mkdir`    | 切换、查看、创建目录   |
-| **文件** | `cp`、`mv`、`rm`、`touch`     | 复制、移动、删除、创建 |
-| **查看** | `cat`、`head`、`tail`、`less` | 查看文件内容           |
-| **编辑** | `vim`、`nano`                 | 编辑文件               |
-| **查找** | `find`、`grep`、`which`       | 查找文件/内容          |
-| **权限** | `chmod`、`chown`              | 修改权限/所有者        |
-| **进程** | `ps`、`top`、`kill`           | 查看/结束进程          |
-| **网络** | `ip addr`、`ping`、`curl`、`ss` | 网络信息/测试/端口     |
-| **系统** | `free`、`df`、`uname`         | 内存/磁盘/系统信息     |
-| **压缩** | `tar`、`zip`、`unzip`         | 打包/压缩/解压         |
-| **服务** | `systemctl`                   | 服务管理               |
-| **软件** | `apt`、`yum`                  | 包管理                 |
+| 类别     | 命令                          | 说明                       |
+| -------- | ----------------------------- | -------------------------- |
+| **目录** | `cd`、`pwd`、`ls`、`mkdir`    | 切换、查看、创建目录       |
+| **文件** | `cp`、`mv`、`rm`、`touch`、`ln -s` | 复制、移动、删除、创建、软链接 |
+| **查看** | `cat`、`head`、`tail`、`less` | 查看文件内容               |
+| **编辑** | `vim`、`nano`                 | 编辑文件                   |
+| **查找** | `find`、`grep`、`which`       | 查找文件/内容              |
+| **权限** | `chmod`、`chown`              | 修改权限/所有者            |
+| **用户** | `whoami`、`id`、`groups`、`usermod -aG` | 当前用户、所属组、将用户加入组 |
+| **进程** | `ps`、`top`、`kill`、`nohup`  | 查看/结束进程、后台运行    |
+| **网络** | `ip addr`、`ping`、`curl`、`ss`、`scp` | 网络信息/测试/端口/传文件  |
+| **系统** | `free`、`df`、`uname`         | 内存/磁盘/系统信息         |
+| **压缩** | `tar`、`zip`、`unzip`         | 打包/压缩/解压             |
+| **服务** | `systemctl`                   | 服务管理                   |
+| **软件** | `apt`、`yum`                  | 包管理                     |
