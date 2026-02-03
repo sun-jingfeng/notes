@@ -41,6 +41,8 @@ Redis（Remote Dictionary Server）是一个开源的、基于内存的键值存
 
 ## 二、Redis 安装
 
+Redis 官方提供源码与预编译包，生产环境常用 **Docker** 部署，便于隔离、版本统一和与现有编排（如 Compose、K8s）集成。安装后通过 **redis-cli**（Redis 自带的命令行客户端）连接服务器执行命令、排查问题；后续在应用里通过 TCP 与 Redis 通信，redis-cli 仅用于人工运维与调试。
+
 ### 2.1 Docker 方式安装（推荐）
 
 ```bash
@@ -123,9 +125,11 @@ PONG
 
 ## 三、Redis 数据类型
 
+Redis 的 Value 有多种**数据结构**，不同类型支持不同命令与时间复杂度；Key 始终是字符串。选择合适类型能简化业务逻辑并提高性能。
+
 ### 3.1 String（字符串）
 
-最基本的数据类型，可以存储字符串、整数、浮点数。最大 512MB。
+最基本类型，底层为简单动态字符串（SDS），可存字符串、整数或浮点数，单值最大 512MB。支持过期、自增/自减，适合缓存、计数器、分布式锁（SET NX EX）、Session/Token 等单值场景。
 
 ```bash
 # 设置值
@@ -168,7 +172,7 @@ MGET k1 k2 k3
 
 ### 3.2 Hash（哈希）
 
-存储键值对集合，适合存储对象。
+即“字段-值”映射，一个 Key 下多组 field-value，底层为哈希表。适合把对象拆成多个字段存储（如 user:1001 下 name、age、email），可单独读写某字段，比把整个对象序列化成 String 更省内存、更新更细粒度。注意单 Key 内字段不宜过多（建议数千以内），否则 HGETALL 等会阻塞。
 
 ```bash
 # 设置单个字段
@@ -208,7 +212,7 @@ HINCRBY user:1001 age 1
 
 ### 3.3 List（列表）
 
-有序的字符串列表，支持两端插入和弹出，可实现队列或栈。
+有序、可重复的字符串列表，底层为双向链表（或 ziplist），支持头尾插入/弹出，可做**队列**（LPUSH + BRPOP）、**栈**（LPUSH + LPOP）、时间线等。阻塞命令 BLPOP/BRPOP 常用于简单消息队列；按索引访问（LINDEX）为 O(n)，大列表慎用。
 
 ```bash
 # 左侧插入（头部）
@@ -245,7 +249,7 @@ LTRIM tasks 0 99
 
 ### 3.4 Set（集合）
 
-无序的字符串集合，元素唯一，支持集合运算。
+无序、**元素唯一**的字符串集合，底层为哈希表或 intset。适合去重、标签、共同好友等；SINTER/SUNION/SDIFF 提供交集/并集/差集，可做推荐、统计。SMEMBERS 会返回全部元素，大集合慎用，可改用 SSCAN 渐进式遍历。
 
 ```bash
 # 添加元素
@@ -285,7 +289,7 @@ SDIFF set1 set2
 
 ### 3.5 Sorted Set（有序集合）
 
-带分数的有序集合，元素唯一，按分数排序。
+每个元素带一个 **score**（分数），按 score 排序，元素唯一（同分可多成员）。底层跳表 + 哈希，按 score 范围或排名查询均为 O(log N)。典型用法：排行榜（ZREVRANGE）、延迟队列（score 为执行时间）、带权重的去重与排序。
 
 ```bash
 # 添加元素（分数 元素）
@@ -324,6 +328,8 @@ ZREM leaderboard "player1"
 ```
 
 ### 3.6 通用命令
+
+以下命令作用于任意类型的 Key，用于生命周期管理（过期、删除）、存在性判断和运维（TYPE、SELECT、FLUSH 等）。KEYS * 会阻塞，生产环境应用 SCAN 替代。
 
 ```bash
 # 查看所有 key（生产慎用）
@@ -372,6 +378,8 @@ FLUSHALL
 
 ## 四、Java 中使用 Redis
 
+Spring Data Redis 通过 **RedisConnection** 封装与 Redis 的 TCP 通信，**RedisTemplate** 在其之上提供类型化 API（opsForValue、opsForHash 等）并负责序列化/反序列化。推荐使用**连接池**（如 Lettuce 的 pool）：复用连接、限制并发连接数，避免频繁建连带来的延迟与资源消耗。
+
 ### 4.1 Spring Boot 集成 Redis
 
 #### 添加依赖
@@ -391,6 +399,8 @@ FLUSHALL
 
 #### 配置文件
 
+`host/port/password/database` 指定连接目标；`timeout` 防止长时间阻塞；`lettuce.pool` 配置连接池大小（max-active、max-idle、min-idle）和获取连接最大等待时间（max-wait），按 QPS 与实例数合理设置，避免连接耗尽或闲置过多。
+
 ```yaml
 spring:
   data:
@@ -407,6 +417,19 @@ spring:
           min-idle: 0           # 最小空闲连接
           max-wait: -1ms        # 获取连接最大等待时间，-1 表示无限制
 ```
+
+#### 序列化说明
+
+- **什么是序列化**：把内存中的对象转成可存储、可传输的字节流；反序列化则是把字节流还原成对象。Redis 的 Key/Value 在底层都是字节数组，Java 端存对象前必须序列化，读出来后再反序列化。
+- **为什么需要关注序列化**：
+  - 默认 `RedisTemplate` 使用 **JDK 序列化**（`JdkSerializationRedisSerializer`），存进去的数据是二进制、不可读，且依赖 Java 类结构，跨语言、跨版本不友好。
+  - 自定义序列化可以改为可读格式（如 JSON）、统一 Key 的格式、避免类变更导致的反序列化问题。
+- **常见方案对比**：
+  - **JDK 序列化**：无需配置，但二进制不可读、体积大、易受类结构影响，一般不推荐做 Value 序列化。
+  - **String 序列化**（`StringRedisSerializer`）：只适用于字符串，Key 通常用此方式，简洁可读。
+  - **JSON 序列化**（如 `Jackson2JsonRedisSerializer`）：可读性好、跨语言、便于排查；需要配置类型信息以正确反序列化泛型/多态。
+  - **其他**：如 Kryo、Protobuf 等，性能更好但需要额外依赖和约定，按需选用。
+- **Spring Data Redis 中的位置**：`RedisTemplate` 的 `keySerializer`、`valueSerializer`、`hashKeySerializer`、`hashValueSerializer` 分别控制 Key 与 Value 的序列化方式；不设置时使用默认的 JDK 序列化。
 
 #### Redis 配置类（可选，自定义序列化）
 
@@ -442,6 +465,8 @@ public class RedisConfig {
 ```
 
 ### 4.2 RedisTemplate 操作
+
+`RedisTemplate<K, V>` 是 Spring 对 Redis 的**门面**：内部通过 `RedisConnectionFactory` 获取连接，按数据类型调用 `opsForValue()`、`opsForHash()` 等得到 `*Operations`，再通过配置的 Serializer 把 Java 对象与字节数组互转。Key 一般固定为 String，Value 可为 Object（需配置 JSON 等序列化）；若只存字符串，可直接用 `StringRedisTemplate`。
 
 #### 注入 RedisTemplate
 
@@ -633,6 +658,8 @@ Set<String> keys = redisTemplate.keys("user:*");
 
 ### 4.3 封装 Redis 工具类
 
+将常用 Key/Value、Hash、过期、删除等操作封装成工具类，可统一 key 前缀、过期策略和异常处理，避免在业务代码里到处写 `redisTemplate.opsForValue().set(...)`，便于维护与替换实现。
+
 ```java
 @Component
 public class RedisUtils {
@@ -718,6 +745,10 @@ public class RedisUtils {
 ```
 
 ### 4.4 使用示例
+
+- **缓存**：采用 **Cache-Aside** 模式——读时先查缓存，未命中再查库并回写缓存；写时先更新库再删缓存（或更新缓存），避免长期脏数据。  
+- **分布式锁**：用 Redis 的 `SET key value NX EX seconds` 实现“仅当 key 不存在时设置并带过期”，避免死锁；释放时需校验 value 再 DEL，防止误删他人锁。  
+- **限流**：示例为**固定窗口计数器**（某 key 在时间窗口内递增，超限则拒绝）；更平滑可用滑动窗口或令牌桶，仍可用 Redis 实现。
 
 #### 缓存用户信息
 
@@ -851,7 +882,11 @@ public class ApiController {
 
 ## 五、Spring Cache 注解方式
 
+Spring 提供了一套**缓存抽象**（不绑定具体实现），通过声明式注解即可使用缓存，底层可切换为 Redis、Caffeine、Ehcache 等。何时用注解、何时用 RedisTemplate：注解适合“按方法返回值缓存/失效”的读多写少场景，配置简单、与业务解耦；需要细粒度控制（如复杂 key、多 key、管道、分布式锁、限流）或非返回值型缓存时，用 RedisTemplate 或封装好的工具类更合适。二者可并存：同一项目里部分用 `@Cacheable`，部分用 `RedisUtils`。
+
 ### 5.1 启用缓存
+
+**`@EnableCaching`** 用来开启 Spring 的声明式缓存。不加它的话，后面的 `@Cacheable` 等注解不会生效（相当于没开“缓存开关”）。一般加在**配置类**或**启动类**上即可。
 
 ```java
 @SpringBootApplication
@@ -865,6 +900,8 @@ public class Application {
 
 ### 5.2 配置 Redis 作为缓存
 
+开启缓存后，需要指定**缓存实现**。这里用 Redis：`spring.cache.type=redis`。其他常用项：`time-to-live` 控制过期时间，`key-prefix` 避免与其他 key 冲突，`cache-null-values: true` 可缓存空结果，减轻缓存穿透。
+
 ```yaml
 spring:
   cache:
@@ -877,6 +914,11 @@ spring:
 ```
 
 ### 5.3 缓存注解
+
+- **@Cacheable**：适合**读多写少**的查询。执行前先按 key 查缓存，命中则直接返回、不执行方法；未命中才执行方法，并把返回值写入缓存。因此**写操作不要用 @Cacheable**，否则每次都会执行方法。
+- **@CachePut**：**总是执行方法**，并用返回值更新缓存。常用于新增、更新后要把最新结果放入缓存，保证后续读到的是一致的。
+- **@CacheEvict**：**删除**缓存条目（按 key 或 `allEntries=true` 清空整个 cache）。常用于删除、更新后让旧缓存失效；`beforeInvocation=true` 表示在方法执行前就删缓存，避免方法抛异常时缓存没删掉。
+- **@Caching**：同一方法上需要多种缓存操作时（例如同时 put 一个 key、evict 另一个 cache），用其组合多个注解。
 
 ```java
 @Service
@@ -931,6 +973,8 @@ public class UserService {
 
 ### 5.4 SpEL 表达式
 
+Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、Bean 等，实现**动态 key**（如 `#id`、`#user.id`）和**条件缓存**（`condition` 决定是否查缓存、`unless` 决定是否写缓存），同一方法在不同参数下对应不同缓存条目，避免 key 冲突或误用。注解里的 `key`、`condition`、`unless` 等支持 SpEL，常用写法如下。
+
 | 表达式            | 说明       | 示例                   |
 | ----------------- | ---------- | ---------------------- |
 | `#参数名`         | 方法参数   | `#id`、`#user`         |
@@ -946,6 +990,8 @@ public class UserService {
 
 ### 6.1 缓存问题
 
+引入缓存后会出现穿透、击穿、雪崩与一致性问题，本质是“请求没被缓存挡住直打存储”或“缓存与库不一致”。理解成因才能正确选方案（空值/布隆、互斥锁/永不过期、过期时间打散、先更新库再删缓存等）。
+
 | 问题         | 描述                                  | 解决方案                             |
 | ------------ | ------------------------------------- | ------------------------------------ |
 | **缓存穿透** | 查询不存在的数据，请求直达数据库      | 缓存空值；布隆过滤器                 |
@@ -954,6 +1000,8 @@ public class UserService {
 | **数据一致** | 缓存与数据库数据不一致                | 先更新数据库，再删除缓存；延迟双删   |
 
 ### 6.2 Key 设计规范
+
+Key 要有**业务前缀**和**层次**，便于按业务或类型批量管理、排查和隔离；避免不同业务 key 冲突；控制单 key 长度，可读即可。常见格式为“业务名:数据类型:数据标识”，必要时加版本或环境前缀。
 
 ```
 业务名:数据类型:数据标识
@@ -968,15 +1016,17 @@ rate:limit:192.168.1.1  # 限流计数
 
 ### 6.3 最佳实践
 
-1. **设置过期时间**：避免内存无限增长，根据业务设置合理的 TTL
-2. **避免大 Key**：单个 Value 不超过 10KB，集合元素不超过 1 万
-3. **避免热点 Key**：热点数据可拆分或使用本地缓存
-4. **禁用危险命令**：生产环境禁用 `KEYS *`、`FLUSHALL`、`FLUSHDB`
-5. **使用连接池**：避免频繁创建连接
-6. **合理使用管道**：批量操作使用 Pipeline 减少网络开销
-7. **监控告警**：监控内存使用、命中率、慢查询
+1. **设置过期时间**：避免内存无限增长，根据业务设置合理的 TTL；不设过期则 key 常驻内存，易 OOM。
+2. **避免大 Key**：单个 Value 不超过 10KB，集合元素不超过 1 万；大 key 会拉高网络与序列化成本，阻塞主线程，删除时易卡顿。
+3. **避免热点 Key**：单 key  QPS 过高会打满单机能力；可拆 key、加本地缓存或读从库分散压力。
+4. **禁用危险命令**：生产环境禁用 `KEYS *`、`FLUSHALL`、`FLUSHDB`，防止误操作或恶意扫库导致阻塞/数据清空。
+5. **使用连接池**：复用连接、限制并发，避免频繁建连带来的延迟与端口耗尽。
+6. **合理使用管道**：批量操作使用 Pipeline 将多次往返合并为一次，减少 RTT，注意单次 pipeline 不宜过大。
+7. **监控告警**：监控内存使用、命中率、慢查询，便于容量规划与问题定位。
 
 ### 6.4 生产环境配置建议
+
+以下配置从安全（bind、密码、禁用危险命令）、资源（maxmemory、淘汰策略）、持久化与可观测性（AOF、slowlog）几方面给出建议，实际需按机器规格与业务调整。
 
 ```properties
 # redis.conf 生产配置建议
