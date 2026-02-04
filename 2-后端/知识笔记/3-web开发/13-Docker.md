@@ -350,15 +350,15 @@ docker run -d -p 80:80 -p 443:443 nginx
 # 环境变量（-e）
 docker run -d -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0
 
-# 数据卷挂载（-v 宿主机路径:容器路径；Linux 宿主机常规用 /srv/服务名）
-docker run -d -v /srv/nginx:/usr/share/nginx/html nginx
+# 数据卷挂载（-v 宿主机路径:容器路径；推荐在 /srv 下按项目名建目录，再于其中挂载 nginx、mysql 等子目录）
+docker run -d -v /srv/my-app/nginx/html:/usr/share/nginx/html nginx
 
-# 综合示例：运行 MySQL
+# 综合示例：运行 MySQL（项目部署目录下 mysql 数据目录）
 docker run -d \
   --name mysql \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=123456 \
-  -v /srv/mysql:/var/lib/mysql \
+  -v /srv/my-app/mysql/data:/var/lib/mysql \
   mysql:8.0
 ```
 
@@ -649,11 +649,11 @@ USER appuser
 
 ### 6.2 数据卷类型
 
-| 类型           | 说明                                            | 示例                           |
-| -------------- | ----------------------------------------------- | ------------------------------ |
-| **命名卷**     | 由 Docker 管理，存储在 Docker 目录              | `-v mydata:/app/data`          |
-| **绑定挂载**   | 挂载 Linux 宿主机指定路径（常规用 /srv/服务名） | `-v /srv/mysql:/var/lib/mysql` |
-| **tmpfs 挂载** | 存储在内存中，容器停止后消失                    | `--tmpfs /app/cache`           |
+| 类型           | 说明                                                                                     | 示例                                       |
+| -------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **命名卷**     | 由 Docker 管理，存储在 Docker 目录                                                       | `-v mydata:/app/data`                      |
+| **绑定挂载**   | 挂载宿主机路径（推荐在 /srv 下按项目名建目录，其下再分子目录，如 `项目目录/mysql/data`） | `-v /srv/my-app/mysql/data:/var/lib/mysql` |
+| **tmpfs 挂载** | 存储在内存中，容器停止后消失                                                             | `--tmpfs /app/cache`                       |
 
 ### 6.3 数据卷操作
 
@@ -680,22 +680,22 @@ docker volume prune
 # 使用命名卷
 docker run -d -v mydata:/var/lib/mysql mysql:8.0
 
-# 使用绑定挂载（宿主机常规用 /srv/服务名）
-docker run -d -v /srv/mysql:/var/lib/mysql mysql:8.0
+# 使用绑定挂载（/srv 下项目名目录中的子目录，示例 /srv/my-app）
+docker run -d -v /srv/my-app/mysql/data:/var/lib/mysql mysql:8.0
 
-# 只读挂载（配置可放 /srv/nginx 或 /etc）
-docker run -d -v /srv/nginx/nginx.conf:/etc/nginx/nginx.conf:ro nginx
+# 只读挂载（配置放在项目目录下 nginx 等）
+docker run -d -v /srv/my-app/nginx/conf.d/default.conf:/etc/nginx/nginx.conf:ro nginx
 
-# 多个数据卷（数据用 /srv，日志用 /var/log）
+# 多个数据卷（数据用项目目录下路径，日志可用 /var/log）
 docker run -d \
-  -v /srv/mysql:/var/lib/mysql \
+  -v /srv/my-app/mysql/data:/var/lib/mysql \
   -v /var/log/mysql:/var/log/mysql \
   mysql:8.0
 ```
 
 ### 6.5 数据卷示例
 
-Nginx、MySQL 挂载示例如下；Redis 等在段末简述。以下宿主机路径为 **Linux 常规做法**：服务数据放 `/srv/服务名`，需先创建目录；`/srv` 通常需 root 权限，使用 `sudo mkdir`。
+Nginx、MySQL 挂载示例如下；Redis 等在段末简述。宿主机采用**按项目划分的目录结构**：在 `/srv` 下为每个项目创建以项目名命名的目录，再于其中按服务分子目录（如 `mysql/`、`nginx/`），便于多项目隔离；需先创建目录，`/srv` 通常需 root 权限，使用 `sudo mkdir`。
 
 ---
 
@@ -709,21 +709,22 @@ Nginx、MySQL 挂载示例如下；Redis 等在段末简述。以下宿主机路
 | 配置文件   | `/etc/mysql/conf.d/` 或自定义路径 | 可选，自定义 my.cnf 等       |
 | 初始化脚本 | `/docker-entrypoint-initdb.d/`    | 可选，容器首次启动时执行 SQL |
 
-**宿主机目录（Linux）**：`/srv/mysql/data`、`/srv/mysql/conf`、`/srv/mysql/init`。
+**宿主机目录**：`/srv/<项目名>/mysql/data`、`/srv/<项目名>/mysql/conf`、`/srv/<项目名>/mysql/init`（示例项目名 `my-app`，即 `/srv/my-app/...`）。
 
 **示例（绑定挂载）**：
 
 ```bash
-sudo mkdir -p /srv/mysql/data /srv/mysql/conf /srv/mysql/init
+# 将 my-app 替换为实际项目名
+sudo mkdir -p /srv/my-app/mysql/data /srv/my-app/mysql/conf /srv/my-app/mysql/init
 
 docker run -d \
   --name mysql \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=密码 \
   -e MYSQL_DATABASE=mydb \
-  -v /srv/mysql/data:/var/lib/mysql \
-  -v /srv/mysql/conf:/etc/mysql/conf.d \
-  -v /srv/mysql/init:/docker-entrypoint-initdb.d \
+  -v /srv/my-app/mysql/data:/var/lib/mysql \
+  -v /srv/my-app/mysql/conf:/etc/mysql/conf.d \
+  -v /srv/my-app/mysql/init:/docker-entrypoint-initdb.d \
   --restart unless-stopped \
   mysql:8.0
 ```
@@ -741,15 +742,16 @@ docker run -d \
 | 网站根目录 | `/usr/share/nginx/html` | 前端/静态资源             |
 | 配置       | `/etc/nginx/conf.d/`    | 挂载目录，放置 .conf 文件 |
 
-**宿主机目录（Linux）**：`/srv/nginx/html`、`/srv/nginx/conf.d`。
+**宿主机目录**：`/srv/<项目名>/nginx/html`、`/srv/<项目名>/nginx/conf.d`（示例项目名 `my-app`，即 `/srv/my-app/...`）。
 
 **示例（绑定挂载）**：
 
 ```bash
-sudo mkdir -p /srv/nginx/html /srv/nginx/conf.d
+# 将 my-app 替换为实际项目名
+sudo mkdir -p /srv/my-app/nginx/html /srv/my-app/nginx/conf.d
 ```
 
-在宿主机 `/srv/nginx/conf.d/default.conf` 新建配置（挂载会覆盖镜像内 conf.d，至少需一个 server 块）：
+在宿主机项目目录下 `nginx/conf.d/default.conf` 新建配置（如 `/srv/my-app/nginx/conf.d/default.conf`；挂载会覆盖镜像内 conf.d，至少需一个 server 块）：
 
 ```nginx
 server {
@@ -777,8 +779,8 @@ server {
 docker run -d \
   --name nginx \
   -p 80:80 \
-  -v /srv/nginx/html:/usr/share/nginx/html:ro \
-  -v /srv/nginx/conf.d:/etc/nginx/conf.d:ro \
+  -v /srv/my-app/nginx/html:/usr/share/nginx/html:ro \
+  -v /srv/my-app/nginx/conf.d:/etc/nginx/conf.d:ro \
   --restart unless-stopped \
   nginx:alpine
 ```
@@ -789,7 +791,7 @@ docker run -d \
 
 #### 其他常用镜像简述
 
-- **Redis**：持久化时挂载数据目录即可，例如 `-v /srv/redis:/data`，可选 `command: redis-server --appendonly yes`。
+- **Redis**：持久化时挂载项目目录下数据目录即可，例如 `-v /srv/my-app/redis/data:/data`，可选 `command: redis-server --appendonly yes`。
 - **应用类镜像**（如 Node、OpenJDK）：挂载由 Dockerfile 或 compose 定义，按项目需求配置即可。
 
 ***
@@ -1075,14 +1077,14 @@ docker compose config
 
 ### 8.6 部署步骤（以 Spring Boot + MySQL + Redis 为例）
 
-项目目录含 `Dockerfile`、`docker-compose.yml` 及（可选）`init.sql`。部署到 Linux 时建议放在 `/srv/app`：`sudo mkdir -p /srv/app`，`sudo chown <用户名>:<用户名> /srv/app`。
+项目目录含 `Dockerfile`、`docker-compose.yml` 及（可选）`init.sql`。部署到 Linux 时在 `/srv` 下**按项目名创建目录**作为该项目的部署目录，示例：`sudo mkdir -p /srv/my-app`，`sudo chown <用户名>:<用户名> /srv/my-app`。
 
 ```bash
-# 1. 上传项目到服务器
-scp -r project/. <用户名>@<宿主机IP>:/srv/app/
+# 1. 上传项目到服务器（将 my-app 替换为实际项目名）
+scp -r project/. <用户名>@<宿主机IP>:/srv/my-app/
 
 # 2. 进入项目目录
-cd /srv/app
+cd /srv/my-app
 
 # 3. 构建并启动
 docker compose up -d --build
@@ -1105,7 +1107,9 @@ docker compose up -d --build
 
 ## 九、实战：Linux 虚拟机 Docker Nginx 部署前后端
 
-**前提**：宿主机已安装 Docker、可 SSH 传文件；前端已打包为静态资源目录（如 dist），后端已有 Maven 打包后的文件（如 jar）；已准备好 MySQL 初始化脚本（如建库、建表、初始数据的 SQL），可放在宿主机目录，MySQL 容器挂载到 `/docker-entrypoint-initdb.d/` 后首次启动时自动执行。多项目可共用同一 MySQL，用不同库名区分。
+**前提**：宿主机已安装 Docker、可 SSH 传文件；前端已打包为静态资源目录（如 dist），后端已有 Maven 打包后的文件（如 jar）；已准备好 MySQL 初始化脚本（如建库、建表、初始数据的 SQL），可放在宿主机目录，MySQL 容器挂载到 `/docker-entrypoint-initdb.d/` 后首次启动时自动执行。
+
+**目录约定**：在 `/srv` 下**按项目名创建目录**，再于该目录内放置 Nginx、MySQL、后端等子目录及 `docker-compose.yml`，便于多项目隔离、备份与迁移。示例：项目名 `my-app` 则创建 `/srv/my-app`，其下 `nginx/`、`mysql/`、`backend/`、`docker-compose.yml`。多项目时各项目独立目录、独立 MySQL 容器（宿主机端口需区分，如 3306、3307）。
 
 **目标**：浏览器访问 `http://<宿主机IP>` 可访问前端页面，`/api` 由 Nginx 转发至后端。
 
@@ -1117,21 +1121,22 @@ docker compose up -d --build
 
 **部署顺序**：宿主机创建目录并放入前端 → Nginx 配置 → 创建网络、MySQL 连接网络 → 构建后端镜像 → 启动后端 → Nginx 连接网络（若尚未连接）→ 验证。
 
-若 MySQL、Nginx 尚未创建，需先按数据卷方式创建并挂载数据目录与初始化脚本目录（如 `/srv/mysql/init` 挂载到 MySQL 的 `/docker-entrypoint-initdb.d/`），首次启动时自动执行脚本，无需手动建库。
+若 MySQL、Nginx 尚未创建，需先按数据卷方式创建并挂载数据目录与初始化脚本目录（如 `/srv/<项目名>/mysql/init` 挂载到 MySQL 的 `/docker-entrypoint-initdb.d/`），首次启动时自动执行脚本，无需手动建库。
 
 #### 9.1.1 宿主机目录与前端
 
-宿主机目录：Nginx 使用 `/srv/nginx/html`、`/srv/nginx/conf.d`，MySQL 使用 `/srv/mysql/data`、`/srv/mysql/init`。
+在 `/srv` 下按项目名创建目录（示例项目名 `my-app`，即 `/srv/my-app`），再于其中创建子目录：Nginx 使用 `nginx/html`、`nginx/conf.d`，MySQL 使用 `mysql/data`、`mysql/init`。
 
 ```bash
-sudo mkdir -p /srv/nginx/html /srv/nginx/conf.d
+# 将 my-app 替换为实际项目名
+sudo mkdir -p /srv/my-app/nginx/html /srv/my-app/nginx/conf.d /srv/my-app/mysql/data /srv/my-app/mysql/init
 ```
 
-前端打包（如 `npm run build`）得到静态资源目录（如 dist），将**内容**复制到宿主机 Nginx 挂载目录：本地执行 `cp -r 前端项目/dist/* /srv/nginx/html/`；上传至服务器执行 `scp -r 前端项目/dist/* <用户名>@<宿主机IP>:/srv/nginx/html/`（若需 root 权限，可先传到用户目录再 `sudo cp`）。
+前端打包（如 `npm run build`）得到静态资源目录（如 dist），将**内容**复制到项目目录下 Nginx 挂载目录：本地执行 `cp -r 前端项目/dist/* /srv/my-app/nginx/html/`；上传至服务器执行 `scp -r 前端项目/dist/* <用户名>@<宿主机IP>:/srv/my-app/nginx/html/`（若需 root 权限，可先传到用户目录再 `sudo cp`）。
 
 #### 9.1.2 Nginx 配置
 
-在 `/srv/nginx/conf.d/default.conf` 新建配置；`proxy_pass` 填后端容器名或服务名及端口。容器内 `root` 为 `/usr/share/nginx/html`，对应宿主机挂载的静态资源目录 `/srv/nginx/html`。
+在项目目录下 `nginx/conf.d/default.conf` 新建配置（如 `/srv/my-app/nginx/conf.d/default.conf`）；`proxy_pass` 填后端容器名或服务名及端口。容器内 `root` 为 `/usr/share/nginx/html`，对应宿主机挂载的静态资源目录（如 `/srv/my-app/nginx/html`）。
 
 ```nginx
 server {
@@ -1207,29 +1212,30 @@ docker network connect app-net nginx
 
 访问 `http://<宿主机IP>` 可访问前端，`/api/xxx` 转发至后端。404/502 时排查：后端是否运行（`docker ps`）、`proxy_pass` 是否与后端容器名或服务名一致、防火墙是否放行 80/8080。
 
-| 操作            | 说明                                                                                                |
-| --------------- | --------------------------------------------------------------------------------------------------- |
-| 修改 Nginx 配置 | 修改配置后执行 `docker exec <Nginx容器名> nginx -s reload`                                          |
-| 更新前端        | 覆盖挂载目录 `/srv/nginx/html/` 下文件                                                              |
-| 重建后端        | 先 `docker build -t <后端镜像名> .`，再按 9.1.3 相同网络、容器名、端口及数据源库名执行 `docker run` |
+| 操作            | 说明                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| 修改 Nginx 配置 | 修改配置后执行 `docker exec <Nginx容器名> nginx -s reload`                                     |
+| 更新前端        | 覆盖挂载目录下文件（如 `/srv/my-app/nginx/html/`）                                             |
+| 重建后端        | 先 `docker build -t <后端镜像名> .`，再使用相同网络、容器名、端口及数据源库名执行 `docker run` |
 
 ---
 
 ### 9.2 使用 Compose 部署
 
-与 9.1 效果相同：Nginx 提供前端并转发 `/api` 至后端，后端连 MySQL。通过一份 `docker-compose.yml` 统一定义网络、MySQL、后端（含构建）、Nginx，一条命令完成后端镜像构建并启动全部服务。
+与 9.1 效果相同：Nginx 提供前端并转发 `/api` 至后端，后端连 MySQL。在 `/srv` 下**按项目名创建目录**，再于该目录内放置 `docker-compose.yml` 及 `nginx/`、`mysql/`、`backend/` 等子目录，通过一份 `docker-compose.yml` 统一定义网络、MySQL、后端（含构建）、Nginx，一条命令完成后端镜像构建并启动全部服务。多项目时各项目独立目录、独立 Compose；若需从宿主机直连 MySQL，第二个项目可将 MySQL 端口改为 `3307:3306` 等避免冲突。
 
 #### 9.2.1 目录与文件准备
 
-创建目录并放入前端、Nginx 配置、后端（含 Dockerfile 与 jar）及 MySQL 初始化脚本；后端与 Compose 文件可放在 `/srv/app`：
+在 `/srv` 下按项目名创建目录（示例 `my-app`，即 `/srv/my-app`），再于其中创建子目录并放入前端、Nginx 配置、后端（含 Dockerfile 与 jar）及 MySQL 初始化脚本：
 
 ```bash
-sudo mkdir -p /srv/nginx/html /srv/nginx/conf.d /srv/mysql/data /srv/mysql/conf /srv/mysql/init /srv/app/backend
+# 在 /srv 下创建项目名目录，再于其中创建各服务子目录（将 my-app 替换为实际项目名）
+sudo mkdir -p /srv/my-app/nginx/html /srv/my-app/nginx/conf.d /srv/my-app/mysql/data /srv/my-app/mysql/conf /srv/my-app/mysql/init /srv/my-app/backend
 ```
 
-- **前端**：将打包产物（如 dist）**内容**复制到 `/srv/nginx/html/`。
-- **Nginx**：在 `/srv/nginx/conf.d/default.conf` 中写入与 9.1.2 相同的 server 配置，`proxy_pass` 填后端服务名及端口（如 `http://backend:8080`）。
-- **后端**：在 `/srv/app/backend/` 下放入 Maven 打包后的 jar（如 `target/*.jar` 或复制为 `app.jar`），并在该目录下新建名为 `Dockerfile` 的文件。Compose 会据此构建后端镜像；镜像基于 JDK 17，仅需把 jar 复制进镜像并执行。若 jar 在 `target/` 子目录下，Dockerfile 内容示例：
+- **前端**：将打包产物（如 dist）**内容**复制到项目目录下 `nginx/html/`（如 `/srv/my-app/nginx/html/`）。
+- **Nginx**：在项目目录下 `nginx/conf.d/default.conf` 中写入与分步部署中 Nginx 配置相同的 server 块，`proxy_pass` 填后端服务名及端口（如 `http://backend:8080`）。
+- **后端**：在项目目录下 `backend/` 中放入 Maven 打包后的 jar（如 `target/*.jar` 或复制为 `app.jar`），并在该目录下新建名为 `Dockerfile` 的文件。Compose 会据此构建后端镜像；镜像基于 JDK 17，仅需把 jar 复制进镜像并执行。若 jar 在 `target/` 子目录下，Dockerfile 内容示例：
 
 ```dockerfile
 FROM eclipse-temurin:17-jdk
@@ -1240,11 +1246,11 @@ CMD ["java", "-jar", "app.jar"]
 ```
 
 若 jar 与 Dockerfile 在同一目录（无 `target/`），将 `COPY target/*.jar app.jar` 改为 `COPY *.jar app.jar`。
-- **MySQL 初始化**：将已准备好的 SQL 脚本（如建库、建表、初始数据）放入 `/srv/mysql/init/`，Compose 中 MySQL 挂载该目录到 `/docker-entrypoint-initdb.d/`，首次启动时自动执行。
+- **MySQL 初始化**：将已准备好的 SQL 脚本（如建库、建表、初始数据）放入项目目录下 `mysql/init/`，Compose 中 MySQL 挂载该目录到 `/docker-entrypoint-initdb.d/`，首次启动时自动执行。
 
 #### 9.2.2 docker-compose.yml
 
-在 `/srv/app` 下创建 `docker-compose.yml`，替换 `<库名>`、`<MySQL 根密码>` 等占位符。后端使用 `build: ./backend`，由 Compose 根据 Dockerfile 构建镜像；`image` 为构建出的镜像命名，便于复用。
+在**项目目录**下（即 `/srv/<项目名>/`，如 `/srv/my-app`）创建 `docker-compose.yml`，替换 `<库名>`、`<MySQL 根密码>` 等占位符。卷挂载使用**相对路径**（`./nginx/...`、`./mysql/...`），便于项目整体迁移、复制。后端使用 `build: ./backend`，由 Compose 根据 Dockerfile 构建镜像；`image` 为构建出的镜像命名，便于复用。
 
 ```yaml
 services:
@@ -1253,8 +1259,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /srv/nginx/conf.d:/etc/nginx/conf.d:ro
-      - /srv/nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
     depends_on:
       - backend
     networks:
@@ -1279,14 +1285,14 @@ services:
   mysql:
     image: mysql:8.0
     ports:
-      - "3306:3306"
+      - "3306:3306"   # 多项目时第二个项目可改为 "3307:3306" 等
     environment:
       - MYSQL_ROOT_PASSWORD=<MySQL 根密码>
       - MYSQL_DATABASE=<库名>
     volumes:
-      - /srv/mysql/data:/var/lib/mysql
-      - /srv/mysql/conf:/etc/mysql/conf.d
-      - /srv/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
     networks:
       - app-net
     restart: unless-stopped
@@ -1300,9 +1306,10 @@ Compose 中后端服务名（如 `backend`）须与 Nginx 配置中 `proxy_pass`
 
 #### 9.2.3 启动与验证
 
-在 `/srv/app` 下执行（`--build` 会先构建后端镜像再启动）：
+进入**项目目录**（即 `/srv/<项目名>/`，如 `/srv/my-app`）后执行（`--build` 会先构建后端镜像再启动）：
 
 ```bash
+cd /srv/my-app
 docker compose up -d --build
 ```
 
@@ -1310,12 +1317,14 @@ docker compose up -d --build
 
 #### 9.2.4 Compose 方式日常维护
 
-| 操作            | 说明                                                                                     |
-| --------------- | ---------------------------------------------------------------------------------------- |
-| 修改 Nginx 配置 | 编辑 `/srv/nginx/conf.d/default.conf` 后执行 `docker compose exec nginx nginx -s reload` |
-| 更新前端        | 覆盖 `/srv/nginx/html/` 下文件                                                           |
-| 重建后端        | 更新 jar 或 Dockerfile 后执行 `docker compose up -d --build backend`                     |
-| 停止全部服务    | `docker compose down`（保留数据卷）；`docker compose down -v` 删除数据卷                 |
+以下路径均相对于项目目录（即 `/srv/<项目名>/`，如 `/srv/my-app`）。
+
+| 操作            | 说明                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| 修改 Nginx 配置 | 编辑项目目录下 `nginx/conf.d/default.conf` 后执行 `docker compose exec nginx nginx -s reload` |
+| 更新前端        | 覆盖项目目录下 `nginx/html/` 中的文件                                                         |
+| 重建后端        | 更新 jar 或 Dockerfile 后执行 `docker compose up -d --build backend`                          |
+| 停止全部服务    | `docker compose down`（保留数据卷）；`docker compose down -v` 删除 Compose 创建的数据卷       |
 
 ***
 
