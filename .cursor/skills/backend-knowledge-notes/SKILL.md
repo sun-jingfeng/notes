@@ -1,11 +1,13 @@
 ---
 name: backend-knowledge-notes
-description: Generate backend knowledge notes matching the user's existing note style, format, content structure, and depth. Use when the user asks to write, create, add, or expand notes about Java, Spring Boot, databases, microservices, or any backend topic.
+description: 对所有与笔记相关的操作生效（生成、扩写、修改、润色、补充等）。生成或修改 2-后端/知识笔记 时，遵循既有笔记的格式、内容结构与深度。适用于 Java、Spring Boot、数据库、微服务等后端主题。
 ---
 
 # 后端知识笔记生成规范
 
-生成笔记时，严格遵循以下规范，确保与现有 `2-后端/知识笔记` 的格式、内容表述、深度完全一致。
+**适用范围：** 本规范对**所有与笔记相关的操作**生效，包括但不限于：生成新笔记、扩写、修改、润色、补充段落、整理结构等。只要操作对象是 `2-后端/知识笔记` 下的笔记，均需遵循以下规范。
+
+生成或修改笔记时，严格遵循以下规范，确保与现有 `2-后端/知识笔记` 的格式、内容表述、深度完全一致。
 
 ---
 
