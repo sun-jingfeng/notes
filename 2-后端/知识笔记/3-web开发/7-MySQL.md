@@ -518,7 +518,7 @@ FOREIGN KEY (dept_id) REFERENCES department(id)
 ON UPDATE CASCADE ON DELETE SET NULL;
 ```
 
-#### 逻辑外键（代码层面）⭐ 推荐
+#### 逻辑外键（代码层面） 推荐
 
 不使用数据库外键约束，**只在表中保留关联字段**，通过程序代码维护数据一致性：
 
@@ -678,7 +678,7 @@ FROM employee e, department d;
         左外连接 LEFT JOIN：左边全部 + 中间交集
         右外连接 RIGHT JOIN：右边全部 + 中间交集
 
-### 6.4 ON 与 WHERE 的区别 ⭐
+### 6.4 ON 与 WHERE 的区别
 
 多表查询时，**ON 和 WHERE 要分工明确**：
 
