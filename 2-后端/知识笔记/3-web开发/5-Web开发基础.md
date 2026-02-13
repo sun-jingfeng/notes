@@ -44,7 +44,7 @@
 
 **特点：**
 
-*   基于 TCP 协议，面向连接，安全
+*   基于 TCP，面向连接；HTTP 明文传输，**HTTPS** 下才加密、安全
 *   基于请求-响应模型
 *   无状态协议
 
@@ -261,13 +261,13 @@ public String getUsers(@RequestParam List<Long> ids) {
 }
 ```
 
-| 属性           | 说明     | 默认值 |
-| -------------- | -------- | ------ |
-| `value`        | 参数名称 | -      |
-| `required`     | 是否必须 | `true` |
-| `defaultValue` | 默认值   | -      |
+| `@RequestParam` 属性 | 说明     | 默认值 |
+| -------------------- | -------- | ------ |
+| `value`              | 参数名称 | -      |
+| `required`           | 是否必须 | `true` |
+| `defaultValue`       | 默认值   | -      |
 
-***
+> 💡 `value`、`required` 在 `@PathVariable`、`@RequestHeader` 等也常用；`defaultValue` 仅部分注解支持（如 `@PathVariable` 不支持）。
 
 ### 3.2 路径参数 @PathVariable
 

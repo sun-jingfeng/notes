@@ -134,7 +134,7 @@ mvn archetype:generate \
 | **artifactId** | 项目/模块名称   | `fastjson`    |
 | **version**    | 版本号       | `2.0.0`       |
 
-**查找坐标：** <https://mvnrepository.com/>
+**查找坐标：** [MVN Repository](https://mvnrepository.com/) 或 [中央仓库](https://search.maven.org/)
 
 #### 4.2 依赖配置
 
@@ -159,16 +159,18 @@ mvn archetype:generate \
 
 #### 4.3 依赖范围（scope）
 
-| scope           | 主程序 | 测试程序 | 打包 | 示例                 |
-| --------------- | --- | ---- | -- | ------------------ |
-| **compile**（默认） | ✓   | ✓    | ✓  | spring-core        |
-| **test**        | ✗   | ✓    | ✗  | junit              |
-| **provided**    | ✓   | ✓    | ✗  | servlet-api、lombok |
-| **runtime**     | ✗   | ✓    | ✓  | mysql-connector    |
+| scope           | 主程序编译 | 测试编译 | 打入当前包 | 传递给依赖方 | 示例                 |
+| --------------- | ---------- | -------- | ---------- | ------------ | -------------------- |
+| **compile**（默认） | ✓          | ✓        | ✓          | ✓            | spring-core          |
+| **test**        | ✗          | ✓        | ✗          | ✗            | junit                |
+| **provided**    | ✓          | ✓        | ✗          | ✗            | servlet-api、lombok  |
+| **runtime**     | ✗          | ✓        | ✓          | ✓（以 runtime 传递） | mysql-connector      |
 
 #### 4.4 依赖传递与排除
 
-引入 A 依赖，A 依赖 B，则 B 会自动引入。使用 `<exclusions>` 排除不需要的传递依赖：
+**依赖传递**：A 依赖 B、B 依赖 C，则 A 会间接得到 C（是否传递由 B 的 scope 决定）。**依赖冲突**时 Maven 采用：**最短路径优先**（优先采用依赖层级更近的版本）、**先声明优先**（路径长度相同时，pom 中先声明的依赖胜出）。
+
+使用 `<exclusions>` 排除不需要的传递依赖：
 
 ```xml
 <dependency>
@@ -202,14 +204,15 @@ mvn archetype:generate \
                  ↓        ↓        ↓                  ↓
                编译     测试     打包           安装到本地仓库
 
-| 阶段          | 说明          |
-| ----------- | ----------- |
-| **compile** | 编译主程序代码     |
-| **test**    | 运行测试        |
-| **package** | 打包（jar/war） |
-| **install** | 安装到本地仓库     |
+| 阶段          | 说明             |
+| ----------- | -------------- |
+| **compile** | 编译主程序代码       |
+| **test**    | 运行测试           |
+| **package** | 打包（jar/war）    |
+| **install** | 安装到本地仓库       |
+| **deploy**  | 发布到远程仓库（私服等） |
 
-**执行特点：** 执行后面的阶段，前面的阶段自动执行
+**执行特点：** 执行后面的阶段，前面的阶段会自动执行。
 
 ```bash
 mvn package    # 自动执行 compile → test → package
@@ -225,7 +228,8 @@ mvn test               # 运行测试
 mvn package            # 打包
 mvn clean package      # 清理后打包（常用）
 mvn install            # 安装到本地仓库
-mvn clean install -DskipTests  # 跳过测试
+mvn clean install -DskipTests   # 跳过测试
+mvn deploy                      # 发布到远程仓库（需配置 distributionManagement）
 ```
 
 ***
@@ -506,13 +510,16 @@ public class UserServiceTest {
 }
 ```
 
+需要仅在测试中使用的 Bean 时，可写 `@TestConfiguration` 配置类，在测试类上 `@Import` 引入。
+
 #### 2.7 测试注解总结
 
-| 场景            | 注解                | 特点        |
-| ------------- | ----------------- | --------- |
-| 完整集成测试        | `@SpringBootTest` | 加载完整上下文   |
-| Controller 测试 | `@WebMvcTest`     | 只加载 Web 层 |
-| Repository 测试 | `@DataJpaTest`    | 只加载 JPA 层 |
-| 模拟依赖          | `@MockBean`       | 替换 Bean   |
-| 指定配置          | `@ActiveProfiles` | 加载指定配置文件  |
+| 场景            | 注解                | 特点           |
+| ------------- | ----------------- | ------------ |
+| 完整集成测试        | `@SpringBootTest` | 加载完整上下文      |
+| Controller 测试 | `@WebMvcTest`     | 只加载 Web 层  |
+| Repository 测试 | `@DataJpaTest`    | 只加载 JPA 层  |
+| 模拟依赖          | `@MockBean`       | 替换容器中的 Bean  |
+| 指定配置          | `@ActiveProfiles` | 加载指定 profile |
+| 测试专用 Bean     | `@TestConfiguration` + `@Import` | 仅测试中生效的配置 |
 
