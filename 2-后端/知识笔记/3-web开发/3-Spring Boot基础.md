@@ -1036,12 +1036,27 @@ spring:
 
 #### 方式一：多文件配置
 
+**命名规则**：`application-{profile}.yml` 或 `application-{profile}.yaml`（`.properties` 同理）。`{profile}` 自定义，Spring Boot 无内置名；扩展名 `.yml` 与 `.yaml` 等价。
+
+**加载顺序**：先加载 `application.yml`，再按 `spring.profiles.active` 加载对应的 `application-{profile}.yml`；同 key 时 profile 文件中的值覆盖主文件。若激活的 profile 没有对应文件，不报错，仅使用主文件与已存在的 profile 文件。
+
+| 常见 profile | 用途说明 |
+| ------------ | -------- |
+| **dev**      | 开发环境（共享开发库/服务） |
+| **test**     | 测试环境 |
+| **prod**     | 生产环境 |
+| **staging**  | 预发/演练环境 |
+| **local**    | 本机环境（本机数据库、本机中间件，与 dev 隔离） |
+
+**多 profile 同时激活**：`spring.profiles.active=dev,local` 可写多个，逗号分隔；多个 profile 文件都会加载，后出现的 profile 中同 key 覆盖前面的（如 local 覆盖 dev）。
+
 ```
 resources/
 ├── application.yml           # 主配置 + 激活环境
-├── application-dev.yml       # 开发环境
-├── application-test.yml      # 测试环境
-└── application-prod.yml      # 生产环境
+├── application-dev.yml      # 开发环境
+├── application-test.yml     # 测试环境
+├── application-prod.yml     # 生产环境
+└── application-local.yml    # 可选：本机环境
 ```
 
 ```yaml
