@@ -363,7 +363,14 @@ public class TransactionDemo {
 - ✅ 使用占位：`<服务名>`、`<profile>`、`xxx-service`、`{服务名}-dev.yaml`
 - ❌ 避免仅用某一具体项目名作唯一示例：如 `order-service-dev.yaml`（若全文仅此一例且易被理解为“只适用于订单服务”）
 
-规则：示例、公式说明、命名规则等处，**用通用表达可覆盖任意项目**，不绑定到某个具体业务名。
+**代码示例同样适用此规则：**
+
+- ✅ 类名、方法名、变量名使用通用名称：`DemoService`、`BizService`、`queryById`、`handleMessage`、`simple.queue`、`demo.exchange`
+- ✅ 参数和返回值使用通用类型：`String message`、`Long id`、`Object data`
+- ❌ 避免全篇示例绑定同一业务域：如全部使用 `OrderService`、`StockClient`、`order.queue`、`Order order`（让人以为笔记只适用于电商系统）
+- ❌ 避免在代码中出现特定业务逻辑：如 `stockService.deduct(order.getProductId())`、`accountClient.debit()`
+
+规则：示例、公式说明、命名规则、代码示例等处，**用通用表达可覆盖任意项目**，不绑定到某个具体业务名。
 
 ### 4.6 不出现引用类描述
 
