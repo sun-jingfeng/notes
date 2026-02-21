@@ -361,6 +361,8 @@ public class AppConfig {
 
 > 💡 不管用 `@Component` 还是 `@Bean` 注册，使用时都一样通过 `@Autowired` 注入。
 
+> 💡 启动类（`@SpringBootApplication`）本身就是配置类（组合了 `@SpringBootConfiguration` → `@Configuration`），可以直接写 `@Bean` 方法。但建议保持启动类简洁，Bean 注册放到独立的 `@Configuration` 类中。
+
 #### @Configuration vs @Component
 
 `@Component` 也可以包含 `@Bean` 方法，但两者在 **@Bean 方法间互调** 时行为不同：
