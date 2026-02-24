@@ -214,6 +214,8 @@ public class DataSourceAutoConfiguration {
 3. Tomcat 监听指定端口，接收 HTTP 请求
 4. 请求经 DispatcherServlet 分发到对应 Controller
 
+***
+
 **切换服务器**（如使用 Undertow）：
 
 ```xml
