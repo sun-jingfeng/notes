@@ -256,7 +256,9 @@ import { Navigate } from 'react-router-dom'
 
 ## 九、路由匹配行为（了解即可）
 
-React Router v6 默认是**精确匹配**：只有 path 完全一致才渲染；嵌套路由下会先匹配父再在 **Outlet** 处渲染子路由。路径带 `/*` 时可匹配子路径（如 `path: '/layout/*'` 匹配 `/layout` 及 `/layout/xxx`）。
+React Router **v6** 使用 **createBrowserRouter** 时，默认为**精确匹配**：只有 path 与当前路径完全一致才渲染该路由；嵌套路由下先匹配父再在 **Outlet** 处渲染子路由。路径带 `/*` 时可匹配子路径（如 `path: '/layout/*'` 匹配 `/layout` 及 `/layout/xxx`）。
+
+**与 v5 的差异（了解即可）**：v5 中默认是**模糊匹配**（pathname 以 path 开头即匹配），需给默认路由等加 **exact** 实现精确匹配；v5 用 **Switch** 保证只匹配第一个 Route，v6 用 **Routes** 与 **createBrowserRouter** 配置后不再需要 Switch。
 
 ***
 

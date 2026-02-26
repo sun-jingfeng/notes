@@ -65,6 +65,8 @@ npm start
 
 ### 2.2 推荐替代方案
 
+**脚手架的意义**：零配置即可启动项目，统一构建、编译与规范（如 Babel、ESLint），便于专注业务开发而非工具配置。
+
 新项目建议使用以下方式之一：
 
 | 类型         | 推荐工具 | 说明 |
@@ -131,7 +133,20 @@ root.render(<h1>Hello, React</h1>)
 | **作用** | 书写 React 页面结构 |
 | **本质** | JS 的语法扩展，经构建工具（如 Vite）转换后变为 JS 对象 |
 
-### 4.2 JSX 原理（了解即可）
+### 4.2 JSX 规范与 React 的关系
+
+JSX 的**语法规范**与 React 是并列、独立的关系，并非 React 体系的一部分。
+
+| 项目     | 说明 |
+| -------- | ---- |
+| **规范定义方** | Meta（Facebook）团队；独立规范 [facebook.github.io/jsx](https://facebook.github.io/jsx/)，仓库 [facebook/jsx](https://github.com/facebook/jsx) |
+| **与 ECMAScript** | 不是 ECMAScript 的一部分，也不打算纳入 JS 标准；规范明确：*"It's NOT a proposal to incorporate JSX into the ECMAScript spec itself."* |
+| **规范内容** | 只定义**语法**（词法/文法），**不定义语义**——即只规定“长什么样”，不规定“必须编译成什么” |
+| **与 React** | React 只是 JSX 的一种使用方式：React 生态里 JSX 被转成 `React.createElement(...)`；Vue、Solid 等也可用同一套 JSX 语法，由各自的编译器转成自己的运行时调用 |
+
+**结论**：JSX 是独立的语法规范；React 并非“包含”JSX，而是与 JSX 搭配使用最广泛。二者是并列关系，React 更适合与 JSX 结合使用。
+
+### 4.3 JSX 原理（了解即可）
 
 JSX 经构建工具转换后，会变为对 **React.createElement** 的调用，得到描述 UI 的 JS 对象（形如 `{ type, props }`），用于后续虚拟 DOM 与渲染。转换器由构建工具（如 Vite、esbuild）提供。
 
@@ -139,7 +154,9 @@ JSX 经构建工具转换后，会变为对 **React.createElement** 的调用，
 JS 的语法扩展（JSX） → 构建工具转换 → 返回值：JS 对象 { type, props }
 ```
 
-### 4.3 JSX 书写规则
+**createElement 与 render 的直观理解**：`createElement(type, props, ...children)` 根据 `type` 和 `props` 生成一棵描述结构的对象树；真正把树变成 DOM 并挂到容器上的是渲染层（如 `ReactDOM.createRoot().render()`）。手写简易 render 的思路：根据对象的 `type` 创建元素，把 `props` 中的属性（含 `children`）应用到元素上，再递归或挂载到容器。
+
+### 4.4 JSX 书写规则
 
 | 规则             | 说明 |
 | ---------------- | ---- |
@@ -147,7 +164,7 @@ JS 的语法扩展（JSX） → 构建工具转换 → 返回值：JS 对象 { t
 | **标签闭合**     | 所有标签必须闭合，如 `<input />` |
 | **属性驼峰命名** | 如 `className`、`onClick`，不用 `class`、`onclick` |
 
-### 4.4 VSCode 推荐配置（可选）
+### 4.5 VSCode 推荐配置（可选）
 
 在 JS 文件中启用 JSX/Emmet 支持，并配置格式化与成对标签：
 
@@ -164,7 +181,7 @@ JS 的语法扩展（JSX） → 构建工具转换 → 返回值：JS 对象 { t
 
 推荐插件：**Prettier - Code formatter**、**Auto Rename Tag**。
 
-### 4.5 JSX 中 `{}` 的应用
+### 4.6 JSX 中 `{}` 的应用
 
 **作用**：让 JSX 变动态，可用于标签内容、属性等。
 
@@ -212,6 +229,16 @@ const handleClick = (e) => {
 }
 return <button onClick={handleClick}>点击</button>
 ```
+
+### 5.2 合成事件与事件委托
+
+React 中的事件对象是**合成事件（SyntheticEvent）**，不是原生 DOM 的 `event`，但接口与原生事件一致（如 `stopPropagation()`、`preventDefault()`），并统一了跨浏览器行为。
+
+| 项目     | 说明 |
+| -------- | ---- |
+| **绑定方式** | 所有事件最终委托到根节点（如 `document`）统一触发，而非绑定在每个具体 DOM 上 |
+| **阻止传播** | 在处理函数中调用 `e.stopPropagation()` 即可 |
+| **异步中取 event** | 合成事件在本次事件调用结束后会被复用/清空，**不可在 `setTimeout`、`async` 回调等异步逻辑中访问 `e`**；若需异步使用，可先 `e.target` 或所需属性取出再用 |
 
 ***
 
@@ -295,7 +322,23 @@ function Counter() {
 | 1. 修改状态 | 调用 `setCount` 等 set 函数 |
 | 2. 重新渲染 | React 用新状态重新渲染该组件 |
 
-### 7.3 修改状态的规则
+### 7.3 更新为异步与函数式更新
+
+React 会将多次状态更新**批量处理**，因此 set 函数是**异步**的：调用后不会立刻得到最新状态，下一次渲染时才会拿到新值。
+
+| 场景     | 写法 |
+| -------- | ---- |
+| **基于上一次状态更新** | 使用 **函数式更新**：`setCount(prev => prev + 1)`，避免闭包拿到旧值 |
+| **更新后执行逻辑** | 把逻辑写在 **useEffect** 中，依赖该状态，而不是依赖 set 的“回调” |
+
+```jsx
+// 连续两次“+1”：若写 setCount(count + 1) 可能只加一次（批处理导致 count 相同）
+// ✅ 使用函数式更新，每次基于最新前值
+setCount(prev => prev + 1)
+setCount(prev => prev + 1)
+```
+
+### 7.4 修改状态的规则
 
 **规则**：不要直接修改当前状态，应基于当前值创建新值再更新。
 

@@ -19,6 +19,8 @@
 | **action** | 对象   | 描述“要怎样改数据”（通常含 `type`、`payload`） |
 | **reducer** | 函数   | 根据当前 state 和 action 计算出新的 state（纯函数） |
 
+**Action Creator**：可定义函数返回 action 对象，便于复用与传参；RTK 的 `createSlice` 会为每个 reducer 自动生成对应的 action creator（如 `add`、`addTo`）。
+
 ```
 dispatch(action) → reducer(state, action) → 新 state → 订阅者更新视图
 ```
@@ -34,6 +36,8 @@ dispatch(action) → reducer(state, action) → 新 state → 订阅者更新视
 | 3 | **store.subscribe** 订阅状态变化 |
 | 4 | **store.dispatch(action)** 提交 action 触发更新 |
 | 5 | **store.getState()** 获取最新 state，更新到视图 |
+
+**store.subscribe(listener)**：纯 Redux 中用于订阅 state 变化，state 变更后会自动执行 listener；在 React 中由 **react-redux** 负责订阅与更新组件，一般无需手写 subscribe。
 
 ***
 
@@ -222,6 +226,8 @@ export default configureStore({
 ```
 
 组件中通过 `state.counter`、`state.cart` 访问对应模块。
+
+**UI 组件与容器组件（了解即可）**：早期 react-redux 常把“只负责展示、数据全由 props 提供”的组件叫 UI 组件，“负责连接 store、处理逻辑”的叫容器组件。使用 **useSelector** + **useDispatch** 后，同一组件内即可读状态与派发 action，不必再严格区分两类文件。
 
 ### 5.2 原生 Redux 的 combineReducers（了解即可）
 

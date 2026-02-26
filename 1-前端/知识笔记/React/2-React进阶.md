@@ -9,7 +9,7 @@
 | 1. 准备状态 | 用 `useState` 存输入值 |
 | 2. 绑定表单 | `value={状态}` + `onChange` 中调用 set 更新状态 |
 
-> **注意**：React 里文本框的 `onChange` 行为类似原生的 `input` 事件（React 对 `change` 做了统一处理）。
+> **注意**：React 里文本框的 `onChange` 行为类似原生的 `input` 事件（React 对 `change` 做了统一处理）。事件对象为合成事件，若在异步回调里需要使用事件数据，应先取出所需字段（如 `e.target.value`）再使用。
 
 ```jsx
 const [content, setContent] = useState('')
@@ -213,7 +213,7 @@ useEffect(() => {
 | ------- | ------- |
 | 组件顶层顺序调用 | 条件、循环、嵌套函数内调用 |
 
-原因：React 依赖每次渲染时 Hooks 的**调用顺序一致**来正确关联状态与 Effect。
+**原因**：React 依赖每次渲染时 Hooks 的**调用顺序一致**来正确关联状态与 Effect；顺序变化会导致状态错位。
 
 ```jsx
 // ✅ 正确
