@@ -130,131 +130,9 @@ const content = ref('')
 
 ***
 
-## 二、useRef
+## 二、组件通讯
 
-### 2.1 操作 DOM
-
-在 React 组件中操作 **DOM**，需使用 **useRef**：
-
-| 步骤             | 说明                                                       |
-| ---------------- | ---------------------------------------------------------- |
-| **创建并绑定**   | 用 `useRef(null)` 创建 ref，在 JSX 上通过 `ref={inputRef}` 绑定到元素 |
-| **使用 DOM**     | 通过 `inputRef.current` 拿到 DOM 节点后再操作              |
-
-```tsx
-import { useRef } from 'react'
-
-function Demo() {
-  // 泛型指定 DOM 元素类型，初始值 null
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const focusInput = () => {
-    inputRef.current?.focus()
-  }
-
-  return (
-    <>
-      <input ref={inputRef} />
-      <button onClick={focusInput}>聚焦</button>
-    </>
-  )
-}
-```
-
-| 注意项       | 说明                                                                 |
-| ------------ | -------------------------------------------------------------------- |
-| **调用时机** | 不要在渲染阶段用 ref 操作 DOM（此时 `ref.current` 可能尚未赋值）     |
-| **表单值**   | 操作文本框内容时，推荐用**受控组件**（状态）而非 ref                 |
-| **TS 泛型**  | `useRef<HTMLInputElement>(null)` 指定元素类型，`current` 类型为 `HTMLInputElement \| null`，使用时需判空 |
-
-常用 DOM 元素类型：
-
-| DOM 类型                | 对应标签       |
-| ----------------------- | -------------- |
-| **HTMLInputElement**    | `<input>`      |
-| **HTMLDivElement**      | `<div>`        |
-| **HTMLButtonElement**   | `<button>`     |
-| **HTMLFormElement**     | `<form>`       |
-| **HTMLTextAreaElement** | `<textarea>`   |
-| **HTMLAnchorElement**   | `<a>`          |
-
-### 2.2 存储可变值
-
-`useRef` 不仅用于 DOM，还可以存储**任意可变值**。与 `useState` 的关键区别：修改 `ref.current` **不会触发重新渲染**，且值在组件整个生命周期内持久保持。
-
-| 对比项         | useState                        | useRef                          |
-| -------------- | ------------------------------- | ------------------------------- |
-| **更新后**     | 触发重新渲染                    | 不触发重新渲染                  |
-| **读取时机**   | 渲染期间读取最新值              | 任何时候读取 `.current`         |
-| **适用**       | 需要驱动 UI 更新的数据          | 不需要渲染的值（定时器 ID、上一次值、标记位等） |
-
-```tsx
-function Timer() {
-  const [count, setCount] = useState(0)
-  const timerRef = useRef<number | null>(null)
-
-  const start = () => {
-    timerRef.current = window.setInterval(() => {
-      setCount(prev => prev + 1)
-    }, 1000)
-  }
-
-  const stop = () => {
-    if (timerRef.current !== null) clearInterval(timerRef.current)
-  }
-
-  return (
-    <div>
-      <span>{count}</span>
-      <button onClick={start}>开始</button>
-      <button onClick={stop}>停止</button>
-    </div>
-  )
-}
-```
-
-> 💡 存储可变值时，`useRef` 的泛型标注存储值的类型（如 `useRef<number | null>(null)`）。与 DOM 引用不同，可变值 ref 的 `current` 可以直接赋值。
-
-常见用途：
-
-| 场景                 | 说明                                             |
-| -------------------- | ------------------------------------------------ |
-| **保存定时器 ID**    | 开始/停止定时器时需要引用 ID，无需触发渲染       |
-| **记录上一次值**     | 在 useEffect 中把当前 state 存入 ref，下次渲染时对比 |
-| **标记是否首次渲染** | `const isFirst = useRef(true)`，首次执行后置 false |
-
-### 2.3 Vue 3 对照
-
-| React | Vue 3 | 说明 |
-| ----- | ----- | ---- |
-| `useRef(null)` + `ref={inputRef}` | `ref()` + `ref="inputRef"` | 操作 DOM |
-| `useRef(value)` 存可变值 | 普通变量或 `ref(value)` | Vue 的 `ref()` 本身就是响应式可变容器 |
-| 修改 `ref.current` 不触发渲染 | 修改 `ref.value` **会**触发渲染 | 若需不触发渲染的可变值，Vue 中用普通 `let` 变量即可 |
-
-```vue
-<script setup>
-import { ref, onMounted } from 'vue'
-
-// template ref：声明同名 ref，Vue 自动绑定到模板中同名的 ref 属性
-const inputRef = ref<HTMLInputElement | null>(null)
-
-onMounted(() => {
-  inputRef.value?.focus()
-})
-</script>
-
-<template>
-  <input ref="inputRef" />
-</template>
-```
-
-> 💡 React 的 `useRef` 身兼两职（DOM 引用 + 可变值存储），且修改不触发渲染；Vue 的 `ref()` 是响应式的（修改会触发渲染），template ref 绑定 DOM 则通过模板中的 `ref="xxx"` 实现。
-
-***
-
-## 三、组件通讯
-
-### 3.1 常见场景
+### 2.1 常见场景
 
 一个组件需要使用另一个组件的数据时，按层级关系分为：
 
@@ -264,7 +142,7 @@ onMounted(() => {
 | **非父子通讯**   | 兄弟、后代等，需状态提升或 Context |
 | **复杂场景**     | 可用 Redux 等状态管理工具        |
 
-### 3.2 父子组件通讯
+### 2.2 父子组件通讯
 
 原则：**谁的数据谁负责**。
 
@@ -312,7 +190,7 @@ function Card({ title, count, disabled = false, children, onAction }: CardProps)
 | **行内样式**             | `style?: React.CSSProperties`                              |
 | **透传原生属性**         | 用 `React.ComponentProps<'button'>` 继承原生标签的全部 props |
 
-### 3.3 兄弟组件通讯：状态提升
+### 2.3 兄弟组件通讯：状态提升
 
 **状态提升**：若两个兄弟组件需要共享数据，把共享状态放到**公共父组件**中，再通过 props 向下传递；需要修改时，父组件把 set 函数通过 props 传给子组件，由子组件调用。
 
@@ -322,7 +200,7 @@ function Card({ title, count, disabled = false, children, onAction }: CardProps)
 | **子组件 A 使用** | 父 → 子，用 props 展示                                    |
 | **子组件 B 修改** | 父传入 set 函数，子组件调用并传参                          |
 
-### 3.4 跨组件通讯：Context
+### 2.4 跨组件通讯：Context
 
 **Context（上下文）** 用于跨层级传递数据，不限于父子，后代组件均可消费。
 
@@ -366,7 +244,7 @@ function Header() {
 }
 ```
 
-### 3.5 Vue 3 对照
+### 2.5 Vue 3 对照
 
 | 场景 | React | Vue 3 |
 | ---- | ----- | ----- |
@@ -381,7 +259,7 @@ function Header() {
 <!-- Vue 子组件 -->
 <script setup lang="ts">
 defineProps<{ title: string }>()
-const emit = defineEmits<{ (e: 'action', id: number): void }>()
+const emit = defineEmits<{ action: [id: number] }>()
 </script>
 
 <template>
@@ -410,9 +288,223 @@ const theme = inject<Ref<'light' | 'dark'>>('theme')
 
 ***
 
-## 四、useEffect
+## 三、Hooks 概述与规则
 
-### 4.1 作用
+### 3.1 什么是 Hooks
+
+**Hooks** 是以 `use` 开头的函数（如 `useState`、`useEffect`、`useContext`），为组件提供状态、副作用、Context 等能力，是现代 React 的标准开发方式。
+
+**为何需要 Hooks（了解即可）：** 早期 React 只有类组件能使用状态和生命周期，导致逻辑难以复用、生命周期拆散同一逻辑；Hooks（React 16.8 起引入）让函数组件也能拥有状态与副作用，且便于抽成自定义 Hook 复用。目前类组件已基本退出日常开发。
+
+### 3.2 使用规则
+
+**只能在组件顶层调用 Hooks**，不可放在 `if`、`for`、嵌套函数中。自定义 Hook 同样遵守此规则。
+
+| 正确 ✅           | 错误 ❌                   |
+| ----------------- | ------------------------- |
+| 组件顶层顺序调用  | 条件、循环、嵌套函数内调用 |
+
+**原因**：React 依赖每次渲染时 Hooks 的**调用顺序一致**来正确关联状态与 Effect；顺序变化会导致状态错位。
+
+```jsx
+// ✅ 正确
+function App() {
+  const [a, setA] = useState(0)
+  const [b, setB] = useState(0)
+  useEffect(() => {}, [])
+  return <div>...</div>
+}
+
+// ❌ 错误
+function App() {
+  if (x) {
+    const [a, setA] = useState(0)
+  }
+}
+```
+
+> 💡 安装 `eslint-plugin-react-hooks` 可自动检查 Hooks 调用规则和依赖项遗漏，Vite 创建的 React 项目默认已包含。
+
+### 3.3 Vue 3 对照
+
+Vue 3 Composition API 的 `ref()`、`computed()`、`watch()` 等虽与 React Hooks 形似，但**没有调用顺序限制**——可以在 `if` / `for` 中使用。
+
+| 对比项 | React Hooks | Vue Composition API |
+| ------ | ----------- | ------------------- |
+| **条件中使用** | ❌ 不允许 | ✅ 允许 |
+| **循环中使用** | ❌ 不允许 | ✅ 允许 |
+| **依赖机制** | 调用索引（链表），依赖顺序一致 | Proxy 依赖追踪，与调用顺序无关 |
+
+> 💡 React Hooks 基于**调用索引**，每次渲染必须保持相同的调用顺序，否则状态错位；Vue 基于 **Proxy 响应式追踪**，不存在此限制。
+
+***
+
+## 四、useRef
+
+### 4.1 操作 DOM
+
+在 React 组件中操作 **DOM**，需使用 **useRef**：
+
+| 步骤             | 说明                                                       |
+| ---------------- | ---------------------------------------------------------- |
+| **创建并绑定**   | 用 `useRef(null)` 创建 ref，在 JSX 上通过 `ref={inputRef}` 绑定到元素 |
+| **使用 DOM**     | 通过 `inputRef.current` 拿到 DOM 节点后再操作              |
+
+```tsx
+import { useRef } from 'react'
+
+function Demo() {
+  // 泛型指定 DOM 元素类型，初始值 null
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const focusInput = () => {
+    inputRef.current?.focus()
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={focusInput}>聚焦</button>
+    </>
+  )
+}
+```
+
+| 注意项       | 说明                                                                 |
+| ------------ | -------------------------------------------------------------------- |
+| **调用时机** | 不要在渲染阶段用 ref 操作 DOM（此时 `ref.current` 可能尚未赋值）     |
+| **表单值**   | 操作文本框内容时，推荐用**受控组件**（状态）而非 ref                 |
+| **TS 泛型**  | `useRef<HTMLInputElement>(null)` 指定元素类型，`current` 类型为 `HTMLInputElement \| null`，使用时需判空 |
+
+常用 DOM 元素类型：
+
+| DOM 类型                | 对应标签       |
+| ----------------------- | -------------- |
+| **HTMLInputElement**    | `<input>`      |
+| **HTMLDivElement**      | `<div>`        |
+| **HTMLButtonElement**   | `<button>`     |
+| **HTMLFormElement**     | `<form>`       |
+| **HTMLTextAreaElement** | `<textarea>`   |
+| **HTMLAnchorElement**   | `<a>`          |
+
+### 4.2 存储可变值
+
+`useRef` 不仅用于 DOM，还可以存储**任意可变值**。与 `useState` 的关键区别：修改 `ref.current` **不会触发重新渲染**，且值在组件整个生命周期内持久保持。
+
+| 对比项         | useState                        | useRef                          |
+| -------------- | ------------------------------- | ------------------------------- |
+| **更新后**     | 触发重新渲染                    | 不触发重新渲染                  |
+| **读取时机**   | 渲染期间读取最新值              | 任何时候读取 `.current`         |
+| **适用**       | 需要驱动 UI 更新的数据          | 不需要渲染的值（定时器 ID、上一次值、标记位等） |
+
+#### useRef 与普通 let 变量的区别
+
+同样不触发重新渲染，但 `useRef` 和 `let` 有本质差异：
+
+| 对比项             | `let`（函数体内）            | `let`（组件外部）                | `useRef`                         |
+| ------------------ | ---------------------------- | -------------------------------- | -------------------------------- |
+| **重新渲染后**     | 值被重置（函数重新执行）     | 值保持                           | 值保持                           |
+| **多实例隔离**     | ✅ 各实例独立                | ❌ 所有实例共享同一变量          | ✅ 各实例独立                    |
+
+```tsx
+// ❌ 函数体内 let：每次重新渲染都重置为 0，永远拿不到累计值
+function Counter() {
+  let count = 0
+  const handleClick = () => {
+    count += 1             // 修改了，但下次渲染 count 又变回 0
+    console.log(count)
+  }
+  return <button onClick={handleClick}>click</button>
+}
+
+// ❌ 组件外 let：值能保持，但所有 <Counter /> 实例共享同一个 count
+let count = 0
+function Counter() {
+  const handleClick = () => {
+    count += 1
+    console.log(count)     // 实例 A 点一次、实例 B 再点一次 → 输出 2
+  }
+  return <button onClick={handleClick}>click</button>
+}
+
+// ✅ useRef：值在重新渲染后保持，且每个实例各自独立
+function Counter() {
+  const countRef = useRef(0)
+  const handleClick = () => {
+    countRef.current += 1
+    console.log(countRef.current)
+  }
+  return <button onClick={handleClick}>click</button>
+}
+```
+
+```tsx
+function Timer() {
+  const [count, setCount] = useState(0)
+  const timerRef = useRef<number | null>(null)
+
+  const start = () => {
+    timerRef.current = window.setInterval(() => {
+      setCount(prev => prev + 1)
+    }, 1000)
+  }
+
+  const stop = () => {
+    if (timerRef.current !== null) clearInterval(timerRef.current)
+  }
+
+  return (
+    <div>
+      <span>{count}</span>
+      <button onClick={start}>开始</button>
+      <button onClick={stop}>停止</button>
+    </div>
+  )
+}
+```
+
+> 💡 存储可变值时，`useRef` 的泛型标注存储值的类型（如 `useRef<number | null>(null)`）。与 DOM 引用不同，可变值 ref 的 `current` 可以直接赋值。
+
+常见用途：
+
+| 场景                 | 说明                                             |
+| -------------------- | ------------------------------------------------ |
+| **保存定时器 ID**    | 开始/停止定时器时需要引用 ID，无需触发渲染       |
+| **记录上一次值**     | 在 useEffect 中把当前 state 存入 ref，下次渲染时对比 |
+| **标记是否首次渲染** | `const isFirst = useRef(true)`，首次执行后置 false |
+
+### 4.3 Vue 3 对照
+
+| React | Vue 3 | 说明 |
+| ----- | ----- | ---- |
+| `useRef(null)` + `ref={inputRef}` | `ref()` + `ref="inputRef"` | 操作 DOM |
+| `useRef(value)` 存可变值 | 普通变量或 `ref(value)` | Vue 的 `ref()` 本身就是响应式可变容器 |
+| 修改 `ref.current` 不触发渲染 | 修改 `ref.value` **会**触发渲染 | 若需不触发渲染的可变值，Vue 中用普通 `let` 变量即可 |
+
+```vue
+<script setup>
+import { ref, onMounted } from 'vue'
+
+// template ref：声明同名 ref，Vue 自动绑定到模板中同名的 ref 属性
+const inputRef = ref<HTMLInputElement | null>(null)
+
+onMounted(() => {
+  inputRef.value?.focus()
+})
+</script>
+
+<template>
+  <input ref="inputRef" />
+</template>
+```
+
+> 💡 React 的 `useRef` 身兼两职（DOM 引用 + 可变值存储），且修改不触发渲染；Vue 的 `ref()` 是响应式的（修改会触发渲染），template ref 绑定 DOM 则通过模板中的 `ref="xxx"` 实现。
+
+***
+
+## 五、useEffect
+
+### 5.1 作用
 
 **useEffect** 用于在组件的**挂载、更新、卸载**阶段执行"副作用"，例如网络请求、订阅、操作 DOM、定时器等。这些操作称为 **side effects（副作用）**。
 
@@ -433,7 +525,7 @@ useEffect(() => {
 
 > 💡 可理解为：连接"外部系统"（不受 React 控制的系统），如服务器、浏览器 API、定时器等。
 
-### 4.2 清理函数
+### 5.2 清理函数
 
 useEffect 的回调可以返回一个**清理函数**，React 会在以下时机调用它：
 
@@ -457,7 +549,7 @@ useEffect(() => {
 
 > 💡 **开发模式（Strict Mode）** 下 React 会对每个 Effect 执行 **挂载 → 卸载 → 再挂载**，以帮助发现缺少清理函数的问题。如果 Effect 在二次挂载后行为异常，说明清理逻辑不完整。此行为仅在开发环境触发，生产环境不受影响。
 
-### 4.3 依赖项约定
+### 5.3 依赖项约定
 
 | 需要放进依赖项                     | 不需要放进依赖项                 |
 | --------------------------------- | -------------------------------- |
@@ -465,7 +557,7 @@ useEffect(() => {
 
 推荐：**一个 useEffect 只负责一个完整功能**，便于阅读和依赖管理。
 
-### 4.4 在 useEffect 中发请求
+### 5.4 在 useEffect 中发请求
 
 场景：组件**初次渲染**时请求数据。
 
@@ -494,6 +586,32 @@ useEffect(() => {
 
 > 💡 `useState` 有初始值时自动推断类型，无需泛型；初始值为 `null` 或空数组时需显式标注：`useState<User | null>(null)`、`useState<Item[]>([])`。
 
+**React 19 `use` Hook：** React 19 新增 `use` Hook，可在组件中直接读取 Promise，配合 Suspense 实现更声明式的数据加载，是 `useEffect` + `useState` 请求模式的现代替代方案：
+
+```tsx
+import { use, Suspense } from 'react'
+
+function DataList({ dataPromise }: { dataPromise: Promise<DataItem[]> }) {
+  // use 直接读取 Promise，未完成时由 Suspense 展示 fallback
+  const data = use(dataPromise)
+  return <ul>{data.map(item => <li key={item.id}>{item.name}</li>)}</ul>
+}
+
+// 父组件创建 Promise，传给子组件
+function Page() {
+  const dataPromise = fetch('/api/xxx').then(res => res.json())
+  return (
+    <Suspense fallback={<div>加载中...</div>}>
+      <DataList dataPromise={dataPromise} />
+    </Suspense>
+  )
+}
+```
+
+> 💡 `use` 与其他 Hooks 不同：可以在条件语句和循环中调用。`use` 还可以读取 Context（等价于 `useContext`）。需要配合 Suspense 使用，Promise 未 resolve 时组件会挂起。
+
+***
+
 **竞态处理：** 组件快速切换（如 `id` 连续变化）时，先发出的请求可能后返回，导致旧数据覆盖新数据。用 `AbortController` 在清理函数中取消过期请求：
 
 ```tsx
@@ -517,7 +635,7 @@ useEffect(() => {
 }, [id])
 ```
 
-### 4.5 useLayoutEffect
+### 5.5 useLayoutEffect
 
 `useLayoutEffect` 与 `useEffect` 的 API 完全相同，区别在于**执行时机**：
 
@@ -555,7 +673,7 @@ function Tooltip({ anchorRef, children }: {
 
 > 💡 仅在 `useEffect` 导致视觉闪烁时才改用 `useLayoutEffect`，默认优先使用 `useEffect`。
 
-### 4.6 Vue 3 对照
+### 5.6 Vue 3 对照
 
 React 的 `useEffect` 在 Vue 3 中没有单一对应物，而是拆分为更语义化的 API：
 
@@ -592,187 +710,9 @@ onUnmounted(() => { clearInterval(timer) })
 
 ***
 
-## 五、Hooks 规则
+## 六、useReducer
 
-### 5.1 什么是 Hooks
-
-**Hooks** 是以 `use` 开头的函数（如 `useState`、`useEffect`、`useContext`），为组件提供状态、副作用、Context 等能力。需 **React 16.8+**。
-
-**为何需要 Hooks（了解即可）：** 类组件中状态逻辑难以复用、生命周期拆散同一逻辑；Hooks 让函数组件也能拥有状态与副作用，且便于抽成自定义 Hook 复用。
-
-### 5.2 使用规则
-
-**只能在组件顶层调用 Hooks**，不可放在 `if`、`for`、嵌套函数中。
-
-| 正确 ✅           | 错误 ❌                   |
-| ----------------- | ------------------------- |
-| 组件顶层顺序调用  | 条件、循环、嵌套函数内调用 |
-
-**原因**：React 依赖每次渲染时 Hooks 的**调用顺序一致**来正确关联状态与 Effect；顺序变化会导致状态错位。
-
-```jsx
-// ✅ 正确
-function App() {
-  const [a, setA] = useState(0)
-  const [b, setB] = useState(0)
-  useEffect(() => {}, [])
-  return <div>...</div>
-}
-
-// ❌ 错误
-function App() {
-  if (x) {
-    const [a, setA] = useState(0)
-  }
-}
-```
-
-### 5.3 Vue 3 对照
-
-Vue 3 Composition API 的 `ref()`、`computed()`、`watch()` 等虽与 React Hooks 形似，但**没有调用顺序限制**——可以在 `if` / `for` 中使用。
-
-| 对比项 | React Hooks | Vue Composition API |
-| ------ | ----------- | ------------------- |
-| **条件中使用** | ❌ 不允许 | ✅ 允许 |
-| **循环中使用** | ❌ 不允许 | ✅ 允许 |
-| **依赖机制** | 调用索引（链表），依赖顺序一致 | Proxy 依赖追踪，与调用顺序无关 |
-
-> 💡 React Hooks 基于**调用索引**，每次渲染必须保持相同的调用顺序，否则状态错位；Vue 基于 **Proxy 响应式追踪**，不存在此限制。
-
-***
-
-## 六、React.memo、useCallback 与 useMemo
-
-### 6.1 React.memo
-
-**React.memo** 是一个高阶组件，用于对函数组件做**浅比较缓存**：当组件的 props 没有变化（浅比较）时，跳过重新渲染，直接复用上次的渲染结果。
-
-默认情况下，父组件重新渲染时**所有子组件都会跟着重渲染**，即使 props 没变；`React.memo` 可以避免这类不必要的渲染。
-
-```jsx
-import { memo } from 'react'
-
-const ExpensiveList = memo(function ExpensiveList({ items }) {
-  return (
-    <ul>
-      {items.map(item => <li key={item.id}>{item.name}</li>)}
-    </ul>
-  )
-})
-```
-
-| 参数                   | 说明                                                       |
-| ---------------------- | ---------------------------------------------------------- |
-| **组件**               | 要缓存的函数组件                                           |
-| **比较函数（可选）**   | 自定义 `(prevProps, nextProps) => boolean`，返回 `true` 表示 props 相同、跳过渲染；默认浅比较 |
-
-> **注意**：`React.memo` 只比较 **props**；组件内部的 state 或消费的 Context 变化时仍会重新渲染。
-
-### 6.2 useCallback
-
-JavaScript 中每次执行函数体都会创建新的函数对象。父组件重渲染时，内联定义的回调函数会产生**新引用**，即使函数逻辑完全一致——这会导致 `React.memo` 子组件的 props 浅比较失败，memo 形同虚设。
-
-**useCallback** 用于缓存**函数引用**，依赖不变则返回同一函数，确保传给 memo 子组件的回调引用稳定。
-
-| 参数         | 说明                       |
-| ------------ | -------------------------- |
-| **回调函数** | 要缓存的函数               |
-| **依赖项**   | 依赖变化时返回新函数引用   |
-
-```jsx
-import { useCallback } from 'react'
-
-const handleSubmit = useCallback(() => {
-  doSomething(a, b)
-}, [a, b])
-```
-
-### 6.3 useMemo
-
-**useMemo** 用于缓存**计算结果**，依赖不变则返回上次结果，避免每次渲染都重新计算。
-
-| 参数         | 说明                     |
-| ------------ | ------------------------ |
-| **计算函数** | 返回要缓存的值           |
-| **依赖项**   | 依赖变化时重新执行计算   |
-
-**适用场景：** 派生状态（如过滤、排序后的列表）、昂贵计算（大列表运算）；简单运算不必用 useMemo。
-
-```jsx
-import { useMemo } from 'react'
-
-// 依赖 list 不变时沿用上次排序结果
-const sortedList = useMemo(() => {
-  return [...list].sort((a, b) => a.score - b.score)
-}, [list])
-```
-
-### 6.4 三者对比与配合
-
-| 对比项       | React.memo             | useCallback           | useMemo              |
-| ------------ | ---------------------- | --------------------- | -------------------- |
-| **缓存对象** | 组件渲染结果           | 函数引用              | 计算结果（值）       |
-| **触发条件** | props 浅比较不同时重渲染 | 依赖变化时返回新引用  | 依赖变化时重新计算   |
-| **典型用途** | 避免子组件不必要的重渲染 | 传给 memo 子组件的回调 | 派生数据、昂贵计算   |
-
-典型配合模式：父组件用 `useCallback` 稳定回调引用 → 子组件用 `React.memo` 包裹 → 父组件重渲染时子组件因 props 未变而跳过渲染。
-
-```jsx
-// 父组件
-function Parent() {
-  const [count, setCount] = useState(0)
-
-  // 用 useCallback 稳定函数引用
-  const handleClick = useCallback(() => {
-    console.log('clicked')
-  }, [])
-
-  return (
-    <div>
-      <span>{count}</span>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-      {/* count 变化导致 Parent 重渲染，但 Child 的 props 未变，跳过渲染 */}
-      <Child onClick={handleClick} />
-    </div>
-  )
-}
-
-// 子组件用 memo 包裹
-const Child = memo(function Child({ onClick }) {
-  return <button onClick={onClick}>子按钮</button>
-})
-```
-
-> 💡 不要滥用：只在**确实有性能问题**或子组件渲染开销较大时才优化。过早优化反而增加代码复杂度。
-
-### 6.5 Vue 3 对照
-
-Vue 3 的响应式系统**自动追踪依赖、精确更新**，大部分场景不需要手动优化：
-
-| React | Vue 3 | 说明 |
-| ----- | ----- | ---- |
-| **`React.memo`** | 不需要 | Vue 组件默认按需更新，props 未变时不会重渲染子组件 |
-| **`useCallback`** | 不需要 | Vue 模板编译器自动缓存事件处理函数引用 |
-| **`useMemo`** | `computed` | 缓存派生值，依赖变化时自动重新计算 |
-
-```vue
-<script setup>
-import { ref, computed } from 'vue'
-
-const list = ref([{ score: 3 }, { score: 1 }, { score: 2 }])
-
-// 等价于 useMemo(() => [...list].sort(...), [list])
-const sortedList = computed(() =>
-  [...list.value].sort((a, b) => a.score - b.score)
-)
-</script>
-```
-
-> 💡 React 需要 `memo` + `useCallback` 手动防止不必要的子组件渲染；Vue 的编译器和响应式系统已内置这些优化，开发者通常只需用 `computed` 处理派生数据。
-
-***
-
-## 七、useReducer
+### 6.1 基本用法
 
 **useReducer** 适合状态逻辑较复杂、或下一状态依赖前一状态的场景；可视为"组件内的迷你 Redux"。当多个状态一起变化、或更新逻辑较复杂时，比多个 `useState` 更易维护。
 
@@ -818,6 +758,8 @@ function Counter() {
 // dispatch({ type: 'reset' })  // ❌ type 不在联合中，编译报错
 ```
 
+### 6.2 useState vs useReducer
+
 | 对比项       | useState               | useReducer                    |
 | ------------ | ---------------------- | ----------------------------- |
 | **适用**     | 简单、独立状态         | 复杂逻辑、多状态联动、多分支  |
@@ -825,13 +767,15 @@ function Counter() {
 | **逻辑位置** | 散在事件处理函数中     | 集中在 reducer 函数           |
 | **可测试性** | 需要渲染组件才能测试   | reducer 是纯函数，可独立单测  |
 
-**Vue 3 对照：** Vue 3 没有内置的 `useReducer`，复杂状态通常用 `reactive` 对象 + 封装方法管理；或使用 **Pinia** 状态管理，其 action 模式与 reducer 类似（集中管理状态更新逻辑）。
+### 6.3 Vue 3 对照
+
+Vue 3 没有内置的 `useReducer`，复杂状态通常用 `reactive` 对象 + 封装方法管理；或使用 **Pinia** 状态管理，其 action 模式与 reducer 类似（集中管理状态更新逻辑）。
 
 ***
 
-## 八、自定义 Hook
+## 七、自定义 Hook
 
-### 8.1 概念与规则
+### 7.1 概念与规则
 
 **自定义 Hook** 即把可复用的状态与副作用逻辑抽成以 **use** 开头的函数，内部可调用其他 Hooks。
 
@@ -841,7 +785,7 @@ function Counter() {
 | **规则**   | 遵守 Hooks 规则（仅顶层调用、仅在 React 函数内调用）         |
 | **返回值** | 可以是数组、对象或单个值，按需约定                           |
 
-### 8.2 典型示例
+### 7.2 典型示例
 
 **封装数据请求：**
 
@@ -897,7 +841,7 @@ function Panel() {
 
 > 💡 返回数组时需显式标注返回类型 `[boolean, () => void]`，否则 TS 会推断为 `(boolean | (() => void))[]` 联合数组，消费方解构时类型不精确。返回对象则无此问题。
 
-### 8.3 设计要点
+### 7.3 设计要点
 
 | 要点           | 说明                                                         |
 | -------------- | ------------------------------------------------------------ |
@@ -905,7 +849,7 @@ function Panel() {
 | **不含 UI**    | 自定义 Hook 只封装**逻辑**（状态 + 副作用），不返回 JSX      |
 | **可组合**     | 自定义 Hook 内可调用其他自定义 Hook，实现逻辑分层             |
 
-### 8.4 Vue 3 对照
+### 7.4 Vue 3 对照
 
 Vue 3 的**组合式函数（Composables）** 与 React 自定义 Hook 概念完全对应——以 `use` 开头，封装可复用的响应式逻辑：
 
@@ -946,25 +890,264 @@ const { list, loading } = useList<Item>('/api/items')
 
 ***
 
-## 九、forwardRef 与 useImperativeHandle
+## 八、性能优化：React.memo、useCallback 与 useMemo
 
-### 9.1 forwardRef
+### 8.1 React.memo
 
-默认情况下，函数组件**不接收** `ref`（传了也拿不到）。**forwardRef** 让函数组件可以接收父组件传来的 ref，并转发到内部的某个 DOM 元素上。
+**React.memo** 是一个高阶组件，用于对函数组件做**浅比较缓存**：当组件的 props 没有变化（浅比较）时，跳过重新渲染，直接复用上次的渲染结果。
+
+默认情况下，父组件重新渲染时**所有子组件都会跟着重渲染**，即使 props 没变；`React.memo` 可以避免这类不必要的渲染。
+
+```jsx
+import { memo } from 'react'
+
+const ExpensiveList = memo(function ExpensiveList({ items }) {
+  return (
+    <ul>
+      {items.map(item => <li key={item.id}>{item.name}</li>)}
+    </ul>
+  )
+})
+```
+
+| 参数                   | 说明                                                       |
+| ---------------------- | ---------------------------------------------------------- |
+| **组件**               | 要缓存的函数组件                                           |
+| **比较函数（可选）**   | 自定义 `(prevProps, nextProps) => boolean`，返回 `true` 表示 props 相同、跳过渲染；默认浅比较 |
+
+> **注意**：`React.memo` 只比较 **props**；组件内部的 state 或消费的 Context 变化时仍会重新渲染。
+
+### 8.2 useCallback
+
+JavaScript 中每次执行函数体都会创建新的函数对象。父组件重渲染时，内联定义的回调函数会产生**新引用**，即使函数逻辑完全一致——这会导致 `React.memo` 子组件的 props 浅比较失败，memo 形同虚设。
+
+**useCallback** 用于缓存**函数引用**，依赖不变则返回同一函数，确保传给 memo 子组件的回调引用稳定。
+
+| 参数         | 说明                       |
+| ------------ | -------------------------- |
+| **回调函数** | 要缓存的函数               |
+| **依赖项**   | 依赖变化时返回新函数引用   |
+
+```jsx
+import { useCallback } from 'react'
+
+const handleSubmit = useCallback(() => {
+  doSomething(a, b)
+}, [a, b])
+```
+
+### 8.3 useMemo
+
+**useMemo** 用于缓存**计算结果**，依赖不变则返回上次结果，避免每次渲染都重新计算。
+
+| 参数         | 说明                     |
+| ------------ | ------------------------ |
+| **计算函数** | 返回要缓存的值           |
+| **依赖项**   | 依赖变化时重新执行计算   |
+
+**适用场景：** 派生状态（如过滤、排序后的列表）、昂贵计算（大列表运算）；简单运算不必用 useMemo。
+
+```jsx
+import { useMemo } from 'react'
+
+// 依赖 list 不变时沿用上次排序结果
+const sortedList = useMemo(() => {
+  return [...list].sort((a, b) => a.score - b.score)
+}, [list])
+```
+
+### 8.4 三者对比与配合
+
+| 对比项       | React.memo             | useCallback           | useMemo              |
+| ------------ | ---------------------- | --------------------- | -------------------- |
+| **缓存对象** | 组件渲染结果           | 函数引用              | 计算结果（值）       |
+| **触发条件** | props 浅比较不同时重渲染 | 依赖变化时返回新引用  | 依赖变化时重新计算   |
+| **典型用途** | 避免子组件不必要的重渲染 | 传给 memo 子组件的回调 | 派生数据、昂贵计算   |
+
+典型配合模式：父组件用 `useCallback` 稳定回调引用 → 子组件用 `React.memo` 包裹 → 父组件重渲染时子组件因 props 未变而跳过渲染。
+
+```jsx
+// 父组件
+function Parent() {
+  const [count, setCount] = useState(0)
+
+  // 用 useCallback 稳定函数引用
+  const handleClick = useCallback(() => {
+    console.log('clicked')
+  }, [])
+
+  return (
+    <div>
+      <span>{count}</span>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      {/* count 变化导致 Parent 重渲染，但 Child 的 props 未变，跳过渲染 */}
+      <Child onClick={handleClick} />
+    </div>
+  )
+}
+
+// 子组件用 memo 包裹
+const Child = memo(function Child({ onClick }) {
+  return <button onClick={onClick}>子按钮</button>
+})
+```
+
+> 💡 不要滥用：只在**确实有性能问题**或子组件渲染开销较大时才优化。过早优化反而增加代码复杂度。
+
+### 8.5 Vue 3 对照
+
+Vue 3 的响应式系统**自动追踪依赖、精确更新**，大部分场景不需要手动优化：
+
+| React | Vue 3 | 说明 |
+| ----- | ----- | ---- |
+| **`React.memo`** | 不需要 | Vue 组件默认按需更新，props 未变时不会重渲染子组件 |
+| **`useCallback`** | 不需要 | Vue 模板编译器自动缓存事件处理函数引用 |
+| **`useMemo`** | `computed` | 缓存派生值，依赖变化时自动重新计算 |
+
+```vue
+<script setup>
+import { ref, computed } from 'vue'
+
+const list = ref([{ score: 3 }, { score: 1 }, { score: 2 }])
+
+// 等价于 useMemo(() => [...list].sort(...), [list])
+const sortedList = computed(() =>
+  [...list.value].sort((a, b) => a.score - b.score)
+)
+</script>
+```
+
+> 💡 React 需要 `memo` + `useCallback` 手动防止不必要的子组件渲染；Vue 的编译器和响应式系统已内置这些优化，开发者通常只需用 `computed` 处理派生数据。
+
+### 8.6 React Compiler
+
+**React Compiler**（原名 React Forget）是 React 19 配套的编译期优化工具，在构建阶段自动分析组件代码，**自动插入 memoization**——等价于编译器帮你加 `memo`、`useCallback`、`useMemo`。
+
+| 对比项         | 手动优化                          | React Compiler                    |
+| -------------- | --------------------------------- | --------------------------------- |
+| **工作方式**   | 开发者手写 `memo` / `useCallback` / `useMemo` | 编译器自动推断并插入缓存逻辑      |
+| **心智负担**   | 需判断哪里该加、依赖项是否正确    | 无需关心，编译器自动处理          |
+| **适用范围**   | 逐个组件/函数手动包裹             | 全局自动生效                      |
+
+启用后，大部分场景**不再需要**手动编写 `React.memo`、`useCallback`、`useMemo`，编译器会自动完成等价优化。但理解它们的原理仍然重要——有助于理解编译器的行为、排查性能问题、以及维护未启用 Compiler 的项目。
+
+> 💡 React Compiler 需要在构建工具中配置插件（如 Babel 或 Vite 插件）启用，并非 React 19 默认开启。新项目推荐启用；旧项目可渐进式迁移。
+
+***
+
+## 九、并发特性：useTransition 与 useDeferredValue
+
+### 9.1 useTransition
+
+**useTransition** 将某些状态更新标记为**非紧急（Transition）**，React 优先处理紧急更新（如键盘输入），空闲时再处理 Transition 更新，避免高开销渲染阻塞用户交互。
+
+| 返回值 | 说明 |
+| ------ | ---- |
+| **`isPending`** | Transition 尚未完成时为 `true`，可用于展示加载状态 |
+| **`startTransition`** | 将回调内的 `setState` 标记为非紧急 |
 
 ```tsx
-import { forwardRef, useRef } from 'react'
+import { useState, useTransition } from 'react'
+
+function SearchPage({ allItems }: { allItems: string[] }) {
+  const [keyword, setKeyword] = useState('')
+  const [filteredItems, setFilteredItems] = useState(allItems)
+  const [isPending, startTransition] = useTransition()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setKeyword(value)            // 紧急：输入框立即响应
+    startTransition(() => {
+      // 非紧急：过滤结果延迟渲染，不阻塞输入
+      setFilteredItems(allItems.filter(item => item.includes(value)))
+    })
+  }
+
+  return (
+    <div>
+      <input value={keyword} onChange={handleChange} />
+      {isPending && <span>过滤中...</span>}
+      <ul>{filteredItems.map(item => <li key={item}>{item}</li>)}</ul>
+    </div>
+  )
+}
+```
+
+典型场景：
+
+| 场景 | 说明 |
+| ---- | ---- |
+| **搜索过滤** | 输入框即时响应，大列表过滤延迟渲染 |
+| **Tab 切换** | Tab 按钮立即高亮，内容面板延迟渲染 |
+| **大列表更新** | 用户操作立即反馈，列表重渲染不阻塞交互 |
+
+> 💡 `startTransition` 回调必须是**同步的**（内部直接调 `setState`），不能包含 `await`。回调内的 `setState` 被标记为低优先级，React 可中断其渲染以响应更紧急的更新。
+
+### 9.2 useDeferredValue
+
+**useDeferredValue** 接收一个值，返回其**延迟版本**。原始值频繁变化时，延迟版本滞后更新，让 React 优先渲染紧急内容。适用于**无法控制状态更新源头**（如值来自 props）的场景。
+
+```tsx
+import { useState, useDeferredValue, useMemo } from 'react'
+
+function SearchResults({ keyword }: { keyword: string }) {
+  // keyword 来自 props，无法用 startTransition 控制其更新
+  const deferredKeyword = useDeferredValue(keyword)
+  const isStale = keyword !== deferredKeyword
+
+  const results = useMemo(() => heavySearch(deferredKeyword), [deferredKeyword])
+
+  return (
+    <div style={{ opacity: isStale ? 0.6 : 1 }}>
+      <ul>{results.map(r => <li key={r}>{r}</li>)}</ul>
+    </div>
+  )
+}
+```
+
+### 9.3 useTransition vs useDeferredValue
+
+| 对比项 | useTransition | useDeferredValue |
+| ------ | ------------- | ---------------- |
+| **控制对象** | 包裹 `setState` 调用 | 包裹一个**值** |
+| **使用场景** | 能控制状态更新源头 | 值来自 props 或外部，无法控制更新源头 |
+| **加载状态** | 提供 `isPending` 标志 | 通过 `value !== deferredValue` 判断 |
+| **本质** | 降低 `setState` 优先级 | 让值的消费端延迟响应 |
+
+两者解决相同问题——**防止高开销渲染阻塞用户交互**，选择取决于能否控制状态更新的源头。
+
+### 9.4 Vue 3 对照
+
+Vue 3 没有并发调度机制，响应式更新统一批处理，不区分优先级。性能敏感场景通过其他手段解决：
+
+| React | Vue 3 替代方案 | 说明 |
+| ----- | -------------- | ---- |
+| `useTransition` | 手动 loading 状态 + `nextTick` | Vue 无优先级调度，需自行管理加载态 |
+| `useDeferredValue` | `watchDebounced`（VueUse） | 通过防抖延迟响应频繁变化的值 |
+| 并发渲染（可中断） | 虚拟滚动 / `v-memo` | Vue 用减少渲染量代替可中断渲染 |
+
+> 💡 React 并发特性依赖 Fiber 架构的**可中断渲染**——低优先级渲染可被高优先级更新打断。Vue 的 Virtual DOM diff 是同步不可中断的，因此无法实现相同机制，但 Vue 的精确依赖追踪使得需要优先级调度的场景本身较少。
+
+***
+
+## 十、ref 转发与 useImperativeHandle
+
+### 10.1 ref 转发
+
+默认情况下，函数组件**不接收** `ref`（传了也拿不到）。React 19 起，函数组件可以直接从 **props** 中接收 `ref`，并转发到内部的某个 DOM 元素上：
+
+```tsx
+import { useRef } from 'react'
 
 interface MyInputProps {
   placeholder?: string
+  ref?: React.Ref<HTMLInputElement>
 }
 
-// forwardRef 泛型：<Ref 类型, Props 类型>
-const MyInput = forwardRef<HTMLInputElement, MyInputProps>(
-  function MyInput(props, ref) {
-    return <input ref={ref} {...props} />
-  }
-)
+// React 19：ref 直接作为 props 接收
+function MyInput({ placeholder, ref }: MyInputProps) {
+  return <input ref={ref} placeholder={placeholder} />
+}
 
 function Parent() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -980,17 +1163,90 @@ function Parent() {
 | 注意项           | 说明                                                       |
 | ---------------- | ---------------------------------------------------------- |
 | **适用场景**     | 封装可复用组件（如自定义 Input、Modal）时，允许父组件操作内部 DOM |
-| **不用 forwardRef** | 直接给函数组件传 `ref` 属性会被 React 忽略，`ref` 不在 props 中 |
-| **React 19**     | React 19 起函数组件可直接从 props 接收 `ref`，不再需要 `forwardRef` 包裹 |
+| **React 18 及以前** | 需要用 `forwardRef` 高阶组件包裹才能接收 `ref`，React 19 起已不再需要 |
 
-### 9.2 useImperativeHandle
+***
 
-配合 `forwardRef` 使用，**限制**父组件通过 ref 能访问的内容——不暴露整个 DOM 节点，而是只暴露指定的方法或属性。
+**⚠️ 旧版写法（React 18 及以前）：`forwardRef`**
+
+React 19 之前，函数组件无法直接接收 `ref`，必须用 **`forwardRef`** 高阶组件包裹，`ref` 作为第二个参数（而非 props 属性）传入。已有项目中大量使用此写法，维护老项目时会频繁遇到：
+
+```tsx
+import { forwardRef, useRef } from 'react'
+
+interface MyInputProps {
+  placeholder?: string
+}
+
+// forwardRef 泛型：<Ref 类型, Props 类型>
+const MyInput = forwardRef<HTMLInputElement, MyInputProps>(
+  function MyInput(props, ref) {
+    // ref 是第二个参数，不在 props 中
+    return <input ref={ref} {...props} />
+  }
+)
+
+function Parent() {
+  const inputRef = useRef<HTMLInputElement>(null)
+  return (
+    <div>
+      <MyInput ref={inputRef} placeholder="请输入" />
+      <button onClick={() => inputRef.current?.focus()}>聚焦子组件输入框</button>
+    </div>
+  )
+}
+```
+
+> 💡 `forwardRef` 写法在 React 19 中仍可正常工作，但已被标记为即将弃用。新代码推荐直接从 props 接收 `ref`。
+
+### 10.2 useImperativeHandle
+
+**useImperativeHandle** 用于**限制**父组件通过 ref 能访问的内容——不暴露整个 DOM 节点，而是只暴露指定的方法或属性。
+
+```tsx
+import { useRef, useImperativeHandle } from 'react'
+
+interface MyInputHandle {
+  focus: () => void
+  clear: () => void
+}
+
+interface MyInputProps {
+  ref?: React.Ref<MyInputHandle>
+}
+
+// React 19 写法：ref 从 props 接收
+function MyInput({ ref }: MyInputProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    clear: () => { if (inputRef.current) inputRef.current.value = '' }
+  }))
+
+  return <input ref={inputRef} />
+}
+
+// 父组件的 ref 类型为自定义 Handle，只能调用 focus() 和 clear()
+function Parent() {
+  const ref = useRef<MyInputHandle>(null)
+  return (
+    <div>
+      <MyInput ref={ref} />
+      <button onClick={() => ref.current?.focus()}>聚焦</button>
+      <button onClick={() => ref.current?.clear()}>清空</button>
+    </div>
+  )
+}
+```
+
+***
+
+**⚠️ 旧版写法（React 18 及以前）：`forwardRef` + `useImperativeHandle`**
 
 ```tsx
 import { forwardRef, useRef, useImperativeHandle } from 'react'
 
-// 定义暴露给父组件的方法接口
 interface MyInputHandle {
   focus: () => void
   clear: () => void
@@ -1009,33 +1265,21 @@ const MyInput = forwardRef<MyInputHandle, {}>(
     return <input ref={inputRef} {...props} />
   }
 )
-
-// 父组件的 ref 类型为自定义 Handle，只能调用 focus() 和 clear()
-function Parent() {
-  const ref = useRef<MyInputHandle>(null)
-  return (
-    <div>
-      <MyInput ref={ref} />
-      <button onClick={() => ref.current?.focus()}>聚焦</button>
-      <button onClick={() => ref.current?.clear()}>清空</button>
-    </div>
-  )
-}
 ```
 
-| 对比项       | 仅 forwardRef              | forwardRef + useImperativeHandle |
+| 对比项       | 仅转发 ref                 | ref + useImperativeHandle        |
 | ------------ | -------------------------- | -------------------------------- |
 | **暴露内容** | 整个 DOM 节点              | 自定义的方法/属性                |
 | **封装性**   | 内部 DOM 完全暴露          | 只暴露必要接口，更安全           |
 | **适用场景** | 简单转发（如聚焦）         | 需要精细控制暴露内容的组件封装   |
 
-### 9.3 Vue 3 对照
+### 10.3 Vue 3 对照
 
-React 的 `forwardRef` + `useImperativeHandle` 在 Vue 3 中对应 **`defineExpose`**：
+React 的 ref 转发 + `useImperativeHandle` 在 Vue 3 中对应 **`defineExpose`**：
 
 | React | Vue 3 | 说明 |
 | ----- | ----- | ---- |
-| **`forwardRef`** | 不需要 | Vue 组件默认可通过 `ref` 获取实例 |
+| **props 中接收 `ref`** | 不需要 | Vue 组件默认可通过 `ref` 获取实例 |
 | **`useImperativeHandle`** | `defineExpose` | 显式声明暴露给父组件的属性/方法 |
 
 ```vue
@@ -1077,9 +1321,9 @@ const handleFocus = () => myInputRef.value?.focus()
 
 ***
 
-## 十、React.lazy 与 Suspense
+## 十一、React.lazy 与 Suspense
 
-### 10.1 代码分割
+### 11.1 代码分割
 
 **React.lazy** 配合动态 `import()` 实现组件级**代码分割**——按需加载组件的 JS 代码，减少首屏加载体积。**Suspense** 包裹懒加载组件，在代码尚未加载完成时展示 `fallback`。
 
@@ -1105,7 +1349,7 @@ function App() {
 | **Suspense 位置**  | 可放在懒加载组件的任意祖先层级；一个 Suspense 可包裹多个 lazy 组件 |
 | **嵌套 Suspense**  | 可嵌套多层，内层 Suspense 为更细粒度的区域提供独立 fallback |
 
-### 10.2 路由级分割
+### 11.2 路由级分割
 
 最常见的做法是按**路由**分割，每个页面组件用 `lazy` 导入：
 
@@ -1130,7 +1374,7 @@ function App() {
 }
 ```
 
-### 10.3 Vue 3 对照
+### 11.3 Vue 3 对照
 
 | React | Vue 3 | 说明 |
 | ----- | ----- | ---- |
@@ -1156,9 +1400,9 @@ const Dashboard = defineAsyncComponent(() => import('./Dashboard.vue'))
 
 ***
 
-## 十一、错误边界（Error Boundary）
+## 十二、错误边界（Error Boundary）
 
-### 11.1 概念
+### 12.1 概念
 
 **错误边界** 是一种 React 组件，能捕获子组件树在**渲染阶段**抛出的 JS 错误，展示降级 UI 而不是白屏。
 
@@ -1168,7 +1412,7 @@ const Dashboard = defineAsyncComponent(() => import('./Dashboard.vue'))
 | 生命周期 / useEffect 中的错误  | 异步代码（setTimeout、Promise reject）   |
 | 子树中的错误                   | 服务端渲染（SSR）错误                    |
 
-### 11.2 实现方式
+### 12.2 实现方式
 
 错误边界**只能用类组件**实现，需定义 `getDerivedStateFromError` 或 `componentDidCatch`：
 
@@ -1215,7 +1459,7 @@ class ErrorBoundary extends Component<Props, State> {
 
 > 💡 社区常用 `react-error-boundary` 库，提供函数组件写法和自动重试等功能，避免手写类组件。
 
-### 11.3 Vue 3 对照
+### 12.3 Vue 3 对照
 
 React 错误边界只能用类组件实现；Vue 3 提供 **`onErrorCaptured`** 生命周期钩子，在任意组件中即可捕获后代组件的渲染错误：
 
@@ -1244,7 +1488,7 @@ onErrorCaptured((error, instance, info) => {
 
 ***
 
-## 十二、Portal
+## 十三、Portal
 
 **createPortal** 将子节点渲染到 DOM 树中**任意位置**（通常是 `document.body`），而非父组件的 DOM 层级下。常用于模态框、Toast、Tooltip 等需要脱离父容器层叠上下文的场景。
 
