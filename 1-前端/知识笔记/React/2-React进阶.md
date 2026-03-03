@@ -554,6 +554,21 @@ useEffect(() => {
 | 需要放进依赖项                     | 不需要放进依赖项                 |
 | --------------------------------- | -------------------------------- |
 | Effect 中用到的 **props、state**、组件内声明的变量 | 组件外定义的常量、导入的模块级变量/函数 |
+|                                   | **useRef 返回的 ref 对象**（跨渲染稳定，永远不变） |
+
+**`ref.current` 也不应放进依赖项**：`ref.current` 是可变值，修改它不会触发重新渲染，而依赖数组的比较只在重渲染时发生，因此即使写进依赖项，Effect 也不会在 `ref.current` 变化时重新执行。
+
+```tsx
+const countRef = useRef(0)
+
+useEffect(() => {
+  console.log(countRef.current)
+}, [countRef.current]) // ❌ ref.current 变化不触发重渲染，Effect 不会重新执行
+
+useEffect(() => {
+  console.log(countRef.current)
+}, [countRef])          // ❌ 无意义，ref 对象永远不变，等同于 []
+```
 
 推荐：**一个 useEffect 只负责一个完整功能**，便于阅读和依赖管理。
 
