@@ -612,9 +612,10 @@ function DataList({ dataPromise }: { dataPromise: Promise<DataItem[]> }) {
   return <ul>{data.map(item => <li key={item.id}>{item.name}</li>)}</ul>
 }
 
-// 父组件创建 Promise，传给子组件
+// Promise 在组件外创建，保持引用稳定
+const dataPromise = fetch('/api/xxx').then(res => res.json())
+
 function Page() {
-  const dataPromise = fetch('/api/xxx').then(res => res.json())
   return (
     <Suspense fallback={<div>加载中...</div>}>
       <DataList dataPromise={dataPromise} />
@@ -623,7 +624,7 @@ function Page() {
 }
 ```
 
-> 💡 `use` 与其他 Hooks 不同：可以在条件语句和循环中调用。`use` 还可以读取 Context（等价于 `useContext`）。需要配合 Suspense 使用，Promise 未 resolve 时组件会挂起。
+> 💡 `use` 与其他 Hooks 不同：可以在条件语句和循环中调用，还可以读取 Context（等价于 `useContext`）。配合 Suspense 使用，Promise 未 resolve 时组件挂起。传给 `use` 的 Promise **必须引用稳定**——不要在渲染函数体内直接创建，否则每次渲染产生新 Promise 导致反复挂起；Promise 通常来自模块顶层、路由 loader 或父组件 props。
 
 ***
 
@@ -697,8 +698,10 @@ React 的 `useEffect` 在 Vue 3 中没有单一对应物，而是拆分为更语
 | `useEffect(() => {}, [])` | `onMounted(() => {})` | 挂载时执行一次 |
 | `useEffect` 清理函数 + 卸载 | `onUnmounted(() => {})` | 卸载时清理 |
 | `useEffect(() => {}, [a, b])` | `watch([a, b], () => {})` | 监听指定响应式数据变化 |
-| `useEffect(() => {})` 无依赖 | `watchEffect(() => {})` | 自动追踪依赖，立即执行 |
+| `useEffect(() => {})` 无依赖 | `watchEffect(() => {})` | 近似对应，行为有差异 |
 | `useLayoutEffect` | `onMounted` + `nextTick` | Vue 的 `onMounted` 回调在 DOM 更新后同步执行 |
+
+> **注意**：`useEffect(() => {})` 不传依赖数组时，每次渲染都会重新执行，无论数据是否变化；`watchEffect` 自动追踪回调内访问的响应式数据，仅在这些数据变化时重新执行，不因组件重新渲染而无条件触发。两者在"何时重新执行"上有本质区别。
 
 ```vue
 <script setup>
@@ -1553,3 +1556,213 @@ function Modal({ visible, onClose, children }: {
   </Teleport>
 </template>
 ```
+
+***
+
+## 十四、React 19 Actions 与表单 Hooks
+
+React 19 引入 **Actions** 机制：`<form>` 的 `action` 属性可直接接收异步函数，React 自动管理 pending 状态、错误状态和乐观更新。配套提供三个 Hook：`useActionState`（管理 action 状态）、`useFormStatus`（获取表单提交状态）、`useOptimistic`（乐观更新）。
+
+| 对比项 | 传统模式（useState + onSubmit） | Actions 模式（React 19） |
+| ------ | ------------------------------ | ----------------------- |
+| **pending 状态** | 手动 `setLoading(true/false)` | `useActionState` / `useFormStatus` 自动管理 |
+| **错误处理** | try/catch + `setError` | action 返回值中携带错误信息 |
+| **乐观更新** | 手动更新 → 手动回退 | `useOptimistic` 自动回退 |
+| **渐进增强** | JS 未加载则表单不可用 | `<form action>` 在无 JS 时仍可提交（SSR） |
+| **代码组织** | 状态逻辑散在组件中 | action 函数集中处理，类似 reducer |
+
+### 14.1 useActionState
+
+**useActionState** 管理表单 Action 的状态：接收一个异步 action 函数和初始状态，返回当前状态、绑定到 `<form action>` 的封装函数、以及 pending 标志。
+
+```tsx
+import { useActionState } from 'react'
+
+async function submitAction(prevState: { message: string }, formData: FormData) {
+  const name = formData.get('name') as string
+  if (!name) return { message: '名称不能为空' }
+  await fetch('/api/submit', { method: 'POST', body: formData })
+  return { message: `提交成功：${name}` }
+}
+
+function Form() {
+  const [state, formAction, isPending] = useActionState(submitAction, { message: '' })
+
+  return (
+    <form action={formAction}>
+      <input name="name" />
+      <button disabled={isPending}>{isPending ? '提交中...' : '提交'}</button>
+      {state.message && <p>{state.message}</p>}
+    </form>
+  )
+}
+```
+
+| 参数 | 说明 |
+| ---- | ---- |
+| **action** | 异步函数 `(prevState, formData) => newState`，接收上一次状态和表单数据 |
+| **initialState** | 初始状态 |
+| **permalink（可选）** | SSR 场景下 JS 加载前的表单提交 URL |
+
+| 返回值 | 说明 |
+| ------ | ---- |
+| **state** | action 函数的最新返回值 |
+| **formAction** | 传给 `<form action>` 的封装函数 |
+| **isPending** | action 执行期间为 `true` |
+
+> 💡 action 函数的签名类似 `useReducer` 的 reducer——第一个参数是上一次的 state，第二个参数是 `FormData`（而非 action 对象）。
+
+### 14.2 useFormStatus
+
+**useFormStatus** 获取**最近父级 `<form>`** 的提交状态。必须在 `<form>` 的**子组件**中调用，不能在渲染 `<form>` 的同一组件中调用。
+
+```tsx
+import { useFormStatus } from 'react-dom'
+
+// 必须是 <form> 的子组件
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button disabled={pending}>
+      {pending ? '提交中...' : '提交'}
+    </button>
+  )
+}
+
+function Form() {
+  return (
+    <form action={handleSubmit}>
+      <input name="name" />
+      <SubmitButton />
+    </form>
+  )
+}
+```
+
+| 返回值 | 说明 |
+| ------ | ---- |
+| **pending** | 父级 form 是否正在提交 |
+| **data** | 提交中的 `FormData`（未提交时为 `null`） |
+| **method** | HTTP 方法（`'get'` 或 `'post'`） |
+| **action** | 传给 form 的 action 函数引用 |
+
+> **注意**：`useFormStatus` 从 `react-dom` 导入（非 `react`）。在渲染 `<form>` 的同一组件中调用会始终返回 `{ pending: false }`——必须将使用它的 UI 提取为子组件。
+
+### 14.3 useOptimistic
+
+**useOptimistic** 在异步操作完成前**立即展示预期结果**，提升用户感知速度。操作成功时用真实数据替换乐观值；失败时自动回退到原始状态。
+
+```tsx
+import { useOptimistic } from 'react'
+
+interface Todo {
+  id: number
+  text: string
+  saving?: boolean
+}
+
+function TodoList({ todos, onAdd }: {
+  todos: Todo[]
+  onAdd: (text: string) => Promise<void>
+}) {
+  const [optimisticTodos, addOptimistic] = useOptimistic(
+    todos,
+    (current: Todo[], newText: string) => [
+      ...current,
+      { id: Date.now(), text: newText, saving: true }
+    ]
+  )
+
+  async function handleAdd(formData: FormData) {
+    const text = formData.get('text') as string
+    addOptimistic(text)          // 立即在列表中展示
+    await onAdd(text)            // 等待服务器确认
+  }
+
+  return (
+    <div>
+      {optimisticTodos.map(todo => (
+        <p key={todo.id} style={{ opacity: todo.saving ? 0.6 : 1 }}>
+          {todo.text}
+        </p>
+      ))}
+      <form action={handleAdd}>
+        <input name="text" />
+        <button>添加</button>
+      </form>
+    </div>
+  )
+}
+```
+
+| 参数 | 说明 |
+| ---- | ---- |
+| **state** | 原始状态（通常来自 props） |
+| **updateFn** | `(currentState, optimisticValue) => newOptimisticState` |
+
+| 返回值 | 说明 |
+| ------ | ---- |
+| **optimisticState** | 操作进行中为乐观值，完成后自动恢复为真实状态 |
+| **addOptimistic** | 触发乐观更新的函数 |
+
+> 💡 乐观更新的"回退"是自动的：原始 `state`（来自 props）更新为服务器返回的真实数据后，React 用真实数据替换乐观值，无需手动回退。
+
+***
+
+**三者的典型协作流程：**
+
+```
+用户提交表单
+    ↓
+useOptimistic → 立即展示预期结果
+    ↓
+useFormStatus → 子组件中按钮显示"提交中..."
+    ↓
+useActionState 的 action 执行异步操作
+    ↓
+成功 → 真实数据替换乐观值
+失败 → 自动回退到原始状态
+```
+
+### 14.4 Vue 3 对照
+
+Vue 3 没有内置 Actions 机制，表单提交仍使用 `@submit.prevent` + 手动管理状态：
+
+| React 19 | Vue 3 | 说明 |
+| --------- | ----- | ---- |
+| `<form action={fn}>` | `<form @submit.prevent="fn">` | Vue 用事件处理，无自动 pending 管理 |
+| `useActionState` | 手动 `ref` 管理 loading / error / data | 无内置抽象 |
+| `useFormStatus` | 无对应 | 通过 props 或 provide/inject 传递 loading 状态 |
+| `useOptimistic` | 手动实现（更新 → try/catch → 回退） | 无内置支持 |
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const isPending = ref(false)
+const message = ref('')
+
+async function handleSubmit(e: Event) {
+  const formData = new FormData(e.target as HTMLFormElement)
+  isPending.value = true
+  try {
+    await fetch('/api/submit', { method: 'POST', body: formData })
+    message.value = '提交成功'
+  } catch {
+    message.value = '提交失败'
+  } finally {
+    isPending.value = false
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input name="name" />
+    <button :disabled="isPending">{{ isPending ? '提交中...' : '提交' }}</button>
+    <p>{{ message }}</p>
+  </form>
+</template>
+```
+
+> 💡 React 19 的 Actions 将表单状态管理提升为框架级抽象，减少了手动管理 pending/error 的样板代码；Vue 中需手动编写这些逻辑，但可封装为 composable 函数复用。
