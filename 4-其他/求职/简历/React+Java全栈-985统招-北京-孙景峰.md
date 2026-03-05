@@ -19,29 +19,33 @@
 
 **前端：**
 
-- 熟练掌握 TypeScript、JavaScript、HTML、CSS，包括但不限于 CSS3、HTML5、ES6+
-- 熟练掌握 Vue3、Vue2 框架及生态系统，了解其特性、原理
-- 掌握 React 及其生态系统，包括 React Router、Redux（RTK）、Zustand 等，了解 Fiber、虚拟 DOM、Diff 算法等核心原理
-- 了解 Next.js，掌握 SSR、SSG、ISR 等服务端渲染模式
-- 熟练掌握前端工程化知识，如 NPM、构建工具、编译工具、代码格式化工具等，从工程的角度去解决开发问题
-- 熟练掌握代码复用、代码解耦技巧，包括但不限于复用组件、逻辑、样式，解耦项目、页面、函数
-- 熟练掌握 Element Plus、Ant Design、Leaflet、Highcharts 等，可快速上手新组件库或框架
-- 能够使用 Performance 面板进行性能监控、优化，查看性能标记、优化超长任务
+- 熟练掌握 TypeScript、JavaScript、HTML5、CSS3，包括 ES6+ 语法特性与异步编程模型
+- 熟练掌握 React 及其生态（React Router、Redux/RTK），包括 Fiber 架构、虚拟 DOM、Diff 算法等核心原理
+- 熟练掌握 Vue3、Vue2 及其生态（Vue Router、Pinia/Vuex），包括响应式原理与编译优化机制
+- 熟练掌握 Ant Design、Element Plus、ECharts、Leaflet 等主流库，可快速上手新技术框架
+- 熟练掌握 前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
+- 熟练掌握 组件化开发与逻辑复用，擅长通过组合式函数/自定义 Hook 提高代码复用率，降低模块耦合度
+- 能够使用 Performance 面板定位性能瓶颈，通过生成器函数、Web Workers 等手段优化长任务
+- 能够使用 微前端框架、iframe 构建多应用集成架构，有单点登录、权限管控、样式隔离、跨应用通信等生产经验
+- 了解 Next.js、Nuxt 及 SSR、SSG、ISR 等服务端渲染模式
 
 **后端：**
 
-- 掌握 Java 语言，包括集合框架、Stream 流、IO 流、多线程、网络编程等
-- 掌握 Spring Boot，能独立完成 RESTful API 开发，了解自动配置、AOP、登录认证（JWT）等核心机制
-- 掌握 MySQL，熟悉索引优化、事务管理；掌握 MyBatis，熟悉动态 SQL
-- 了解 Redis，掌握常用数据结构及缓存、会话管理等应用场景
-- 了解微服务架构，掌握 Spring Cloud（Nacos、OpenFeign、Gateway、Sentinel）的基本使用
-- 了解 Elasticsearch，掌握全文检索与聚合分析的基本使用
+- 熟练掌握 Java，熟悉集合框架、Stream 流、IO、多线程与网络编程
+- 熟练掌握 Spring Boot + Maven，能独立完成 RESTful API 开发，了解自动配置、AOP、JWT 认证等核心机制
+- 熟练掌握 MySQL 与 MyBatis，熟悉索引优化、事务管理、动态 SQL
+- 熟练掌握 Docker，能通过 Dockerfile、Docker Compose 完成应用的容器化部署
+- 熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
+- 熟练掌握 微服务架构与 Spring Cloud 组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
+- 熟练掌握 消息队列（RabbitMQ），掌握异步解耦、流量削峰等常见应用模式
+- 熟练掌握 Linux 基本操作，能完成服务器环境搭建与日常运维
+- 了解 Elasticsearch 及倒排索引原理，能进行全文检索与聚合分析的基本操作
 
 **工程化与工具：**
 
-- 熟练掌握主流 AI 编程工具，如 Cursor 等，辅助开发以提高效率
-- 能够使用 GitLab、Nginx、Jenkins、Docker 完成项目初始化、域名配置、容器化部署、发布上线
-- 了解项目统计、监控系统，如 Google Analytics、Sentry 等
+- 熟练掌握 AI 工具（Cursor、OpenClaw等），辅助开发以提高编码效率
+- 熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置与 CI/CD
+- 了解 项目监控体系，如 Google Analytics、Sentry 等
 
 ---
 
