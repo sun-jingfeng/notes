@@ -32,7 +32,7 @@
 **后端：**
 
 - 熟练掌握 Java，熟悉集合框架、Stream 流、IO、多线程与网络编程
-- 熟练掌握 Spring Boot + Maven，能独立完成 RESTful API 开发，熟悉自动配置、AOP、JWT 认证等核心机制
+- 熟练掌握 Spring Boot、Maven，能独立完成 RESTful API 开发，熟悉自动配置、AOP、JWT 认证等核心机制
 - 熟练掌握 MySQL 与 MyBatis，熟悉索引优化、事务管理、动态 SQL
 - 熟练掌握 Docker，能通过 Dockerfile、Docker Compose 完成应用容器化部署
 - 熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
@@ -80,9 +80,9 @@
 
 **项目描述**：基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统。
 
-**主要技术**：React、Immer、React Router、Redux、Ant Design、TypeScript、Vite、React Compiler
+**前端技术**：React、Immer、React Router、Redux、Ant Design、TypeScript、Vite、React Compiler
 
-**主要成果**：
+**前端成果**：
 
 1. **父子项目结构体系搭建**
    - 解决浏览器默认缓存策略差异导致的更新部署后需手动清除缓存问题
@@ -90,20 +90,28 @@
    - 实现父子项目明暗主题统一切换
    - 设计父子项目权限控制方案，解决多项目权限标识冲突问题，支持子项目自主同步权限
    - 实现父子项目统一登录与单点登录
-
 2. 封装截图、测距、区域绘制、关注点等地图交互工具
-
 3. 为内部地图包编写 TypeScript 类型定义，并以私域 npm 包的形式发布
-
 4. 修复极慢网络环境下 GIF 生成功能的边界 bug
-
 5. 开发超长时间轴组件，支持时间选择与播放控制
-
 6. 实现双地图联动交互
-
 7. 制定同项目多版本的差异化适配方案
-
 8. 实现可配置的图例颜色编辑功能
+
+**后端技术**：Spring Boot、Maven、Spring Cloud（Nacos、OpenFeign、Gateway、Sentinel、Seata）、MyBatis、MySQL、Redis、RabbitMQ、Docker、Linux
+
+**后端成果**：
+
+1. 基于 Spring Boot 开发 RESTful API，涵盖雷达数据查询、气象预警、文件管理等业务模块
+2. 基于 Spring Cloud 构建微服务架构，使用 Nacos 实现服务注册发现与多环境配置管理
+3. 使用 Gateway 统一 API 路由与鉴权过滤，使用 OpenFeign 实现服务间声明式调用
+4. 使用 Sentinel 实现接口限流与服务熔断降级，保障高并发场景下的系统稳定性
+5. 设计基于 JWT 的统一认证服务，支持父子项目间的单点登录与接口级权限校验
+6. 使用 MyBatis 动态 SQL 实现多条件数据检索，设计索引策略优化慢查询
+7. 使用 Redis 缓存高频访问的雷达产品数据与用户会话，降低数据库压力
+8. 使用 RabbitMQ 异步处理雷达数据解析与预警通知推送，提升系统响应速度
+9. 使用 Seata 管理跨服务分布式事务，保障核心业务的数据一致性
+10. 基于 Docker Compose 编排全部微服务及中间件，在 Linux 服务器上完成容器化部署
 
 ---
 
@@ -246,4 +254,5 @@
 
 ## 自我评价
 
-具备扎实的前后端基础与丰富的项目实战经验，有前端团队管理经验。保持技术热情，持续学习，适应力强。
+- 扎实的前端、后端基础，丰富的项目经验，有团队管理经验
+- 熟练使用 AI 工具，拥抱新技术，适应新趋势
