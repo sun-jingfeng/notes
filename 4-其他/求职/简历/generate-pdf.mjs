@@ -31,10 +31,10 @@ await page.pdf({
   format: 'A4',
   printBackground: true,
   margin: {
-    top: '12mm',
-    right: '15mm',
-    bottom: '12mm',
-    left: '15mm',
+    top: '14mm',
+    right: '14mm',
+    bottom: '14mm',
+    left: '14mm',
   },
 });
 await browser.close();

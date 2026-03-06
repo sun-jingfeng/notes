@@ -50,8 +50,8 @@
 - 熟练掌握 Vue3、Vue2 及其生态（Vue Router、Pinia/Vuex），理解响应式原理、编译优化机制
 - 熟练掌握 Ant Design、Element Plus、ECharts、Leaflet 等主流库，具备快速上手新框架的能力
 - 熟练掌握 前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
-- 熟练掌握 组件化开发、逻辑复用，擅长通过组合式函数/自定义 Hook 提升代码复用率、模块解耦
-- 能够使用 Performance 面板定位性能瓶颈，通过生成器函数、Web Workers 等手段优化长任务
+- 熟练掌握 组件化开发、逻辑复用，擅长通过自定义 Hook/组合式函数 提升代码复用率、模块解耦
+- 能够使用 Performance、Memory、Lighthouse 等面板定位性能瓶颈、分析内存占用，并进行针对性性能优化
 - 能够使用 微前端框架、iframe 构建多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
 - 了解 Next.js、Nuxt 及 SSR、SSG、ISR 等服务端渲染模式
 
@@ -69,7 +69,7 @@
 
 **工程化与工具：**
 
-- 熟练掌握 AI 辅助开发工具（Cursor、OpenClaw 等），有效提升编码效率
+- 熟练掌握 AI 辅助开发工具（Cursor、Copilot、OpenClaw 等）及提示词工程（如 AI Skills），有效提升编码效率
 - 熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD 流程搭建
 - 了解 项目监控体系，如 Google Analytics、Sentry 等
 
