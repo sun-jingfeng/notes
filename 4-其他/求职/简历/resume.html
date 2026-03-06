@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>孙景峰 - React + Java 全栈开发</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #2c3e50;
+        background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #2c3e50;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        color: #1a252f;
+      }
+      .contact {
+        display: flex;
+        justify-content: center;
+        gap: 0;
+        font-size: 12px;
+        color: #555;
+        flex-wrap: wrap;
+      }
+      .contact span {
+        white-space: nowrap;
+      }
+      .contact span + span {
+        margin-left: 12px;
+        padding-left: 12px;
+        border-left: 1px solid #d9d9d9;
+      }
+
+      /* Section */
+      .section {
+        margin-bottom: 11px;
+      }
+      .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a252f;
+        border-bottom: 1.5px solid #3498db;
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+      }
+
+      /* Education */
+      .edu-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+      }
+      .edu-row .school {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+
+      /* Skills */
+      .skill-group {
+        margin-bottom: 6px;
+      }
+      .skill-group-title {
+        font-weight: 700;
+        font-size: 13px;
+        color: #2c3e50;
+        margin-bottom: 2px;
+      }
+      .skills-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .skills-list li {
+        position: relative;
+        padding-left: 14px;
+        line-height: 1.5;
+        font-size: 12px;
+      }
+      .skills-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      /* Work summary */
+      .work-summary-list {
+        list-style: none;
+        padding-left: 0;
+        columns: 2;
+        column-gap: 28px;
+      }
+      .work-summary-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        break-inside: avoid;
+        line-height: 1.5;
+      }
+      .work-summary-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      /* Work experience */
+      .work-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
+      .work-item .company {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .work-item .period {
+        color: #666;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .work-meta {
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 3px;
+      }
+
+      /* Project */
+      .project {
+        margin-bottom: 10px;
+      }
+      .project + .project {
+        border-top: 1px solid #e0e0e0;
+        padding-top: 10px;
+      }
+      .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+        gap: 8px;
+      }
+      .project-title-desc {
+        flex: 1;
+        min-width: 0;
+        font-size: 13.5px;
+      }
+      .project-name {
+        font-weight: 700;
+        color: #2c3e50;
+      }
+      .project-desc-inline {
+        font-weight: normal;
+        color: #666;
+        font-size: 12px;
+      }
+      .project-desc-inline::before {
+        content: " · ";
+        color: #999;
+      }
+      .project-period {
+        font-size: 11.5px;
+        color: #888;
+        white-space: nowrap;
+      }
+      .project-desc {
+        display: none;
+      }
+      .project-tech {
+        font-size: 11px;
+        color: #3498db;
+        margin-bottom: 4px;
+      }
+      .project-tech strong {
+        color: #2c3e50;
+      }
+      .project-sub {
+        font-weight: 600;
+        font-size: 12px;
+        color: #2c3e50;
+        margin-top: 3px;
+        margin-bottom: 1px;
+      }
+      .project-two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 28px;
+        margin-top: 2px;
+      }
+      .project-two-cols .project-sub {
+        margin-top: 0;
+      }
+      .project-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .project-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .project-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+      .project-list li strong {
+        font-weight: 600;
+      }
+
+      /* Sub list for nested items */
+      .project-sublist {
+        list-style: none;
+        padding-left: 14px;
+        margin-top: 1px;
+      }
+      .project-sublist li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .project-sublist li::before {
+        content: "◦";
+        position: absolute;
+        left: 2px;
+        color: #7fb3d8;
+      }
+
+      /* Self evaluation */
+      .eval-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .eval-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .eval-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <h1>孙 景 峰</h1>
+      <div class="contact">
+        <span><strong>手机</strong> 195-2460-3214（同微信）</span>
+        <span><strong>邮箱</strong> jlu_sunjingfeng@163.com</span>
+        <span><strong>年龄</strong> 31岁</span>
+      </div>
+      <div class="contact" style="margin-top: 5px">
+        <span><strong>工作时长</strong> 4年</span>
+        <span><strong>求职意向</strong> React + Java 全栈开发</span>
+        <span><strong>地点</strong> 北京</span>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="section">
+      <div class="section-title">教育经历</div>
+      <div class="edu-row">
+        <span class="school">吉林大学（985）· 软件工程 · 本科</span>
+        <span style="color: #666; font-size: 12px"
+          >2014 – 2020 | 统招全日制 · 双证 · 学信可查</span
+        >
+      </div>
+    </div>
+
+    <!-- Work Experience -->
+    <div class="section">
+      <div class="section-title">工作经历</div>
+      <div style="margin-bottom: 5px">
+        <div class="work-item">
+          <span class="company">北京弘象科技有限公司</span>
+          <span class="period">2023.02 – 2025.12</span>
+        </div>
+        <div class="work-meta">共享开发中心 · 研发一组组长</div>
+      </div>
+      <div>
+        <div class="work-item">
+          <span class="company">北京百炼智能科技有限公司</span>
+          <span class="period">2021.12 – 2022.12</span>
+        </div>
+        <div class="work-meta">技术部 · 前端工程师</div>
+      </div>
+    </div>
+
+    <!-- Work Summary -->
+    <div class="section">
+      <div class="section-title">工作内容</div>
+      <ul class="work-summary-list">
+        <li>
+          作为项目负责人，主导中大型项目前端、后端从搭建到部署的全流程，完成项目的全栈交付
+        </li>
+        <li>作为研发组长，统筹组内任务分配与交付质量</li>
+        <li>
+          通过组件封装、逻辑抽象提升前端代码复用率，通过合理的分层架构、公共模块抽取降低后端维护成本
+        </li>
+        <li>持续优化前端性能、后端接口响应效率</li>
+        <li>
+          参与技术选型，搭建项目基础框架、代码规范体系，主导微服务架构设计、落地
+        </li>
+        <li>负责 Nginx 配置、Docker 容器化部署、Linux 服务器环境搭建</li>
+        <li>攻克团队技术难点，定期分享新技术，推动团队技术成长</li>
+      </ul>
+    </div>
+
+    <!-- Skills -->
+    <div class="section">
+      <div class="section-title">专业技能</div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">前端</div>
+        <ul class="skills-list">
+          <li>
+            熟练掌握 TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+
+            语法特性、异步编程模型
+          </li>
+          <li>
+            熟练掌握 React 及其生态（React Router、Redux/RTK），理解 Fiber
+            架构、虚拟 DOM、Diff 算法等核心原理
+          </li>
+          <li>
+            熟练掌握 Vue3、Vue2 及其生态（Vue
+            Router、Pinia/Vuex），理解响应式原理、编译优化机制
+          </li>
+          <li>
+            熟练掌握 Ant Design、Element Plus、ECharts、Leaflet
+            等主流库，具备快速上手新框架的能力
+          </li>
+          <li>
+            熟练掌握
+            前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
+          </li>
+          <li>
+            熟练掌握 组件化开发、逻辑复用，擅长通过组合式函数/自定义 Hook
+            提升代码复用率、模块解耦
+          </li>
+          <li>
+            能够使用 Performance 面板定位性能瓶颈，通过生成器函数、Web Workers
+            等手段优化长任务
+          </li>
+          <li>
+            能够使用 微前端框架、iframe
+            构建多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
+          </li>
+          <li>了解 Next.js、Nuxt 及 SSR、SSG、ISR 等服务端渲染模式</li>
+        </ul>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">后端</div>
+        <ul class="skills-list">
+          <li>熟练掌握 Java，熟悉集合框架、Stream 流、IO、多线程、网络编程</li>
+          <li>
+            熟练掌握 Spring Boot、Maven，能独立完成 RESTful API
+            开发，熟悉自动配置、AOP、JWT 认证等核心机制
+          </li>
+          <li>熟练掌握 MySQL、MyBatis，熟悉索引优化、事务管理、动态 SQL</li>
+          <li>
+            熟练掌握 Docker，能通过 Dockerfile、Docker Compose
+            完成应用容器化部署
+          </li>
+          <li>
+            熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
+          </li>
+          <li>
+            熟练掌握 微服务架构、Spring Cloud
+            组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
+          </li>
+          <li>
+            熟练掌握 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
+          </li>
+          <li>熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维</li>
+          <li>
+            了解 Elasticsearch
+            及倒排索引原理，能完成全文检索、聚合分析的基本操作
+          </li>
+        </ul>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">工程化与工具</div>
+        <ul class="skills-list">
+          <li>
+            熟练掌握 AI 辅助开发工具（Cursor、OpenClaw 等），有效提升编码效率
+          </li>
+          <li>
+            熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD
+            流程搭建
+          </li>
+          <li>了解 项目监控体系，如 Google Analytics、Sentry 等</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Projects -->
+    <div class="section">
+      <div class="section-title">项目经验</div>
+
+      <!-- Project 1 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">气象雷达监测预警系统系列</span
+            ><span class="project-desc-inline"
+              >基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统</span
+            ></span
+          >
+          <span class="project-period">2025.02 – 2025.12</span>
+        </div>
+
+        <div class="project-tech">
+          <strong>前端技术：</strong>React、Immer、React Router、Redux、Ant
+          Design、TypeScript、Vite、React Compiler
+        </div>
+        <ul class="project-list">
+          <li>
+            <strong>父子项目结构体系搭建</strong>
+            <ul class="project-sublist">
+              <li>
+                解决浏览器默认缓存策略差异导致的更新部署后需手动清除缓存问题
+              </li>
+              <li>实现跨 iframe 边界的截图功能</li>
+              <li>实现父子项目明暗主题统一切换</li>
+              <li>
+                设计父子项目权限控制方案，解决多项目权限标识冲突问题，支持子项目自主同步权限
+              </li>
+              <li>实现父子项目统一登录、单点登录</li>
+            </ul>
+          </li>
+          <li>封装截图、测距、区域绘制、关注点等地图交互工具</li>
+          <li>
+            为内部地图包编写 TypeScript 类型定义，并以私域 npm 包的形式发布
+          </li>
+          <li>修复极慢网络环境下 GIF 生成功能的边界 bug</li>
+          <li>开发超长时间轴组件，支持时间选择、播放控制</li>
+          <li>实现双地图联动交互</li>
+          <li>制定同项目多版本的差异化适配方案</li>
+          <li>实现可配置的图例颜色编辑功能</li>
+        </ul>
+
+        <div class="project-tech">
+          <strong>后端技术：</strong>Spring Boot、Maven、Spring
+          Cloud（Nacos、OpenFeign、Gateway、Sentinel、Seata）、MyBatis、MySQL、Redis、RabbitMQ、Docker、Linux
+        </div>
+        <ul class="project-list">
+          <li>
+            基于 Spring Boot 开发 RESTful
+            API，涵盖雷达数据查询、气象预警、文件管理等业务模块
+          </li>
+          <li>
+            基于 Spring Cloud 构建微服务架构，使用 Nacos
+            实现服务注册发现、多环境配置管理
+          </li>
+          <li>
+            使用 Gateway 统一 API 路由、鉴权过滤，使用 OpenFeign
+            实现服务间声明式调用
+          </li>
+          <li>
+            使用 Sentinel
+            实现接口限流、服务熔断降级，保障高并发场景下的系统稳定性
+          </li>
+          <li>
+            设计基于 JWT
+            的统一认证服务，支持父子项目间的单点登录、接口级权限校验
+          </li>
+          <li>
+            使用 MyBatis 动态 SQL 实现多条件数据检索，设计索引策略优化慢查询
+          </li>
+          <li>
+            使用 Redis 缓存高频访问的雷达产品数据、用户会话，降低数据库压力
+          </li>
+          <li>
+            使用 RabbitMQ 异步处理雷达数据解析、预警通知推送，提升系统响应速度
+          </li>
+          <li>使用 Seata 管理跨服务分布式事务，保障核心业务的数据一致性</li>
+          <li>
+            基于 Docker Compose 编排全部微服务及中间件，在 Linux
+            服务器上完成容器化部署
+          </li>
+        </ul>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">雷圣 X 单站产品显示系统优化</span
+            ><span class="project-desc-inline"
+              >接手已上线单站产品，专项解决性能与代码结构问题</span
+            ></span
+          >
+          <span class="project-period">2025.01</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
+          Plus、Leaflet、TypeScript、Vite
+        </div>
+        <div class="project-two-cols">
+          <div>
+            <div class="project-sub">性能优化</div>
+            <ul class="project-list">
+              <li>使用浅层响应式 API 减少不必要的深层响应开销</li>
+              <li>预缓存色斑图资源，提升首次渲染速度</li>
+              <li>支持缓存任务的暂停、恢复，避免主线程阻塞导致卡顿</li>
+              <li>对高复杂度、高频切换的页面启用组件缓存，提升切换流畅度</li>
+              <li>使用 postcss-px-to-viewport 实现多分辨率自适应</li>
+            </ul>
+          </div>
+          <div>
+            <div class="project-sub">代码结构优化</div>
+            <ul class="project-list">
+              <li>
+                统一代码规范：配置 ESLint、Stylelint、Prettier、EditorConfig
+              </li>
+              <li>使用环境变量管理多环境配置差异</li>
+              <li>拆分组件粒度，提取公共常量、样式</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">淮安智慧气象综合服务平台</span
+            ><span class="project-desc-inline"
+              >负责前端开发与地图可视化、权限与主题等能力建设</span
+            ></span
+          >
+          <span class="project-period">2024.08 – 2024.12</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
+          Plus、Leaflet、Highcharts、TypeScript、Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            搭建基础权限框架，实现路由、页面级权限控制，支持一键同步最新权限配置
+          </li>
+          <li>
+            封装地图组合式函数供多页面复用，支持亮暗主题切换、手动加载等配置项
+          </li>
+          <li>基于 CSS 变量实现页面亮暗主题切换</li>
+          <li>实现页面内截屏功能，支持区域框选、下载为图片、复制到剪贴板</li>
+          <li>
+            参考 Element Plus Message 组件源码，通过将 DOM 挂载到 body
+            实现最高层级覆盖
+          </li>
+          <li>修复多级路由缓存场景下子页面错误渲染的问题</li>
+          <li>使用渲染函数等进阶 API，将 Vue 组件渲染为地图标记点</li>
+          <li>
+            通过 Performance 面板定位性能瓶颈，使用生成器函数、Web Workers
+            优化长任务执行
+          </li>
+        </ul>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">合肥智慧农业气象服务综合数据平台</span
+            ><span class="project-desc-inline"
+              >负责前端地图、图表与数据展示模块开发</span
+            ></span
+          >
+          <span class="project-period">2024.03 – 2024.07</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
+          Plus、Leaflet、Highcharts、TypeScript、Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            使用 defineExpose、provide、props
+            等机制，构建清晰的跨组件参数传递体系，实现模块间联动
+          </li>
+          <li>通过组合式函数解耦地图边界、站点、色斑图等功能模块</li>
+          <li>使用动态组件、浅层响应式数据，实现页面结构随数据动态变化</li>
+          <li>实现地区选择器联动地图，自动聚焦并高亮目标区域</li>
+          <li>
+            通过分批次有序侦听器，合并多参数联动触发的色斑图更新，避免重复渲染
+          </li>
+          <li>
+            借鉴类继承思路封装渐进式图表组件，实现柱状图、饼图、折线图等复用
+          </li>
+        </ul>
+      </div>
+
+      <!-- Project 5 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Vue3 组件库</span
+            ><span class="project-desc-inline"
+              >内部组件库，沉淀可复用组件、复杂组件开发范式，提升部门整体开发效率</span
+            ></span
+          >
+          <span class="project-period">2024.02</span>
+        </div>
+        <div class="project-tech"><strong>主要技术：</strong>VitePress</div>
+        <ul class="project-list">
+          <li>
+            调研 VuePress、VitePress、Storybook、Docusaurus 等框架，对比后选定
+            VitePress
+          </li>
+          <li>搭建初始框架，集成 Vue、Element Plus、Sass 等基础依赖</li>
+          <li>配置主页、自定义主题、目录结构、搜索等项目基础功能</li>
+          <li>使用 vitepress-theme-demoblock 实现组件效果、源码的同步展示</li>
+          <li>
+            使用 postcss-prefix-selector、:not 伪类选择器解决框架样式污染问题
+          </li>
+          <li>使用动态导入解决 SSR 环境下浏览器 API 不可用问题</li>
+          <li>基于 Node.js 自动扫描组件文件生成目录配置，支持分组、排序</li>
+          <li>基于自定义主题实现登录功能、主题色切换</li>
+          <li>使用 Terser 压缩混淆代码，移除生产环境 console 调用</li>
+          <li>编写使用教程，涵盖 Markdown 语法、组件上传流程、规范建议等</li>
+        </ul>
+      </div>
+
+      <!-- Project 6 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">智能气象综合平台</span
+            ><span class="project-desc-inline"
+              >告警与文件管理模块，负责通用组件封装与多类型告警页面的数据驱动开发</span
+            ></span
+          >
+          <span class="project-period">2023.11 – 2024.01</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
+          Plus、TypeScript、Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            封装页面框架、分页列表、文件操作等通用组件，提升相似页面的开发效率
+          </li>
+          <li>
+            基于数据驱动视图，实现一套代码适配多种告警文件的新建、编辑页面
+          </li>
+          <li>合理拆分业务逻辑，兼顾公共逻辑的复用性、差异逻辑的灵活性</li>
+        </ul>
+      </div>
+
+      <!-- Project 7 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">特高压密集通道气象服务平台</span
+            ><span class="project-desc-inline"
+              >负责地图可视化、风险线路与标记点展示及性能优化</span
+            ></span
+          >
+          <span class="project-period">2023.02 – 2023.10</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
+          Plus、Leaflet、Highcharts、TypeScript、Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            根据风险等级数据在地图上绘制彩色 GeoJSON
+            线路、要素标记点，支持悬浮、点击弹窗
+          </li>
+          <li>采用懒加载、对象池策略复用高频变化的地图标记点，降低内存开销</li>
+          <li>
+            使用 render、h 函数解析单文件组件，动态渲染地图标记点的悬浮窗内容
+          </li>
+          <li>封装页面级组件并通过路由元信息传参，实现多个相似页面的复用</li>
+          <li>封装地图相关组合式函数，统一多页面的地图渲染逻辑</li>
+        </ul>
+      </div>
+
+      <!-- Project 8 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Vue3 项目基础框架</span
+            ><span class="project-desc-inline"
+              >部门技术转型（Vue2 → Vue3、Vuex → Pinia、JavaScript →
+              TypeScript、Webpack → Vite），需搭建新一代项目基础框架</span
+            ></span
+          >
+          <span class="project-period">2023.02</span>
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>Vue3、Vue Router、Pinia、TypeScript、Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            基于 create-vue 生成初始框架，集成 Vue Router、Pinia、Element Plus
+            等核心依赖
+          </li>
+          <li>
+            参考 vue-element-admin、vue-pure-admin、vue-vben-admin
+            等开源框架的最佳实践
+          </li>
+          <li>
+            集成 unplugin-auto-import、unplugin-vue-components，实现组件、API
+            的自动导入
+          </li>
+          <li>
+            配置 ESLint、Stylelint、Prettier、EditorConfig
+            全套代码规范工具，确保团队代码风格一致
+          </li>
+          <li>
+            完善项目配置：环境变量、请求代理、路径别名、CSS
+            预处理器、TypeScript、pnpm 等
+          </li>
+          <li>
+            编写基础代码：路由守卫、请求拦截器、TypeScript 工具类、全局样式等
+          </li>
+          <li>
+            提供 VS Code 配置文件，预置必要插件、编辑器设置，降低团队上手成本
+          </li>
+        </ul>
+      </div>
+
+      <!-- Project 9 -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">领航营销云-智能触达</span
+            ><span class="project-desc-inline"
+              >部门核心 SaaS
+              产品，覆盖从线索到转化的完整营销闭环，基于微前端架构，包含子系统：商机线索、智能触达、租户管理</span
+            ></span
+          >
+          <span class="project-period"
+            >2022.06 – 2022.09、2022.11 – 2022.12</span
+          >
+        </div>
+        <div class="project-tech">
+          <strong>主要技术：</strong>微前端（qiankun）、Vue2、Vue
+          Router、Vuex、Element UI、Webpack
+        </div>
+        <ul class="project-list">
+          <li>确定技术栈、组件库选型，完成父项目、智能触达子项目的搭建</li>
+          <li>配置乾坤微前端框架，实现子项目嵌入，完成样式隔离、跨应用通信</li>
+          <li>制定多分辨率适配策略并封装 Mixin，保持各页面风格一致</li>
+          <li>统一分页列表接口调用逻辑并封装 Mixin，提升开发效率</li>
+          <li>
+            独立完成全部业务模块开发：营销活动、邮件/短信自动群发、可拖拽自定义表单等
+          </li>
+          <li>配置 Nginx 支持 History 路由、HTTPS、跨域访问</li>
+          <li>搭建 Jenkins 流水线，实现父子项目的自动化部署</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Self Evaluation -->
+    <div class="section">
+      <div class="section-title">自我评价</div>
+      <ul class="eval-list">
+        <li>扎实的前端、后端基础，丰富的项目经验，有团队管理经验</li>
+        <li>熟练使用 AI 工具，拥抱新技术，适应新趋势</li>
+      </ul>
+    </div>
+  </body>
+</html>
