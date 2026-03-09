@@ -121,18 +121,49 @@ createApp(App).use(router).mount('#app')
 
 将路由配置抽成独立模块，便于维护与按业务拆分：
 
-| 目录/文件   | 职责 |
-| ----------- | ---- |
-| **page/**   | 存放页面组件（Login、Article 等） |
-| **router/** | 引入页面组件，配置 path 与 element，导出 router 实例 |
-| **入口**    | 使用 `RouterProvider` 注入 router |
+| 目录/文件              | 职责 |
+| ---------------------- | ---- |
+| **page/**（或 views/） | 存放页面组件 |
+| **router/index.tsx**   | 引入页面组件，配置路由表，导出 router 实例 |
+| **main.tsx**           | 使用 `RouterProvider` 注入 router |
 
+```tsx
+// src/router/index.tsx
+import { createBrowserRouter } from 'react-router'
+import Login from '@/page/Login'
+import Layout from '@/page/Layout'
+import Home from '@/page/Home'
+import Settings from '@/page/Settings'
+import NotFound from '@/page/NotFound'
+
+const router = createBrowserRouter([
+  { path: '/login', element: <Login /> },
+  {
+    path: '/layout',
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'settings', element: <Settings /> }
+    ]
+  },
+  { path: '*', element: <NotFound /> }
+])
+
+export default router
 ```
-page/Login、Article 等
-    ↓ 引入
-router 配置 path - element
-    ↓ 导出 router
-入口用 RouterProvider 注入
+
+```tsx
+// src/main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { RouterProvider } from 'react-router'
+import router from './router'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
+)
 ```
 
 ***
@@ -683,12 +714,14 @@ React Router **没有**内置导航守卫 API。常见做法是封装一个**高
 ### 10.2 实现
 
 ```tsx
-import { Navigate } from 'react-router'
+import { Navigate, useLocation } from 'react-router'
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token')
+  const location = useLocation()
   if (!token) {
-    return <Navigate to="/login" replace />
+    // 将来源路径存入 state，登录成功后可跳回原页面
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
   return <>{children}</>
 }
@@ -714,7 +747,22 @@ const router = createBrowserRouter([
 ])
 ```
 
-> 💡 包裹在父路由上即可保护该路由及其所有子路由。如需更细粒度的权限（如角色区分），可在 `AuthRoute` 中增加角色判断逻辑。
+登录成功后，从 `location.state.from` 读取来源路径并跳回：
+
+```tsx
+function Login() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleLogin = async () => {
+    await loginApi()
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/layout'
+    navigate(from, { replace: true })
+  }
+}
+```
+
+> 💡 包裹在父路由上即可保护该路由及其所有子路由。`replace: true` 防止用户点击浏览器后退时退回登录页。
 
 ### 10.3 Vue 3 对照：导航守卫
 
@@ -733,6 +781,157 @@ router.beforeEach((to, from) => {
 | **实现方式** | 封装高阶组件，渲染时判断 | 内置 `beforeEach`、`beforeEnter` 等守卫 API |
 | **执行时机** | 组件渲染阶段 | 路由跳转前（组件未渲染） |
 | **作用范围** | 包裹哪个路由就保护哪个 | 全局守卫作用于所有路由，路由独享守卫作用于单个 |
+
+### 10.4 基于角色的动态权限路由
+
+实际项目中权限控制往往细化到路由级别：不同角色可访问的页面不同，无权限路由不应暴露给用户。两个框架的实现思路存在根本差异：
+
+| 对比项 | React Router | Vue Router |
+| ------ | ------------ | ---------- |
+| **路由注册时机** | 启动时一次性注册全部路由 | 启动时只注册公共路由，按需动态追加 |
+| **有无动态注册 API** | ❌ 无 | ✅ `router.addRoute()` |
+| **有无全局守卫** | ❌ 无 | ✅ `router.beforeEach()` |
+| **权限控制入口** | 包裹布局根组件的高阶组件 | 全局前置守卫 |
+
+#### Vue 3：动态路由注册
+
+初始路由表只保留公共页面（登录、注册、404 等），登录后在全局守卫中拉取用户权限，再通过 `router.addRoute()` 动态挂载该用户有权访问的路由：
+
+```js
+// router/index.js
+import { createRouter, createWebHistory } from 'vue-router'
+
+// 公共路由：任何人都可访问
+const publicRoutes = [
+  { path: '/login', component: () => import('@/views/Login.vue') },
+  { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFound.vue') }
+]
+
+// 权限路由映射：权限标识 → 路由配置
+export const permissionRouteMap = {
+  'user:manage':    { path: '/user',    component: () => import('@/views/UserManage.vue') },
+  'order:manage':   { path: '/order',   component: () => import('@/views/OrderManage.vue') },
+  'report:view':    { path: '/report',  component: () => import('@/views/Report.vue') }
+}
+
+export const router = createRouter({
+  history: createWebHistory(),
+  routes: publicRoutes
+})
+```
+
+```js
+// router/guard.js
+import { router, permissionRouteMap } from './index'
+import { useUserStore } from '@/stores/user'
+
+let routesAdded = false
+
+router.beforeEach(async (to) => {
+  const token = localStorage.getItem('token')
+
+  // 未登录且访问需鉴权页面 → 跳转登录
+  if (!token && to.path !== '/login') return '/login'
+
+  // 已登录且路由尚未动态注册
+  if (token && !routesAdded) {
+    const userStore = useUserStore()
+
+    // 拉取用户权限列表（如 ['user:manage', 'report:view']）
+    await userStore.fetchPermissions()
+
+    // 根据权限动态追加路由，挂载到 layout 父路由下
+    userStore.permissions.forEach(perm => {
+      const route = permissionRouteMap[perm]
+      if (route) router.addRoute('layout', route)
+    })
+
+    routesAdded = true
+
+    // 重新导航以命中刚注册的路由（replace 避免增加历史记录）
+    return { ...to, replace: true }
+  }
+})
+```
+
+> 💡 `return { ...to, replace: true }` 是关键：`addRoute` 后路由表已更新，重新导航才能命中新路由；不加 `replace` 会产生多余历史记录。`routesAdded` 标志位避免每次导航都重复请求权限接口。
+
+#### React：全量注册 + 高阶组件鉴权
+
+React Router 没有动态注册路由的 API，也没有全局守卫，路由在启动时一次性声明完毕。权限控制通过封装**高阶组件（HOC）** 实现——包裹在布局根组件（Layout）外层，在组件渲染阶段拦截无权限访问：
+
+```tsx
+// router/index.tsx
+import { createBrowserRouter } from 'react-router'
+import { PermissionRoute } from './PermissionRoute'
+import Layout from '@/layouts/Layout'
+import UserManage from '@/pages/UserManage'
+import OrderManage from '@/pages/OrderManage'
+import Report from '@/pages/Report'
+
+// 所有路由一次性注册，包含权限标识
+export const router = createBrowserRouter([
+  { path: '/login', element: <Login /> },
+  {
+    path: '/layout',
+    element: (
+      // 用高阶组件包裹整个布局，集中处理登录态与权限
+      <PermissionRoute>
+        <Layout />
+      </PermissionRoute>
+    ),
+    children: [
+      { path: 'user',   element: <UserManage />,  handle: { permission: 'user:manage' } },
+      { path: 'order',  element: <OrderManage />, handle: { permission: 'order:manage' } },
+      { path: 'report', element: <Report />,      handle: { permission: 'report:view' } }
+    ]
+  },
+  { path: '*', element: <NotFound /> }
+])
+```
+
+```tsx
+// router/PermissionRoute.tsx
+import { Navigate, useLocation, useMatches } from 'react-router'
+import { useUserStore } from '@/stores/user'
+
+interface RouteHandle {
+  permission?: string
+}
+
+export function PermissionRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem('token')
+  const location = useLocation()
+  const matches = useMatches()
+  const { permissions } = useUserStore()
+
+  // 未登录 → 跳登录页，记录来源路径以便登录后跳回
+  if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  // 检查当前匹配路由中是否有权限要求
+  const currentHandle = matches.at(-1)?.handle as RouteHandle | undefined
+  const requiredPerm = currentHandle?.permission
+
+  if (requiredPerm && !permissions.includes(requiredPerm)) {
+    return <Navigate to="/403" replace />
+  }
+
+  return <>{children}</>
+}
+```
+
+> 💡 `useMatches()` 返回当前所有匹配路由，`at(-1)` 取最深层级的路由；路由配置中用 `handle` 字段携带权限标识，鉴权逻辑集中在高阶组件内，无需在每个页面组件中单独判断。
+
+#### 两种方案本质差异
+
+| 对比项 | Vue 3 动态注册 | React 全量注册 + HOC |
+| ------ | -------------- | -------------------- |
+| **未授权路由是否存在** | ❌ 不注册，路由本身不存在 | ✅ 路由存在，但渲染时被拦截 |
+| **路由泄露风险** | 低（路由表中无该路由） | 较高（可从路由配置中枚举所有路由） |
+| **实现复杂度** | 较高（需处理 `addRoute` 时序、守卫幂等） | 较低（只需封装一个 HOC） |
+| **侧边栏菜单生成** | 可直接从当前路由表获取可访问菜单 | 需单独维护菜单权限数据，与路由配置保持同步 |
 
 ***
 
@@ -843,7 +1042,16 @@ const router = createBrowserRouter(routes)
 
 ### 12.1 useLocation
 
-**useLocation** 返回当前路由的 location 对象，包含 `pathname`、`search`、`hash`、`state` 等，用于根据当前路径或查询串做逻辑分支、面包屑等。
+**useLocation** 返回当前路由的 location 对象，包含 `pathname`、`search`、`hash`、`state` 等属性。
+
+| 属性         | 说明 |
+| ------------ | ---- |
+| **pathname** | 当前路径，如 `/layout/settings` |
+| **search**   | 查询串，如 `?id=1`（完整字符串） |
+| **hash**     | hash 片段，如 `#section` |
+| **state**    | 通过 `navigate` 或 `<Navigate>` 传入的隐式状态，不显示在 URL |
+
+**读取当前路径（面包屑、激活菜单等）：**
 
 ```tsx
 import { useLocation } from 'react-router'
@@ -851,6 +1059,30 @@ import { useLocation } from 'react-router'
 function Breadcrumb() {
   const { pathname } = useLocation()
   return <nav>当前路径：{pathname}</nav>
+}
+```
+
+**携带来源路径并在登录后跳回（配合 AuthRoute）：**
+
+鉴权组件拦截时将当前 location 存入 `state.from`：
+
+```tsx
+// AuthRoute 内
+return <Navigate to="/login" state={{ from: location }} replace />
+```
+
+登录成功后读取 `state.from` 跳回原页面：
+
+```tsx
+function Login() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleLogin = async () => {
+    await loginApi()
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/layout'
+    navigate(from, { replace: true })  // replace 防止后退时回到登录页
+  }
 }
 ```
 
