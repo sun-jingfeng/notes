@@ -2,7 +2,7 @@
 
 **手机**：195-2460-3214（同微信） | **邮箱**：jlu_sunjingfeng@163.com | **年龄**：31
 
-**工作时长**：4 年 | **求职意向**：web全栈开发（React+Java） | **地点**：北京
+**工作时长**：4 年 | **求职意向**：web 全栈开发（React+Java，AI 辅助开发） | **地点**：北京
 
 ---
 
@@ -43,6 +43,13 @@
 
 ## 专业技能
 
+**AI 工具与工程化：**
+
+- 熟练掌握 AI 辅助开发工具（Cursor、Copilot、OpenClaw 等），能借助 AI 提升编码与排错效率
+- 熟练掌握 提示词工程与规则配置（Rules、AI Skills、MCP 等），能编写可复用提示与项目级 AI 规范
+- 熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD 流程搭建
+- 了解 项目监控体系，如 Google Analytics、Sentry 等
+
 **前端：**
 
 - 熟练掌握 TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+ 语法特性、异步编程模型
@@ -66,12 +73,6 @@
 - 熟练掌握 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
 - 熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维
 - 了解 Elasticsearch 及倒排索引原理，能完成全文检索、聚合分析的基本操作
-
-**工程化与工具：**
-
-- 熟练掌握 AI 辅助开发工具（Cursor、Copilot、OpenClaw 等）及提示词工程（如 AI Skills），有效提升编码效率
-- 熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD 流程搭建
-- 了解 项目监控体系，如 Google Analytics、Sentry 等
 
 ---
 

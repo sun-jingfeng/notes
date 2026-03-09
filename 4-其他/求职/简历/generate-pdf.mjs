@@ -4,8 +4,8 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const htmlContent = readFileSync(path.join(__dirname, 'resume.html'), 'utf-8');
-const pdfPath = path.join(__dirname, 'React+Java全栈-985统招-北京-孙景峰.pdf');
+const htmlContent = readFileSync(path.join(__dirname, 'web全栈(React+Java·AI辅助)-985统招-北京-孙景峰.html'), 'utf-8');
+const pdfPath = path.join(__dirname, 'web全栈(React+Java·AI辅助)-985统招-北京-孙景峰.pdf');
 
 // 使用本机安装的 Chrome（macOS 默认路径，Windows/Linux 可改为对应可执行路径）
 const chromePath = process.platform === 'darwin'
