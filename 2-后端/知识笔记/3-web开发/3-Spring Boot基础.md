@@ -286,6 +286,8 @@ public class DataSourceAutoConfiguration {
 
 ### 3.2 Bean 声明方式
 
+**Bean** 是 Spring 容器管理的对象，由容器负责创建、注入并控制其生命周期。
+
 | 场景                 | 方式         | 说明                         |
 | -------------------- | ------------ | ---------------------------- |
 | 自己写的类           | `@Component` | 类上加注解，且在本项目扫描包下 |
@@ -588,16 +590,20 @@ private UserService userService;
 
 #### 作用域
 
+**Bean 作用域**决定容器中 Bean 的实例数量与存活范围。未指定时默认为 `singleton`，无需显式写 `@Scope`。
+
 | 作用域      | 说明                   | 创建时机       | 使用场景              |
 | ----------- | ---------------------- | -------------- | --------------------- |
-| `singleton` | 单例（默认）           | 容器启动时     | 无状态的 Service、Dao |
-| `prototype` | 每次获取创建新实例     | 每次获取时     | 有状态的 Bean         |
-| `request`   | 每个 HTTP 请求一个实例 | 每次请求时     | Web 应用              |
-| `session`   | 每个 HTTP Session 一个 | Session 创建时 | Web 应用              |
+| **singleton** | 单例（默认）           | 容器启动时     | 无状态的 Service、Dao |
+| **prototype** | 每次获取创建新实例     | 每次获取时     | 有状态的 Bean         |
+| **request**   | 每个 HTTP 请求一个实例 | 每次请求时     | Web 应用              |
+| **session**   | 每个 HTTP Session 一个 | Session 创建时 | Web 应用              |
+
+> **注意**：`request`、`session` 仅在 Web 环境下有效；非 Web 或 WebFlux 下使用会报错。
 
 ```java
 @Service
-@Scope("prototype")
+@Scope("prototype")  // 不写时默认 singleton
 public class PrototypeService { }
 ```
 
@@ -654,6 +660,8 @@ public class OrderService { }
 ## 四、Bean 生命周期
 
 ### 4.1 生命周期流程
+
+Bean 从创建到销毁经历的阶段如下。**AOP 代理**在步骤 8 的 `postProcessAfterInitialization` 中生成，之后 Bean 进入可用状态。
 
 ```
 1. 实例化（Instantiation）
@@ -1208,6 +1216,8 @@ java -Dspring.profiles.active=prod -jar app.jar
 | ---------------- | ----------------- |
 | `@PostConstruct` | Bean 初始化后执行 |
 | `@PreDestroy`    | Bean 销毁前执行   |
+| `InitializingBean.afterPropertiesSet()` | 初始化回调（同 @PostConstruct） |
+| `DisposableBean.destroy()` | 销毁回调（同 @PreDestroy） |
 | `@Order`         | 指定执行顺序      |
 | `@EventListener` | 监听应用事件      |
 
