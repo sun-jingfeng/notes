@@ -32,9 +32,9 @@ await page.pdf({
   printBackground: true,
   margin: {
     top: '14mm',
-    right: '14mm',
+    right: '12mm',
     bottom: '14mm',
-    left: '14mm',
+    left: '12mm',
   },
 });
 await browser.close();

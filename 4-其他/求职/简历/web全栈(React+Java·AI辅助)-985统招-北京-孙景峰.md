@@ -71,7 +71,7 @@
 - 熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
 - 熟练掌握 微服务架构、Spring Cloud 组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
 - 熟练掌握 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
-- 熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维
+- 熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter 进行接口压测与性能验证
 - 了解 Elasticsearch 及倒排索引原理，能完成全文检索、聚合分析的基本操作
 
 ---
@@ -100,20 +100,17 @@
 7. 制定同项目多版本的差异化适配方案
 8. 实现可配置的图例颜色编辑功能
 
-**后端技术**：Spring Boot、Maven、Spring Cloud（Nacos、OpenFeign、Gateway、Sentinel、Seata）、MyBatis、MySQL、Redis、RabbitMQ、Docker、Linux
+**后端技术**：Spring Boot、Maven、Spring Cloud（Nacos、OpenFeign、Gateway、Sentinel）、MyBatis、MySQL、Redis、RabbitMQ、Docker、JMeter
 
 **后端成果**：
 
 1. 基于 Spring Boot 开发 RESTful API，涵盖雷达数据查询、气象预警、文件管理等业务模块
-2. 基于 Spring Cloud 构建微服务架构，使用 Nacos 实现服务注册发现、多环境配置管理
-3. 使用 Gateway 统一 API 路由、鉴权过滤，使用 OpenFeign 实现服务间声明式调用
-4. 使用 Sentinel 实现接口限流、服务熔断降级，保障高并发场景下的系统稳定性
-5. 设计基于 JWT 的统一认证服务，支持父子项目间的单点登录、接口级权限校验
-6. 使用 MyBatis 动态 SQL 实现多条件数据检索，设计索引策略优化慢查询
-7. 使用 Redis 缓存高频访问的雷达产品数据、用户会话，降低数据库压力
-8. 使用 RabbitMQ 异步处理雷达数据解析、预警通知推送，提升系统响应速度
-9. 使用 Seata 管理跨服务分布式事务，保障核心业务的数据一致性
-10. 基于 Docker Compose 编排全部微服务及中间件，在 Linux 服务器上完成容器化部署
+2. 基于 Spring Cloud 构建微服务架构，使用 Nacos 实现服务注册发现、多环境配置管理，使用 OpenFeign 实现服务间声明式调用
+3. 使用 Gateway 统一 API 路由与鉴权过滤，基于 JWT 设计统一认证服务支持父子项目单点登录与接口级权限校验
+4. 使用线程池对气象数据进行多线程处理，并将处理结果写入 Redis 缓存，提升数据处理效率、减轻数据库压力
+5. 使用 JMeter 压测定位瓶颈，结合 Sentinel 限流与熔断降级，以降精度计算、同格式返回作为备用方案，保障高并发下系统稳定性
+6. 使用 RabbitMQ 异步处理雷达数据预解析、预警通知推送，提升系统响应速度
+7. 基于 Docker Compose 编排全部微服务及中间件，在 Linux 服务器上完成容器化部署
 
 ---
 
