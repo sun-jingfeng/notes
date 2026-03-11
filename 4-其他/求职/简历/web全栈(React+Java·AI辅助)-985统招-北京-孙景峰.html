@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>孙景峰 - web 全栈开发（React+Java，AI 辅助开发）</title>
+    <title>孙景峰 - Web 全栈开发（React+Java，AI 辅助）</title>
     <style>
       * {
         margin: 0;
@@ -279,17 +279,17 @@
   <body>
     <!-- Header -->
     <div class="header">
-      <h1>孙 景 峰</h1>
+      <h1>孙景峰</h1>
       <div class="contact">
         <span><strong>手机</strong> 195-2460-3214（同微信）</span>
         <span><strong>邮箱</strong> jlu_sunjingfeng@163.com</span>
-        <span><strong>年龄</strong> 31岁</span>
+        <span><strong>年龄</strong> 31</span>
       </div>
       <div class="contact" style="margin-top: 5px">
-        <span><strong>工作时长</strong> 4年</span>
+        <span><strong>工作时长</strong> 4 年</span>
         <span
-          ><strong>求职意向</strong> web 全栈开发（React+Java，AI
-          辅助开发）</span
+          ><strong>求职意向</strong> Web 全栈开发（React+Java，AI
+          辅助）</span
         >
         <span><strong>地点</strong> 北京</span>
       </div>
@@ -301,7 +301,7 @@
       <div class="edu-row">
         <span class="school">吉林大学（985）· 软件工程 · 本科</span>
         <span style="color: #666; font-size: 12px"
-          >2014 – 2020 | 统招全日制 · 双证 · 学信可查</span
+          >2014–2020（统招全日制，双证，学信网可查）</span
         >
       </div>
     </div>
@@ -481,7 +481,7 @@
           <li>修复极慢网络环境下 GIF 生成功能的边界 bug</li>
           <li>开发超长时间轴组件，支持时间选择、播放控制</li>
           <li>实现双地图联动交互</li>
-          <li>制定同项目多版本的差异化适配方案</li>
+          <li>制定同项目多省版本的差异化适配方案，各省相同逻辑复用、不同逻辑隔离互不影响</li>
           <li>实现可配置的图例颜色编辑功能</li>
         </ul>
 
@@ -495,12 +495,13 @@
             API，涵盖雷达数据查询、气象预警、文件管理等业务模块
           </li>
           <li>
-            基于 Spring Cloud 构建微服务架构，使用 Nacos
-            实现服务注册发现、多环境配置管理，使用 OpenFeign 实现服务间声明式调用
+            基于 Spring Cloud 构建微服务架构，各省复用核心能力、可扩展本省个性化需求
           </li>
           <li>
-            使用 Gateway 统一 API 路由与鉴权过滤，基于 JWT
-            设计统一认证服务支持父子项目单点登录与接口级权限校验
+            使用 Nacos 实现服务注册发现与公共配置管理，OpenFeign 实现服务间声明式调用
+          </li>
+          <li>
+            使用 Gateway 统一 API 路由与鉴权过滤，基于 JWT 设计统一认证服务，支持父子项目单点登录与接口级权限校验
           </li>
           <li>
             使用线程池对气象数据进行多线程处理，并将处理结果写入 Redis
@@ -564,7 +565,7 @@
           <span class="project-title-desc"
             ><span class="project-name">淮安智慧气象综合服务平台</span
             ><span class="project-desc-inline"
-              >负责前端开发与地图可视化、权限与主题等能力建设</span
+              >负责前端开发及地图可视化、权限体系、主题等能力建设</span
             ></span
           >
           <span class="project-period">2024.08 – 2024.12</span>
@@ -664,7 +665,7 @@
           <span class="project-title-desc"
             ><span class="project-name">智能气象综合平台</span
             ><span class="project-desc-inline"
-              >告警与文件管理模块，负责通用组件封装与多类型告警页面的数据驱动开发</span
+              >负责告警与文件管理模块，以及通用组件封装与多类型告警页面的数据驱动开发</span
             ></span
           >
           <span class="project-period">2023.11 – 2024.01</span>
@@ -719,8 +720,7 @@
           <span class="project-title-desc"
             ><span class="project-name">Vue3 项目基础框架</span
             ><span class="project-desc-inline"
-              >部门技术转型（Vue2 → Vue3、Vuex → Pinia、JavaScript →
-              TypeScript、Webpack → Vite），需搭建新一代项目基础框架</span
+              >部门技术转型（Vue2→Vue3、Vuex→Pinia、JavaScript→TypeScript、Webpack→Vite），负责搭建新一代项目基础框架</span
             ></span
           >
           <span class="project-period">2023.02</span>
@@ -764,8 +764,7 @@
           <span class="project-title-desc"
             ><span class="project-name">领航营销云-智能触达</span
             ><span class="project-desc-inline"
-              >部门核心 SaaS
-              产品，覆盖从线索到转化的完整营销闭环，基于微前端架构，包含子系统：商机线索、智能触达、租户管理</span
+              >部门核心 SaaS 产品，覆盖从线索到转化的完整营销闭环；基于微前端架构，包含商机线索、智能触达、租户管理等子系统</span
             ></span
           >
           <span class="project-period">2022.06 – 2022.12</span>
@@ -775,15 +774,15 @@
           Router、Vuex、Element UI、Webpack
         </div>
         <ul class="project-list">
-          <li>确定技术栈、组件库选型，完成父项目、智能触达子项目的搭建</li>
-          <li>配置乾坤微前端框架，实现子项目嵌入，完成样式隔离、跨应用通信</li>
-          <li>制定多分辨率适配策略并封装 Mixin，保持各页面风格一致</li>
-          <li>统一分页列表接口调用逻辑并封装 Mixin，提升开发效率</li>
+          <li>参与技术栈与组件库选型，完成父项目与智能触达子项目搭建</li>
+          <li>配置 qiankun 微前端，实现子应用嵌入、样式隔离与跨应用通信</li>
+          <li>制定多分辨率适配策略并封装 Mixin，统一各页面视觉风格</li>
+          <li>统一分页列表接口逻辑并封装 Mixin，提升列表类页面开发效率</li>
           <li>
-            独立完成全部业务模块开发：营销活动、邮件/短信自动群发、可拖拽自定义表单等
+            独立完成营销活动、邮件/短信自动群发、可拖拽自定义表单等业务模块开发
           </li>
-          <li>配置 Nginx 支持 History 路由、HTTPS、跨域访问</li>
-          <li>搭建 Jenkins 流水线，实现父子项目的自动化部署</li>
+          <li>配置 Nginx 支持 History 路由、HTTPS 与跨域</li>
+          <li>搭建 Jenkins 流水线，实现父子项目自动化部署</li>
         </ul>
       </div>
     </div>
