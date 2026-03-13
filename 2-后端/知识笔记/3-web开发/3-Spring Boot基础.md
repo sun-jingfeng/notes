@@ -607,6 +607,31 @@ private UserService userService;
 public class PrototypeService { }
 ```
 
+#### request/session 与 ScopedProxy
+
+当 **request/session 作用域的 Bean 被注入到 singleton**（如 Service）时，单例在容器启动时只创建一次，此时尚无 HTTP 请求，无法拿到“当前请求”的 request 实例。若不使用代理，注入会失败或得到错误复用的实例。
+
+**结论**：注册 request/session 作用域的 Bean 本身不强制要求 ScopedProxy；一旦被单例依赖，需配置 `proxyMode = ScopedProxyMode.TARGET_CLASS`（或 `INTERFACES`），否则行为错误。
+
+| proxyMode              | 说明                         |
+| ---------------------- | ---------------------------- |
+| **TARGET_CLASS**       | CGLIB 代理类（无接口时使用） |
+| **INTERFACES**         | JDK 动态代理（Bean 有接口时） |
+
+```java
+// 方式一：@Scope + proxyMode
+@Component
+@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class RequestScopedBean { }
+
+// 方式二：@RequestScope（Spring 4.3+）
+@Component
+@RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class RequestScopedBean { }
+```
+
+若 request/session Bean **仅被同作用域或 Controller 注入**、不参与单例依赖链，可不配 ScopedProxy；实际项目中多数会被单例依赖，因此通常需要配置。
+
 #### 延迟加载（@Lazy）
 
 默认情况下，singleton Bean 在**容器启动时**创建。使用 `@Lazy` 可延迟到**第一次使用时**才创建。
@@ -1178,7 +1203,7 @@ java -Dspring.profiles.active=prod -jar app.jar
 | 注解                       | 说明                               |
 | -------------------------- | ---------------------------------- |
 | `@SpringBootApplication`   | 启动类注解（组合注解）             |
-| `@SpringBootConfiguration` | 标识配置类（等同于@Configuration） |
+| `@SpringBootConfiguration` | 标识配置类（等同于 @Configuration） |
 | `@Configuration`           | 声明配置类                         |
 | `@EnableAutoConfiguration` | 开启自动配置                       |
 | `@ComponentScan`           | 组件扫描                           |
@@ -1195,7 +1220,8 @@ java -Dspring.profiles.active=prod -jar app.jar
 | `@RestController` | REST 控制器（@Controller + @ResponseBody） |
 | `@Repository`     | 数据层组件                                 |
 | `@Bean`           | 方法级 Bean 声明                           |
-| `@Scope`          | Bean 作用域                                |
+| `@Scope`          | Bean 作用域（request/session 被单例依赖时需 proxyMode） |
+| `@RequestScope`   | request 作用域，可配 proxyMode                         |
 | `@Primary`        | 设置首选 Bean                              |
 | `@Lazy`           | 延迟初始化                                 |
 | `@DependsOn`      | 指定 Bean 依赖顺序                         |
