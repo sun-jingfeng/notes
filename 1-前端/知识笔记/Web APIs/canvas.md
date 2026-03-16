@@ -18,7 +18,7 @@
 
 - toDataURL()
 
-   - 说明：返回一个包含图片展示的 data URI 。可以使用 type 参数其类型，默认为 PNG 格式。图片的分辨率
+   - 说明：返回一个包含图片展示的 data URI 。可以使用 type 参数指定其类型，默认为 PNG 格式。图片的分辨率
 
    - 为 96dpi。
 
@@ -38,7 +38,7 @@
 
 ## fillRect()
 
-- 说明：Canvas 2D API 绘制填充矩形的方法。当前渲染上下文中的fillStyle 属性决定了对这个矩形对的填充 样式。
+- 说明：Canvas 2D API 绘制填充矩形的方法。当前渲染上下文中的fillStyle 属性决定了对这个矩形的填充样式。
 
 - 文档：CanvasRenderingContext2D.fillRect()
 

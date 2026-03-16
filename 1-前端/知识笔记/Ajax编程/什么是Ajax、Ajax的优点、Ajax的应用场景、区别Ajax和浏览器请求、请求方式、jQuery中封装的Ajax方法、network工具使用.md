@@ -5,7 +5,7 @@
 - AJAX 即异步的 JavaScript 和 XML（Asynchronous JavaScript And XML）。
 
 
-- Ajax一种技术，通过浏览器内置对象（XMLHttpRequest）和服务器进行数据交互的技术。
+- Ajax是一种技术，通过浏览器内置对象（XMLHttpRequest）和服务器进行数据交互的技术。
 
 - 通过Ajax技术，也能够实现客户端服务器的数据交互。
 

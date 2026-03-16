@@ -2,7 +2,7 @@
 
 ## object-fit
 
-- 描述：object-fit 指定可替换元素（如 `<img>`、`<video>`）的内容如何适应其宽高确定的框。
+- 描述：object-fit属性指定可替换元素（例如：<img> 或 <video>）的内容应该如何适应到其使用高度和宽度确定的框
 
 - 应用：设置img中的图片为覆盖或包含，类似background-size的cover或contain
 

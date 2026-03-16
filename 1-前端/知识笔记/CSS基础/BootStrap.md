@@ -2,16 +2,16 @@
 
 ## BootStrap 介绍
 
-- Bootstrap 是由 Twitter 开发维护的前端 UI 框架。
+- Bootstrap 是由 Twitter 公司开发维护的前端 UI 框架
 
-- 什么是 UI 框架？将常见效果统一封装成一套可复用代码。
+- 什么是 UI 框架？将常见效果进行统一封装后形成的一套代码（举个例子）
 
 - 好处：提高了开发效率
 
    - 它提供了大量的css样式、html组件、各种各样的特效
 
 
-   - 提供一套响应式布局方案——栅格系统
+   - 提供了一套响应式布局的解决方案——栅格系统
 
 ## 版本
 
@@ -25,7 +25,7 @@
 
 ## 搭建BootStrap框架的步骤
 
-一 第 步：下载bootstrap
+第一步：下载bootstrap
 
 **==> picture [467 x 142] intentionally omitted <==**
 
@@ -66,7 +66,7 @@
 **==> picture [291 x 12] intentionally omitted <==**
 
 **----- Start of picture text -----**<br>
-在全局css样式页面往下滚动找到按钮，然后复杂html代码即可<br>**----- End of picture text -----**<br>
+在全局css样式页面往下滚动找到按钮，然后复制html代码即可<br>**----- End of picture text -----**<br>
 
 **==> picture [416 x 213] intentionally omitted <==**
 

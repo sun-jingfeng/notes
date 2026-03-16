@@ -2,7 +2,7 @@
 
 元素节点——插入
 
-jQuery 封装了在指定位置动态插入节点的方法，用法如下：
+jQuery 中封装了在指定位置动态插入元素节点的方法，其用法如下代码所示：
 
 1 <script> 2 // 待插入的元素节点 ` 3 let tr = $( 4 <tr> 5 <td> 学员 </td> 6 <td>17</td> 7 <td> 女 </td> 8 <td>13632369876</td> 9 <td> 10 <button class="btn btn-xs btn-info edit"> 编辑 </button> 11 <button class="btn btn-xs btn-danger delete"> 删除 </button> 12 </td> 13 </tr> 14 `); 15 16 // 1. 参照父元素的位置插入 17 $('tbody').append(tr); 18 $('tbody').prepend(tr); 19 20 // 2. 参照兄弟元素的位置插入 21 $('tbody').eq(2).after(tr); 22 $('tbody').eq(3).before(tr); 23 </script>
 

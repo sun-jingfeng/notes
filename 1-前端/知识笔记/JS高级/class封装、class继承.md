@@ -14,9 +14,9 @@ class（类）是ECMAScript6中新增的关键字，专门用于创建类的，�
 
 ## 总结：
 
-**==> picture [210 x 11] intentionally omitted <==**
+- 关键字 `class` 封装了所有的实例属性和方法
 
-类中封装的并不是变量和函数，因此不能使用关键字 `let`、`const` 或 `var`
+- 类中封装的并不是变量和函数，因此不能使用关键字 `let`、`const` 或 `var`
 
 静态成员
 

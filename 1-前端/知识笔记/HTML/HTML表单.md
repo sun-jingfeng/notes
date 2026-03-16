@@ -5,7 +5,7 @@
 **==> picture [476 x 12] intentionally omitted <==**
 
 **----- Start of picture text -----**<br>
-在 HTML 中，一个完整的表单通常由表单域、表单控件（也称为表单元素）和提示信息三个部分构成。<br>**----- End of picture text -----**<br>
+在 HTML 中，一个完整的表单通常由表单域、表单控件（也称为表单元素）和 提示信息3个部分构成。<br>**----- End of picture text -----**<br>
 
 **==> picture [467 x 186] intentionally omitted <==**
 
@@ -52,9 +52,7 @@
    - name 表单元素的名字, 要求 单选按钮和复选框要有相同的name值.
 
 
-   - checked属性主要针对于单选按钮和复选框, 主要作用 打开页面,就要可以默认选中某个表单元
-
-- 素.
+   - checked属性主要针对于单选按钮和复选框, 主要作用一打开页面,就要可以默认选中某个表单元 素.
 
       - maxlength 是用户可以在表单元素输入的最大字符数, 一般较少使用.
 
@@ -81,7 +79,7 @@
 > 2 <input type="radio" name="sex" /> 女
 
 
-- 如果页面 打开就让某个单选按钮或者复选框是选中状态?
+- 如果页面一打开就让某个单选按钮或者复选框是选中状态?
 
    - 答: checked 属性：表示默认选中状态。用于单选按钮和复选按钮。
 
@@ -105,7 +103,7 @@
 
 > 2 <input type="radio" name="sex" id="sex" />
 
-核心： <label> 标签的 for 属性应当与相关元素的 id 属性相同。
+核⼼： <label> 标签的 for 属性应当与相关元素的 id 属性相同。
 
 ## <select> 表单元素
 

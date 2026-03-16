@@ -12,9 +12,11 @@ rem 主要解决什么问题？
 
 rem布局
 
-媒体查询 + rem单位 flexible.jslexible.jsexible.jsxible.jsible.jsle.jse.js.jsjss + rem单em单m单单位 vw/vh
+- 媒体查询 + rem单位
 
-flexible.jslexible.jsexible.jsxible.jsible.jsle.jse.js.jsjss + rem单em单m单单位
+- flexible.js + rem单位
+
+- vw/vh
 
 ## 媒体查询
 

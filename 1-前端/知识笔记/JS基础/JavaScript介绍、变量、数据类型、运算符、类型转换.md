@@ -2,7 +2,7 @@
 
 ## 为什么学习 JavaScript
 
-- JavaScript 是 Web 标准构成之一，是前端的基石，作为前端工程师，必须熟练掌握
+- JavaScript的Web标准构成之一，是前端的基石，作为前端工程师，必须熟练掌握
 
 - 前端数据可视化的核心（webgl，echarts...)
 

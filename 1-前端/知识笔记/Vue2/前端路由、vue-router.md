@@ -24,7 +24,7 @@
 
    - 前端路由监听了到 Hash 地址的变化
 
-   - 前端路由把当前 Hash 地址对应的组件渲染都浏览器中
+   - 前端路由把当前 Hash 地址对应的组件渲染到浏览器中
 
 **==> picture [467 x 131] intentionally omitted <==**
 
@@ -180,9 +180,7 @@ vue-router 的官方文档地址：https://router.vuejs.org/zh/
 
       - this.$router.push('hash 地址')
 
-         - 一
-
-         - 跳转到指定 hash 地址，并增加 条历史记录
+         - 跳转到指定 hash 地址，并增加一条历史记录
 
       - this.$router.replace('hash 地址')
 
@@ -238,7 +236,7 @@ $router.back()
 
 守卫方法的 3 个形参
 
-全局前置守卫的回调函数中接收 3 个形参，格式为：
+全局前置守卫的回调函数中接收3个形参，格式为：
 
 **==> picture [411 x 214] intentionally omitted <==**
 

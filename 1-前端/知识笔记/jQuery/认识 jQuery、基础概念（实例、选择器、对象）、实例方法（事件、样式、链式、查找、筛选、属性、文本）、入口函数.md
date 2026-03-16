@@ -2,7 +2,7 @@
 
 介绍
 
-   - [jQuery](http://jquery.com/download/) 是一个 Javascript 专注于 DOM 操作的类库，通过 系列的封 装，不仅简化了 DOM 操作，还处理了不同浏览器之间的兼容，极大的提升了编码的效率，其口号是 Write Less Do More!
+   - [jQuery](http://jquery.com/download/) 是一个 `Javascript` 专注于 DOM 操作的类库，通过一系列的封装，不仅简化了 DOM 操作，还处理了不同浏览器之间的兼容，极大的提升了编码的效率，其口号是 Write Less Do More!
 
 - 下载
 

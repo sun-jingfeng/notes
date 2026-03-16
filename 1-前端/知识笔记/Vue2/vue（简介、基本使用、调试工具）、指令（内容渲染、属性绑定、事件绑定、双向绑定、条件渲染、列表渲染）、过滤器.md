@@ -53,7 +53,7 @@ MVVM
 
 - MVVM 的工作原理
 
-   - ViewModel 作为 MVVM 的核心，是它把当前页面的数据源（Model）和页面的结构（View）连接在 一
+   - ViewModel 作为 MVVM 的核心，是它把当前页面的数据源（Model）和页面的结构（View）连接在一起
 
    - 到一起。
 
@@ -322,7 +322,7 @@ v-else-if
    - list 是待循环的数组
 
 
-   - item 是被循环的每 项
+   - item 是被循环的每项
 
 **==> picture [313 x 197] intentionally omitted <==**
 

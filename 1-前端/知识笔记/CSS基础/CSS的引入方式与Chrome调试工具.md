@@ -2,7 +2,7 @@
 
 CSS 的三种样式表
 
-- 按书写/引入位置，CSS 样式表分为三类：
+- 按照 CSS 样式书写的位置（或者引入的方式），CSS 样式表可以分为三大类：
 
    - 行内样式表（行内式）
 
@@ -61,7 +61,7 @@ CSS 的三种样式表
 **==> picture [550 x 64] intentionally omitted <==**
 
 **----- Start of picture text -----**<br>
-1 <link rel="stylesheet" href="css 文件路径 "><br>**----- End of picture text -----**<br>
+<link rel="stylesheet" href="css文件路径"><br>**----- End of picture text -----**<br>
 
 **==> picture [467 x 88] intentionally omitted <==**
 

@@ -18,7 +18,7 @@
 
 > 3 let str: string = <string>strOrNum // （不常用语法）
 
-## 一 只能断言为可能的类型之
+## 只能断言为可能的类型之一
 
 > 1 let strOrNum: string | number = Math.random() > 0.5 ? 'abc' : 123
 
