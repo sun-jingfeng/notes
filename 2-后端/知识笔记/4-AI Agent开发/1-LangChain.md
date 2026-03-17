@@ -16,7 +16,7 @@
 
 ### 1.2 核心模块
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      LangChain 核心模块                      │
 ├─────────────────────────────────────────────────────────────┤
@@ -29,18 +29,39 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.3 安装
+LangChain 更像一层**应用编排框架**：上接模型能力，下接检索、工具、存储与可观测性，把这些组件用统一接口串起来。
+
+### 1.3 LangChain、LangGraph、原生 SDK 的关系
+
+| 方案                 | 定位                                             | 适用场景 |
+| -------------------- | ------------------------------------------------ | -------- |
+| **原生模型 SDK**     | 直接调用模型厂商 API，依赖少、链路短             | 单轮问答、简单补全、最小可用 Demo |
+| **LangChain**        | Prompt、模型、解析器、检索、工具的统一编排层     | RAG、工具调用、可复用链路 |
+| **LangGraph**        | 在 LangChain 之上做状态机/图编排，强调状态与分支 | 多步 Agent、人工介入、重试、长流程 |
+
+| 需求特征                         | 更合适的选择 |
+| -------------------------------- | ------------ |
+| **只是调一次模型**               | 原生 SDK 或 LangChain |
+| **需要 Prompt + Parser + RAG**   | LangChain |
+| **需要多分支、多轮状态、可恢复执行** | LangGraph |
+
+> 💡 旧教程常把 LangChain 当成“做一切 Agent 应用的总入口”。当前更常见的分工是：**LangChain 做组件编排，LangGraph 做复杂流程控制**。
+
+### 1.4 安装与包拆分
 
 ```bash
-pip install langchain langchain-openai langchain-community
+pip install -U langchain langchain-core langchain-openai langchain-community langsmith
 ```
 
 | 包名                    | 说明                                        |
 | ----------------------- | ------------------------------------------- |
-| `langchain`             | 核心框架，链、Agent、Memory 等抽象          |
-| `langchain-openai`      | OpenAI 模型集成（ChatOpenAI、OpenAIEmbeddings） |
-| `langchain-community`   | 社区集成：向量库、文档加载器、工具等        |
-| `langchain-core`        | 基础接口定义，自动随 langchain 安装         |
+| `langchain-core`        | 基础接口：Runnable、Prompt、Message、Parser |
+| `langchain`             | 高层封装与常用组合能力                      |
+| `langchain-openai`      | OpenAI 模型与 Embedding 集成                |
+| `langchain-community`   | 各类社区集成：向量库、文档加载器、工具等    |
+| `langsmith`             | 可观测性、调试、评估平台 SDK                |
+
+> **注意**：LangChain 迭代很快。旧资料中的 `LLMChain`、`SequentialChain`、`ConversationChain`、`OpenAI Functions Agent` 仍会频繁出现。新项目优先使用 **LCEL**、**Tool Calling**、**RunnableWithMessageHistory**，复杂 Agent 流程优先考虑 **LangGraph**。
 
 ***
 
@@ -93,24 +114,64 @@ messages = prompt.format_messages(role="技术专家", question="什么是 RAG�
 | `format_messages(**kwargs)`   | 填充变量，返回消息列表             |
 | `format(**kwargs)`            | 填充变量，返回字符串               |
 
-### 2.3 Output Parser
+### 2.3 结构化输出与 Output Parser
 
-**Output Parser** 将 LLM 的原始文本输出解析为结构化数据。
+**Output Parser** 用于把模型输出从“自然语言文本”变成“程序可消费的数据结构”。
+
+| 方式                          | 返回结果              | 优点                             | 适用场景 |
+| ----------------------------- | --------------------- | -------------------------------- | -------- |
+| **StrOutputParser**           | 字符串                | 最简单，适合普通问答             | 摘要、改写、解释 |
+| **JsonOutputParser**          | `dict` / JSON         | 结构清晰，便于后续处理           | 固定字段输出 |
+| **PydanticOutputParser**      | Pydantic 对象         | 有类型校验，失败更容易发现       | 评分、分类、抽取 |
+| **Tool Calling / JSON Schema**| 模型原生结构化结果    | 稳定性通常更好                   | 生产级结构化输出 |
 
 ```python
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 
-# 字符串解析器（提取 .content 文本）
-parser = StrOutputParser()
-
-# 结构化解析（Pydantic 模型）
 class Review(BaseModel):
-    sentiment: str = Field(description="情感倾向：positive/negative/neutral")
-    score: int = Field(description="评分 1-10")
+    sentiment: str = Field(description="情感倾向：positive、negative、neutral")
+    score: int = Field(description="评分，范围 1 到 10")
 
-json_parser = JsonOutputParser(pydantic_object=Review)
+parser = PydanticOutputParser(pydantic_object=Review)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+prompt = ChatPromptTemplate.from_template("""
+分析以下评论，并按指定格式输出。
+{format_instructions}
+
+评论：{text}
+""")
+
+chain = (
+    {
+        "format_instructions": lambda _: parser.get_format_instructions(),
+        "text": lambda x: x["text"]
+    }
+    | prompt
+    | llm
+    | parser
+)
+
+result = chain.invoke({"text": "这个产品很好用，给 9 分"})
+print(result.sentiment, result.score)
 ```
+
+| 方法 / 属性                     | 说明                                             |
+| ------------------------------- | ------------------------------------------------ |
+| `parser.get_format_instructions()` | 生成给模型看的输出格式约束                    |
+| `parser.invoke(output)`         | 解析单次模型输出                                 |
+| `Field(description=...)`        | 字段语义说明，能显著提升结构化输出成功率         |
+
+**推荐做法：**
+
+| 场景                         | 推荐方式 |
+| ---------------------------- | -------- |
+| **只是给前端展示文本**       | `StrOutputParser` |
+| **后端要继续处理字段**       | `JsonOutputParser` 或 `PydanticOutputParser` |
+| **要求稳定、字段严格**       | 优先用模型原生 `Tool Calling / JSON Schema` |
 
 ***
 
@@ -154,74 +215,122 @@ for chunk in chain.stream({"topic": "向量数据库"}):
 results = chain.batch([{"topic": "RAG"}, {"topic": "Agent"}])
 ```
 
-### 3.3 RunnablePassthrough 与 RunnableLambda
+### 3.3 常用 Runnable 组件
+
+| 组件                     | 作用                                   | 常见用途 |
+| ------------------------ | -------------------------------------- | -------- |
+| `RunnablePassthrough`    | 原样透传输入                           | 同时保留原始问题与派生字段 |
+| `RunnableLambda`         | 将普通函数包装为 Runnable              | 数据清洗、字段转换、格式化 |
+| `RunnableParallel`       | 并行执行多个子链，返回字典结果         | 同时生成多个字段、并发检索 |
 
 ```python
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda, RunnableParallel
 
-# RunnablePassthrough：透传输入，常用于将原始输入传递到链的后续步骤
-chain = RunnablePassthrough() | llm | parser
+branch = RunnableParallel(
+    raw=RunnablePassthrough(),
+    upper=RunnableLambda(lambda x: x.upper())
+)
 
-# RunnableLambda：将普通函数包装为 Runnable
-def format_input(x):
-    return {"topic": x.upper()}
-
-chain = RunnableLambda(format_input) | prompt | llm | parser
-chain.invoke("langchain")
+print(branch.invoke("langchain"))
+# {'raw': 'langchain', 'upper': 'LANGCHAIN'}
 ```
+
+> 💡 旧版文档中的 `LLMChain`、`SequentialChain` 仍能看到，但当前写法更推荐基于 **LCEL + Runnable** 组合。可读性和可扩展性更好。
 
 ***
 
-## 四、Memory（对话记忆）
+## 四、对话状态与记忆
 
-### 4.1 记忆类型
+### 4.1 记忆的本质
 
-| 类型                              | 说明                                         | 适用场景               |
-| --------------------------------- | -------------------------------------------- | ---------------------- |
-| **ConversationBufferMemory**      | 保存完整对话历史                             | 短对话                 |
-| **ConversationBufferWindowMemory**| 只保留最近 k 轮对话                          | 限制 token 消耗        |
-| **ConversationSummaryMemory**     | 用 LLM 对历史进行摘要压缩                    | 长对话                 |
-| **ConversationSummaryBufferMemory**| 近期保留原文，较早内容压缩为摘要             | 长对话 + 精度要求      |
+“记忆”本质上不是模型自己记住了历史，而是**把历史或摘要重新喂回 Prompt**。
 
-### 4.2 基本用法
+| 方式                              | 说明                                         | 适用场景 |
+| --------------------------------- | -------------------------------------------- | -------- |
+| **完整历史**                      | 保留所有消息，最直观                         | 短对话、调试 |
+| **窗口记忆**                      | 只保留最近 k 轮                             | 在线聊天、控制成本 |
+| **摘要记忆**                      | 用摘要替代旧消息                             | 长对话 |
+| **结构化状态**                    | 只保存关键字段，如姓名、订单号、意图         | 业务系统、表单型对话 |
+
+### 4.2 兼容层写法（旧教程常见）
 
 ```python
 from langchain.memory import ConversationBufferMemory
-from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationChain
+from langchain_openai import ChatOpenAI
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 memory = ConversationBufferMemory(return_messages=True)
 
 conversation = ConversationChain(llm=llm, memory=memory)
-
 conversation.predict(input="我叫小明")
 response = conversation.predict(input="我叫什么名字？")
-print(response)  # 能记住"小明"
+print(response)
 ```
 
-### 4.3 LCEL 中手动管理记忆
+> **定位：** 这种写法适合理解概念、快速验证效果。新项目通常不再把 `ConversationChain` 作为首选。
 
-在 LCEL 链中，推荐手动维护消息历史，灵活性更高：
+### 4.3 现代写法：`RunnableWithMessageHistory`
 
 ```python
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_openai import ChatOpenAI
 
-chat_history = []
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-def chat(user_input: str) -> str:
-    chat_history.append(HumanMessage(content=user_input))
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "你是一个助手"),
-        *[(msg.type, msg.content) for msg in chat_history]
-    ])
-    chain = prompt | llm | StrOutputParser()
-    response = chain.invoke({})
-    
-    chat_history.append(AIMessage(content=response))
-    return response
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "你是一个助手"),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}")
+])
+
+chain = prompt | llm
+
+store: dict[str, BaseChatMessageHistory] = {}
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = InMemoryChatMessageHistory()
+    return store[session_id]
+
+chat_chain = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="history",
+)
+
+chat_chain.invoke(
+    {"input": "我叫小明"},
+    config={"configurable": {"session_id": "user-1"}}
+)
+
+response = chat_chain.invoke(
+    {"input": "我叫什么名字？"},
+    config={"configurable": {"session_id": "user-1"}}
+)
+
+print(response.content)
 ```
+
+### 4.4 生产环境怎么存历史
+
+| 存储位置         | 特点                                         | 适用场景 |
+| ---------------- | -------------------------------------------- | -------- |
+| **内存**         | 最简单，但服务重启会丢失                     | 本地 Demo |
+| **Redis**        | 读写快，适合短期会话                         | 在线聊天、会话缓存 |
+| **数据库**       | 持久化强，可审计、可回放                     | 企业应用 |
+| **摘要 + 数据库**| 旧消息转摘要，关键记录落库                   | 长对话、降成本 |
+
+**推荐做法：**
+
+| 场景                         | 建议 |
+| ---------------------------- | ---- |
+| **只做学习 Demo**            | 内存历史即可 |
+| **用户真实会话**             | Redis 或数据库 |
+| **多步骤 Agent / 工作流**    | 直接把状态设计成显式字段，必要时用 LangGraph |
 
 ***
 
@@ -231,7 +340,7 @@ def chat(user_input: str) -> str:
 
 **RAG（Retrieval-Augmented Generation）** 检索增强生成，在生成回答前先从外部知识库检索相关内容，解决 LLM 知识截止和幻觉问题。
 
-```
+```text
 用户提问
     ↓
 将问题转为向量（Embedding）
@@ -349,6 +458,30 @@ rag_chain = (
 answer = rag_chain.invoke("什么是 LangChain？")
 ```
 
+### 5.6 RAG 调优要点
+
+| 调优项                | 常见做法                                         | 说明 |
+| --------------------- | ------------------------------------------------ | ---- |
+| **`chunk_size`**      | 300～800 中文字符，按内容密度调整                | 太小会丢上下文，太大会降低召回精度 |
+| **`chunk_overlap`**   | `chunk_size` 的 10%～20%                         | 避免关键信息被切断 |
+| **Top-K**             | 先从 `k=3` 或 `k=5` 起步                         | 召回太多会把 Prompt 撑大 |
+| **Metadata 过滤**     | 按来源、时间、文档类型过滤                       | 提高检索相关性 |
+| **混合检索 / 重排**   | 关键词检索 + 向量检索，必要时加 rerank           | 复杂知识库常见 |
+
+**排查顺序：**
+
+```text
+回答不准
+    ↓
+先看是否检索到了对的文档
+    ↓
+再看 chunk 是否切得合理
+    ↓
+再看 Prompt 是否要求“只基于上下文回答”
+    ↓
+最后再调模型与参数
+```
+
 ***
 
 ## 六、Agents（智能代理）
@@ -357,7 +490,7 @@ answer = rag_chain.invoke("什么是 LangChain？")
 
 **Agent** 让 LLM 充当"大脑"，根据用户目标自主决策：调用哪些工具、以什么顺序执行、何时返回最终结果。
 
-```
+```text
 用户输入目标
     ↓
 LLM 分析，决定调用哪个工具
@@ -443,6 +576,22 @@ print(result["output"])
 | **ReAct Agent**             | Reasoning + Acting，通过文本推理决策         | 适合旧模型 |
 | **OpenAI Functions Agent**  | 早期 OpenAI 专用，已被 Tool Calling 取代     | ❌ 过时  |
 
+### 6.6 Agent、固定流程、LangGraph 怎么选
+
+| 方案                 | 优点                                   | 风险 / 成本                          | 适用场景 |
+| -------------------- | -------------------------------------- | ------------------------------------ | -------- |
+| **固定流程**         | 最稳定、最容易测试                     | 灵活性有限                           | 表单流程、固定业务 |
+| **LangChain Agent**  | 工具选择灵活，开发快                   | 结果不完全可控，调试成本更高         | 1～3 个工具的动态调用 |
+| **LangGraph**        | 状态清晰，可分支、可重试、可人工介入   | 学习成本更高                         | 多 Agent、长流程、生产编排 |
+
+**经验法则：**
+
+| 问题特征                           | 选择建议 |
+| ---------------------------------- | -------- |
+| **步骤和顺序已经固定**             | 固定流程，不必强上 Agent |
+| **工具选择由问题决定**             | 用 Agent |
+| **流程很长，还要状态恢复/人工审批** | 用 LangGraph |
+
 ***
 
 ## 七、Callbacks 与追踪
@@ -467,50 +616,84 @@ class LogHandler(BaseCallbackHandler):
 llm = ChatOpenAI(model="gpt-4o-mini", callbacks=[LogHandler()])
 ```
 
-### 7.2 LangSmith 追踪
+### 7.2 LangSmith 可观测性平台
 
-**LangSmith** 是 LangChain 官方的可观测性平台，可视化追踪每次调用的输入输出、耗时、token 消耗。
+**LangSmith** 是 LangChain 官方的可观测性与调试平台，用于追踪、评估和监控基于 LLM 的应用。
+
+| 能力             | 说明                                                                 |
+| ---------------- | -------------------------------------------------------------------- |
+| **Trace / 链路追踪** | 记录每次 LLM 调用的输入输出、中间步骤、工具调用、耗时与 token 消耗   |
+| **数据集与评估** | 创建数据集、运行评估（准确率、延迟等），做回归测试与迭代             |
+| **监控与告警**   | 监控生产环境调用量、延迟、错误率，可配置告警                         |
+| **与 LangChain 集成** | 与 LangChain / LangGraph 深度集成，通过环境变量即可接入，无需改代码 |
+
+**是否有用：** 开发调试时能看清完整调用链，比只看日志更直观；做评估与迭代时可量化效果；生产环境可做用量与成本管控。不依赖 LangSmith 也能开发 LangChain 应用，但可观测性和评估需自行用日志与指标系统实现。
+
+**启用方式：** 在 [LangSmith](https://smith.langchain.com) 注册并获取 API Key，设置环境变量后，链与 Agent 的执行记录会自动上传。
 
 ```bash
-# 设置环境变量启用追踪
 export LANGCHAIN_TRACING_V2=true
-export LANGCHAIN_API_KEY="ls__..."
-export LANGCHAIN_PROJECT="my-project"
+export LANGCHAIN_API_KEY="ls__..."    # LangSmith 控制台获取
+export LANGCHAIN_PROJECT="my-project" # 项目名，用于在控制台分组
 ```
 
-启用后，所有链和 Agent 的执行记录自动上传到 LangSmith 控制台，无需修改代码。
+| 变量                     | 说明                           |
+| ------------------------ | ------------------------------ |
+| `LANGCHAIN_TRACING_V2`   | 设为 `true` 开启追踪           |
+| `LANGCHAIN_API_KEY`     | LangSmith API Key              |
+| `LANGCHAIN_PROJECT`     | 可选，用于在控制台区分项目     |
+
+> 💡 有免费额度，复杂 Agent 或多步链、生产上线场景建议使用；个人小项目可先体验再决定是否长期使用。
+
+### 7.3 调试时重点看什么
+
+| 维度                 | 关注点                                       |
+| -------------------- | -------------------------------------------- |
+| **Prompt**           | 系统提示是否清晰，变量是否正确注入           |
+| **检索结果**         | 召回的文档是否真和问题相关                   |
+| **工具调用**         | 工具描述是否准确，参数 schema 是否清晰       |
+| **Latency**          | 慢在检索、模型、工具调用还是网络             |
+| **Token 成本**       | 历史消息、上下文、工具结果是否过长           |
 
 ***
 
-## 八、完整示例：带记忆的 RAG 问答
+## 八、完整示例：带历史的 RAG 问答
 
 ```python
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import TextLoader
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.runnables import RunnableLambda
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 # ========== 1. 构建知识库 ==========
 loader = TextLoader("knowledge.txt", encoding="utf-8")
 docs = loader.load()
 
-splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
 chunks = splitter.split_documents(docs)
 
 vectorstore = Chroma.from_documents(
-    chunks, OpenAIEmbeddings(model="text-embedding-3-small")
+    documents=chunks,
+    embedding=OpenAIEmbeddings(model="text-embedding-3-small"),
+    persist_directory="./chroma_db"
 )
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-# ========== 2. 构建带历史的 RAG 链 ==========
+# ========== 2. 构建 RAG 链 ==========
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "根据上下文回答问题，无相关信息则说不知道。\n\n上下文：\n{context}"),
+    (
+        "system",
+        "你是知识库问答助手。仅根据提供的上下文回答问题；如果上下文没有答案，直接回答“我不知道”。\n\n上下文：\n{context}"
+    ),
     MessagesPlaceholder(variable_name="chat_history"),
     ("human", "{question}")
 ])
@@ -518,26 +701,73 @@ prompt = ChatPromptTemplate.from_messages([
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-chain = (
+rag_chain = (
     {
-        "context": retriever | format_docs,
-        "question": RunnablePassthrough(),
-        "chat_history": lambda _: chat_history
+        "context": RunnableLambda(lambda x: x["question"]) | retriever | format_docs,
+        "question": RunnableLambda(lambda x: x["question"]),
+        "chat_history": RunnableLambda(lambda x: x["chat_history"])
     }
     | prompt
     | llm
-    | StrOutputParser()
 )
 
-# ========== 3. 多轮对话 ==========
-chat_history = []
+# ========== 3. 挂接会话历史 ==========
+store: dict[str, BaseChatMessageHistory] = {}
 
-def ask(question: str) -> str:
-    answer = chain.invoke(question)
-    chat_history.append(HumanMessage(content=question))
-    chat_history.append(AIMessage(content=answer))
-    return answer
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = InMemoryChatMessageHistory()
+    return store[session_id]
 
-print(ask("LangChain 是什么？"))
-print(ask("它有哪些核心模块？"))  # 能结合上下文回答
+chat_rag = RunnableWithMessageHistory(
+    rag_chain,
+    get_session_history,
+    input_messages_key="question",
+    history_messages_key="chat_history",
+)
+
+# ========== 4. 多轮提问 ==========
+response1 = chat_rag.invoke(
+    {"question": "LangChain 是什么？"},
+    config={"configurable": {"session_id": "demo-user"}}
+)
+print(response1.content)
+
+response2 = chat_rag.invoke(
+    {"question": "它有哪些核心模块？"},
+    config={"configurable": {"session_id": "demo-user"}}
+)
+print(response2.content)
 ```
+
+| 组件                         | 作用 |
+| ---------------------------- | ---- |
+| `retriever`                  | 从知识库召回相关 chunk |
+| `ChatPromptTemplate`         | 把上下文、历史、当前问题拼成最终 Prompt |
+| `RunnableWithMessageHistory` | 以 `session_id` 为单位维护多轮历史 |
+| `ChatOpenAI`                 | 负责生成最终回答 |
+
+***
+
+## 九、最佳实践与常见问题
+
+### 9.1 推荐实践
+
+| 项目                         | 建议 |
+| ---------------------------- | ---- |
+| **模型调用层**               | 新项目优先用 `ChatModel` |
+| **链路编排**                 | 优先用 LCEL，不优先回退到旧式 Chain |
+| **结构化输出**               | 能用 schema 就不要只靠自然语言约束 |
+| **RAG**                      | 先把召回质量调对，再调 Prompt 和模型 |
+| **Agent**                    | 工具少且流程固定时，不必强行使用 Agent |
+| **可观测性**                 | 开发阶段尽早接入 LangSmith 或日志追踪 |
+
+### 9.2 常见误区
+
+| 误区                             | 问题                                    | 更合理的做法 |
+| -------------------------------- | --------------------------------------- | ------------ |
+| **把 LangChain 当成模型本身**    | 误以为“换了框架就等于换了模型能力”      | LangChain 只是编排层，模型能力仍由底层模型决定 |
+| **先上 Agent 再想流程**          | 容易把简单问题做复杂                    | 先判断固定流程能否解决 |
+| **RAG 效果差就先换大模型**       | 可能真正问题在检索阶段                  | 先查召回结果、chunk、Top-K、过滤条件 |
+| **历史越多越好**                 | Token 成本高，还会引入噪声              | 控制窗口、做摘要、保留结构化状态 |
+| **只看最终答案，不看中间链路**   | 很难定位 Prompt、检索或工具的问题       | 结合回调、日志、LangSmith 看全过程 |
