@@ -1,177 +1,305 @@
 # HTML 表单
 
-表单的组成
+## 一、一句话理解
 
-**==> picture [476 x 12] intentionally omitted <==**
+表单不是一堆输入框的拼装，而是一条“收集用户输入 -> 组织字段 -> 提交到后端 -> 给用户反馈”的交互链路。
 
-**----- Start of picture text -----**<br>
-在 HTML 中，一个完整的表单通常由表单域、表单控件（也称为表单元素）和 提示信息3个部分构成。<br>**----- End of picture text -----**<br>
+---
 
-**==> picture [467 x 186] intentionally omitted <==**
+## 二、什么是表单
 
-## 表单域
+**表单（Form）** 是 HTML 中用来收集用户输入并提交到服务器的一组控件。
 
-- 在 HTML 标签中， <form> 标签用于定义表单域，以实现用户信息的收集和传递。<form> 会把它范围内的表单元素信息提交给服务器.
+一个完整表单通常包含三部分：
 
-> 1 <form action="url 地址 " method=" 提交方式 " name=" 表单域名称 ">
+| 组成         | 说明                                       |
+| ------------ | ------------------------------------------ |
+| **表单域**   | `form`，负责包裹和提交数据                 |
+| **表单控件** | `input`、`select`、`textarea`、`button` 等 |
+| **提示信息** | 标签文本、占位提示、说明文字、错误信息     |
 
-> 2 各种表单元素控件
+---
 
-> 3 </form>
+## 三、`form` 表单域
 
-## 常用属性：
+`<form>` 用于定义提交范围，表单控件通常都放在它里面。
 
-**==> picture [467 x 95] intentionally omitted <==**
+```html
+<form action="/login" method="post" name="loginForm">
+  <!-- 各种表单元素 -->
+</form>
+```
 
-## <input> 表单元素
+### 1. 常用属性
 
-   - 在 <input> 标签中，包含一个 type 属性，根据不同的 type 属性值，输入字段拥有很多种形式（可以是文本字
+| 属性               | 说明                                           |
+| ------------------ | ---------------------------------------------- |
+| **`action`**       | 提交地址                                       |
+| **`method`**       | 提交方式，常见为 `get` 或 `post`               |
+| **`name`**         | 表单名称                                       |
+| **`target`**       | 提交结果打开位置，如 `_self`、`_blank`         |
+| **`autocomplete`** | 是否允许浏览器自动填充                         |
+| **`enctype`**      | 编码类型，上传文件时常用 `multipart/form-data` |
 
-   - 段、复选框、掩码后的文本控件、单选按钮、按钮等）。
+### 2. `get` 和 `post` 的区别
 
-- 1
+| 对比项               | `get`         | `post`               |
+| -------------------- | ------------- | -------------------- |
+| **数据位置**         | 拼接在 URL 上 | 放在请求体中         |
+| **适用场景**         | 查询、筛选    | 登录、注册、提交数据 |
+| **是否适合传大数据** | 不适合        | 更适合               |
 
-<input type=" 属性值 " />
+> **注意**：上传文件时，除了需要 `method="post"`，还要设置 `enctype="multipart/form-data"`。
 
-- <input /> 标签为单标签
+可以把 `form` 理解成提交边界，它决定哪些控件一起提交、往哪提、用什么方式提。
 
-- type 属性设置不同的属性值用来指定不同的控件类型
+---
 
-- type 属性的属性值及其描述如下：
+## 四、`input` 表单元素
 
-**==> picture [467 x 242] intentionally omitted <==**
+`<input>` 是最常用的表单控件，通过 `type` 决定不同的输入形态。
 
-- 补充：<button></button>双标签同<input type="submit">
+```html
+<input type="text" />
+```
 
-- 除 type 属性外，<input>标签还有其他很多属性，其常用属性如下：
+### 1. 常见 `type` 类型
 
-**==> picture [467 x 125] intentionally omitted <==**
+| 类型           | 作用         |
+| -------------- | ------------ |
+| **`text`**     | 单行文本输入 |
+| **`password`** | 密码输入     |
+| **`radio`**    | 单选按钮     |
+| **`checkbox`** | 复选框       |
+| **`file`**     | 文件上传     |
+| **`number`**   | 数字输入     |
+| **`email`**    | 邮箱输入     |
+| **`date`**     | 日期选择     |
+| **`submit`**   | 提交按钮     |
+| **`reset`**    | 重置按钮     |
+| **`button`**   | 普通按钮     |
 
-   - name 和value 是每个表单元素都有的属性值,主要给后台人员使用.
+### 2. 常用属性
 
-   - name 表单元素的名字, 要求 单选按钮和复选框要有相同的name值.
+| 属性              | 说明                          |
+| ----------------- | ----------------------------- |
+| **`name`**        | 字段名，提交给后端时作为 key  |
+| **`value`**       | 当前值                        |
+| **`placeholder`** | 占位提示                      |
+| **`checked`**     | 单选/复选的默认选中           |
+| **`disabled`**    | 禁用，不可交互且不会提交      |
+| **`readonly`**    | 只读，可以提交但不可编辑      |
+| **`maxlength`**   | 最大字符数                    |
+| **`required`**    | 必填                          |
+| **`id`**          | 唯一标识，常配合 `label` 使用 |
 
+### 3. 示例
 
-   - checked属性主要针对于单选按钮和复选框, 主要作用一打开页面,就要可以默认选中某个表单元 素.
+```html
+<input type="text" name="username" placeholder="请输入用户名" />
+<input type="password" name="password" placeholder="请输入密码" />
+```
 
-      - maxlength 是用户可以在表单元素输入的最大字符数, 一般较少使用.
+### 4. 单选和复选的关键点
 
-- 有些表单元素想刚打开页面就默认显示几个文字怎么做?
+#### 1. 单选按钮
 
-   - 答: 可以给这些表单元素设置 value 属性="值"
+同一组单选按钮必须拥有相同的 `name`，这样浏览器才知道它们是“一组选一”。
 
-> 1 用户名 : <input type="text" value=" 请输入用户名 " />
+```html
+<input type="radio" name="gender" value="male" checked /> 男
+<input type="radio" name="gender" value="female" /> 女
+```
 
-- 页面中的表单元素很多，如何区别不同的表单元素?
+#### 2. 复选框
 
-   - 答: name 属性：当前 input 表单的名字，后台可以通过这个 name 属性找到这个表单。页面中的表单很
+```html
+<input type="checkbox" name="hobby" value="music" /> 音乐
+<input type="checkbox" name="hobby" value="sports" /> 运动
+```
 
-   - 多，name 的主要作用就是用于区别不同的表单。
+> **注意**：`checked` 主要用于 `radio` 和 `checkbox`，表示默认选中。
 
-> 1 用户名 : <input type="text" value=" 请输入用户名 " name="username" />
+不同 `type` 不只是显示不一样，它们还会影响输入体验、浏览器校验方式和移动端键盘形态。
 
-- name 属性后面的值，是自定义的
+---
 
-- radio (或者checkbox）如果是一组，我们必须给他们命名相同的名字
+## 五、`label` 标签
 
-> 1 <input type="radio" name="sex" /> 男
+`<label>` 用于给表单控件添加文本说明，并增强可点击范围。
 
-> 2 <input type="radio" name="sex" /> 女
+```html
+<label for="username">用户名</label>
+<input id="username" type="text" name="username" />
+```
 
+### 1. 作用
 
-- 如果页面一打开就让某个单选按钮或者复选框是选中状态?
+| 作用               | 说明                   |
+| ------------------ | ---------------------- |
+| **提升可用性**     | 点击文本也能聚焦输入框 |
+| **提升无障碍体验** | 有利于屏幕阅读器识别   |
 
-   - 答: checked 属性：表示默认选中状态。用于单选按钮和复选按钮。
+### 2. 核心规则
 
-1 性别 : 2 <input type="radio" name="sex" value=" 男 " checked="checked" /> 男 3 <input type="radio" name="sex" value=" 女 " /> 女
+`label` 的 `for` 必须对应目标控件的 `id`。
 
-- 如何让input表单元素展示不同的形态? 比如单选按钮或者文本框
+`label` 很容易被忽略，但它对点击范围和无障碍都很重要。
 
-   - 答: type属性：type属性可以让input表单元素设置不同的形态.
+---
 
-> 1 <input type="radio" name="sex" value=" 男 " checked="checked" /> 男
+## 六、`select` 下拉框
 
-> 2 <input type="text" value=" 请输入用户名 ">
+当候选项较多、又希望节省页面空间时，可以使用下拉框。
 
-## <label> 标签
+```html
+<select name="city">
+  <option value="beijing">北京</option>
+  <option value="shanghai" selected>上海</option>
+  <option value="guangzhou">广州</option>
+</select>
+```
 
-- <label> 标签用于绑定一个表单元素, 当点击<label> 标签内的文本时，浏览器就会自动将焦点(光标)转到或者选 择对应的表单元素上,用来增加用户体验.
+### 1. 关键点
 
-- 语法：
+| 规则                  | 说明                        |
+| --------------------- | --------------------------- |
+| **必须包含 `option`** | `select` 自身只负责容器作用 |
+| **`selected`**        | 设置默认选中项              |
+| **`value`**           | 建议每个选项都明确写值      |
 
-> 1 <label for="sex"> 男 </label>
+下拉框适合候选项明确、范围有限的场景；如果选项很多、需要搜索，原生 `select` 往往就不够用了。
 
-> 2 <input type="radio" name="sex" id="sex" />
+---
 
-核⼼： <label> 标签的 for 属性应当与相关元素的 id 属性相同。
+## 七、`textarea` 文本域
 
-## <select> 表单元素
+`<textarea>` 用于输入多行文本，常见于评论、简介、备注等场景。
 
-- 在页面中，如果有多个选项让用户选择，并且想要节约页面空间时，我们可以使用<select>标签控件定义下拉
+```html
+<textarea name="message" placeholder="请输入留言"></textarea>
+```
 
-列表。
+### 1. 特点
 
-**==> picture [137 x 222] intentionally omitted <==**
+| 特点                    | 说明                              |
+| ----------------------- | --------------------------------- |
+| **可输入多行内容**      | 比 `input` 更适合长文本           |
+| **默认值写在标签内部**  | 不是写在 `value` 属性上           |
+| **尺寸通常用 CSS 控制** | 实际开发中较少依赖 `rows`、`cols` |
 
-**==> picture [33 x 10] intentionally omitted <==**
+```html
+<textarea name="intro">默认内容</textarea>
+```
 
-**----- Start of picture text -----**<br>
-语法：<br>**----- End of picture text -----**<br>
+它更适合长文本输入，不适合被当成只是更大的 `input`。
 
-> 1 <select>
+---
 
-> 2 <option> 选项 1</option>
+## 八、按钮
 
-> 3 <option> 选项 2</option>
+按钮既可以用 `input`，也可以用 `button`。
 
-> 4 <option> 选项 3</option>
+| 写法                                      | 说明                    |
+| ----------------------------------------- | ----------------------- |
+| **`<input type="submit" />`**             | 提交按钮                |
+| **`<input type="reset" />`**              | 重置按钮                |
+| **`<button type="submit">提交</button>`** | 更灵活，可写文本和 HTML |
 
-> 5 ...
+推荐优先使用 `button`，因为可扩展性更强。
 
-> 6 </select>
+```html
+<button type="submit">提交</button>
+<button type="reset">重置</button>
+<button type="button">普通按钮</button>
+```
 
-- <select> 中至少包含一对<option> 。
+> **注意**：`button` 在表单中如果不写 `type`，默认行为通常是 `submit`。
 
-- 在<option> 中定义 selected =" selected " 时，当前项即为默认选中项。
+这也是为什么很多项目里会显式写 `type="button"`，避免普通按钮误触发表单提交。
 
-## <textarea> 表单元素
+---
 
-- 在表单元素中，<textarea> 标签是用于定义多行文本输入的控件。使用多行文本输入控件，可以输入更多的文
+## 九、完整示例
 
-- 字，该控件常见于留言板，评论。
+```html
+<form action="/register" method="post">
+  <div>
+    <label for="username">用户名：</label>
+    <input
+      id="username"
+      type="text"
+      name="username"
+      placeholder="请输入用户名"
+      required
+    />
+  </div>
 
-语法：
+  <div>
+    <label for="password">密码：</label>
+    <input id="password" type="password" name="password" required />
+  </div>
 
-- 1 <textarea rows="3" cols="20"> 2 文本内容 3 </textarea>
+  <div>
+    性别：
+    <label>
+      <input type="radio" name="gender" value="male" checked /> 男
+    </label>
+    <label> <input type="radio" name="gender" value="female" /> 女 </label>
+  </div>
 
-   - 通过 <textarea> 标签可以轻松地创建多行文本输入框。
+  <div>
+    城市：
+    <select name="city">
+      <option value="beijing">北京</option>
+      <option value="shanghai">上海</option>
+    </select>
+  </div>
 
-   - cols="每行中的字符数" ，rows="显示的行数"，我们在实际开发中不会使用，都是用 CSS 来改变大小。
+  <div>
+    <textarea name="remark" placeholder="请输入备注"></textarea>
+  </div>
 
-## 表单元素几个总结点
+  <button type="submit">提交</button>
+  <button type="reset">重置</button>
+</form>
+```
 
-- 表单元素我们学习了三大组 input 输入表单元素、 select 下拉表单元素、 textarea 文本域表单元素.
+---
 
-这三组表单元素都应该包含在form表单域里面,并且有 name 属性.
+## 十、真实开发里的高频边界
 
-> 1 <form>
+### 1. `disabled` 和 `readonly` 的区别
 
-> 2 <input type="text" name="username">
+| 属性           | 是否可编辑 | 是否会提交 |
+| -------------- | ---------- | ---------- |
+| **`disabled`** | 否         | 否         |
+| **`readonly`** | 否         | 是         |
 
-> 3 <select name="jiguan">
+### 2. 原生校验和后端校验的关系
 
-> 4 <option> 北京 </option>
+像 `required`、`maxlength` 这类能力只能做基础拦截，不能替代后端校验。
 
-> 5 </select>
+---
 
-> 6 <textarea name= "message"></textarea>
+## 十一、常见注意事项
 
-> 7 </form>
+| 问题                              | 说明                   |
+| --------------------------------- | ---------------------- |
+| **`name` 忘写**                   | 后端可能收不到对应字段 |
+| **单选按钮 `name` 不一致**        | 会导致不能实现单选效果 |
+| **`label for` 没匹配 `id`**       | 点击文字无法聚焦控件   |
+| **`textarea` 默认值写到 `value`** | 这是错误写法           |
+| **文件上传没设置编码类型**        | 后端无法正确接收文件   |
 
-- 有三个名字非常相似的标签:
+很多表单问题不是样式问题，而是字段名、提交方式、编码方式和控件行为没分清。
 
-   - 表单域 form 使用场景: 提交区域内表单元素给后台服务器
+## 十二、小结
 
-   - 文件域 file 是input type 属性值 使用场景: 上传文件
-
-   - 文本域 textarea 使用场景: 可以输入多行文字, 比如留言板 网站介绍等
+| 知识点           | 结论                                              |
+| ---------------- | ------------------------------------------------- |
+| **表单域**       | 用 `form` 包裹提交范围                            |
+| **基础控件**     | `input`、`select`、`textarea`                     |
+| **文本说明**     | 用 `label` 提升体验                               |
+| **后端识别字段** | 依赖 `name`                                       |
+| **上传文件**     | `method="post"` + `enctype="multipart/form-data"` |

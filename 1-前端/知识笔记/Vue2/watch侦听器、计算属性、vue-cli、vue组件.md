@@ -1,277 +1,366 @@
 # watch 侦听器、计算属性、vue-cli、vue 组件
 
-## watch 侦听器
+## 一、这篇的主线
+
+这一篇虽然混了 4 个主题，但可以按 Vue 开发流程来理解：
+
+| 阶段           | 主题                              |
+| -------------- | --------------------------------- |
+| **工程搭建**   | `vue-cli`                         |
+| **组件组织**   | Vue 组件、注册、`props`、`scoped` |
+| **响应式使用** | `watch`、`computed`               |
+
+也就是说，它讲的是一个 Vue2 项目从“创建”到“组件化”再到“响应式数据处理”的基本链路。
+
+---
+
+## 二、`watch` 侦听器
+
+`watch` 用来监听数据变化，并在数据变化时执行自定义逻辑。
+
+最常见的用途有：
+
+1. 监听输入框内容变化后发请求。
+2. 监听路由参数变化重新拉取数据。
+3. 监听对象字段变化后执行额外副作用。
+
+### 2.1 基本写法
+
+```js
+export default {
+  data() {
+    return {
+      username: "",
+    }
+  },
+  watch: {
+    username(newVal, oldVal) {
+      console.log("新值：", newVal)
+      console.log("旧值：", oldVal)
+    },
+  },
+}
+```
+
+### 2.2 常见选项
+
+`immediate`：初始化时立即执行一次。
+
+```js
+watch: {
+  username: {
+    immediate: true,
+    handler(newVal) {
+      console.log("立即执行：", newVal)
+    },
+  },
+}
+```
 
-- 什么是 watch 侦听器
+`deep`：深度监听对象内部变化。
 
-   - watch 侦听器允许开发者监视数据的变化，从而针对数据的变化做特定的操作。
+```js
+watch: {
+  userInfo: {
+    deep: true,
+    handler(newVal) {
+      console.log("对象内部变化：", newVal)
+    },
+  },
+}
+```
 
-   - 语法格式如下：
+### 2.3 监听单个嵌套字段
 
-**==> picture [374 x 259] intentionally omitted <==**
+```js
+watch: {
+  "userInfo.username"(newVal) {
+    console.log(newVal)
+  },
+}
+```
 
-## 使用 watch 检测用户名是否可用
+### 2.4 `watch` 适合什么场景
 
-监听 username 值的变化，并使用 axios 发起 Ajax 请求，检测当前输入的用户名是否可用：
+`watch` 更适合做“副作用”，例如：
 
-**==> picture [467 x 179] intentionally omitted <==**
+1. 发请求。
+2. 写本地缓存。
+3. 调第三方库。
+4. 根据变化执行异步逻辑。
 
-immediate 选项
+---
 
-- 默认情况下，组件在初次加载完毕后不会调用 watch 侦听器。如果想让 watch 侦听器立即被调用，则需要
+## 三、计算属性 `computed`
 
-使用 immediate 选项。示例代码如下：
+计算属性是“根据已有数据计算出来的新属性”。
 
-**==> picture [467 x 188] intentionally omitted <==**
+```js
+export default {
+  data() {
+    return {
+      firstName: "张",
+      lastName: "三",
+    }
+  },
+  computed: {
+    fullName() {
+      return this.firstName + this.lastName
+    },
+  },
+}
+```
 
-deep 选项
+模板中直接当属性使用：
 
-- 如果 watch 侦听的是一个对象，如果对象中的属性值发生了变化，则无法被监听到。此时需要使用 deep 选项，代码示例如下：
+```html
+<p>{{ fullName }}</p>
+```
 
-**==> picture [231 x 265] intentionally omitted <==**
+### 3.1 计算属性的特点
 
-- 监听对象单个属性的变化
+| 特点         | 说明                         |
+| ------------ | ---------------------------- |
+| 本质上是属性 | 使用时不需要加 `()`          |
+| 有缓存       | 依赖不变时不会重复计算       |
+| 适合派生值   | 例如总价、拼接文本、过滤结果 |
 
-   - 如果只想监听对象中单个属性的变化，则可以按照如下的方式定义 watch 侦听器：
+### 3.2 `computed` 和 `methods` 的区别
 
-**==> picture [249 x 289] intentionally omitted <==**
+| 对比项   | `computed`           | `methods`              |
+| -------- | -------------------- | ---------------------- |
+| 调用方式 | 当属性使用           | 当函数调用             |
+| 是否缓存 | 是                   | 否                     |
+| 适合场景 | 基于已有数据推导结果 | 执行业务动作或复杂逻辑 |
 
-## 计算属性
+### 3.3 `watch` 和 `computed` 怎么选
 
-- 什么是计算属性
+| 需求               | 更适合     |
+| ------------------ | ---------- |
+| 由已有状态推导新值 | `computed` |
+| 数据变化后做副作用 | `watch`    |
 
+一个常见判断标准：
 
-   - 计算属性指的是通过一系列运算之后，最终得到一个属性值。
+1. 如果你是“算出一个值”，优先 `computed`。
+2. 如果你是“变化后去做一件事”，优先 `watch`。
 
-   - 这个动态计算出来的属性值可以被模板结构或 methods 方法使用。示例代码如下：
+---
 
-**==> picture [375 x 256] intentionally omitted <==**
+## 四、`vue-cli`
 
-## 计算属性的特点
+### 4.1 什么是 SPA
 
-- 虽然计算属性在声明的时候被定义为方法，但是计算属性的本质是一个属性
+单页面应用程序 SPA 指整个网站通常只有一个 HTML 页面，页面切换主要依赖前端路由和组件切换完成。
 
-- 计算属性会缓存计算的结果，只有计算属性依赖的数据变化时，才会重新进行运算
+优点：
 
-## vue-cli
+1. 页面切换更流畅。
+2. 前后端职责更清晰。
+3. 更适合中后台系统和交互复杂的应用。
 
-什么是单页面应用程序
+### 4.2 什么是 `vue-cli`
 
-- 单页面应用程序（英文名：Single Page Application）简称 SPA，顾名思义，指的是一个 Web 网站中只有唯一的一个 HTML 页面，所有的功能与交互都在这唯一的一个页面内完成。
+`vue-cli` 是 Vue 官方提供的脚手架工具，用于快速创建工程化 Vue 项目。
 
-- 例如资料中的这个 Demo 项目：
+它帮开发者提前配置了：
 
-**==> picture [389 x 133] intentionally omitted <==**
+1. 工程目录结构。
+2. 构建工具配置。
+3. 开发服务器。
+4. 代码编译与打包能力。
 
-**==> picture [255 x 432] intentionally omitted <==**
+### 4.3 常见命令
 
-什么是 vue-cli
+```bash
+npm install -g @vue/cli
+vue create my-project
+cd my-project
+npm run serve
+```
 
-vue-cli 是 Vue.js 开发的标准工具。它简化了程序员基于 webpack 创建工程化的 Vue 项目的过程。 引用自 vue-cli 官网上的一句话：
+### 4.4 一个当下语境提醒
 
-程序员可以专注在撰写应用上，而不必花好几天去纠结 webpack 配置的问题。
+在 Vue2 学习资料里，`vue-cli` 很常见；但现代新项目里，很多团队会优先用 Vite。也就是说，这部分知识更偏“Vue2 工程化历史主流方案”。
 
-中文官网：https://cli.vuejs.org/zh/
+### 4.5 Vue CLI 项目的基本运行流程
 
-安装和使用
+1. `index.html` 提供挂载点。
+2. `main.js` 创建 Vue 实例。
+3. `App.vue` 作为根组件被渲染到页面上。
 
-   - vue-cli 是 npm 上的一个全局包，使用 npm install 命令，即可方便的把它安装到自己的电脑上：
+```js
+import Vue from "vue"
+import App from "./App.vue"
 
-      - npm install -g @vue/cli
+new Vue({
+  render: h => h(App),
+}).$mount("#app")
+```
 
-   - 基于 vue-cli 快速生成工程化的 Vue 项目：
+---
 
-      - vue create 项目的名称
+## 五、Vue 组件
 
-- vue 项目的运行流程
+### 5.1 什么是组件化开发
 
-   - 在工程化的项目中，vue 要做的事情很单纯：通过 main.js 把 App.vue 渲染到 index.html 的指定区域中。 其中：
+组件化开发就是把页面上可复用的结构和逻辑拆分成独立组件，按需组合使用。
 
-      - App.vue 用来编写待渲染的模板结构
+比如：按钮、弹窗、导航栏、表单项、表格，都可以被封装成组件。
 
-      - index.html 中需要预留一个 el 区域
+### 5.2 单文件组件 `.vue`
 
-      - main.js 把 App.vue 渲染到了 index.html 所预留的区域中
+Vue 中常见组件文件后缀是 `.vue`，通常由 3 个部分组成：
 
-## vue组件
+| 部分       | 作用         |
+| ---------- | ------------ |
+| `template` | 组件模板结构 |
+| `script`   | 组件逻辑     |
+| `style`    | 组件样式     |
 
-## 什么是组件化开发
+```vue
+<template>
+  <div class="card">{{ title }}</div>
+</template>
 
-组件化开发指的是：根据封装的思想，把页面上可重用的 UI 结构封装为组件，从而方便项目的开发和维 护。
+<script>
+export default {
+  data() {
+    return {
+      title: "我是组件",
+    }
+  },
+}
+</script>
 
-- vue 中的组件化开发
+<style>
+.card {
+  padding: 12px;
+}
+</style>
+```
 
-vue 是一个支持组件化开发的前端框架。
+### 5.3 Vue2 里的两个高频规则
 
-   - vue 中规定：组件的后缀名是 .vue。之前接触到的 App.vue 文件本质上就是一个 vue 的组件。
+1. `template` 内部通常要求只有一个根节点。
+2. 组件中的 `data` 必须是函数，避免多个实例共享同一份状态。
 
-- vue 组件的三个组成部分
+```js
+export default {
+  data() {
+    return {
+      count: 0,
+    }
+  },
+}
+```
 
-   - 每个 .vue 组件都由 3 部分构成，分别是：
+---
 
-      - template -> 组件的模板结构
+## 六、组件注册与 `props`
 
-      - script -> 组件的 JavaScript 行为
+### 6.1 局部注册和全局注册
 
-      - style -> 组件的样式
+局部注册的组件只能在当前组件中使用：
 
-   - 其中，每个组件中必须包含 template 模板结构，而 script 行为和 style 样式是可选的组成部分。
+```js
+import MyHeader from "./components/MyHeader.vue"
 
-- template
+export default {
+  components: {
+    MyHeader,
+  },
+}
+```
 
-vue 规定：每个组件对应的模板结构，需要定义到 <template> 节点中。
+全局注册后，很多地方都能直接使用：
 
-**==> picture [410 x 81] intentionally omitted <==**
+```js
+import Vue from "vue"
+import BaseButton from "./components/BaseButton.vue"
 
-## 注意：
+Vue.component("BaseButton", BaseButton)
+```
 
-- template 是 vue 提供的容器标签，只起到包裹性质的作用，它不会被渲染为真正的 DOM 元素 template 中只能包含唯一的根节点
+通常来说：
 
-script
+1. 局部注册更利于管理依赖。
+2. 全局注册更适合非常通用的基础组件。
 
-- vue 规定：开发者可以在 <script> 节点中封装组件的 JavaScript 业务逻辑。
+### 6.2 `props`
 
-- <script > 节点的基本结构如下：
+`props` 是父组件传给子组件的数据接口，是提高组件复用性的关键。
 
-**==> picture [304 x 117] intentionally omitted <==**
+```js
+export default {
+  props: {
+    title: {
+      type: String,
+      required: true,
+      default: "默认标题",
+    },
+  },
+}
+```
 
-**==> picture [489 x 14] intentionally omitted <==**
+### 6.3 `props` 的注意点
 
-**----- Start of picture text -----**<br>
-vue 规定：.vue 组件中的 data 必须是一个函数——返回值为对象、每个键值对分别为独立的数据名字和数<br>**----- End of picture text -----**<br>
+1. `props` 是只读的。
+2. 子组件不应该直接修改 `props`。
+3. 如果要改，通常先转存到自己的 `data`，或者通过 `$emit` 通知父组件修改。
 
-- 据，而不能直接指向一个数据对象。
+```js
+props: {
+  count: Number,
+},
+data() {
+  return {
+    localCount: this.count,
+  }
+}
+```
 
-- 因此在组件中定义 data 数据节点时，下面的方式是错误的：
+---
 
-**==> picture [379 x 77] intentionally omitted <==**
+## 七、`scoped` 样式
 
-- 会导致多个组件实例共用同一份数据的问题，请参考官方给出的示例：
+默认情况下，组件中的样式可能影响到别的组件。
 
-   - https://cn.vuejs.org/v2/guide/components.html#data-必须是一个函数
+给 `style` 加上 `scoped`，Vue 会自动为当前组件生成作用域标记，减少样式冲突。
 
-- 正确写法如下：
+```vue
+<style scoped>
+.title {
+  color: red;
+}
+</style>
+```
 
-> 1 data() {
+### 7.1 样式穿透
 
-> 2 return {
+当父组件使用了 `scoped`，但又想影响子组件内部元素时，需要使用深度选择器。旧项目中常见 `/deep/`、`>>>`，不同构建链路写法略有差异。
 
-> 3 message: ' 我是消息 ',
+不过要谨慎使用，因为它会削弱样式隔离。
 
-> 4 userinfo: {
+---
 
-> 5 name: 'zs',
+## 八、这些能力在组件里怎么配合
 
-> 6 age: 18
+可以这样理解：
 
-> 7 },
+1. `props` 负责把数据传进组件。
+2. `computed` 负责从已有数据中推导出新结果。
+3. `watch` 负责监听数据变化并执行副作用。
+4. 组件负责把结构、逻辑和样式封装起来。
 
-> 8 number: 0
+这也是 Vue2 组件开发最常见的一条主线。
 
-> 9 }
+---
 
-> 10 }
+## 九、小结
 
-style
-
-- vue 规定：组件内的 <style> 节点是可选的，开发者可以在 <style> 节点中编写样式美化当前组件的 UI 结构。
-
-- <style> 节点的基本结构如下：
-
-**==> picture [182 x 122] intentionally omitted <==**
-
-<style> 标签上添加 lang="less" 属性，即可使用 less 语法编写组件的样式：
-
-**==> picture [182 x 193] intentionally omitted <==**
-
-- 组件之间的父子关系
-
-**==> picture [467 x 218] intentionally omitted <==**
-
-使用组件的三个步骤
-
-**==> picture [467 x 250] intentionally omitted <==**
-
-通过 components 注册的是私有子组件
-
-例如：
-
-- 在组件 A 的 components 节点下，注册了组件 F。
-
-- 则组件 F 只能用在组件 A 中；不能被用在组件 C 中。
-
-## 注册全局组件
-
-- 在 vue 项目的 main.js 入口文件中，通过 Vue.component() 方法，可以注册全局组件。示例代码如 下：
-
-**==> picture [311 x 148] intentionally omitted <==**
-
-## 组件的 props
-
-- props 是组件的自定义属性，在封装通用组件的时候，合理地使用 props 可以极大的提高组件的复用性！ 它的语法格式如下：
-
-**==> picture [405 x 215] intentionally omitted <==**
-
-## props 是只读的
-
-- vue 规定：组件中封装的自定义属性是只读的，程序员不能直接修改 props 的值。否则会直接报错：
-
-**==> picture [465 x 141] intentionally omitted <==**
-
-- 要想修改 props 的值，可以把 props 的值转存到 data 中，因为 data 中的数据都是可读可写的！
-
-**==> picture [308 x 124] intentionally omitted <==**
-
-props 的 default 默认值
-
-在声明自定义属性时，可以通过 default 来定义属性的默认值。示例代码如下：
-
-**==> picture [281 x 191] intentionally omitted <==**
-
-props 的 type 值类型
-
-- 在声明自定义属性时，可以通过 type 来定义属性的值类型。示例代码如下：
-
-**==> picture [331 x 254] intentionally omitted <==**
-
-props 的 required 必填项
-
-- 在声明自定义属性时，可以通过 required 选项，将属性设置为必填项，强制用户必须传递属性的值。 示例代码如下：
-
-**==> picture [213 x 234] intentionally omitted <==**
-
-- 组件之间的样式冲突问题
-
-   - 默认情况下，写在 .vue 组件中的样式会全局生效，因此很容易造成多个组件之间的样式冲突问题。
-
-   - 导致组件之间样式冲突的根本原因是：
-
-      - 一
-
-      - 单页面应用程序中，所有组件的 DOM 结构，都是基于唯一的 index.html 页面进行呈现的
-
-      - 每个组件中的样式，都会影响整个 index.html 页面中的 DOM 元素
-
-   - 如何解决组件样式冲突的问题
-
-      - 一
-
-      - 为每个组件分配唯一的自定义属性，在编写组件样式时，通过属性选择器来控制样式的作用域，示例
-
-      - 代码如下：
-
-**==> picture [355 x 298] intentionally omitted <==**
-
-## style 节点的 scoped 属性
-
-- 为了提高开发效率和开发体验，vue 为 style 节点提供了 scoped 属性，从而防止组件之间的样式冲突 问题：
-
-**==> picture [467 x 259] intentionally omitted <==**
-
-- /deep/ 样式穿透
-
-如果给当前组件的 style 节点添加了 scoped 属性，则当前组件的样式对其子组件是不生效的。如果想
-
-**==> picture [269 x 11] intentionally omitted <==**
-
-**==> picture [467 x 185] intentionally omitted <==**
+1. `watch` 适合监听变化并执行副作用，常见配置有 `immediate` 和 `deep`。
+2. 计算属性适合做有缓存的派生数据，和 `watch` 的职责不同。
+3. `vue-cli` 是 Vue2 学习和旧项目里很重要的工程化工具，但现代新项目常常会优先考虑 Vite。
+4. 组件化是 Vue 项目开发的核心方式，`props`、注册方式、`scoped` 样式都是日常高频能力。
+5. 学这一篇时，重点不是把 4 个词拆开背，而是把它们放回“一个 Vue2 项目如何开发”的流程里理解。

@@ -1,166 +1,305 @@
 # CSS 的字体属性与文本属性
 
-## 字体系列
+## 一、一句话理解
 
-CSS 使用 font-family 属性定义文本的字体系列。
+字体属性决定“字长什么样”，文本属性决定“字怎么排、怎么读、怎么对齐”，两者一起才构成真正可读的文本样式。
 
-> 1 p { font-family:" 微软雅黑 ";}
+---
 
-> 2 div {font-family: Arial,"Microsoft Yahei", " 微软雅黑 ";}
+## 二、字体属性概览
 
-## 注意：
+字体属性主要用于控制文字“长什么样”，例如字体、大小、粗细、风格等。
 
-- 各种字体之间必须使用英文状态下的逗号隔开
+| 属性              | 作用         |
+| ----------------- | ------------ |
+| **`font-family`** | 字体系列     |
+| **`font-size`**   | 字体大小     |
+| **`font-weight`** | 字体粗细     |
+| **`font-style`**  | 字体风格     |
+| **`font`**        | 字体复合写法 |
 
-- 一般情况下,如果有空格隔开的多个单词组成的字体,加引号
+---
 
-- 尽量使用系统默认自带字体，保证在任何用户的浏览器中都能正确显示
+## 三、字体系列 `font-family`
 
-- 最常见的几个字体：body {font-family: 'Microsoft YaHei',tahoma,arial,'Hiragino Sans GB'; }
+用于指定文字使用什么字体。
 
-## 字体大小
+```css
+p {
+  font-family: "Microsoft YaHei";
+}
 
-CSS 使用 font-size 属性定义字体大小。
+div {
+  font-family: Arial, "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+}
+```
 
-> 1 p {
+### 1. 注意事项
 
-> 2 font-size: 20px;
+| 注意点                       | 说明                       |
+| ---------------------------- | -------------------------- |
+| **多个字体用英文逗号隔开**   | 浏览器会按顺序尝试         |
+| **字体名含空格时建议加引号** | 如 `'Microsoft YaHei'`     |
+| **尽量准备兜底字体**         | 保证不同系统下都能正常显示 |
 
-> 3 }
+### 2. 一个更实用的理解
 
-## 注意：
+真实项目里选字体，不只是看喜不喜欢，而是要同时考虑系统是否存在、中英文混排效果以及有没有兜底方案。
 
-- px（像素）大小是我们网页的最常用的单位
+---
 
-- 谷歌浏览器默认的文字大小为16px
+## 四、字体大小 `font-size`
 
-- 不同浏览器可能默认显示的字号大小不一致，我们尽量给一个明确值大小，不要默认大小
+用于设置文字大小。
 
-- 可以给 body 指定整个页面文字的大小
+```css
+p {
+  font-size: 20px;
+}
+```
 
-## 字体粗细
+### 1. 常见认知
 
-CSS 使用 font-weight 属性设置文本字体的粗细。
+| 结论                           | 说明                       |
+| ------------------------------ | -------------------------- |
+| **`px` 最常用**                | 基础学习和常规页面里最常见 |
+| **浏览器默认通常是 16px 左右** | 但不要依赖默认值           |
+| **建议显式指定字号**           | 避免不同环境显示不一致     |
 
-> 1 p {
+---
 
-> 2 font-weight: bold;
+## 五、字体粗细 `font-weight`
 
-> 3 }
+用于设置文字是否加粗，以及加粗程度。
 
-**==> picture [467 x 99] intentionally omitted <==**
+```css
+p {
+  font-weight: bold;
+}
+```
 
-注意：
+### 1. 常见取值
 
-学会让加粗标签（比如 h 和 strong 等) 不加粗，或者其他标签加粗
+| 值              | 说明                                 |
+| --------------- | ------------------------------------ |
+| **`normal`**    | 正常粗细                             |
+| **`bold`**      | 加粗                                 |
+| **`100 ~ 900`** | 数字粗细，常见如 `400`、`500`、`700` |
 
-实际开发时，我们更喜欢用数字表示粗细
+### 2. 实际建议
 
-## 文字样式
+实际开发中，常更喜欢使用数字来表达粗细，例如：
 
-CSS 使用 font-style 属性设置文本的风格。
+```css
+font-weight: 400;
+font-weight: 700;
+```
 
-> 1 p {
+---
 
-> 2 font-style: normal;
+## 六、字体风格 `font-style`
 
-> 3 }
+用于设置字体是否倾斜。
 
-**==> picture [467 x 78] intentionally omitted <==**
+```css
+font-style: normal;
+font-style: italic;
+```
 
-## 注意：平时我们很少给文字加斜体，反而要给斜体标签（em，i）改为不倾斜字体。
+| 值           | 说明     |
+| ------------ | -------- |
+| **`normal`** | 正常样式 |
+| **`italic`** | 斜体     |
 
-## 字体复合属性
+> **注意**：实际开发里更常见的是把默认带斜体语义的 `em`、`i` 改回正常样式，而不是大量主动给文本加斜体。
 
-字体属性可以把以上文字样式综合来写, 这样可以更节约代码:
+---
 
-> 1 body {
+## 七、字体复合属性 `font`
 
-> 2 font: font-style font-weight font-size/line-height font-family;
+字体属性可以合并成一条语句，减少代码量。
 
-> 3 }
+```css
+body {
+  font:
+    italic 700 16px/1.5 "Microsoft YaHei",
+    sans-serif;
+}
+```
 
-## 注意：
+### 1. 基本顺序
 
-- 使用 font 属性时，必须按上面语法格式中的顺序书写，不能更换顺序，并且各个属性间以空格隔开
+```css
+font: font-style font-weight font-size/line-height font-family;
+```
 
-- 不需要设置的属性可以省略（取默认值），但必须保留 font-size 和 font-family 属性，否则 font 属性将不 起作用
+### 2. 注意事项
 
-## 字体属性总结
+| 注意点                                | 说明                                |
+| ------------------------------------- | ----------------------------------- |
+| **顺序不能乱**                        | 尤其是 `font-size` 和 `font-family` |
+| **`font-size` 和 `font-family` 必写** | 否则整条声明无效                    |
+| **不需要的属性可省略**                | 使用默认值即可                      |
 
-**==> picture [467 x 144] intentionally omitted <==**
+---
 
-## 文本颜色
+## 八、文本属性概览
 
-color 属性用于定义文本的颜色。
+文本属性主要控制“文字怎么排、怎么修饰、怎么对齐”。
 
-> 1 div {
+| 属性                  | 作用         |
+| --------------------- | ------------ |
+| **`color`**           | 文本颜色     |
+| **`text-align`**      | 水平对齐方式 |
+| **`text-decoration`** | 文本装饰线   |
+| **`text-indent`**     | 首行缩进     |
+| **`line-height`**     | 行高         |
 
-> 2 color: red;
+---
 
-> 3 }
+## 九、文本颜色 `color`
 
-**==> picture [467 x 103] intentionally omitted <==**
+```css
+color: red;
+color: #333;
+color: rgb(64, 158, 255);
+```
 
-开发中最常用的是十六进制
+### 1. 常见写法
 
-## 对齐文本
+| 方式           | 示例                 |
+| -------------- | -------------------- |
+| **颜色名**     | `red`                |
+| **十六进制**   | `#333333`、`#409eff` |
+| **rgb / rgba** | `rgb(255, 0, 0)`     |
 
-text-align 属性用于设置元素内文本内容的水平对齐方式。
+实际开发中常用十六进制和 `rgb/rgba`。
 
-**==> picture [550 x 103] intentionally omitted <==**
+文本颜色不只是视觉问题，也要考虑正文可读性、信息层级和背景对比度。
 
-**----- Start of picture text -----**<br>
-1 div {<br>2     text-align: center;<br>3 }<br>**----- End of picture text -----**<br>
+---
 
-**==> picture [467 x 103] intentionally omitted <==**
+## 十、文本对齐 `text-align`
 
-## 装饰文本
+用于设置元素内部文本的水平对齐方式。
 
-- text-decoration 属性规定添加到文本的修饰。可以给文本添加下划线、删除线、上划线等。
+```css
+div {
+  text-align: center;
+}
+```
 
-**==> picture [550 x 101] intentionally omitted <==**
+| 值           | 说明   |
+| ------------ | ------ |
+| **`left`**   | 左对齐 |
+| **`center`** | 居中   |
+| **`right`**  | 右对齐 |
 
-**----- Start of picture text -----**<br>
-1 div {<br>2     text-decoration ： underline ；<br>3 }<br>**----- End of picture text -----**<br>
+> **注意**：`text-align` 是给父元素设置，用来影响内部的行内内容或行内块内容。
 
-**==> picture [467 x 121] intentionally omitted <==**
+一个高频误区是把 `text-align: center` 当成所有元素的通用居中方案，它更适合文本和行内内容。
 
-重点记住如何添加下划线、如何删除下划线
+---
 
-## 文本缩进
+## 十一、文本装饰 `text-decoration`
 
-text-indent 属性用来指定文本的第一行的缩进，通常是将段落的首行缩进。
+用于控制下划线、删除线、上划线等装饰效果。
 
-**==> picture [550 x 101] intentionally omitted <==**
+```css
+text-decoration: underline;
+text-decoration: line-through;
+text-decoration: none;
+```
 
-**----- Start of picture text -----**<br>
-1 div {<br>2     text-indent: 10px;<br>3 }<br>**----- End of picture text -----**<br>
+| 值                 | 说明       |
+| ------------------ | ---------- |
+| **`underline`**    | 下划线     |
+| **`line-through`** | 删除线     |
+| **`overline`**     | 上划线     |
+| **`none`**         | 去掉装饰线 |
 
-**==> picture [421 x 11] intentionally omitted <==**
+最常见场景之一：
 
-**----- Start of picture text -----**<br>
-一<br>通过设置该属性，所有元素的第 行都可以缩进一个给定的长度，甚至该长度可以是负值。<br>**----- End of picture text -----**<br>
+```css
+a {
+  text-decoration: none;
+}
+```
 
-**==> picture [550 x 102] intentionally omitted <==**
+用于去掉链接默认下划线。
 
-**----- Start of picture text -----**<br>
-1 p {<br>2     text-indent: 2em;<br>3 }<br>**----- End of picture text -----**<br>
+但如果链接本身已经不明显，就要谨慎去掉装饰线，否则可识别性会下降。
 
-- em 是一个相对单位，就是当前元素（font-size) 1 个文字的大小, 如果当前元素没有设置大小，则会按照父元素 的 1 个文字大小。
+---
 
-## 行间距
+## 十二、首行缩进 `text-indent`
 
-- line-height 属性用于设置行间的距离（行高）。可以控制文字行与行之间的距离
+用于设置文本第一行缩进。
 
-> 1 p {
+```css
+p {
+  text-indent: 2em;
+}
+```
 
-> 2 line-height: 26px;
+### 1. 常见写法
 
-> 3 }
+| 写法       | 说明                 |
+| ---------- | -------------------- |
+| **`10px`** | 固定像素缩进         |
+| **`2em`**  | 缩进两个当前字号宽度 |
 
-**==> picture [467 x 154] intentionally omitted <==**
+### 2. 为什么常用 `2em`
 
-## 文本属性总结
+`em` 是相对单位，通常表示当前元素字体大小的倍数，因此 `2em` 常被用来实现“首行缩进两个字”的效果。
 
-**==> picture [467 x 145] intentionally omitted <==**
+---
+
+## 十三、行高 `line-height`
+
+用于控制一行文字的高度，也会影响多行文字之间的间距。
+
+```css
+p {
+  line-height: 26px;
+}
+```
+
+### 1. 常见写法
+
+| 写法       | 说明             |
+| ---------- | ---------------- |
+| **固定值** | 如 `26px`        |
+| **倍数值** | 如 `1.5`，更灵活 |
+
+### 2. 常见用途
+
+- 调整多行文字阅读性
+- 单行文字垂直居中时配合固定高度使用
+
+### 3. 一个更重要的理解
+
+`line-height` 不只是调一行有多高，它直接影响整段文字的阅读体验。正文排版通常更适合倍数值，例如 `1.5`、`1.6`。
+
+---
+
+## 十四、真实开发里怎么选
+
+| 需求                 | 优先关注                                   |
+| -------------------- | ------------------------------------------ |
+| **整体阅读体验**     | `font-size`、`line-height`、`color`        |
+| **标题层级区分**     | `font-size`、`font-weight`                 |
+| **品牌感和平台兼容** | `font-family`                              |
+| **文本强调**         | `font-weight`、`text-decoration`、语义标签 |
+
+---
+
+## 十五、小结
+
+| 知识点         | 结论                                                                            |
+| -------------- | ------------------------------------------------------------------------------- |
+| **字体系列**   | 用 `font-family`，建议写兜底字体                                                |
+| **字体大小**   | 用 `font-size`，建议显式设置                                                    |
+| **粗细与风格** | 用 `font-weight`、`font-style`                                                  |
+| **字体简写**   | 用 `font`，但要保留 `font-size` 和 `font-family`                                |
+| **文本属性**   | 重点掌握 `color`、`text-align`、`text-decoration`、`text-indent`、`line-height` |

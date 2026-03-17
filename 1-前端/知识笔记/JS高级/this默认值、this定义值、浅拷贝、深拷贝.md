@@ -1,475 +1,317 @@
-# this 默认值、this 定义值、浅拷贝、深拷贝
+# this默认值、this定义值、浅拷贝、深拷贝
 
-## 普通函数
+## 一、这篇要分成两部分理解
 
-普通函数的调用方式决定了 `this` 的值，即【谁调用 `this` 的值指向谁】，如下代码所示：
+这篇看起来只有 4 个词，其实在讲两类完全不同的问题：
 
-1 <script> 2 // 普通函数 3 function sayHi() { 4 console.log(this); 5 } 6 // 函数表达式 7 let sayHello = function () { 8 console.log(this); 9 } 10 11 // 函数的调用方式决定了 this 的值 12 sayHi(); // window 13 window.sayHi(); // window 14 15 // 普通对象 16 let user = { 17 name: ' 小明 ', 18 walk: function () { 19 console.log(this); 20 } 21 }; 22 // 动态为 user 添加方法 23 user.sayHi = sayHi; 24 user.sayHello = sayHello; 25 26 // 函数调用方式，决定了 this 的值 27 user.sayHi(); 28 user.sayHello(); 29 </script>
+| 主线                | 回答的问题                 |
+| ------------------- | -------------------------- |
+| **`this`**          | 函数执行时上下文到底是谁   |
+| **浅拷贝 / 深拷贝** | 数据复制后为什么会互相影响 |
 
-注： 普通函数没有明确调用者时 `this` 值为 `window`，严格模式下没有调用者时 `this` 的值为 `undefined`。
+学的时候不要把它们混在一起记。
 
-## 箭头函数
+---
 
-箭头函数中的 `this` 与普通函数完全不同，也不受调用方式的影响，事实上箭头函数中并不存在 `this` ！ 箭头函数中访问的 `this` 不过是箭头函数所在作用域的 `this` 变量。
+## 二、`this` 到底是什么
 
-> 1 <script>
+`this` 是 JavaScript 运行时提供的一个特殊引用，它指向什么，取决于函数是如何被调用的。
 
-> 2 console.log(this); // 此处为 window
+一句话理解：
 
-> 3 // 箭头函数
+```text
+普通函数看调用方式，箭头函数看定义位置。
+```
 
-> 4 let sayHi = function() {
+---
 
-> 5 console.log(this); // 该箭头函数中的 this 为函数声明环境中 this 一致
+## 三、普通函数中的 `this`
 
-> 6 }
+在普通函数里，`this` 主要由 **调用方式** 决定。
 
-7
+### 3.1 基本示例
 
-> 8 // 普通对象
-
-> 9 let user = {
-
-> 10 name: ' 小明 ',
-
-> 11 // 该箭头函数中的 this 为函数声明环境中 this 一致
-
-> 12 walk: () => {
-
-> 13 console.log(this);
-
-> 14 }, 15
-
-> 16 sleep: function () {
-
-> 17 let str = 'hello';
-
-> 18 console.log(this);
-
-> 19 let fn = () => {
-
-> 20 console.log(str);
-
-> 21 console.log(this); // 该箭头函数中的 this 与 sleep 中的 this 一致
-
-> 22 }
-
-> 23 // 调用箭头函数
-
-> 24 fn();
-
-> 25 }
-
-> 26 } 27
-
-> 28 // 动态添加方法
-
-> 29 user.sayHi = sayHi; 30
-
-> 31 // 函数调用
-
-> 32 user.sayHi();
-
-> 33 user.sleep();
-
-> 34 user.walk();
-
-> 35 </script>
-
-在开发中【使用箭头函数前需要考虑函数中 `this` 的值】，事件回调函数使用箭头函数时，`this` 为全局 的 `window`，因此DOM事件回调函数不推荐使用箭头函数，如下代码所示：
-
-> 1 <script>
-
-> 2 // DOM 节点
-
-> 3 let btn = document.querySelector('.btn'); 4
-
-> 5 // 箭头函数 此时 this 指向了 window
-
-> 6 btn.addEventListener('click', () => {
-
-> 7 console.log(this);
-
-> 8 }) 9
-
-> 10 // 普通函数 此时 this 指向了 DOM 对象
-
-> 11 btn.addEventListener('click', function () {
-
-> 12 console.log(this);
-
-> 13 })
-
-> 14 </script>
-
-同样由于箭头函数 `this` 的原因，基于原型的面向对象也不推荐采用箭头函数，如下代码所示：
-
-> 1 <script>
-
-> 2 function Person() { 3
-
-> 4 } 5
-
-> 6 // 原型对像上添加了箭头函数
-
-> 7 Person.prototype.walk = () => {
-
-> 8 console.log(' 人都要走路 ...');
-
-> 9 console.log(this); // widow
-
-> 10 } 11
-
-> 12 let p1 = new Person();
-
-> 13 p1.walk();
-
-> 14 </script>
-
-## class类
-
-## 构造函数、实例属性、实例方法中引用【实例】
-
-> 1 class Animal {
-
-> 2 constructor(name){
-
-> 3 this.name = name
-
-> 4 }
-
-> 5 instanceProp = this
-
-> 6 instanceFn(){
-
-> 7 return this
-
-> 8 }
-
-> 9 } 10
-
-> 11 const animal = new Animal('Orange')
-
-> 12 console.log(animal === animal.instanceProp) // true
-
-> 13 console.log(animal === animal.instanceFn()) // true
-
-## 静态方法、静态属性中引用【类】
-
-- 1 class Animal {
-
-> 2 static staticProp = new this()
-
-> 3 static staticFn(){
-
-> 4 return this
-
-> 5 }
-
-> 6 } 7
-
-> 8 console.log(Animal.staticProp) // 实例
-
-> 9 console.log(Animal === Animal.staticFn()) // true
-
-## 总结
-
-> 1 class Animal {
-
-> 2 constructor(){
-
-> 3 // this 引用【实例】
-
-> 4 }
-
-> 5 static staticProp // this 引用【类】
-
-> 6 static staticFn(){
-
-> 7 // this 引用【类】
-
-> 8 }
-
-> 9 instanceProp // this 引用【实例】
-
-> 10 instanceFn(){
-
-> 11 // this 引用【实例】
-
-> 12 }
-
+```js
+function sayHi() {
+  console.log(this)
 }
 
-13
+const user = {
+  name: "小明",
+  walk: sayHi,
+}
 
-## this——定义值
+sayHi()
+user.walk()
+```
 
-- 以上归纳了普通函数和箭头函数中关于 `this` 默认值的情形，不仅如此 JavaScript 中还允许指定函数中 `this` 的指向，有 3 个方法可以动态指定普通函数中 `this` 的指向：
+### 3.2 常见规律
 
-- call
+| 调用方式         | `this` 指向                                           |
+| ---------------- | ----------------------------------------------------- |
+| 普通函数直接调用 | 非严格模式下通常是 `window`，严格模式下是 `undefined` |
+| 对象方法调用     | 调用它的对象                                          |
+| 构造函数调用     | 新创建的实例                                          |
 
-使用 `call` 方法调用函数，同时指定函数中 `this` 的值，使用方法如下代码所示：
+### 3.3 一个关键提醒
 
-> 1 <script>
+不要背“函数定义在哪”，普通函数里的 `this` 重点看的是“谁在调用它”。
 
-> 2 // 普通函数
+---
 
-> 3 function sayHi() {
+## 四、箭头函数中的 `this`
 
-> 4 console.log(this);
+箭头函数没有自己的 `this`，它会直接捕获定义时外层作用域的 `this`。
 
-> 5 } 6
+### 4.1 示例
 
-> 7 let user = {
+```js
+const user = {
+  name: "小明",
+  walk: () => {
+    console.log(this)
+  },
+}
 
-> 8 name: ' 小明 ',
+user.walk()
+```
 
-> 9 age: 18
+上面这个 `this` 并不会指向 `user`，而是指向箭头函数定义时所在外层环境的 `this`。
 
-> 10 } 11
+### 4.2 一个常见场景
 
-> 12 let student = {
+```js
+const user = {
+  name: "小红",
+  sleep() {
+    const fn = () => {
+      console.log(this.name)
+    }
 
-> 13 name: ' 小红 ',
+    fn()
+  },
+}
 
-> 14 age: 16
+user.sleep() // 小红
+```
 
-> 15 } 16
+这里箭头函数继承的是 `sleep()` 执行时的 `this`。
 
-> 17 // 调用函数并指定 this 的值
+### 4.3 为什么事件回调里常常不用箭头函数
 
-> 18 sayHi.call(user); // this 值为 user
+```js
+const button = document.querySelector(".btn")
 
-> 19 sayHi.call(student); // this 值为 student
+button.addEventListener("click", function () {
+  console.log(this) // button
+})
 
-20
+button.addEventListener("click", () => {
+  console.log(this) // 外层 this，不是 button
+})
+```
 
-> 21 // 求和函数
+如果你需要拿到触发事件的 DOM 节点，普通函数往往更合适。
 
-> 22 function counter(x, y) {
+---
 
-> 23 return x + y;
+## 五、class 中的 `this`
 
-> 24 } 25
+在 class 中，实例方法里的 `this` 默认指向当前实例。
 
-> 26 // 调用 counter 函数，并传入参数
+```js
+class Animal {
+  constructor(name) {
+    this.name = name
+  }
 
-> 27 let result = counter.call(null, 5, 10);
+  getName() {
+    return this.name
+  }
+}
 
-> 28 console.log(result);
+const animal = new Animal("Orange")
+console.log(animal.getName())
+```
 
-> 29 </script>
+静态方法中的 `this` 通常指向类本身。
 
-## 总结：
+```js
+class Animal {
+  static type = "animal"
 
-- `call` 方法能够在调用函数的同时指定 `this` 的值
+  static getType() {
+    return this.type
+  }
+}
+```
 
-- 使用 `call` 方法调用函数时，第1个参数为 `this` 指定的值
+---
 
-- `call` 方法的其余参数会依次自动传入函数做为函数的参数
+## 六、如何主动指定 `this`
 
-## apply
+JavaScript 提供了 3 个常用方法来手动指定普通函数里的 `this`：
 
-使用 `call` 方法调用函数，同时指定函数中 `this` 的值，使用方法如下代码所示：
+1. `call()`
+2. `apply()`
+3. `bind()`
 
-> 1 <script>
+### 6.1 `call()`
 
-> 2 // 普通函数
+`call()` 会立即执行函数，并把第一个参数指定为 `this`。
 
-> 3 function sayHi() {
+```js
+function sayHi(city) {
+  console.log(this.name, city)
+}
 
-> 4 console.log(this);
+const user = { name: "小明" }
+sayHi.call(user, "北京")
+```
 
-> 5 } 6
+### 6.2 `apply()`
 
-> 7 let user = {
+`apply()` 和 `call()` 很像，也会立即执行函数。
 
-> 8 name: ' 小明 ',
+```js
+function sum(x, y) {
+  return x + y
+}
 
-> 9 age: 18
+const result = sum.apply(null, [5, 10])
+```
 
-> 10 } 11
+### 6.3 `bind()`
 
-> 12 let student = {
+`bind()` 不会立即执行函数，而是返回一个已经绑定好 `this` 的新函数。
 
-> 13 name: ' 小红 ',
+```js
+function sayHi() {
+  console.log(this.name)
+}
 
-> 14 age: 16
+const user = { name: "小明" }
+const sayHello = sayHi.bind(user)
+sayHello()
+```
 
-> 15 } 16
+### 6.4 三者区别
 
-> 17 // 调用函数并指定 this 的值
+| 方法      | 是否立即执行 | 参数形式 | 返回值       |
+| --------- | ------------ | -------- | ------------ |
+| `call()`  | 是           | 逐个传参 | 函数执行结果 |
+| `apply()` | 是           | 数组传参 | 函数执行结果 |
+| `bind()`  | 否           | 逐个传参 | 新函数       |
 
-> 18 sayHi.apply(user); // this 值为 user
+### 6.5 一个实战判断标准
 
-> 19 sayHi.apply(student); // this 值为 student 20
+1. 立刻执行并改上下文，用 `call()` 或 `apply()`。
+2. 想先固定上下文、以后再执行，用 `bind()`。
 
-> 21 // 求和函数和函数函数数
+---
 
-> 22 function counter(x, y) {
+## 七、什么是浅拷贝
 
-> 23 return x + y;
+浅拷贝只复制对象的第一层属性。如果属性值还是对象或数组，那么复制的是引用，不是内部数据本身。
 
-> 24 } 25
+```js
+const obj = {
+  name: "张三",
+  colors: ["red", "blue"],
+  info: {
+    score: 99,
+  },
+}
 
-> 26 // 调用用 counter 函数，并传入参数数，并传入参数，并传入参数并传入参数传入参数入参数参数数
+const newObj = Object.assign({}, obj)
+```
 
-> 27 let result = counter.apply(null, [5, 10]);
+### 7.1 为什么叫“浅”
 
-> 28 console.log(result); 29
+因为只把最外层复制了一层，内部嵌套结构并没有真正拆开复制。
 
-// 求和函数和函数函数数 function counter(x, y) { return x + y; } // 调用用 counter 函数，并传入参数数，并传入参数，并传入参数并传入参数传入参数入参数参数数 let result = counter.apply(null, [5, 10]); console.log(result); </script>
+### 7.2 常见浅拷贝方式
 
-## 总结：
+1. `Object.assign({}, obj)`
+2. 展开运算符 `{ ...obj }`
+3. 数组的 `[...arr]`
 
-- `apply` 方法能够在调用函数的同时指定 `this` 的值
+---
 
-- 使用 `apply` 方法调用函数时，第1个参数为 `this` 指定的值
+## 八、什么是深拷贝
 
-`apply` 方法第2个参数为数组，数组的单元值依次自动传入函数做为函数的参数
+深拷贝会递归复制对象的每一层结构，让新对象和旧对象彻底分离。
 
-## bind
+### 8.1 一个简单理解
 
-- `bind` 方法并不会调用函数，而是创建一个指定了 `this` 值的新函数，使用方法如下代码所示：
+```text
+浅拷贝：最外层新，里层可能还是同一个引用
+深拷贝：从外到内都尽量复制成新的数据
+```
 
-> 1 <script>
+### 8.2 常见方式
 
-> 2 // 普通函数
+#### `structuredClone()`
 
-> 3 function sayHi() {
+```js
+const copy = structuredClone(obj)
+```
 
-> 4 console.log(this);
+这是现代环境下更推荐的深拷贝方式之一。
 
-> 5 } 6
+#### `JSON.parse(JSON.stringify())`
 
-> 7 let user = {
+```js
+const copy = JSON.parse(JSON.stringify(obj))
+```
 
-> 8 name: ' 小明 ',
+这种方式简单，但有明显限制：
 
-> 9 age: 18
+1. 会丢失 `undefined`。
+2. 会丢失函数。
+3. 不能正确处理 `Date`、`Map`、`Set` 等特殊类型。
 
-> 10 } 11
+---
 
-> 12 // 调用 bind 指定 this 的值
+## 九、浅拷贝和深拷贝的区别
 
-> 13 let sayHello = sayHi.bind(user); 14
+| 对比项   | 浅拷贝                   | 深拷贝                 |
+| -------- | ------------------------ | ---------------------- |
+| 复制层级 | 只复制第一层             | 递归复制多层           |
+| 嵌套对象 | 仍共享引用               | 尽量独立               |
+| 性能成本 | 更低                     | 更高                   |
+| 适用场景 | 简单对象、只关心顶层修改 | 嵌套结构隔离、状态复制 |
 
-> 15 // 调用使用 bind 创建的新函数
+### 9.1 一个对比例子
 
-> 16 sayHello();
+```js
+const user = {
+  name: "张三",
+  profile: {
+    age: 18,
+  },
+}
 
-> 17 </script>
+const shallowCopy = { ...user }
+const deepCopy = structuredClone(user)
 
-## 注：`bind` 方法创建新的函数，与原函数的唯一的变化是改变了 `this` 的值。
+shallowCopy.profile.age = 20
+console.log(user.profile.age) // 20
 
-改变this三个方法总结：
+deepCopy.profile.age = 30
+console.log(user.profile.age) // 20
+```
 
-> 1 call ： fun.call(this, arg1, arg2,......)
+### 9.2 为什么浅拷贝会影响原对象
 
-> 2 apply ： fun.apply(this, [arg1, arg2,......])
+因为 `profile` 这一层复制过去的仍然是同一个引用。
 
-> 3 bind ： fun.bind(this, arg1, arg2,......)
+---
 
-相同点：
+## 十、小结
 
-- 都可以用来改变this指向，第一个参数都是this指向的对象
-
-不同点：
-
-- call和apply：都会使函数执行，但是参数不同
-
-- bind：不会使函数执行，参数同call
-
-## 浅拷贝
-
-含义：只拷贝最外面层的拷贝方式
-
-> 1 let obj = {
-
-> 2 uname: ' 张三丰 ',
-
-> 3 age: 22,
-
-> 4 sex: ' 男 ',
-
-> 5 color: ['red', 'blue', 'yellow', 'pink'],
-
-> 6 message: {
-
-> 7 index: 1,
-
-> 8 score: 99
-
-> 9 }
-
-> 10 }
-
-> 11 let newObj = {};
-
-> 12 Object.assign(newObj, obj);
-
-> 13 console.log(obj, newObj);
-
-## 深拷贝
-
-## 含义：所有层都拷贝的方式
-
-> 1 let obj = {
-
-> 2 uname: ' 张三丰 ',
-
-> 3 age: 22,
-
-> 4 sex: ' 男 ',
-
-> 5 color: ['red', 'blue', 'yellow', 'pink'],
-
-> 6 message: {
-
-> 7 index: 1,
-
-> 8 score: 99
-
-> 9 }
-
-> 10 }
-
-> 11 let newObj = {}; 12
-
-> 13 function kaobei(newObj, obj) {
-
-> 14 for (let key in obj) {
-
-> 15 if (obj[key] instanceof Array) { // obj[key] 是数组
-
-> 16 // obj[key] 是数组，遍历
-
-> 17 newObj[key] = [];
-
-> 18 kaobei(newObj[key], obj[key]);
-
-> 19 } else if (obj[key] instanceof Object) { // obj[key] 是对象
-
-> 20 // obj[key] 是对象，遍历
-
-> 21 newObj[key] = {};
-
-kaobei(newObj[key], obj[key]);
-
-22
-
-> 23 } else {
-
-> 24 newObj[key] = obj[key];
-
-> 25 }
-
-> 26 }
-
-> 27 }
-
-> 28 kaobei(newObj, obj);
-
-> 29 obj.message.score = 123;
-
-> 30 console.log(obj, newObj);
+1. 普通函数里的 `this` 主要看调用方式，箭头函数里的 `this` 主要看定义位置。
+2. `call()`、`apply()`、`bind()` 都能改变普通函数的 `this`，但执行时机和传参形式不同。
+3. 浅拷贝只复制第一层，深拷贝才会尽量把嵌套结构也复制开。
+4. `structuredClone()` 是现代环境下更稳妥的深拷贝方案之一。
+5. 学这一篇时，重点是把“执行上下文”和“引用复制规则”分开理解。

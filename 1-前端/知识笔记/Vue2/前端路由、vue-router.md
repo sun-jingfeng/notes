@@ -1,257 +1,352 @@
 # 前端路由、vue-router
 
-## 什么是路由
+## 一、什么是路由
 
-   - 路由（英文：router）就是对应关系。
+路由本质上是“路径和处理结果之间的对应关系”。
 
-- SPA 与前端路由
+在前端项目里，可以简单理解为：URL 和页面组件之间的映射关系。
 
-   - SPA 指的是一个 web 网站只有唯一的一个 HTML 页面，所有组件的展示与切换都在这唯一的一个页面内完
+---
 
-   - 成。此时，不同组件之间的切换需要通过前端路由来实现。
+## 二、为什么 SPA 需要前端路由
 
-   - 结论：在 SPA 项目中，不同功能之间的切换，要依赖于前端路由来完成！
+SPA 只有一个 HTML 页面，页面切换主要依赖组件切换，而不是整页重新加载。
 
-- 什么是前端路由
+这时就需要前端路由来决定：当前地址应该渲染哪个组件。
 
-   - 通俗易懂的概念：Hash 地址与组件之间的对应关系。
+| 场景       | 多页应用            | 单页应用   |
+| ---------- | ------------------- | ---------- |
+| 页面切换   | 浏览器重新请求 HTML | 只切换组件 |
+| 路由处理方 | 服务端              | 前端路由库 |
+| 用户体验   | 会有整页刷新        | 更流畅     |
 
-- 前端路由的工作方式
+---
 
-   - 用户点击了页面上的路由链接
+## 三、前端路由的工作原理
 
-   - 导致了 URL 地址栏中的 Hash 值发生了变化
+前端路由的典型流程如下：
 
-   - 前端路由监听了到 Hash 地址的变化
+```text
+用户点击链接
+  -> URL 发生变化
+  -> 路由系统监听到变化
+  -> 找到匹配的路由规则
+  -> 渲染对应组件
+```
 
-   - 前端路由把当前 Hash 地址对应的组件渲染到浏览器中
+现代项目里通常有两种模式：
 
-**==> picture [467 x 131] intentionally omitted <==**
+| 模式      | 示例      | 特点                           |
+| --------- | --------- | ------------------------------ |
+| `hash`    | `/#/home` | 部署简单，不依赖服务端额外配置 |
+| `history` | `/home`   | URL 更自然，需要服务端兜底配置 |
 
-**==> picture [284 x 11] intentionally omitted <==**
+### 3.1 怎么选
 
-**----- Start of picture text -----**<br>
-结论：前端路由，指的是 Hash 地址与组件之间的对应关系！<br>**----- End of picture text -----**<br>
+1. 静态部署或服务端不方便配合时，用 `hash` 更稳。
+2. 想要更自然的 URL，并且能控制服务端兜底时，用 `history`。
 
-- 实现简易的前端路由
+---
 
-   - 步骤1：通过 <component> 标签，结合 comName 动态渲染组件。示例代码如下：
+## 四、什么是 vue-router
 
-**==> picture [329 x 281] intentionally omitted <==**
+`vue-router` 是 Vue 官方提供的路由解决方案，用来管理 SPA 中的页面切换。
 
-**==> picture [295 x 12] intentionally omitted <==**
+Vue2 项目通常使用 `vue-router@3`。
 
-**----- Start of picture text -----**<br>
-步骤2：在 App.vue 组件中，为 <a> 链接添加对应的 hash 值：<br>**----- End of picture text -----**<br>
+它提供的核心能力包括：
 
-**==> picture [269 x 80] intentionally omitted <==**
+1. 路由匹配。
+2. 页面跳转。
+3. 嵌套路由。
+4. 动态路由参数。
+5. 导航守卫。
 
-步骤3：在 created 生命周期函数中，监听浏览器地址栏中 hash 地址的变化，动态切换要展示的组件的名
+---
 
-称：
+## 五、vue-router 的基本使用
 
-**==> picture [280 x 297] intentionally omitted <==**
+### 5.1 安装
 
-## vue-router的基本使用
+```bash
+npm install vue-router@3
+```
 
-什么是 vue-router
+### 5.2 创建路由模块
 
-- vue-router 是 vue.js 官方给出的路由解决方案。它只能结合 vue 项目进行使用，能够轻松的管理 SPA 项目中组件的切换。
+```js
+import Vue from "vue"
+import VueRouter from "vue-router"
+import Home from "@/views/Home.vue"
+import About from "@/views/About.vue"
 
-vue-router 的官方文档地址：https://router.vuejs.org/zh/
+Vue.use(VueRouter)
 
-- vue-router 安装和配置的步骤
+const router = new VueRouter({
+  routes: [
+    { path: "/", redirect: "/home" },
+    { path: "/home", component: Home },
+    { path: "/about", component: About },
+  ],
+})
+```
 
-概述：
+### 5.3 在入口文件挂载
 
-   - 安装 vue-router 包
+```js
+new Vue({
+  router,
+  render: h => h(App),
+}).$mount("#app")
+```
 
-   - 创建路由模块
+### 5.4 声明链接和占位符
 
-   - 导入并挂载路由模块
+```html
+<router-link to="/home">首页</router-link> <router-view></router-view>
+```
 
-   - 声明路由链接和占位符
+| 组件          | 作用                   |
+| ------------- | ---------------------- |
+| `router-link` | 声明式导航链接         |
+| `router-view` | 路由匹配组件的渲染出口 |
 
-- 在项目中安装 vue-router
+---
 
-   - 在 vue2 的项目中，安装 vue-router 的命令如下：
+## 六、常见路由配置
 
-**==> picture [227 x 39] intentionally omitted <==**
+### 6.1 重定向
 
-创建路由模块
+```js
+{ path: "/", redirect: "/home" }
+```
 
-在 src 源代码目录下，新建 router/index.js 路由模块，并初始化如下的代码：
+### 6.2 路由模式
 
-**==> picture [397 x 280] intentionally omitted <==**
+```js
+const router = new VueRouter({
+  mode: "history",
+  routes: [],
+})
+```
 
-## 导入并挂载路由模块
+如果使用 `history` 模式，服务端需要把未知路径统一重定向到入口页。
 
-- 在 src/main.js 入口文件中，导入并挂载路由模块。示例代码如下：
+### 6.3 激活样式
 
-**==> picture [266 x 236] intentionally omitted <==**
+`router-link` 在当前路由激活时会自动加类名，例如 `router-link-active`。
 
-- 声明路由链接和占位符
+### 6.4 路由元信息 `meta`
 
-   - 在 src/App.vue 组件中，使用 vue-router 提供的 <router-link> 和 <router-view> 声明路由链接和占
+在真实项目里，经常会给路由增加 `meta` 字段，用来描述：
 
-   - 位符：
+1. 是否需要登录。
+2. 页面标题。
+3. 菜单高亮标识。
 
-   - 重要说明：<router-view>不绑定key时，不同路由匹配到同一个单页面文件组件时会复用同一个页面 实例。<router-view>绑定key（key值一般用计算属性返回this.$route.path）时，不同路由匹配到同 一个单页面文件组件时会生成各自的页面实例。
+```js
+{ path: "/profile", component: Profile, meta: { requiresAuth: true } }
+```
 
-**==> picture [327 x 296] intentionally omitted <==**
+---
 
-- 声明路由的匹配规则
+## 七、嵌套路由
 
-在 src/router/index.js 路由模块中，通过 routes 数组声明路由的匹配规则。示例代码如下：
+嵌套路由适合“页面里再套一层局部页面”的场景，例如用户中心里的“资料页 / 安全页 / 订单页”。
 
-**==> picture [398 x 295] intentionally omitted <==**
+```js
+{
+  path: "/user",
+  component: Layout,
+  children: [
+    { path: "profile", component: TabProfile },
+    { path: "setting", component: TabSetting },
+  ],
+}
+```
 
-## vue-router的常见用法
+父组件中要有子出口：
 
-## 路由重定向
+```html
+<router-view></router-view>
+```
 
-- 路由重定向指的是：用户在访问地址 A 的时候，强制用户跳转到地址 C ，从而展示特定的组件页面。 通过路由规则的 redirect 属性，指定一个新的路由地址，可以很方便地设置路由的重定向：
+### 7.1 一个常见误区
 
-**==> picture [467 x 226] intentionally omitted <==**
+只配了 `children`，但父组件里没有 `<router-view>`，这时子路由内容是渲染不出来的。
 
-## 嵌套路由
+---
 
-通过路由实现组件的嵌套展示，叫做嵌套路由。
+## 八、动态路由匹配
 
-**==> picture [467 x 215] intentionally omitted <==**
+### 8.1 为什么需要动态路由
 
-- 声明子路由链接和子路由占位符
+如果文章详情页每篇文章都写一条固定路由，维护成本会非常高。
 
-在 About.vue 组件中，声明 tab1 和 tab2 的子路由链接以及子路由占位符。示例代码如下：
+动态路由允许把可变部分定义成参数。
 
-**==> picture [407 x 289] intentionally omitted <==**
+```js
+{ path: "/article/:id", component: ArticleDetail }
+```
 
-- 通过 children 属性声明子路由规则
+### 8.2 获取参数
 
-在 src/router/index.js 路由模块中，导入需要的组件，并使用 children 属性声明子路由规则：
+```js
+this.$route.params.id
+```
 
-**==> picture [467 x 282] intentionally omitted <==**
+### 8.3 用 `props` 简化接收
 
-## 动态路由匹配
+```js
+{ path: "/article/:id", component: ArticleDetail, props: true }
+```
 
-思考：有如下 3 个路由链接：
+组件中就可以直接通过 `props` 接收。
 
-**==> picture [337 x 77] intentionally omitted <==**
+### 8.4 `params` 和 `query` 的区别
 
-定义如下 3 个路由规则，是否可行?
+| 对比项   | params               | query                    |
+| -------- | -------------------- | ------------------------ |
+| 示例     | `/article/1`         | `/article?id=1`          |
+| 配置方式 | 常配合动态路由       | 不需要在 path 中提前声明 |
+| 获取方式 | `this.$route.params` | `this.$route.query`      |
 
-**==> picture [287 x 85] intentionally omitted <==**
+一个判断标准：
 
-缺点：路由规则的复用性差。
+1. 资源路径的一部分，更像 `params`。
+2. 筛选条件、可选参数，更像 `query`。
 
-- 动态路由的概念
+---
 
-   - 动态路由指的是：把 Hash 地址中可变的部分定义为参数项，从而提高路由规则的复用性。
+## 九、声明式导航与编程式导航
 
-   - 在 vue-router 中使用英文的冒号（:）来定义路由的参数项。示例代码如下：
+### 9.1 声明式导航
 
-**==> picture [421 x 170] intentionally omitted <==**
+```html
+<router-link to="/home">首页</router-link>
+```
 
-- $route.params 参数对象
+### 9.2 编程式导航
 
-在动态路由渲染出来的组件中，可以使用 this.$route.params 对象访问到动态匹配的参数值。
+```js
+this.$router.push("/home")
+this.$router.replace("/login")
+this.$router.go(-1)
+```
 
-**==> picture [449 x 284] intentionally omitted <==**
+| API       | 作用                |
+| --------- | ------------------- |
+| `push`    | 跳转并新增历史记录  |
+| `replace` | 跳转并替换当前记录  |
+| `go(n)`   | 前进 / 后退指定步数 |
 
-- 使用 props 接收路由参数
+### 9.3 一个实战判断
 
-   - 为了简化路由参数的获取形式，vue-router 允许在路由规则中开启 props 传参。示例代码如下：
+1. 用户正常页面跳转，用 `push`。
+2. 登录后不希望返回登录页，常用 `replace`。
 
-**==> picture [447 x 299] intentionally omitted <==**
+---
 
-## 声明式导航 & 编程式导航
+## 十、路由守卫
 
-- 在浏览器中，点击链接实现导航的方式，叫做声明式导航。例如：
+导航守卫本质上是在路由跳转前后插入一层控制逻辑，用来做权限校验、登录校验、页面标题设置等。
 
-   - 普通网页中点击 <a> 链接、vue 项目中点击 <router-link> 都属于声明式导航
+### 10.1 全局前置守卫
 
-- 在浏览器中，调用 API 方法实现导航的方式，叫做编程式导航。例如：
+```js
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("token")
 
-   - 普通网页中调用 location.href 跳转到新页面的方式，属于编程式导航
+  if (to.path !== "/login" && !token) {
+    next("/login")
+    return
+  }
 
-- vue-router 中的编程式导航 API
+  next()
+})
+```
 
-   - vue-router 提供了许多编程式导航的 API，其中最常用的导航 API 分别是：
+### 10.2 常见守卫类型
 
-      - this.$router.push('hash 地址')
+1. 全局守卫：控制全局跳转。
+2. 路由独享守卫：只控制某条路由。
+3. 组件内守卫：更靠近当前页面组件。
 
-         - 跳转到指定 hash 地址，并增加一条历史记录
+### 10.3 `next` 的常见写法
 
-      - this.$router.replace('hash 地址')
+| 写法             | 含义           |
+| ---------------- | -------------- |
+| `next()`         | 正常放行       |
+| `next("/login")` | 跳转到指定路由 |
+| `next(false)`    | 中断当前导航   |
 
-         - 跳转到指定的 hash 地址，并替换掉当前的历史记录
+### 10.4 一个实际用途
 
-      - this.$router.go(数值 n)
+守卫除了做登录校验，还常用于：
 
-## 实现导航历史前进、后退
+1. 根据 `meta.title` 更新标题。
+2. 权限页面拦截。
+3. 页面离开前数据确认。
 
-- $router.push
+---
 
-调用 this.$router.push() 方法，可以跳转到指定的 hash 地址，从而展示对应的组件页面。示例代码如 下：
+## 十一、`$route` 和 `$router` 的区别
 
-**==> picture [409 x 298] intentionally omitted <==**
+| 对象      | 含义                       |
+| --------- | -------------------------- |
+| `$route`  | 当前路由信息对象           |
+| `$router` | 路由实例对象，负责导航操作 |
 
-$router.replace
+常见例子：
 
-调用 this.$router.replace() 方法，可以跳转到指定的 hash 地址，从而展示对应的组件页面。
+```js
+console.log(this.$route.path)
+console.log(this.$route.query)
+console.log(this.$route.params)
 
-push 和 replace 的区别：
+this.$router.push("/home")
+```
 
-一 push 会增加 条历史记录
+---
 
-replace 不会增加历史记录，而是替换掉当前的历史记录
+## 十二、一些开发细节
 
-$router.go
+### 12.1 同组件复用问题
 
-调用 this.$router.go() 方法，可以在浏览历史中前进和后退。示例代码如下：
+当不同路由映射到同一个组件时，组件实例可能会被复用，这时参数变化不一定会重新走完整生命周期。
 
-**==> picture [408 x 292] intentionally omitted <==**
+常见处理方式：
 
-- $router.go 的简化用法
+1. 监听 `$route`。
+2. 使用 `beforeRouteUpdate`。
+3. 给 `router-view` 绑定 `key`。
 
-在实际开发中，一般只会前进和后退一层页面。因此 vue-router 提供了如下两个便捷方法：
+```html
+<router-view :key="$route.fullPath"></router-view>
+```
 
-$router.back()
+### 12.2 路由懒加载
 
-在历史记录中，后退到上一个页面
+真实项目里常用按路由拆包，减少首屏体积：
 
-- $router.forward()
+```js
+const User = () => import("@/views/User.vue")
+```
 
-   - 在历史记录中，前进到下一个页面
+### 12.3 404 页面
 
-## 导航守卫
+通常会增加兜底路由：
 
-**==> picture [467 x 214] intentionally omitted <==**
+```js
+{ path: "*", component: NotFound }
+```
 
-## 全局前置守卫
+---
 
-- 每次发生路由的导航跳转时，都会触发全局前置守卫。因此，在全局前置守卫中，程序员可以对每个 路由进行访问权限的控制：
+## 十三、小结
 
-**==> picture [439 x 151] intentionally omitted <==**
-
-守卫方法的 3 个形参
-
-全局前置守卫的回调函数中接收3个形参，格式为：
-
-**==> picture [411 x 214] intentionally omitted <==**
-
-next 函数的 3 种调用方式
-
-参考示意图，分析 next 函数的 3 种调用方式最终导致的结果：
-
-**==> picture [467 x 126] intentionally omitted <==**
-
-   - 当前用户拥有后台主页的访问权限，直接放行：next()
-
-   - 当前用户没有后台主页的访问权限，强制其跳转到登录页面：next('/login')
-
-   - 当前用户没有后台主页的访问权限，不允许跳转到后台主页：next(false)
-
-- 控制后台主页的访问权限
-
-**==> picture [430 x 281] intentionally omitted <==**
+1. 前端路由是 URL 和页面组件之间的映射关系，`vue-router` 是 Vue2 项目中的主流方案。
+2. `hash` 和 `history` 的核心差别，不只是地址长相，还在于是否需要服务端兜底。
+3. 动态路由、嵌套路由、编程式导航、导航守卫，是业务开发中最常用的几块能力。
+4. `params`、`query`、`$route`、`$router` 这些概念要分清，不然后续业务跳转很容易混乱。
+5. 学这一篇时，重点不是只会配基础路由，而是理解“页面切换、参数传递、权限控制、组件复用”这几条主线。

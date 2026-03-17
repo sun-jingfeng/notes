@@ -1,279 +1,298 @@
-# class 封装、class 继承
+# class封装、class继承
 
-## class——封装
+## 一、什么是 `class`
 
-## 文档：类
+`class` 是 ECMAScript 6 提供的类语法，用来以更清晰的方式组织对象、属性和方法。
 
-class（类）是ECMAScript6中新增的关键字，专门用于创建类的，类可被用于实现逻辑的封装。
+一句话理解：
 
-1 <script> 2 // 创建类 3 class Person { 4 // 此处编写封装逻辑 5 } 6 7 // 实例化 8 let p1 = new Person(); 9 console.log(p1); 10 </script>
+```text
+class 是对“构造函数 + 原型”写法的一层更易读的语法封装。
+```
 
-## 实例成员
+它不是完全新的底层机制，而是把原本就能做到的封装与继承写得更清楚。
 
-1 <script> 2 // 创建类 3 class Person { 4 // 实例属性 ' ' 5 name = 小明 ; 6 7 // 实例方法 8 sleep () { 9 console.log('sleeping...') 10 } 11 } 12 13 // 实例化 14 let p1 = new Person(); 15 p1.sleep(); 16 </script>
+---
 
-## 总结：
+## 二、class 的基本写法
 
-- 关键字 `class` 封装了所有的实例属性和方法
+```js
+class Person {
+  constructor(name, age) {
+    this.name = name
+    this.age = age
+  }
 
-- 类中封装的并不是变量和函数，因此不能使用关键字 `let`、`const` 或 `var`
+  sleep() {
+    console.log(`${this.name} 正在睡觉`)
+  }
+}
 
-静态成员
+const person = new Person("小明", 18)
+person.sleep()
+```
 
-> 1 <script>
+### 2.1 这段代码里包含什么
 
-> 2 // 创建类
+| 部分           | 作用                       |
+| -------------- | -------------------------- |
+| `class Person` | 定义类                     |
+| `constructor`  | 构造函数，实例化时自动执行 |
+| `this.name`    | 给实例挂属性               |
+| `sleep()`      | 定义实例方法               |
 
-> 3 class Person {
+### 2.2 为什么现代代码更常用 `class`
 
-> 4 // 静态属性
+因为它更直观，也更适合教学、团队协作和复杂对象建模。
 
-> 5 static version = '1.0.0'; 6
+---
 
-> 7 // 静态方法
+## 三、封装怎么理解
 
-> 8 static getVersion = function () {
+这里说的“封装”，重点是把相关的数据和行为收拢到一个类中管理。
 
-> 9 console.log(this.version);
+### 3.1 class 的好处
 
-> 10 }
+1. 结构更清晰。
+2. 语义更集中。
+3. 更适合表达“某种对象模板”。
 
-> 11 } 12
+### 3.2 一个实战提醒
 
-> 13 // 静态方法直接访问
+封装不是“所有代码都塞进 class”，而是把真正属于某一类对象的数据和行为收在一起。
 
-> 14 console.log(Person.version);
+---
 
-> 15 Person.getVersion();
+## 四、实例成员和静态成员
 
-> 16 </script>
+### 4.1 实例成员
 
-## 总结：
+实例成员是属于某个实例的属性和方法。
 
-- `static` 关键字用于声明静态属性和方法
+```js
+class Person {
+  constructor(name) {
+    this.name = name
+  }
 
-- 静态属性和方法直接通过类名进行访问
+  walk() {
+    console.log(`${this.name} 正在走路`)
+  }
+}
+```
 
-## 构造函数
+### 4.2 静态成员
 
-- 创建类时在类的内部有一个特定的方法 `constructor` ，该方法会在类被实例化时自动被调用，常被用于处 一
+静态成员是挂在类本身上的，不属于具体实例。
 
-- 理 些初始化的操作。
+```js
+class Person {
+  static version = "1.0.0"
 
-> 1 <script>
+  static getVersion() {
+    return Person.version
+  }
+}
+```
 
-> 2 class Person {
+### 4.3 二者区别
 
-> 3 // 实例化时 立即执行
+| 对比项   | 实例成员         | 静态成员                 |
+| -------- | ---------------- | ------------------------ |
+| 挂载位置 | 实例对象上       | 类本身上                 |
+| 访问方式 | `person.walk()`  | `Person.getVersion()`    |
+| 适合场景 | 描述具体对象行为 | 描述类级别配置和工具方法 |
 
-> 4 constructor (name, age) {
+### 4.4 一个判断标准
 
-> 5 this.name = name;
+1. 跟具体对象强相关，放实例成员。
+2. 跟“这一类对象”的共性能力相关，放静态成员。
 
-> 6 this.age = age;
+---
 
-> 7 }
+## 五、`constructor` 构造函数
 
-> 8 // 实例方法
+`constructor` 是类中的特殊方法，在 `new` 一个实例时自动执行。
 
-> 9 walk () {
+```js
+class Person {
+  constructor(name, age) {
+    this.name = name
+    this.age = age
+  }
+}
+```
 
-> 10 console.log(this.name + ' 正在走路 ...');
+### 5.1 它的作用
 
-> 11 }
+1. 接收实例化参数。
+2. 初始化实例属性。
+3. 完成创建对象时的准备逻辑。
 
-> 12 } 13
+### 5.2 注意事项
 
-> 14 // 实例化
+1. 一个类只能有一个 `constructor`。
+2. 如果你不写，JavaScript 会默认补一个空构造函数。
 
-> 15 let p1 = new Person(' 小明 ', 18);
+---
 
-> 16 p1.walk();
+## 六、继承 `extends`
 
-> 17 </script>
+继承是让一个类复用另一个类的属性和方法。
 
-## 总结：
+```js
+class Person {
+  constructor(name) {
+    this.name = name
+  }
 
-- `constructor` 是类中固定的方法名
+  walk() {
+    console.log(`${this.name} 会走路`)
+  }
+}
 
-- `constructor` 方法在实例化时立即执行
+class Student extends Person {
+  study() {
+    console.log(`${this.name} 在学习`)
+  }
+}
+```
 
-- `constructor` 方法接收实例化时传入的参数
+### 6.1 继承带来的效果
 
-- `constructor` 并非是类中必须要存在的方法
+子类可以直接复用父类已有的方法和属性初始化逻辑。
 
-## class——继承
+### 6.2 常见术语
 
-extends
+| 术语          | 含义         |
+| ------------- | ------------ |
+| 父类 / 基类   | 被继承的类   |
+| 子类 / 派生类 | 继承别人的类 |
 
-`extends` 是 ECMAScript 6 中实现继承的简洁语法，代码如下所示：
+### 6.3 一个实战提醒
 
-> 1 <script>
+继承适合表达“is-a”关系，也就是“学生是一种人”“管理员是一种用户”。如果只是想复用一点功能，不一定非要走继承。
 
-> 2 class Person {
+---
 
-> 3 // 父类的属性
+## 七、`super` 是什么
 
-> 4 legs = 2;
+`super` 可以理解为对子类中“父类能力”的引用。
 
-> 5 arms = 2;
+### 7.1 在子类构造函数中
 
-> 6 eyes = 2;
+```js
+class Person {
+  constructor(name, age) {
+    this.name = name
+    this.age = age
+  }
+}
 
-> 7 // 父类的方法
+class Student extends Person {
+  constructor(name, age, school) {
+    super(name, age)
+    this.school = school
+  }
+}
+```
 
-> 8 walk () {
+### 7.2 为什么必须先调用 `super()`
 
-> 9 console.log(' 人类都会走路 ...');
+在子类构造函数里，只有先执行 `super()`，父类的初始化逻辑才会跑起来，之后才能安全使用 `this`。
 
-> 10 }
+### 7.3 在实例方法中调用父类方法
 
-> 11 // 父类的方法
+```js
+class Person {
+  walk() {
+    console.log("人都会走路")
+  }
+}
 
-> 12 sleep () {
+class Student extends Person {
+  walk() {
+    super.walk()
+    console.log("学生走向教室")
+  }
+}
+```
 
-> 13 console.log(' 人都得要睡觉 ...');
+---
 
-> 14 }
+## 八、方法重写
 
-> 15 } 16
+子类可以定义和父类同名的方法，这叫重写。
 
-> 17 // Chinese 继承了 Person 的所有特征
+```js
+class Animal {
+  move() {
+    console.log("动物在移动")
+  }
+}
 
-> 18 class Chinese extends Person {} 19
+class Bird extends Animal {
+  move() {
+    console.log("鸟在飞")
+  }
+}
+```
 
-> 20 // 实例化
+### 8.1 什么时候适合重写
 
-> 21 let c1 = new Chinese();
+当子类有更具体、更符合自身语义的行为时。
 
-> 22 c1.walk();
+### 8.2 什么时候适合 `super`
 
-> 23 </script>
+当你既想保留父类行为，又想追加子类自己的逻辑时。
 
-如上代码所示 `extends` 是专门用于实现继承的语法关键字，`Person` 称为父类、`Chinese` 称为子类。
+---
 
-super
+## 九、`class` 和构造函数写法的关系
 
-文档：super
+```js
+function Person(name) {
+  this.name = name
+}
 
-- 说明
+Person.prototype.walk = function () {
+  console.log(this.name + " 在走路")
+}
+```
 
-   - 在子类中，作为【父类】或【父类原型】的引用
+上面的写法，与下面的类写法，本质目标是一致的：
 
-   - 具体引用的是哪个，取决于使用super的环境
+```js
+class Person {
+  constructor(name) {
+    this.name = name
+  }
 
-用法
+  walk() {
+    console.log(this.name + " 在走路")
+  }
+}
+```
 
-- 子类的构造函数中，引用的是【父类】
+### 9.1 一个关键结论
 
-> 1 class Person {
+`class` 是语法糖，本质仍和原型链机制有关。所以想真正理解 class，还是要能回到构造函数和原型的底层认知上。
 
-> 2 constructor(name, age) {
+---
 
-> 3 this.name = name
+## 十、常见注意点
 
-> 4 this.age = age
+1. `class` 中的方法默认挂在原型上，不会为每个实例重复创建一份。
+2. 子类构造函数里，使用 `this` 前必须先调用 `super()`。
+3. 静态成员要用类名访问，不能通过实例访问。
+4. 继承不是唯一复用方式，组合有时更灵活。
 
-> 5 }
+---
 
-> 6 } 7
+## 十一、小结
 
-> 8 class English extends Person {
-
-> 9 constructor(name, age) {
-
-> 10 // this.name // 会报错：访问派生类的构造函数中的 "this" 前，必须调用 "super"
-
-> 11 super(name, age) // 派生类的构造函数必须包含 "super" 调用
-
-> 12 }
-
-> 13 }
-
-子类的静态属性、静态方法中，引用的是【父类】
-
-> 1 class Rectangle {
-
-> 2 static baseStaticField = 90
-
-> 3 static logNbSides() {
-
-> 4 return 'I have 4 sides'
-
-> 5 }
-
-> 6 } 7
-
-> 8 class Square extends Rectangle {
-
-> 9 static extendedStaticField = super.baseStaticField
-
-> 10 static logDescription() {
-
-> 11 return `${super.logNbSides()} which are all equal`
-
-> 12 }
-
-> 13 } 14
-
-> 15 console.log(Square.extendedStaticField) // 90
-
-> 16 console.log(Square.logDescription()) // 'I have 4 sides which are all equal'
-
-子类的实例属性、实例方法中，引用的是【父类原型】。但只可调用父类的实例方法，不可取值父类 的实例属性。
-
-> 1 class Base {
-
-> 2 baseMethod() {
-
-> 3 return 10
-
-> 4 }
-
-> 5 }
-
-> 6 class Extended extends Base {
-
-> 7 extendedField = super.baseMethod()
-
-> 8 instanceFn(){
-
-> 9 return super.baseMethod()
-
-> 10 }
-
-> 11 } 12
-
-> 13 console.log(new Extended().extendedField) // 10
-
-> 14 console.log(new Extended().instanceFn()) // 10
-
-## 总结
-
-1
-
-class Mouse extends Animal {
-
-> 2 constructor(){
-
-> 3 super() // super 引用【父类】
-
-> 4 }
-
-> 5 static staticProp // super 引用【父类】
-
-> 6 static staticFn(){
-
-> 7 // super 引用【父类】
-
-> 8 }
-
-> 9 instanceProp // super 引用【父类原型】
-
-> 10 instanceFn(){
-
-> 11 // super 引用【父类原型】
-
-> 12 }
-
-> 13 }
+1. `class` 是 JavaScript 中组织对象模板的现代写法，本质仍建立在构造函数和原型机制上。
+2. `constructor` 负责实例初始化，实例成员和静态成员分别服务于“对象级”和“类级”能力。
+3. `extends` 与 `super` 解决的是继承和父类能力复用的问题。
+4. 重写适合表达子类的特化行为，但不应为了复用一点代码就滥用继承。
+5. 学这一篇时，重点不是死背语法，而是理解如何用 `class` 更清晰地表达对象和对象之间的关系。

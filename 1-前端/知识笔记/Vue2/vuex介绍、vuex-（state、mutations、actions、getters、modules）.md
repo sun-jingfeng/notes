@@ -1,777 +1,550 @@
 # vuex 介绍（state、mutations、actions、getters、modules）
 
-通信方案
+## 一、一句话理解
 
-**==> picture [311 x 229] intentionally omitted <==**
+Vuex 的核心不是“多放一个全局对象”，而是把共享状态的读取、修改和追踪链路统一起来。
 
-## 组件关系
+---
 
-## 数据通信
+## 二、什么是 Vuex
 
-父子关系
+**Vuex** 是 Vue2 生态里常见的集中式状态管理方案，用来统一管理多个组件共享的数据。
 
-## 非父子关系
+它解决的核心问题不是“组件能不能通信”，而是“共享状态是否集中、可追踪、可维护”。
 
-父传子：props ； 子传父：$emit vuex (一种组件通信方案)
+---
 
-## vuex是什么
+## 三、为什么需要 Vuex
 
-- Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。它采用集中式存储管理数据，以相应的规则保证状
+当项目变大后，组件之间的数据流会越来越复杂：
 
+1. 多个页面都要读取同一份数据。
+2. 多个组件都可能修改同一份数据。
+3. 需要知道“是谁、在什么时候、以什么方式改了状态”。
 
-- 态以一种可预测的方式发生变化
+| 场景         | 不使用 Vuex 的问题 | 使用 Vuex 的收益       |
+| ------------ | ------------------ | ---------------------- |
+| 用户信息     | 多处重复维护       | 全局统一读取           |
+| 购物车数量   | 组件状态不同步     | 所有组件共享同一状态源 |
+| 异步请求结果 | 修改链路分散       | 修改过程可追踪         |
 
-**==> picture [467 x 244] intentionally omitted <==**
+### 适合放进 Vuex 的数据
 
-## vuex为何学
+适合：
 
-- 程序页面多，数据变量多，但又要做到：
+1. 登录用户信息。
+2. 购物车、主题、权限、字典数据。
+3. 多页面都会依赖的共享状态。
 
-   - 不同组件数据保持同步
+不适合：
 
-   - 数据的修改都是可追踪
+1. 某个页面局部临时状态。
+2. 只在单个组件中使用的数据。
 
-## 保持同步、可追踪的含义：
+结论：**多个组件共享的状态才值得放进 Vuex**。
 
+一个反向判断也很有用：如果一个状态离开当前页面就没有价值，那它大概率不该进 Vuex。
 
-   - 一个户外商店有两名员工，张三和李四。一天的早上，他们分别对帐篷的数量做了一次盘点，发现一共有三个帐篷。张三卖出去俩个，他以为库存里还有一个。李四卖出去一个，他以为库存里还有两 个。而事实上是，库存现在已经为零。如果他们再接受客户的预订，就会出现库存不足的情况。 张三和李四因为没有保持库存的数量的同步导致了尴尬，这个就是所谓的`数据保持同步 `
+---
 
-   - 店长需要知道, 谁卖出了多少个帐篷，这个行为我们称之为`数据修改是可追踪的`
+## 四、Vuex 的核心概念
 
-- 图示:
+Vuex 最常用的 5 个核心概念如下：
 
-**==> picture [467 x 256] intentionally omitted <==**
+| 配置项      | 作用             | 类比                |
+| ----------- | ---------------- | ------------------- |
+| `state`     | 全局状态数据源   | 组件里的 `data`     |
+| `mutations` | 同步修改状态     | 专门改数据的方法    |
+| `actions`   | 处理异步逻辑     | 异步业务方法        |
+| `getters`   | 基于状态派生数据 | 组件里的 `computed` |
+| `modules`   | 按业务拆分 store | 大项目分目录管理    |
 
-## vuex中存什么
+可以把 Vuex 简化理解为：
 
-- 多个组件共享状态，才存储在vuex中
+```text
+组件读取 state / getters
+组件通过 commit / dispatch 触发修改
+mutations / actions 再去更新状态
+```
 
-- 某个组件中的私有数据，依旧存储在data中
+---
 
-- 例如：
+## 五、基础使用流程
 
-   - 登陆的用户名需要在首页, 个人中心, 结算页面使用, 用户名存在vuex中
+### 1. 安装与初始化
 
-   - 文章详情数据, 只有在文章详情页查看, 在自身data中声明
+Vue2 项目常见安装方式：
 
-## 小结
+```bash
+npm install vuex@3
+```
 
-## 什么是vuex
+创建 `store/index.js`：
 
-## vuex是Vue官方推荐的集中式状态管理机制
+```js
+import Vue from "vue"
+import Vuex from "vuex"
 
-## 为何学vuex
+Vue.use(Vuex)
 
-- 数据同步, 集中管理
+export default new Vuex.Store({
+  state: {},
+  mutations: {},
+  actions: {},
+  getters: {},
+})
+```
 
-## vuex中存什么
+在入口文件挂载：
 
-- 多个组件共享的值
+```js
+import Vue from "vue"
+import App from "./App.vue"
+import store from "./store"
 
-## vuex学习内容
+new Vue({
+  store,
+  render: h => h(App),
+}).$mount("#app")
+```
 
-## 核心概念
+---
 
-- 官网地址: https://vuex.vuejs.org/zh/
+## 六、state
 
-- 安装(固定)
+### 1. state 是什么
 
-- 配置项(固定)
+`state` 是 Vuex 中的全局状态数据源。
 
-|配置项|含义|注意|
-|---|---|---|
-|state|单一状态树|类似data|
-|mutations|数据管家(同步)|唯一修改state地方|
-|actions|异步请求|要改state需要提交给mutations|
-|getters|vuex计算属性|类似computed|
-|modules|模块拆分||
+```js
+export default new Vuex.Store({
+  state: {
+    count: 100,
+    userInfo: {
+      id: 1,
+      username: "admin",
+    },
+  },
+})
+```
 
-## 图示关系
+### 2. 使用 state 的两种方式
 
-**==> picture [265 x 11] intentionally omitted <==**
+#### 直接使用
 
-**----- Start of picture text -----**<br>
-单一定义store对象, 里面5个配置项, 在任意组件可以使用<br>**----- End of picture text -----**<br>
+```js
+this.$store.state.count
+```
 
-**==> picture [467 x 177] intentionally omitted <==**
+#### 映射使用
 
-小结
+```js
+import { mapState } from "vuex"
 
-**==> picture [241 x 32] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-vuex五个核心概念是?<br>state / mutations / actions / getters / modules<br>**----- End of picture text -----**<br>
-
-## vuex-state（数据源）
-
-定义state 语法: 1 const store = new Vuex.Store({ 2 state: { 3 变量名 : 初始值 4 } 5 })
-
-**==> picture [46 x 11] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-具体代码:<br>**----- End of picture text -----**<br>
-
-> 1 const store = new Vuex.Store({
-
-> 2 state: {
-
-> 3 count: 100 // 库存
-
-> 4 }
-
-> 5 })
-
-## 使用state的两种方式
-
-直接使用
-
-语法:
-
-> 1 this.$store.state. 变量名
-
-## 映射使用 (推荐)
-
-语法:
-
-> 1 // 1. 拿到 mapState 辅助函数
-
-> 2 import { mapState } from 'vuex'
-
-> 3 export default {
-
-> 4 computed: {
-
-> 5 // 2. 把 state 里变量映射到计算属性中
-
-> 6 ...mapState(['state 里的变量名 '])
-
-> 7 }
-
-> 8 }
-
-## 整个过程的示意图如下
-
-**==> picture [467 x 215] intentionally omitted <==**
-
-注意
-
-state是响应式的, 只要state值变化, 页面上使用的地方会自动更新同步
-
-- 小结
-
-state作用?
-
-定义全局状态数据源
-
-- state如何定义?
-
-   - 在store内, state: {变量名: 初始值}
-
-- state的值如何用到具体vue组件内?
-
-   - 直接使用 this.$store.state.变量名
-
-   - 映射使用 ...mapState(['state的变量名'])
-
-## vuex-mutations（同步修改）
-
-- 定义mutations
-
-语法:
-
-> 1 const store  = new Vuex.Store({
-
-> 2 mutations: {
-
-> 3 函数名 (state, 可选值 ) {
-
-> 4 // 同步修改 state 值代码
-
-> 5 }
-
-> 6 }
-
-> 7 })
-
-## 具体代码
-
-> 1 const store  = new Vuex.Store({
-
-> 2 state: {
-
-> 3 count: 100 // 库存
-
-> 4 },
-
-> 5 mutations: {
-
-> 6 addCount (state, value) { // 负责增加库存的管家
-
-> 7 state.count += value
-
-> 8 },
-
-> 9 subCount (state, value) { // 负责减少库存的管家
-
-> 10 state.count -= value
-
-> 11 },
-
-> 12 setCount (state, value) { // 负责直接修改库存的管家
-
-> 13 state.count = value;
-
-> 14 }
-
-> 15 }
-
-> 16 })
-
-## 使用mutations的两种方式
-
-## 直接使用
-
-语法:
-
-> 1 this.$store.commit("mutations 里的函数名 ", 具体值 )
-
-## 映射使用
-
-语法:
-
-> 1 // 1. 拿到 mapMutations 辅助函数
-
-> 2 import { mapMutations } from 'vuex'
-
-- 3 export default {
-
-> 4 methods: {
-
-> 5 // 2. 把 mutations 里方法映射到原地
-
-> 6 ...mapMutations(['mutations 里的函数名 '])
-
-> 7 }
-
-> 8 }
-
-## 注意
-
-一 mutations是唯 能修改state的地方, 确保调试工具可以追踪变化
-
-mutations函数内, 只能写同步代码, 调试工具可追踪变化过程
-
-一 因为调试工具要立刻产生 次记录, 所以必须是同步的
-
-mutations函数上, 只能接收一个参数值, 如果传多个, 请传一个对象
-
-## 小结
-
-mutations里函数作用?
-
-负责修改state里的数据
-
-mutations只能写什么样的代码?
-
-同步流程的代码
-
-mutations有哪两种使用方式?
-
-- 直接使用 this.$store.commit()
-
-- 映射使用 mapMutations把方法映射到组件内直接调用
-
-state, mutations, 视图组件, 3个关系是什么?
-
-**==> picture [467 x 230] intentionally omitted <==**
-
-## vuex-actions（异步修改）
-
-定义actions
-
-语法:
-
-> 1 const store = new Vuex.Store({
-
-> 2 actions: {
-
-> 3 函数名 (store, 可选值 ) {
-
-> 4 // 异步代码 , 把结果 commit 给 mutations 给 state 赋值
-
-> 5 }
-
-> 6 }
-
-> 7 })
-
-## 具体代码:
-
-> 1 const store  = new Vuex.Store({
-
-> 2 // ... 省略 state 和 mutations 此处
-
-> 3 actions: {
-
-> 4 asyncAddCount(store, num){
-
-> 5 setTimeout(() => { // 1 秒后 , 异步提交给 add 的 mutations
-
-> 6 store.commit('addCount', num)
-
-> 7 }, 1000)
-
-> 8 },
-
-> 9 asyncSubCount(store, num) {
-
-> 10 setTimeout(() => { // 1 秒后 , 异步提交给 sub 的 mutations
-
-> 11 store.commit('subCount', num)
-
-> 12 }, 1000)
-
-> 13 }
-
-> 14 }
-
-> 15 })
-
-## 使用actions的两种方式
-
-## 直接使用
-
-语法:
-
-> 1 this.$store.dispatch('actions 函数名 ', 具体值 )
-
-## 映射使用
-
-语法:
-
-- 1 // 1. 拿到 mapActions 辅助函数
-
-- 2 import { mapActions } from 'vuex'
-
-- 3 export default {
-
-> 4 methods: {
-
-> 5 // 2. 把 actions 里方法映射到原地
-
-> 6 ...mapActions(['actions 里的函数名 '])
-
-> 7 }
-
-> 8 }
-
-## 小结
-
-## actions和mutations区别?
-
-   - mutations里同步修改state
-
-   - actions里放入异步操作
-
-- actions是否能操作state?
-
-   - 不建议, 要commit给mutations(为调试工具可追踪)
-
-- actions和mutations里函数, 第一个形参分别是什么?
-
-   - mutations的是state
-
-   - actions的是store
-
-- actions使用方式?
-
-   - this.$store.dispatch('actions方法名字', 值)
-
-   - ...mapActions(['actions里的方法名']) 映射到原地使用
-
-- 视图组件, state, mutations, actions的关系是?
-
-**==> picture [467 x 206] intentionally omitted <==**
-
-## vuex-getters（计算属性）
-
-getters概念
-
-   - vuex身上的全局状态-计算属性, 类似于computed
-
-   - getters 依赖于 state中原始数据的变化，并返回计算后的新数据
-
-- 定义getters
-
-语法:
-
-> 1 const store = new Vuex.Store({
-
-> 2 getters: {
-
-> 3 计算属性名 (state) {
-
-> 4 return 值给计算属性
-
-> 5 }
-
-> 6 }
-
-> 7 })
-
-## 具体代码
-
-> 1 const store = new Vuex.Store({
-
-> 2 // ... 省略其他
-
-> 3 getters: {
-
-> 4 allCount(state) {
-
-> 5 return state.goodsList.reduce((sum, obj) => {
-
-> 6 if (obj.goods_state === true) { // 选中商品才累加数量
-
-> 7 sum += obj.goods_count;
-
-> 8 }
-
-> 9 return sum;
-
-> 10 }, 0)
-
-> 11 },
-
-> 12 allPrice(state) {
-
-> 13 return state.goodsList.reduce((sum, obj) => {
-
-> 14 if (obj.goods_state) {
-
-> 15 sum += obj.goods_count * obj.goods_price
-
-> 16 }
-
-> 17 return sum;
-
-> 18 }, 0)
-
-> 19 }
-
-> 20 }
-
-> 21 })
-
-## 使用getters的两种方式
-
-## 直接使用
-
-语法:
-
-> 1 this.$store.getters. 计算属性名
-
-## 映射使用
-
-## 语法:
-
-> 1 // 1. 拿到 mapGetters 辅助函数
-
-> 2 import { mapGetters } from 'vuex'
-
-> 3 export default {
-
-> 4 computed: {
-
-> 5 // 2. 把 getters 里属性映射到原地
-
-> 6 ...mapGetters(['getters 里的计算属性名 '])
-
-> 7 }
-
-> 8 }
-
-## 小结
-
-## getters有什么用?
-
-   - vuex里的计算属性, 属于全局计算属性, 类似computed
-
-- getters如何使用?
-
-   - this.$store.getters.计算属性名
-
-   - ...mapGetters(['getters里计算属性名'])
-
-## vuex-modules（分模块）
-
-## 为何分模块
-
-**==> picture [467 x 212] intentionally omitted <==**
-
-代码上的对比
-
-**==> picture [467 x 404] intentionally omitted <==**
-
-## 创建modules模块对象
-
-- 对象里包含5个核心概念, 只有state改变为函数形式（目的是为了每个引用此模块的地方返回一个独立的新 数据对象），其他核心无变化。
-
-- 语法:
-
-> 1 // 用户模块对象
-
-> 2 const userModule = {
-
-> 3 state(){
-
-> 4 return {
-
-> 5 name: "",
-
-> 6 age: 0,
-
-> 7 sex: ''
-
-> 8 }
-
-> 9 },
-
-> 10 mutations: {},
-
-> 11 actions: {},
-
-> 12 getters: {}
-
-> 13 }
-
-> 14 export default userModule
-
-定义modules
-
-语法:
-
-> 1 modules: {
-
-> 2 模块名 : 模块对象
-
-> 3 }
-
-把2个模块对象, 引回到store里注册
-
-> 1 import Vue from 'vue'
-
-> 2 import Vuex from 'vuex'
-
-> 3 import cartModule from './modules/cart'
-
-> 4 import userModule from './modules/user'
-
-> 5 Vue.use(Vuex)
-
-> 6 const store = new Vuex.Store({
-
-> 7 modules: {
-
-> 8 user: userModule,
-
-> 9 cart: cartModule
-
-> 10 }
-
-> 11 })
-
-> 12 export default store
-
-## state使用方式修改
-
-直接使用
-
-原语法:
-
-1
-
-this.$store.state. 变量名
-
-分模块后语法:
-
-1
-
-this.$store.state. 模块名 . 变量名
-
-## 映射使用
-
-原语法:
-
-> 1 ...mapState(['state 里变量名 '])
-
-> 2 ...mapState({' 变量名 ': "state 里变量名 "})
-
-分模块后语法:
-
-> 1 ...mapState({
-
-> 2 ' 变量名 ': state => state. 模块名 . 变量名
-
-> 3 })
-
-## 开启命名空间
-
-- 在模块对象内设置`namespaced: true`
-
-注意：是在模块对象中设置，不是在引入模块的对象中设置
-
-语法：
-
-> 1 const moduleShopCar = {
-
-> 2 namespaced: true,
-
-> 3 state () {},
-
-> 4 mutations: {},
-
-> 5 actions: {},
-
-> 6 getters: {},
-
-> 7 modules: {}
-
+export default {
+  computed: {
+    ...mapState(["count"]),
+  },
 }
+```
+
+对象写法也很常见：
 
-8
+```js
+...mapState({
+  totalCount: "count"
+})
+```
 
-state使用方式修改
+### 3. 注意点
 
-直接使用
+1. `state` 是响应式的。
+2. 页面中只要依赖了 `state`，状态变化后视图会自动更新。
+3. 不建议在组件中直接随意改 `state`，统一走 `mutations`。
 
-原语法:
+---
 
-> 1 this.$store.state. 变量名
+## 七、mutations
 
-## 分模块后语法:
+### 1. mutations 是什么
 
-1 this.$store.state. 模块名 . 变量名
+`mutations` 用来**同步修改** `state`。
 
-分模块并开启命名空间后语法（与不开启命名空间比无变化）:
+```js
+export default new Vuex.Store({
+  state: {
+    count: 100,
+  },
+  mutations: {
+    addCount(state, value) {
+      state.count += value
+    },
+    subCount(state, value) {
+      state.count -= value
+    },
+    setCount(state, value) {
+      state.count = value
+    },
+  },
+})
+```
 
-1 this.$store.state. 模块名 . 变量名
+### 2. 触发 mutations
 
-## 映射使用
+#### 直接提交
 
-原语法:
+```js
+this.$store.commit("addCount", 5)
+```
 
-> 1 ...mapState(['state 里变量名 '])
+#### 映射提交
 
-> 2 ...mapState({' 变量名 ': "state 里变量名 "})
+```js
+import { mapMutations } from "vuex"
 
-## 分模块后语法:
+export default {
+  methods: {
+    ...mapMutations(["addCount", "subCount"]),
+  },
+}
+```
+
+### 3. 为什么 mutations 只能写同步代码
+
+因为 Vuex 希望每次状态变化都能被开发工具清晰记录。如果 mutation 内部写异步逻辑，状态修改的时机就会变得不可预测。
+
+结论：
+
+1. **改状态只能通过 mutations**。
+2. **mutations 只写同步逻辑**。
+
+---
+
+## 八、actions
 
-> 1 ...mapState({
+### 1. actions 是什么
+
+`actions` 用来处理异步逻辑，但它本身通常不直接改状态，而是提交给 `mutations`。
 
-> 2 ' 变量名 ': state => state. 模块名 . 变量名
+```js
+export default new Vuex.Store({
+  state: {
+    count: 0,
+  },
+  mutations: {
+    addCount(state, value) {
+      state.count += value
+    },
+  },
+  actions: {
+    asyncAddCount(context, value) {
+      setTimeout(() => {
+        context.commit("addCount", value)
+      }, 1000)
+    },
+  },
+})
+```
 
-> 3 })
+### 2. 触发 actions
 
-分模块并开启命名空间后语法:
+#### 直接派发
 
-1
+```js
+this.$store.dispatch("asyncAddCount", 10)
+```
 
-...mapState(" 模块名 ", ['state 变量名 '])
+#### 映射使用
 
-## mutations使用方式修改
+```js
+import { mapActions } from "vuex"
 
-直接使用
+export default {
+  methods: {
+    ...mapActions(["asyncAddCount"]),
+  },
+}
+```
 
-原语法:
+### 3. actions 和 mutations 的区别
+
+| 对比项             | actions      | mutations |
+| ------------------ | ------------ | --------- |
+| 是否适合异步       | 是           | 否        |
+| 是否直接修改 state | 一般不直接改 | 是        |
+| 调用方式           | `dispatch`   | `commit`  |
+
+### 4. 一个实战判断
+
+如果这段逻辑只是“立刻同步改状态”，优先放 `mutations`；如果涉及接口、定时器、异步串联或流程控制，再放 `actions`。
+
+---
+
+## 九、getters
+
+### 1. getters 是什么
+
+`getters` 可以理解为 Vuex 中的全局计算属性。
+
+```js
+export default new Vuex.Store({
+  state: {
+    goodsList: [
+      { id: 1, goods_count: 2, goods_price: 10, goods_state: true },
+      { id: 2, goods_count: 1, goods_price: 20, goods_state: false },
+    ],
+  },
+  getters: {
+    allCount(state) {
+      return state.goodsList.reduce((sum, item) => {
+        return item.goods_state ? sum + item.goods_count : sum
+      }, 0)
+    },
+    allPrice(state) {
+      return state.goodsList.reduce((sum, item) => {
+        return item.goods_state
+          ? sum + item.goods_count * item.goods_price
+          : sum
+      }, 0)
+    },
+  },
+})
+```
+
+### 2. 使用 getters
+
+#### 直接使用
+
+```js
+this.$store.getters.allCount
+```
+
+#### 映射使用
+
+```js
+import { mapGetters } from "vuex"
+
+export default {
+  computed: {
+    ...mapGetters(["allCount", "allPrice"]),
+  },
+}
+```
+
+### 3. 适用场景
+
+1. 购物车总数。
+2. 已选商品总价。
+3. 过滤后的列表结果。
+
+---
 
-> 1 this.$store.commit("mutations 里的函数名 ", 具体值 )
+## 十、modules
+
+### 1. 为什么要分模块
+
+当项目越来越大时，所有状态都写在一个 store 里，会导致：
+
+1. `state` 很臃肿。
+2. mutation 名称容易冲突。
+3. 不同业务难以拆分维护。
+
+这时就需要用 `modules` 按业务拆分。
+
+### 2. 基本写法
+
+```js
+// store/modules/user.js
+export default {
+  state: {
+    token: "",
+    userInfo: null,
+  },
+  mutations: {
+    setToken(state, token) {
+      state.token = token
+    },
+  },
+  actions: {},
+  getters: {},
+}
+```
+
+```js
+// store/modules/cart.js
+export default {
+  state: {
+    list: [],
+  },
+  mutations: {
+    setCartList(state, list) {
+      state.list = list
+    },
+  },
+}
+```
+
+```js
+// store/index.js
+import Vue from "vue"
+import Vuex from "vuex"
+import user from "./modules/user"
+import cart from "./modules/cart"
 
-分模块并开启命名空间后语法:
+Vue.use(Vuex)
 
-> 1 this.$store.commit(" 模块名 /mutations 里的函数名 ", 具体值 )
+export default new Vuex.Store({
+  modules: {
+    user,
+    cart,
+  },
+})
+```
 
-## 映射使用
+### 3. 分模块后的 state 读取
 
-原语法:
+```js
+this.$store.state.user.token
+this.$store.state.cart.list
+```
 
-> 1 ...mapMutations(['mutations 里方法名 '])
+映射时：
 
-分模块并开启命名空间后语法:
+```js
+...mapState({
+  token: (state) => state.user.token
+})
+```
 
-> 1 ...mapMutations(" 模块名 ", ['mutations 里方法名 '])
+### 4. 一个拆分思路
 
-## actions使用方式修改
+模块通常更适合按**业务域**拆，而不是机械按 `state`、`actions`、`mutations` 数量来拆。
 
-直接使用
+例如：
 
-原语法:
+1. 用户模块。
+2. 权限模块。
+3. 购物车模块。
+4. 订单模块。
 
-> 1 this.$store.dispatch("actions 里的函数名 ", 具体值 )
+---
 
-分模块并开启命名空间后语法:
+## 十一、命名空间 namespaced
 
-> 1 this.$store.dispatch(" 模块名 /actions 里的函数名 ", 具体值 )
+### 1. 为什么要开启命名空间
 
-## 映射使用
+模块多起来后，不同模块里的 `setList`、`setToken`、`addCount` 等名称很容易冲突。
 
-原语法:
+这时可以在模块里配置：
 
-> 1 ...mapActions(['actions 里方法名 '])
+```js
+export default {
+  namespaced: true,
+  state: {
+    token: "",
+  },
+  mutations: {
+    setToken(state, token) {
+      state.token = token
+    },
+  },
+}
+```
 
-分模块并开启命名空间后语法:
+### 2. 开启命名空间后的调用方式
 
-> 1 ...mapActions(" 模块名 ", ['actions 里方法名 '])
+#### state
 
-## getters使用方式修改
+```js
+this.$store.state.user.token
+```
 
-## 直接使用
+#### mutations
 
-原语法:
+```js
+this.$store.commit("user/setToken", "abc")
+```
 
-> 1 this.$store.getters. 计算属性名
+#### actions
 
-分模块并开启命名空间后语法:
+```js
+this.$store.dispatch("user/getUserInfo")
+```
 
-> 1 this.$store.getters[' 模块名 / 计算属性名 ']
+#### getters
 
-## 映射使用
+```js
+this.$store.getters["user/userName"]
+```
 
-原语法:
+#### 映射写法
 
-> 1 ...mapGetters(['getters 里计算属性名 '])
+```js
+...mapState("user", ["token"])
+...mapMutations("user", ["setToken"])
+...mapActions("user", ["getUserInfo"])
+...mapGetters("user", ["userName"])
+```
 
-分模块并开启命名空间后语法:
+命名空间解决的不只是“名字冲突”，更重要的是让模块边界更清楚。
 
-> 1 ...mapGetters(" 模块名 ", ['getters 里计算属性名 '])
+---
 
-## 小结
+## 十二、一个完整的 Vuex 数据流
 
-## 为什么分模块?
+推荐按下面这条链路理解：
 
-集中式管理项目过大, 变量过多, 会导致state臃肿, 难以维护
+```text
+组件触发事件
+  -> dispatch action（异步）
+  -> commit mutation（同步）
+  -> 修改 state
+  -> 视图自动更新
+```
 
-## 如何分模块?
+如果没有异步，也可以直接：
 
-定义模块对象, state变成函数返回对象形式, 每个模块都有state/mutations/actions/getters/modules 根store如何注册?
+```text
+组件
+  -> commit mutation
+  -> state 改变
+  -> 页面更新
+```
 
-modules里 { 模块名: 模块对象 }
+---
 
-- 分模块不开启命名空间对什么有影响?
+## 十三、Vuex 的适用边界
 
-   - 对state的取值方式有影响, 对其他暂无影响
+### 1. 什么时候值得上 Vuex
 
-- 分模块不开启命名空间state如何取值?
+1. 页面较多。
+2. 共享状态较多。
+3. 状态修改链路需要统一管理。
 
-   - 在组件使用的时候, 要state.模块名.变量名
+### 2. 什么时候没必要
 
-state和mutations, 在根store和开启命名空间里的区别?
+1. 只有简单父子通信。
+2. 页面很少，状态都在局部组件内。
+3. 用 `props`、`emit` 就能解决。
 
-**==> picture [467 x 216] intentionally omitted <==**
+### 3. 现代补充
 
-**==> picture [92 x 10] intentionally omitted <==**
+在 Vue3 中，**Pinia** 已经逐渐成为更主流的状态管理方案；但 Vue2 老项目里，Vuex 仍然非常常见。
 
-**----- Start of picture text -----**<br>
-整个vuex的体系是?<br>**----- End of picture text -----**<br>
+---
 
-**==> picture [467 x 309] intentionally omitted <==**
+## 十四、真实项目里的三条经验
+
+1. 不要把所有状态都丢进 Vuex，否则全局状态会越来越重。
+2. 异步和同步职责分清，排查问题会轻松很多。
+3. 模块边界清楚，比一开始堆很多 API 更重要。
+
+---
+
+## 十五、总结
+
+1. Vuex 是 Vue2 中常见的集中式状态管理方案。
+2. `state` 存数据，`mutations` 同步改数据，`actions` 处理异步，`getters` 负责派生值，`modules` 负责拆分大型 store。
+3. 多组件共享的数据才应该放进 Vuex。
+4. 大项目中通常会配合模块拆分和命名空间一起使用。
+5. 学会 Vuex 的关键不是背 API，而是理解“统一状态源 + 可追踪修改链路”。

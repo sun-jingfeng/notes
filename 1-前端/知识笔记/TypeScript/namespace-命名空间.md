@@ -1,382 +1,394 @@
 # namespace 命名空间
 
-正常无法重复声明。
+## 一、一句话理解
 
-## namespace 关键字，相当于「内部模块」
+`namespace` 的核心是把一组值和类型挂到同一个命名空间对象下，但在现代业务代码里，它已经不是主流模块化方案。
 
-> 1 const a = 123 2
+---
 
-> 3 const a = 123 // 报错：无法重新声明块范围变量 "a" 。
+## 二、什么是 `namespace`
 
-## 不同命名空间内，可以重复声明
+`namespace` 是 TypeScript 早期提供的一种组织代码的方式，过去也常被称为“内部模块”。
 
-> 1 namespace Ns1 {
+它的核心目标是：
 
-> 2 const a = 123
+1. 避免全局命名冲突。
+2. 把相关成员收拢到一个命名空间对象下。
 
-> 3 } 4
+```ts
+namespace Ns1 {
+  const a = 123
+}
 
-> 5 namespace Ns2 {
+namespace Ns2 {
+  const a = 123
+}
+```
 
-> 6 const a = 123
+这时两个 `a` 不会互相冲突。
 
-> 7 }
+---
 
-编译后，是【命名空间变量】和【自执行函数】
+## 三、现代项目里怎么理解它
 
-1 var Ns1;
+最关键的一点是：
 
-> 2 (function (Ns1) {
+**在现代前端业务代码里，主流组织方式已经是 ES Modules，而不是 `namespace`。**
 
-> 3 const a = 123;
+也就是说：
 
-> 4 })(Ns1 || (Ns1 = {})); 5
+1. 普通业务代码优先使用 `import` / `export`。
+2. `namespace` 现在更多出现在声明文件、旧项目兼容、全局库类型描述中。
 
-> 6 var Ns2;
+不要把 `namespace` 当成现代模块化的首选方案。
 
-> 7 (function (Ns2) {
+---
 
-> 8 const a = 123;
+## 四、基本用法
 
-- 9 })(Ns2 || (Ns2 = {}));
+### 3.1 命名空间中的成员默认不暴露
 
-## 导出
+```ts
+namespace Ns1 {
+  const a = 123
+}
 
-按需导出命名空间
+// Ns1.a // 报错
+```
 
-编译前
+### 3.2 使用 `export` 暴露成员
 
-export namespace Ns1 {
+```ts
+namespace Ns1 {
+  export const a = 123
+}
 
-1
+console.log(Ns1.a)
+```
 
-> 2 const a = 123
+### 3.3 嵌套命名空间
 
-> 3 }
+```ts
+namespace Ns1 {
+  export namespace Inner {
+    export const a = 123
+  }
+}
 
-## 编译后，将【命名空间变量】导出
+console.log(Ns1.Inner.a)
+```
 
-> 1 export var Ns1;
+---
 
-> 2 (function (Ns1) {
+## 五、编译后的大致效果
 
-> 3 const a = 123;
+`namespace` 编译后通常会变成一个对象加立即执行函数的组合。
 
-> 4 })(Ns1 || (Ns1 = {}));
+可以粗略理解为：
 
-## 按需导入使用
+```ts
+namespace Ns1 {
+  export const a = 123
+}
+```
 
-> 1 import { Ns1 } from './test'
+会被转成类似：
 
-> 2 console.log(Ns1) // {}
+```js
+var Ns1
+;(function (Ns1) {
+  Ns1.a = 123
+})(Ns1 || (Ns1 = {}))
+```
 
-将命名空间导出为模块
+这也说明它本质上更偏向“生成一个命名空间对象”，而不是现代 ESM 那种静态模块机制。
 
-声明
+---
 
-> 1 // 声明位置是 node_modules/@types/mitt/index.d.ts ，如此才能从 'mitt' 导入
+## 六、同名命名空间会合并
 
-- 2 namespace mitt {
+这是 `namespace` 一个很重要的特性。
 
-> 3 const a = 123
-
-> 4 type T = string
-
-> 5 } 6
-
-> 7 export = mitt // 此写法在源码中较常见
-
-> 8 // 或
-
-> 9 export default mitt
-
-## 默认导入使用
-
-- 1 import mitt from "mitt"
-
-2
-
-> 3 mitt.a // 123
-
-> 4 const b: mitt.T = "abc" // string
-
-**==> picture [339 x 11] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-将命名空间导出为全局变量（通过CDN引入的包，可用此方式声明类型）<br>**----- End of picture text -----**<br>
-
-声明
-
-> 1 namespace mitt {
-
-> 2 const a = 123
-
-> 3 type T = string
-
-> 4 } 5
-
-> 6 export as namespace mitt
-
-无需导入，可直接使用
-
-> 1 mitt.a // 123
-
-> 2 const b: mitt.T = "abc" // string
-
-按需导出命名空间内的变量
-
-编译前
-
-> 1 export namespace Ns1 {
-
-> 2 export const a = 123
-
-> 3 const b = "abc"
-
-> 4 }
-
-编译后，将命名空间内的变量赋值到【命名空间变量】
-
-> 1 export var Ns1;
-
-- 2 (function (Ns1) {
-
-- 3 Ns1.a = 123; 4 const b = "abc";
-
-- 5 })(Ns1 || (Ns1 = {}));
-
-按需导入使用
-
-1
-
-import { Ns1 } from './test'
-
-> 2 console.log(Ns1) // {a: 123}
-
-## 本页使用
-
-> 1 export namespace Ns1 {
-
-> 2 export const a = 123
-
-> 3 const b = "abc"
-
-> 4 } 5
-
-> 6 Ns1.a // 123
-
-> 7 Ns1.b // 报错：类型 "typeof Ns1" 上不存在属性 "b" 。
-
-## 全局命名空间
-
-全局声明
-
-> 1 namespace Ns1 {
-
-> 2 export const a = 123
-
-> 3 }
-
-## 代码中使用，ts不会报错
-
-> 1 Ns1.a // ts 提示： const Ns1.a: 123
-
-## 但没办法真正使用
-
-> 1 console.log(Ns1.a) // 控制台报错： Uncaught ReferenceError: Ns1 is not defined
-
-## 嵌套
-
-编译前
-
-1
+```ts
+namespace Ns1 {
+  export const a = 123
+}
 
 namespace Ns1 {
+  export const b = "abc"
+}
 
-> 2 export namespace Ns1_1 {
+Ns1.a
+Ns1.b
+```
 
-> 3 export const a = 123
+### 5.1 怎么理解合并
 
-> 4 }
+可以把它理解成：
 
-> 5 } 6
+1. 第一段代码先创建 `Ns1`。
+2. 第二段代码继续往 `Ns1` 上挂新成员。
 
-> 7 Ns1.Ns1_1.a // 123
+编译后大致会得到两段 IIFE，共同操作同一个 `Ns1` 对象。
 
-## 编译后
+### 5.2 一个限制
 
-> 1 var Ns1;
+虽然命名空间能合并，但**同名导出成员不能重复声明**。
 
-> 2 (function (Ns1) {
+```ts
+namespace Ns1 {
+  export const a = 123
+}
 
-> 3 let Ns1_1;
+namespace Ns1 {
+  // export const a = 456 // 报错
+  const b = "abc"
+}
+```
 
-> 4 (function (Ns1_1) {
+也就是说：
 
-> 5 Ns1_1.a = 123;
+1. 可以新增导出成员。
+2. 不能重复导出同名值。
+3. 未导出的局部成员互不影响。
 
-> 6 })(Ns1_1 = Ns1.Ns1_1 || (Ns1.Ns1_1 = {}));
+---
 
-> 7 })(Ns1 || (Ns1 = {}));
+## 七、命名空间还能和类、函数、枚举合并
 
-## 同名合并
+这是 TS 里一个比较有代表性的“声明合并”现象。
 
-## 编译前
+### 6.1 和类合并
 
-> 1 namespace Ns1 {
-
-> 2 export const a = 123
-
-> 3 } 4
-
-- 5 namespace Ns1 {
-
-> 6 export const b = "abc"
-
-> 7 } 8
-
-> 9 Ns1.a // 123 10
-
-> 11 Ns1.b // "abc"
-
-## 编译后
-
-|1|var Ns1;|
-|---|---|
-|2|(function (Ns1) {|
-
-> 3 Ns1.a = 123;
-
-> 4 })(Ns1 || (Ns1 = {}));
-
-> 5 (function (Ns1) {
-
-> 6 Ns1.b = "abc";
-
-> 7 })(Ns1 || (Ns1 = {}));
-
-## 但不能导出相同的内容
-
-> 1 namespace Ns1 {
-
-- 2 export const a = 123
-
-- 3 const b = "abc"
-
-- 4 }
-
-5
-
-> 6 namespace Ns1 {
-
-> 7 export const a = 123 // 报错：无法重新声明块范围变量 "a" 。
-
-> 8 const b = "abc" // 允许，因为未导出
-
-> 9 }
-
-## 拓展类、函数、枚举
-
-## 编译前
-
-- 1 class A {
-
-- 2 static a = 123
-
-- 3 } 4
-
-- 5 namespace A {
-
-- 6 export const b = "abc"
-
-- 7 }
-
-8
-
-- 9 A.a // 123
-
-- 10
-
-- 11 A.b // "abc"
-
-## 编译后
-
-1
-
+```ts
 class A {
+  static a = 123
+}
 
-> 2 }
+namespace A {
+  export const b = "abc"
+}
 
-> 3 A.a = 123;
+A.a
+A.b
+```
 
-> 4 (function (A) {
+可以理解为：类本身也是一个运行时值，命名空间相当于继续给这个值补充静态成员。
 
-> 5 A.b = "abc";
+### 6.2 和函数合并
 
-> 6 })(A || (A = {}));
+```ts
+function fn() {}
 
-## 同名声明问题
+namespace fn {
+  export const version = "1.0.0"
+}
 
-演示（以【将命名空间导出为模块】为例）
+fn()
+fn.version
+```
 
-> 1 // .d.ts 文件
+### 6.3 和枚举合并
 
-> 2 namespace mitt {
+```ts
+enum Status {
+  Success,
+  Fail,
+}
 
-> 3 const valueOrType = 123
+namespace Status {
+  export function isSuccess(value: Status) {
+    return value === Status.Success
+  }
+}
+```
 
-> 4 type valueOrType = string
+### 6.4 这种写法的价值
 
-> 5 } 6
+它适合把“主体能力”和“辅助静态能力”挂在一起，但现代业务代码里依然不算主流，更常见于声明和历史代码。
 
-> 7 export = mitt 8
+---
 
-> 9 // .ts 文件
+## 八、命名空间与模块导出
 
-> 10 import mitt from "mitt" 11
+命名空间也可以配合模块导出使用。
 
-> 12 mitt.valueOrType // 值： 123
+```ts
+export namespace Utils {
+  export const a = 123
+}
+```
 
-> 13 type T = mitt.valueOrType // 类型： string
+然后：
 
-## 避免方法
+```ts
+import { Utils } from "./test"
 
-## 说明
+console.log(Utils.a)
+```
 
-- 将命名空间内容包裹在接口中
+不过在现代项目里，通常更直接的写法是：
 
-- 利用接口的合并特性，合并同名声明
+```ts
+export const a = 123
+export function sum() {}
+```
 
-- 声明常量，类型为命名空间的接口
+所以即便能用 `namespace`，通常也未必是最佳方案。
 
-   - 提示：如果声明的常量与命名空间同名，需在命名空间之前声明
+---
 
-## 示例
+## 九、声明文件中的 `namespace`
 
-> 1 // .d.ts 文件
+`namespace` 在声明文件里仍然很常见，尤其适合描述：
 
-> 2 const mitt: mitt.IMitt 3
+1. 老式 UMD 库。
+2. 全局变量风格的库。
+3. 某些需要命名空间挂载类型的场景。
 
-> 4 namespace mitt {
+### 8.1 作为模块导出
 
-> 5 interface IMitt {
+```ts
+declare namespace mitt {
+  const a: number
+  type T = string
+}
 
-> 6 valueOrType: string
+export = mitt
+```
 
-> 7 }
+此时可以：
 
-> 8 interface IMitt {
+```ts
+import mitt from "mitt"
 
-> 9 valueOrType: 123
+mitt.a
+```
 
-> 10 }
+### 8.2 作为全局变量暴露
 
-> 11 } 12
+```ts
+declare namespace mitt {
+  const a: number
+  type T = string
+}
 
-> 13 export = mitt 14
+export as namespace mitt
+```
 
-> 15 // .ts 文件
+这常见于通过 CDN 直接挂到全局上的库。
 
-> 16 import mitt from "mitt" 17
+---
 
-> 18 mitt.valueOrType // 值： 123
+## 十、`declare namespace` 只补类型，不补实现
+
+如果你只是写了类型声明：
+
+```ts
+declare namespace Ns1 {
+  const a: number
+}
+```
+
+那么 TypeScript 只会在**类型层面**相信它存在。
+
+```ts
+Ns1.a
+```
+
+编辑器可能不报错，但如果运行时根本没有 `Ns1`，依然会报：
+
+```text
+ReferenceError: Ns1 is not defined
+```
+
+这和 `declare` 的核心原则一致：**声明只补类型，不补运行时实现。**
+
+---
+
+## 十一、同名值和类型的问题
+
+在命名空间或声明文件里，值空间和类型空间是分开的，所以会出现“看起来同名，但其实分别属于值和类型”的情况。
+
+```ts
+declare namespace mitt {
+  const valueOrType: number
+  type valueOrType = string
+}
+
+export = mitt
+```
+
+使用时：
+
+```ts
+import mitt from "mitt"
+
+mitt.valueOrType
+type T = mitt.valueOrType
+```
+
+### 10.1 为什么这会让人困惑
+
+因为阅读体验会变差，尤其是命名空间本来就已经把值和类型都挂在同一层级上。
+
+### 10.2 更稳妥的避免方式
+
+如果可能，尽量不要让值名和类型名完全相同。
+
+必要时可以把结构包进接口，再把命名空间当作承载容器。
+
+例如：
+
+```ts
+declare const mitt: mitt.IMitt
+
+declare namespace mitt {
+  interface IMitt {
+    value: string
+  }
+}
+
+export = mitt
+```
+
+这样比直接把“值名”和“类型名”写成同一个名字更清晰。
+
+---
+
+## 十二、`namespace` 与 ES Modules 的区别
+
+| 对比项         | `namespace`   | ES Modules   |
+| -------------- | ------------- | ------------ |
+| 核心时代背景   | TS 早期方案   | 现代主流标准 |
+| 组织方式       | 命名空间对象  | 文件级模块   |
+| 依赖管理       | 不如 ESM 清晰 | 更清晰       |
+| 当前业务推荐度 | 较低          | 很高         |
+
+### 11.1 实际建议
+
+1. 新项目业务代码优先用 ES Modules。
+2. 看到 `namespace`，先判断它是不是在声明文件里。
+3. 老项目迁移时可以理解它，但不建议在新业务代码里大量新增。
+
+---
+
+## 十三、真实开发里怎么快速判断
+
+| 场景                             | 更常见选择               |
+| -------------------------------- | ------------------------ |
+| **现代业务模块组织**             | ES Modules               |
+| **旧项目、全局库、声明文件兼容** | `namespace` 仍可能出现   |
+| **想做声明合并或挂静态辅助能力** | `namespace` 有价值       |
+| **新项目想组织普通业务代码**     | 不建议优先选 `namespace` |
+
+---
+
+## 十四、小结
+
+1. `namespace` 是 TypeScript 早期组织代码的方案，本质上是给一组成员套一个命名空间对象。
+2. 现代前端业务代码主流使用 ES Modules，而不是 `namespace`。
+3. `namespace` 的高频价值主要在声明文件、旧库兼容和声明合并场景。
+4. 同名命名空间可以合并，也可以和类、函数、枚举合并，但重复导出同名成员不行。
+5. `declare namespace` 只补类型，不补运行时实现。
+6. 学这篇时，重点不是背术语，而是理解它在现代项目中的真实定位和边界。

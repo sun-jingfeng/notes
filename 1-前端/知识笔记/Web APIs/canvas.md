@@ -1,205 +1,337 @@
 # canvas
 
-学习文档：Canvas 教程
+## 一、什么是 Canvas
 
-常用 API：
+Canvas 是 HTML5 提供的画布元素，用于通过 JavaScript 在页面上动态绘制图形、图片、动画和像素内容。
 
-- getContext()
+它本身只是一个容器，真正的绘制能力来自上下文对象，例如二维绘图上下文 `2d`。
 
-   - 说明：返回canvas 的上下文，如果上下文没有定义则返回 null。
+| 适用场景   | 说明                   |
+| ---------- | ---------------------- |
+| 绘图       | 矩形、圆形、路径、曲线 |
+| 图像处理   | 裁切、缩放、导出图片   |
+| 动画效果   | 粒子、小游戏、进度动画 |
+| 像素级处理 | 滤镜、马赛克、颜色分析 |
 
-   - 文档：HTMLCanvasElement.getContext()
+---
 
-## toBlob()
+## 二、基础使用流程
 
-   - 说明：创造 Blob 对象，用以展示 canvas 上的图片；这个图片文件可以被缓存或保存到本地（由用户代理 自行决定）。
+### 2.1 准备画布
 
-   - 文档：HTMLCanvasElement.toBlob()
+```html
+<canvas id="canvas" width="400" height="300"></canvas>
+```
 
-- toDataURL()
+### 2.2 获取上下文
 
-   - 说明：返回一个包含图片展示的 data URI 。可以使用 type 参数指定其类型，默认为 PNG 格式。图片的分辨率
+```js
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
+```
 
-   - 为 96dpi。
+### 2.3 一个重要提醒
 
-   - 文档：HTMLCanvasElement.toDataURL()
+`canvas` 标签的 `width` 和 `height` 应尽量直接写在标签属性上，而不是只靠 CSS 缩放，否则容易导致绘制分辨率和视觉尺寸不一致。
 
-- strokeStyle
+### 2.4 坐标系怎么理解
 
-   - 说明：Canvas 2D API 描述画笔（绘制图形）颜色或者样式的属性。默认值是 #000 (black)。
+Canvas 默认坐标原点在左上角：
 
-   - 文档：CanvasRenderingContext2D.strokeStyle
+```text
+(0, 0) 在左上
+x 向右增大
+y 向下增大
+```
 
-- fillStyle
+这和很多数学坐标系的直觉不同，画图时要先适应这一点。
 
-   - 说明：Canvas 2D API 使用内部方式描述颜色和样式的属性。默认值是 #000 （黑色）。
+---
 
-   - 文档：CanvasRenderingContext2D.fillStyle
+## 三、基础图形绘制
 
-## fillRect()
+### 3.1 矩形
 
-- 说明：Canvas 2D API 绘制填充矩形的方法。当前渲染上下文中的fillStyle 属性决定了对这个矩形的填充样式。
+```js
+ctx.fillStyle = "skyblue"
+ctx.fillRect(20, 20, 120, 60)
 
-- 文档：CanvasRenderingContext2D.fillRect()
+ctx.strokeStyle = "tomato"
+ctx.strokeRect(160, 20, 120, 60)
 
-strokeRect()
+ctx.clearRect(30, 30, 40, 20)
+```
 
-   - 说明：Canvas 2D API 在 canvas 中，使用当前的绘画样式，描绘一个起点在 (x, y)、宽度为 w、高度为 h 的矩形的方法。
+### 3.2 路径
 
-   - 文档：CanvasRenderingContext2D.strokeRect()
+```js
+ctx.beginPath()
+ctx.moveTo(125, 45)
+ctx.lineTo(205, 125)
+ctx.lineTo(45, 125)
+ctx.closePath()
+ctx.stroke()
+```
 
-- clearRect()
+### 3.3 圆弧和曲线
 
-   - 说明：Canvas 2D API 的方法，这个方法通过把像素设置为透明以达到擦除一个矩形区域的目的。
+```js
+ctx.beginPath()
+ctx.arc(150, 150, 50, 0, Math.PI * 2)
+ctx.stroke()
+```
 
-   - 文档：CanvasRenderingContext2D.clearRect()
+```js
+ctx.beginPath()
+ctx.moveTo(50, 200)
+ctx.quadraticCurveTo(150, 100, 250, 200)
+ctx.stroke()
+```
 
-## beginPath()
+### 3.4 文本绘制
 
-- 说明：Canvas 2D API 通过清空子路径列表开始一个新路径的方法。当你想创建一个新的路径时，调用此 方法。
+```js
+ctx.font = "24px sans-serif"
+ctx.fillStyle = "#333"
+ctx.fillText("Hello Canvas", 20, 40)
+```
 
-- 文档;：CanvasRenderingContext2D.beginPath()
+Canvas 不只是画图形，文字绘制也是常见能力，比如海报、图像标注、签名面板等。
 
-## closePath()
+---
 
-   - 说明：Canvas 2D API 将笔点返回到当前子路径起始点的方法。它尝试从当前点到起始点绘制一条直线。
+## 四、样式与状态
 
-   - 如果图形已经是封闭的或者只有一个点，那么此方法不会做任何操作。
+### 4.1 常见样式属性
 
-   - 文档：CanvasRenderingContext2D.closePath()
+| 属性          | 作用           |
+| ------------- | -------------- |
+| `fillStyle`   | 填充颜色或样式 |
+| `strokeStyle` | 描边颜色或样式 |
+| `lineWidth`   | 线宽           |
+| `lineCap`     | 线段端点样式   |
+| `lineJoin`    | 线段连接处样式 |
+| `font`        | 文本字体       |
+| `shadowColor` | 阴影颜色       |
 
-- moveTo()
+### 4.2 `save()` 和 `restore()`
 
-   - 说明：Canvas 2D API 将一个新的子路径的起始点移动到 (x，y) 坐标的方法。
+Canvas 的绘制状态会影响后续操作，所以经常需要保存和恢复状态。
 
-   - 文档：CanvasRenderingContext2D.moveTo()
+```js
+ctx.save()
+ctx.translate(150, 150)
+ctx.rotate(Math.PI / 6)
+ctx.fillRect(-50, -25, 100, 50)
+ctx.restore()
+```
 
-- lineTo()
+这能避免一次变换影响后面所有绘图。
 
-   - 说明：Canvas 2D API 使用直线连接子路径的终点到 x，y 坐标的方法（并不会真正地绘制）。
+### 4.3 一个理解重点
 
-   - 文档：CanvasRenderingContext2D.lineTo()
+Canvas 更像“连续绘图命令流”，不是 DOM 那种“每个图形都是独立节点”。所以状态管理非常重要。
 
-- stroke()
+---
 
-   - 说明：Canvas 2D API 使用非零环绕规则，根据当前的画线样式，绘制当前或已经存在的路径的方法。
+## 五、绘制图片与导出图片
 
-   - 文档：CanvasRenderingContext2D.stroke()
+### 5.1 `drawImage()`
 
-   - 示例：
+```js
+const img = new Image()
+img.src = "./avatar.png"
 
-> 1 // 描边三角形
+img.onload = function () {
+  ctx.drawImage(img, 20, 20, 100, 100)
+}
+```
 
-> 2 ctx.beginPath();
+常见用途：
 
-> 3 ctx.moveTo(125, 125);
+1. 图片缩略图。
+2. 海报合成。
+3. 截图处理。
+4. 视频帧绘制。
 
-> 4 ctx.lineTo(125, 45);
+### 5.2 导出图片
 
-> 5 ctx.lineTo(45, 125);
+`toDataURL()`：
 
-> 6 ctx.closePath();
+```js
+const base64 = canvas.toDataURL("image/png")
+```
 
-> 7 ctx.stroke();
+适合快速预览或临时展示。
 
-## fill()
+`toBlob()`：
 
-      - 说明：Canvas 2D API 根据当前的填充样式，填充当前或已存在的路径的方法。采取非零环绕或者奇偶环 绕规则。
+```js
+canvas.toBlob(blob => {
+  console.log(blob)
+}, "image/png")
+```
 
-      - 文档：CanvasRenderingContext2D.fill()
+更适合上传文件、下载图片和节省内存。
 
-      - 示例：
+### 5.3 什么时候更推荐 `toBlob()`
 
-- 1 // 填充三角形
+在图片较大或需要上传时，通常优先用 `toBlob()`，因为 Base64 体积更大。
 
-- 2 ctx.beginPath(); 3 ctx.moveTo(25, 25); 4 ctx.lineTo(105, 25); 5 ctx.lineTo(25, 105); 6 ctx.fill();
+---
 
-   - arc()
+## 六、像素处理
 
-      - 说明：Canvas 2D API 绘制圆弧路径的方法。圆弧路径的圆心在 (x, y) 位置，半径为 r，根据anticlockwise （默认为顺时针）指定的方向从 startAngle 开始绘制，到 endAngle 结束。 文档：CanvasRenderingContext2D.arc()
+像素处理是 Canvas 相比普通 DOM 更有代表性的能力之一。
 
-quadraticCurveTo()
+### 6.1 `getImageData()` 和 `putImageData()`
 
-   - 说明：Canvas 2D API 新增二次贝塞尔曲线路径的方法。它需要 2 个点。第一个点是控制点，第二个点是 终点。起始点是当前路径最新的点，当创建二次贝赛尔曲线之前，可以使用 moveTo() 方法进行改变。
+```js
+const imageData = ctx.getImageData(0, 0, 100, 100)
+ctx.putImageData(imageData, 0, 0)
+```
 
-   - 文档：CanvasRenderingContext2D.quadraticCurveTo()
+### 6.2 能拿来做什么
 
-- bezierCurveTo()
+1. 滤镜效果。
+2. 马赛克。
+3. 颜色分析。
+4. 图片局部处理。
 
-   - 说明：Canvas 2D API 绘制三次贝赛尔曲线路径的方法。该方法需要三个点。第一、第二个点是控制点， 第三个点是结束点。起始点是当前路径的最后一个点，绘制贝赛尔曲线前，可以通过调用 moveTo() 进行修 改。
+### 6.3 一个简单灰度示例
 
-   - 文档：CanvasRenderingContext2D.bezierCurveTo()
+```js
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+const { data } = imageData
 
-## Path2D
+for (let i = 0; i < data.length; i += 4) {
+  const gray = (data[i] + data[i + 1] + data[i + 2]) / 3
+  data[i] = gray
+  data[i + 1] = gray
+  data[i + 2] = gray
+}
 
-   - 说明：Canvas 2D API 的接口 Path2D 用来声明路径，此路径稍后会被CanvasRenderingContext2D 对象
+ctx.putImageData(imageData, 0, 0)
+```
 
-   - 使用。CanvasRenderingContext2D 接口的 路径方法 也存在于 Path2D 这个接口中，允许你在 canvas 中 根据需要创建可以保留并重用的路径。
+### 6.4 一个性能提醒
 
-   - 文档：Path2D
+像素操作通常代价不低，所以要尽量批量处理，避免在高频动画里反复细粒度读写。
 
-- drawImage()
+---
 
-   - 说明：Canvas 2D API 中的 CanvasRenderingContext2D.drawImage() 方法提供了多种在画布
+## 七、变换操作
 
-   - （Canvas）上绘制图像的方式。
+### 7.1 平移
 
-   - 文档：CanvasRenderingContext2D.drawImage()
+```js
+ctx.translate(100, 50)
+```
 
-## 注意：
+### 7.2 旋转
 
-- 当引入外域图片出现的跨域问题时，可设置图片元素的crossOrigin属性值为Anonymous。
+```js
+ctx.rotate(Math.PI / 4)
+```
 
-   - 最新发现：图片不需要这么设置了，默认不发送"源"，也就是不跨域。但如果想设置，键改成了
+### 7.3 缩放
 
-   - cross-origin，而不再是crossOrigin。
+```js
+ctx.scale(2, 2)
+```
 
-rotate()
+### 7.4 注意点
 
-- 说明：Canvas 2D API 在变换矩阵中增加旋转的方法。角度变量表示一个顺时针旋转角度并且用弧度表
+1. 变换会影响后续所有绘制。
+2. 旋转默认围绕当前坐标原点。
+3. 复杂场景里通常配合 `save()` / `restore()` 使用。
 
-## 示。
+### 7.5 一个常见误区
 
-- 文档：CanvasRenderingContext2D.rotate()
+很多人以为变换只作用于当前图形，其实它改变的是画布当前坐标系。
 
-## 注意：
+---
 
-- 旋转操作需要在绘图操作前执行，否则不生效。
+## 八、动画与性能
 
-- 旋转中心点一直是 canvas 的起始点。如果想改变中心点，我们可以通过 translate() 方法移动
+Canvas 很适合做逐帧动画，但也更容易带来性能问题。
 
-- canvas。
+### 8.1 基础动画写法
 
-translate()
+```js
+let x = 0
 
-   - 说明：Canvas 2D API 对当前网格添加平移变换的方法。
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.fillRect(x, 50, 50, 50)
+  x += 2
 
-   - 文档：CanvasRenderingContext2D.translate()
+  requestAnimationFrame(render)
+}
 
-- getImageData()
+requestAnimationFrame(render)
+```
 
-   - 说明：返回一个ImageData对象，用来描述 canvas 区域隐含的像素数据，这个区域通过矩形表示，起始点 为*(sx, sy)、宽为sw、高为sh。
+### 8.2 为什么推荐 `requestAnimationFrame()`
 
-   - 文档：CanvasRenderingContext2D.getImageData()
+因为它会尽量和浏览器刷新节奏对齐，比手写 `setInterval()` 更平滑。
 
-- putImageData()
+### 8.3 常见性能优化点
 
-   - 说明：将数据从已有的 ImageData 对象绘制到位图的方法。如果提供了一个绘制过的矩形，则只绘制该矩 形的像素。此方法不受画布转换矩阵的影响。
+1. 每帧只重绘必要区域。
+2. 避免在动画循环里频繁创建大量对象。
+3. 大图或复杂图形可考虑离屏 canvas 缓存。
+4. 优先操作简单状态，而不是每帧做复杂像素运算。
 
-   - 文档：CanvasRenderingContext2D.putImageData()
+---
 
-- canvas改变宽高后上下文属性重置为默认值
+## 九、跨域与安全限制
 
-   - 演示：canvas改变宽高后发生了什么？
+Canvas 有一个很常见的坑：跨域图片污染画布。
 
-   - 解决方案
+### 9.1 典型场景
 
-> 1 const ctx = canvas.getContext("2d");
+如果你把跨域图片绘制到 canvas 上，再去调用 `toDataURL()` 或 `getImageData()`，浏览器可能直接报安全错误。
 
-> 2 const canvasData = ctx.getImageData(x, y, width, height);
+### 9.2 正确前提
 
-> 3 canvas.width = width;
+1. 图片服务器允许跨域。
+2. 图片对象设置了跨域属性。
 
-> 4 canvas.height = height;
+```js
+const img = new Image()
+img.crossOrigin = "anonymous"
+img.src = "https://example.com/test.png"
+```
 
-> 5 ctx.putImageData(canvasData, 0, 0);
+前端单独设置 `crossOrigin` 还不够，服务器响应头也必须允许跨域。
+
+---
+
+## 十、Canvas 和 SVG 的区别
+
+| 对比项       | Canvas                   | SVG                          |
+| ------------ | ------------------------ | ---------------------------- |
+| 本质         | 像素画布                 | 矢量图形                     |
+| 适合场景     | 高频绘制、动画、像素处理 | 图标、图形结构、可交互矢量图 |
+| 缩放         | 放大会失真               | 矢量缩放不失真               |
+| 单个图形操作 | 需要自己管理状态         | DOM 结构可直接选中和操作     |
+
+### 10.1 怎么选
+
+1. 强调像素处理和连续绘制时，优先考虑 Canvas。
+2. 强调结构化图形和可缩放图标时，优先考虑 SVG。
+
+### 10.2 一个实战判断标准
+
+如果你需要“每一帧都持续重画”，Canvas 更常见；如果你需要“图形元素本身也要像 DOM 一样可选中、可单独交互”，SVG 往往更自然。
+
+---
+
+## 十一、小结
+
+1. Canvas 是一块可编程画布，适合绘图、图像处理、动画和像素级操作。
+2. 它的核心入口是 `getContext("2d")`，但真正难点在于状态管理、性能和像素操作。
+3. 学习 Canvas 时，除了基础图形，更要理解坐标系、状态保存、导出、跨域和性能优化。
+4. 它适合做连续绘制和像素处理类任务，不适合简单场景下替代所有图形方案。
+5. 学这一篇时，重点不是只会画矩形，而是理解 Canvas 为什么适合做“连续绘制和像素处理”类任务。

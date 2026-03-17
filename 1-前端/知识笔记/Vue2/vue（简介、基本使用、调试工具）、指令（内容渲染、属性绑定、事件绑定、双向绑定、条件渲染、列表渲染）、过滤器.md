@@ -1,415 +1,549 @@
 # vue 简介、指令、过滤器
 
-## 什么是 vue
+## 一、一句话理解
 
-- 官方给出的概念：Vue (读音 /vjuː/，类似于 view) 是一套用于构建用户界面的前端框架。
+Vue2 的核心不是“多学一套模板语法”，而是把页面开发从手动操作 DOM，转成按数据状态去组织视图和交互。
 
-**==> picture [265 x 160] intentionally omitted <==**
+这篇虽然覆盖主题很多，但可以把它当成一份 Vue2 入门总览：先建立整体心智，再按“基础理解 -> 常用指令 -> 历史能力过滤器”的顺序查阅。
 
-## vue的特性
+---
 
-- vue框架的特性，主要体现在如下两方面：
+## 二、这篇怎么查
 
-   - 数据驱动视图
+| 如果你当前想解决             | 优先看                             |
+| ---------------------------- | ---------------------------------- |
+| Vue 到底在解决什么问题       | `什么是 Vue`、`MVVM 理解`          |
+| 怎么快速跑起一个 Vue2 页面   | `Vue 的基本使用`                   |
+| 模板里怎么渲染内容和绑定事件 | `内容渲染`、`属性绑定`、`事件绑定` |
+| 表单、条件、列表怎么写       | `v-model`、`v-if/v-show`、`v-for`  |
+| 过滤器还能不能继续用         | `过滤器`                           |
 
-   - 双向数据绑定
+如果你是第一次学，按章节顺序看更顺；如果你是在复习或排错，直接按上表跳转会更快。
 
-- 数据驱动视图
+---
 
-   - 在使用了vue的页面中，vue会监听数据的变化，从而自动重新渲染页面的结构。示意图如下：
+## 三、什么是 Vue
 
-**==> picture [467 x 165] intentionally omitted <==**
+Vue 是一套用于构建用户界面的前端框架，核心目标是用更少的代码完成页面渲染、状态管理和交互处理。
 
-      - 好处：当页面数据发生变化时，页面会自动重新渲染！
+在 Vue2 中，最重要的思想有两个：
 
-      - 注意：数据驱动视图是单向的数据绑定。
+1. 数据驱动视图
+2. 双向数据绑定
 
-- 双向数据绑定
+---
 
-   - 在填写表单时，双向数据绑定可以辅助开发者在不操作 DOM 的前提下，自动把用户填写的内容同步到 数据源中。示意图如下：
+## 四、Vue 的核心特性
 
-**==> picture [467 x 123] intentionally omitted <==**
+### 数据驱动视图
 
-**==> picture [326 x 12] intentionally omitted <==**
+页面最终展示什么内容，不再依赖开发者手动操作 DOM，而是依赖数据状态。
 
-**----- Start of picture text -----**<br>
-好处：开发者不再需要手动操作 DOM 元素，来获取表单元素最新的值<br>**----- End of picture text -----**<br>
+```js
+new Vue({
+  el: "#app",
+  data: {
+    message: "hello vue",
+  },
+})
+```
 
-MVVM
+```html
+<div id="app">{{ message }}</div>
+```
 
-- MVVM 是 vue 实现数据驱动视图和双向数据绑定的核心原理。MVVM 指的是 Model、View 和
+当 `message` 改变时，页面会自动更新。
 
-- ViewModel，它把每个 HTML 页面都拆分成了这三个部分，如图所示：
+### 双向数据绑定
 
-**==> picture [385 x 258] intentionally omitted <==**
+双向绑定主要体现在表单场景中。数据变化会更新页面，用户输入也会同步回数据。
 
-   - 在 MVVM 概念中：
+```html
+<input v-model="username" />
+<p>{{ username }}</p>
+```
 
-      - Model 表示当前页面渲染时所依赖的数据源。
+```js
+new Vue({
+  el: "#app",
+  data: {
+    username: "",
+  },
+})
+```
 
-      - View 表示当前页面所渲染的 DOM 结构。
+---
 
-      - ViewModel 表示 vue 的实例，它是 MVVM 的核心。
+## 五、MVVM 理解
 
-- MVVM 的工作原理
+MVVM 是 Vue2 的重要理解模型。
 
-   - ViewModel 作为 MVVM 的核心，是它把当前页面的数据源（Model）和页面的结构（View）连接在一起
+| 名称      | 含义       | 对应内容          |
+| --------- | ---------- | ----------------- |
+| Model     | 数据层     | `data` 中的数据   |
+| View      | 视图层     | 页面中的 DOM 结构 |
+| ViewModel | 视图模型层 | Vue 实例          |
 
-   - 到一起。
+可以把 Vue 实例看成桥梁：
 
-**==> picture [467 x 112] intentionally omitted <==**
+1. 把数据和视图连接起来。
+2. 监听数据变化并更新视图。
+3. 监听用户输入并同步到数据。
 
-- 当数据源发生变化时，会被 ViewModel 监听到，VM 会根据最新的数据源自动更新页面的结构
+---
 
-- 当表单元素的值发生变化时，也会被 VM 监听到，VM 会把变化过后最新的值自动同步到 Model 数据源中
+## 六、Vue2 和 Vue3 的关系
 
-## vue 的版本
+这份笔记以 Vue2 为主，因为很多老项目仍在维护 Vue2。
 
-- 当前，vue 共有 3 个大版本，其中：
+| 版本 | 状态             | 说明             |
+| ---- | ---------------- | ---------------- |
+| Vue1 | 基本淘汰         | 不再建议学习     |
+| Vue2 | 仍有大量存量项目 | 适合理解经典写法 |
+| Vue3 | 当前主流趋势     | 新项目更常见     |
 
-   - 2.x 版本的 vue 是目前企业级项目开发中的主流版本
+学习上建议：
 
-   - 3.x 版本的 vue 于 2020-09-19 发布，生态还不完善，尚未在企业级项目开发中普及和推广
+1. 先掌握 Vue2 的模板语法和组件通信。
+2. 再补 Vue3 的组合式 API。
 
-   - 1.x 版本的 vue 几乎被淘汰，不再建议学习与使用
+也就是说，学 Vue2 的重点不只是维护旧项目，更是在建立组件化开发的基本心智。
 
-## 总结：
+---
 
-- 3.x 版本的 vue 是未来企业级项目开发的趋势；
+## 七、Vue 的基本使用
 
-- 2.x 版本的 vue 在未来（1 ~ 2年内）会被逐渐淘汰；
+### 基本步骤
 
-## vue的基本使用
+1. 引入 Vue2 脚本。
+2. 准备一个受 Vue 控制的区域。
+3. 创建 Vue 实例。
 
-## 基本使用步骤
+```html
+<div id="app">
+  <h1>{{ title }}</h1>
+  <button @click="changeTitle">修改标题</button>
+</div>
 
-- 导入 vue.js 的 script 脚本文件
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+  new Vue({
+    el: "#app",
+    data: {
+      title: "Vue2 入门",
+    },
+    methods: {
+      changeTitle() {
+        this.title = "标题已更新"
+      },
+    },
+  })
+</script>
+```
 
-- 在页面中声明一个将要被 vue 所控制的 DOM 区域
+| 配置项    | 作用                   |
+| --------- | ---------------------- |
+| `el`      | 指定 Vue 管理的根容器  |
+| `data`    | 页面需要使用的数据     |
+| `methods` | 事件处理函数和业务方法 |
 
-- 创建 vm 实例对象（vue 实例对象）
+---
 
-**==> picture [380 x 248] intentionally omitted <==**
+## 八、vue-devtools 调试工具
 
-基本代码与 MVVM 的对应关系
+使用 Vue Devtools 可以更直观地查看组件树、数据状态和事件流。
 
-**==> picture [467 x 354] intentionally omitted <==**
+常见用途：
 
-## vue的调试工具
+1. 查看当前页面挂载了哪些组件。
+2. 观察组件中的 `data`、`props`。
+3. 快速定位是“数据没变”还是“模板没渲染”。
 
-- 安装 vue-devtools 调试工具
+如果浏览器已经安装对应扩展，打开开发者工具后通常可以看到 `Vue` 面板。
 
-   - vue 官方提供的 vue-devtools 调试工具，能够方便开发者对 vue 项目进行调试与开发。
+---
 
-   - Chrome 浏览器在线安装 vue-devtools ：https://chrome.google.com/webstore/detail/vuejs-devtools/nh
+## 九、指令的概念
 
-   - dogjmejiglipccpnnnanhbledajbpd
+指令是 Vue 提供的模板语法，用来增强 HTML，让 DOM 具备数据渲染、绑定属性、绑定事件等能力。
 
-   - FireFox 浏览器在线安装 vue-devtools ：https://addons.mozilla.org/zh-CN/firefox/addon/vue-js-devtoo
+常见指令分类如下：
 
-   - ls/
+| 分类     | 常见指令                    |
+| -------- | --------------------------- |
+| 内容渲染 | `v-text`、`v-html`、`{{ }}` |
+| 属性绑定 | `v-bind`                    |
+| 事件绑定 | `v-on`                      |
+| 双向绑定 | `v-model`                   |
+| 条件渲染 | `v-if`、`v-show`            |
+| 列表渲染 | `v-for`                     |
 
-- 配置 Chrome 浏览器中的 vue-devtools
+---
 
-   - 点击 Chrome 浏览器右上角的"···"按钮，选择更多工具 -> 扩展程序 -> Vue.js devtools 详细信息，并勾选
+## 十、内容渲染指令
 
-   - 如下 的两个选项：
+### v-text
 
-**==> picture [467 x 183] intentionally omitted <==**
+```html
+<p v-text="msg"></p>
+```
 
-- 使用 vue-devtools 调试 vue 页面
+作用：把 `msg` 的值作为纯文本渲染到标签内部。
 
-   - 在浏览器中访问一个使用了 vue 的页面，打开浏览器的开发者工具，切换到 Vue 面板，即可使用 vuedevtools调试当前的页面。
+注意：`v-text` 会覆盖标签原本的内容。
 
-**==> picture [467 x 256] intentionally omitted <==**
+### 插值表达式
 
-## vue的指令与过滤器——指令的概念
+```html
+<p>{{ msg }}</p>
+```
 
-- 指令（Directives）是 vue 为开发者提供的模板语法，用于辅助开发者渲染页面的基本结构。 vue 中的指令按照不同的用途可以分为如下 6 大类：
+这是最常用的文本渲染方式，因为它不会像 `v-text` 一样直接覆盖整个标签内容。
 
-- 内容渲染指令
+### v-html
 
-- 属性绑定指令
+```html
+<div v-html="htmlStr"></div>
+```
 
-- 事件绑定指令
+如果数据中包含 HTML 字符串，使用 `v-html` 可以把它解析成真正的 HTML 节点。
 
-- 双向绑定指令
+```js
+data: {
+  htmlStr: "<strong>高亮文本</strong>"
+}
+```
 
-- 条件渲染指令
+注意：`v-html` 有 XSS 风险，不要直接渲染不可信内容。
 
-列表渲染指令
+所以内容渲染里最常用的主线其实是：普通文本优先插值，只有确实要渲染可信 HTML 片段时才考虑 `v-html`。
 
-注意：指令是 vue 开发中最基础、最常用、最简单的知识点。
+### 真实开发里怎么快速判断
 
-## vue的指令与过滤器——内容渲染指令
+| 需求               | 更推荐   |
+| ------------------ | -------- |
+| 渲染普通文本       | `{{ }}`  |
+| 必须整块纯文本覆盖 | `v-text` |
+| 渲染可信 HTML 片段 | `v-html` |
 
-内容渲染指令用来辅助开发者渲染 DOM 元素的文本内容。常用的内容渲染指令有如下 3 个：
+---
 
-v-text
+## 十一、属性绑定指令
 
-{{ }}
+### v-bind
 
-v-html
+```html
+<img v-bind:src="imgUrl" v-bind:title="title" />
+```
 
-v-text
+简写形式：
 
-用法示例：
+```html
+<img :src="imgUrl" :title="title" />
+```
 
-**==> picture [467 x 147] intentionally omitted <==**
+除了绑定简单值，也可以写简单表达式：
 
-注意：v-text 指令会覆盖元素内默认的值。
+```html
+<div :class="isActive ? 'active' : 'normal'"></div>
+```
 
-## {{ }} 语法
+### 一个实战提醒
 
-- vue 提供的 {{ }} 语法，专门用来解决 v-text 会覆盖默认文本内容的问题。这种 {{ }} 语法的专业名称是插值 表达式（英文名为：Mustache）。
+属性绑定的重点不是“所有东西都能绑”，而是想清楚：这个值是静态写死，还是应该跟着数据状态变化。
 
-**==> picture [447 x 96] intentionally omitted <==**
+---
 
-注意：相对于 v-text 指令来说，插值表达式在开发中更常用一些！因为它不会覆盖元素中默认的文本内 容。
+## 十二、事件绑定指令
 
-v-html
+### v-on
 
-- v-text 指令和插值表达式只能渲染纯文本内容。如果要把包含 HTML 标签的字符串渲染为页面的 HTML 元素，则需要用到 v-html 这个指令：
+```html
+<button v-on:click="addCount">点击 +1</button>
+```
 
-**==> picture [467 x 88] intentionally omitted <==**
+简写形式：
 
-最终渲染的结果为：
+```html
+<button @click="addCount">点击 +1</button>
+```
 
-**==> picture [247 x 115] intentionally omitted <==**
+```js
+methods: {
+   addCount() {
+      this.count += 1
+   }
+}
+```
 
-## vue的指令与过滤器——属性绑定指令
+### 事件对象和传参
 
-- 如果需要为元素的属性动态绑定属性值，则需要用到 v-bind 属性绑定指令。用法示例如下：
+```html
+<button @click="handleClick(10, $event)">提交</button>
+```
 
-**==> picture [436 x 272] intentionally omitted <==**
+```js
+methods: {
+   handleClick(step, event) {
+      console.log(step)
+      console.log(event.target)
+   }
+}
+```
 
-## 属性绑定指令的简写形式
+### 常见事件修饰符
 
-- 由于 v-bind 指令在开发中使用频率非常高，因此，vue 官方为其提供了简写形式（简写为英文的 : ）。
+| 修饰符     | 作用                   |
+| ---------- | ---------------------- |
+| `.prevent` | 阻止默认行为           |
+| `.stop`    | 阻止冒泡               |
+| `.once`    | 只触发一次             |
+| `.capture` | 使用捕获阶段           |
+| `.self`    | 只有事件源是自身时触发 |
 
-**==> picture [437 x 285] intentionally omitted <==**
+```html
+<a @click.prevent="go">跳转</a>
+<div @click.stop="open"></div>
+```
 
-- 使用 Javascript 表达式
+### 按键修饰符
 
-   - 在 vue 提供的模板渲染语法中，除了支持绑定简单的数据值之外，还支持 Javascript 表达式的运算（复杂 的语法不支持），例如：
+```html
+<input @keyup.enter="submit" />
+```
 
-**==> picture [312 x 169] intentionally omitted <==**
+常见写法有 `.enter`、`.esc` 等。
 
-## vue的指令与过滤器——事件绑定指令
+### 真实开发里怎么选事件修饰符
 
-vue 提供了 v-on 事件绑定指令，用来辅助程序员为 DOM 元素绑定事件监听。语法格式如下：
+| 需求                   | 更常见写法 |
+| ---------------------- | ---------- |
+| 阻止默认行为           | `.prevent` |
+| 阻止冒泡               | `.stop`    |
+| 只触发一次             | `.once`    |
+| 只处理当前元素自身点击 | `.self`    |
 
-**==> picture [346 x 76] intentionally omitted <==**
+事件修饰符的价值在于把模板里的交互意图写得更清楚，而不是为了省几行 JS。
 
-- 注意：原生 DOM 对象有 onclick、oninput、onkeyup 等原生事件，替换为 vue 的事件绑定形式后，分别为：
+---
 
-- v-on:click、v-on:input、v-on:keyup
+## 十三、双向绑定指令
 
-- 通过 v-on 绑定的事件处理函数，需要在 methods 节点中进行声明：
+### v-model
 
-**==> picture [467 x 248] intentionally omitted <==**
+`v-model` 用于表单元素和数据之间的双向同步。
 
-## 事件绑定的简写形式
+```html
+<input v-model="username" />
+<textarea v-model="desc"></textarea>
+<input type="checkbox" v-model="agree" />
+```
 
-由于 v-on 指令在开发中使用频率非常高，因此，vue 官方为其提供了简写形式（简写为英文的 @ ）。
+### v-model 修饰符
 
-**==> picture [467 x 211] intentionally omitted <==**
+| 修饰符    | 作用                               |
+| --------- | ---------------------------------- |
+| `.trim`   | 去掉首尾空格                       |
+| `.number` | 自动转成数值                       |
+| `.lazy`   | 在 `change` 时同步，而不是 `input` |
 
-## 事件参数对象
+```html
+<input v-model.trim="keyword" /> <input v-model.number="age" />
+```
 
-- 在原生的 DOM 事件绑定中，可以在事件处理函数的形参处，接收事件参数对象 event。同理，在 v-on 指
+### 一个边界提醒
 
-令（简写为 @ ）所绑定的事件处理函数中，同样可以接收到事件参数对象 event，示例代码如下：
+`v-model` 适合表单交互，但它不是“所有数据同步问题”的通用解法。真正跨组件传值、共享状态，还是要回到 `props`、`$emit`、Vuex 这些机制。
 
-**==> picture [467 x 213] intentionally omitted <==**
+---
 
-绑定事件并传参
+## 十四、条件渲染指令
 
-- 在使用 v-on 指令绑定事件时，可以使用 ( ) 进行传参，示例代码如下：
+### v-if
 
-**==> picture [314 x 208] intentionally omitted <==**
+```html
+<p v-if="isLogin">欢迎回来</p>
+```
 
-- $event
+`v-if` 控制的是“是否创建/销毁 DOM”。
 
-   - $event 是 vue 提供的特殊变量，用来表示原生的事件参数对象 event。$event 可以解决事件参数对象
+### v-show
 
-   - event被覆盖的问题。示例用法如下：
+```html
+<p v-show="isLogin">欢迎回来</p>
+```
 
-**==> picture [467 x 223] intentionally omitted <==**
+`v-show` 控制的是“是否显示”，本质是切换 `display: none`。
 
-## 事件修饰符
+### v-if 和 v-show 的区别
 
-- 在事件处理函数中调用 event.preventDefault() 或 event.stopPropagation() 是非常常见的需求。因此，
+| 指令     | 特点                   | 适用场景       |
+| -------- | ---------------------- | -------------- |
+| `v-if`   | 切换开销大，初始开销小 | 条件变化不频繁 |
+| `v-show` | 初始开销大，切换开销小 | 频繁显示/隐藏  |
 
-- vue 提供了事件修饰符的概念，来辅助程序员更方便的对事件的触发进行控制。常用的 5 个事件修饰符如 下：
+这里真正要记住的不是表面区别，而是：`v-if` 控制节点存不存在，`v-show` 控制节点显不显示。
 
-**==> picture [467 x 167] intentionally omitted <==**
+### 真实开发里怎么快速判断
 
-语法格式如下：
+| 场景                 | 更推荐   |
+| -------------------- | -------- |
+| 很少切换的区域       | `v-if`   |
+| 高频显示 / 隐藏      | `v-show` |
+| 需要配合组件销毁重建 | `v-if`   |
 
-**==> picture [467 x 57] intentionally omitted <==**
+### v-else 和 v-else-if
 
-## 按键修饰符
+```html
+<p v-if="score >= 90">优秀</p>
+<p v-else-if="score >= 60">及格</p>
+<p v-else>不及格</p>
+```
 
-- 在监听键盘事件时，我们经常需要判断详细的按键。此时，可以为键盘相关的事件添加按键修饰符，例 如：
+`v-else`、`v-else-if` 必须紧跟在对应的 `v-if` 或 `v-else-if` 后面。
 
-**==> picture [394 x 120] intentionally omitted <==**
+---
 
-## vue的指令与过滤器——双向绑定指令
+## 十五、列表渲染指令
 
-vue 提供了 v-model 双向数据绑定指令，用来辅助开发者在不操作 DOM 的前提下，快速获取表单的数据。
+### v-for 基本语法
 
-**==> picture [293 x 227] intentionally omitted <==**
+```html
+<ul>
+  <li v-for="(item, index) in userList" :key="item.id">
+    {{ index }} - {{ item.name }}
+  </li>
+</ul>
+```
 
-## v-model 指令的修饰符
+| 参数    | 含义                  |
+| ------- | --------------------- |
+| `item`  | 当前项                |
+| `index` | 当前项索引            |
+| `in`    | 固定写法，也可写 `of` |
 
-为了方便对用户输入的内容进行处理，vue 为 v-model 指令提供了 3 个修饰符，分别是：
+### key 的作用
 
-**==> picture [467 x 98] intentionally omitted <==**
+`key` 是虚拟 DOM diff 时的重要标识，应该尽量使用稳定且唯一的值，例如数据库 id。
 
-示例用法如下：
+不推荐默认把索引用作 `key`，尤其是在列表会插入、删除、重排时。
 
-**==> picture [311 x 87] intentionally omitted <==**
+列表渲染最容易踩坑的地方，往往不是 `v-for` 语法本身，而是 `key` 不稳定导致状态错位。
 
-## vue的指令与过滤器——条件渲染指令
+### 一个实践提醒
 
-- 条件渲染指令用来辅助开发者按需控制 DOM 的显示与隐藏。条件渲染指令有如下两个，分别是：
+只要列表里存在插入、删除、排序、筛选，就尽量不要把索引当 `key`。索引 `key` 看起来能跑，但很容易在交互一复杂后出现复用错位问题。
 
-   - v-if
+---
 
-   - v-show
+## 十六、过滤器
 
-示例用法如下：
+过滤器是 Vue2 中用于格式化文本显示的语法，常用于时间、金额、大小写转换等场景。
 
-**==> picture [455 x 95] intentionally omitted <==**
+### 局部过滤器
 
-v-if 和 v-show 的区别
+```js
+new Vue({
+  el: "#app",
+  data: {
+    price: 99,
+  },
+  filters: {
+    formatPrice(value) {
+      return "￥" + value
+    },
+  },
+})
+```
 
-## 实现原理不同：
+```html
+<p>{{ price | formatPrice }}</p>
+```
 
-      - v-if 指令会动态地创建或移除 DOM 元素，从而控制元素在页面上的显示与隐藏；
+### 全局过滤器
 
-      - v-show 指令会动态为元素添加或移除 style="display: none;" 样式，从而控制元素的显示与隐藏；
+```js
+Vue.filter("formatDate", function (value) {
+  return value.slice(0, 10)
+})
+```
 
-   - 性能消耗不同：
+### 过滤器注意点
 
-      - v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此：
+1. 过滤器主要用于文本格式化，不适合复杂业务逻辑。
+2. 过滤器可以串联使用。
+3. Vue3 已移除过滤器，新的项目更推荐用方法或计算属性处理格式化逻辑。
 
-      - 如果需要非常频繁地切换，则使用 v-show 较好
+这也说明过滤器更适合按“Vue2 历史能力”去理解，而不是在新项目里继续重度依赖。
 
-      - 如果在运行时条件很少改变，则使用 v-if 较好
+### 什么时候更适合不用过滤器
 
-- v-else
+1. 格式化逻辑已经比较复杂。
+2. 逻辑需要复用到 JS 代码、接口处理或多个组件之外。
+3. 项目已经在向 Vue3 迁移。
 
-v-if 可以单独使用，或配合 v-else 指令一起使用：
+---
 
-**==> picture [298 x 142] intentionally omitted <==**
+## 十七、综合示例
 
-注意：v-else 指令必须配合 v-if 指令一起使用，否则它将不会被识别！
+```html
+<div id="app">
+  <h2>{{ title }}</h2>
+  <input v-model.trim="keyword" @keyup.enter="search" />
+  <button @click="toggle">切换列表</button>
 
-v-else-if
+  <ul v-if="visible">
+    <li v-for="item in list" :key="item.id">{{ item.name | upper }}</li>
+  </ul>
+</div>
 
-- v-else-if 指令，顾名思义，充当 v-if 的"else-if 块"，可以连续使用：
+<script>
+  new Vue({
+    el: "#app",
+    data: {
+      title: "Vue2 常用指令",
+      keyword: "",
+      visible: true,
+      list: [
+        { id: 1, name: "vue" },
+        { id: 2, name: "react" },
+      ],
+    },
+    methods: {
+      search() {
+        console.log("搜索：" + this.keyword)
+      },
+      toggle() {
+        this.visible = !this.visible
+      },
+    },
+    filters: {
+      upper(value) {
+        return value.toUpperCase()
+      },
+    },
+  })
+</script>
+```
 
-**==> picture [315 x 95] intentionally omitted <==**
+---
 
-注意：v-else-if 指令必须配合 v-if 指令一起使用，否则它将不会被识别！
+## 十八、学习这篇时最该抓住的主线
 
-## vue的指令与过滤器——列表渲染指令
+```text
+先理解数据如何驱动视图
+  -> 再理解模板里怎么渲染内容、绑定属性和事件
+  -> 再理解表单、条件、列表这些高频场景如何表达
+```
 
-- vue 提供了 v-for 列表渲染指令，用来辅助开发者基于一个数组来循环渲染一个列表结构。v-for 指令需要使用 item in list 形式的特殊语法，其中：
+按这条主线学，Vue2 就不会变成一堆零散指令的背诵。
 
-   - list 是待循环的数组
+---
 
+## 十九、总结
 
-   - item 是被循环的每项
-
-**==> picture [313 x 197] intentionally omitted <==**
-
-- v-for 中的索引
-
-   - v-for 指令还支持一个可选的第二个参数，即当前项的索引。语法格式为 (item, index) in items，示例代码 如下：
-
-**==> picture [467 x 197] intentionally omitted <==**
-
-注意：v-for 指令中的 item 项和 index 索引都是形参，可以根据需要进行重命名。例如 (user, i) in userlist
-
-- 使用 key 维护列表的状态
-
-   - 当列表的数据变化时，默认情况下，vue 会尽可能的复用已存在的 DOM 元素，从而提升渲染的性能。但这 种默认的性能优化策略，会导致有状态的列表无法被正确更新。
-
-- 为了给 vue 一个提示，以便它能跟踪每个节点的身份，从而在保证有状态的列表被正确更新的前提下，提
-
-- 升渲染的性能。此时，需要为每项提供一个唯一的 key 属性：
-
-**==> picture [293 x 209] intentionally omitted <==**
-
-- key 的注意事项
-
-   - key 的值只能是字符串或数字类型
-
-   - key 的值必须具有唯一性（即：key 的值不能重复）
-
-
-   - 建议把数据项 id 属性的值作为 key 的值（因为 id 属性的值具有唯 性）
-
-
-   - 使用 index 的值当作 key 的值没有任何意义（因为 index 的值不具有唯 性）
-
-   - 建议使用 v-for 指令时一定要指定 key 的值（既提升性能、又防止列表状态紊乱）
-
-## vue的指令与过滤器——过滤器
-
-- 过滤器（Filters）是 vue 为开发者提供的功能，常用于文本的格式化。过滤器可以用在两个地方：插值表达式
-
-- 和 v-bind 属性绑定。
-
-- 过滤器应该被添加在 JavaScript 表达式的尾部，由"管道符"进行调用，示例代码如下：
-
-**==> picture [467 x 114] intentionally omitted <==**
-
-## 定义过滤器
-
-- 在创建 vue 实例期间，可以在 filters 节点中定义过滤器，示例代码如下：
-
-**==> picture [420 x 275] intentionally omitted <==**
-
-私有过滤器和全局过滤器
-
-- 在 filters 节点下定义的过滤器，称为"私有过滤器"，因为它只能在当前 vm 实例所控制的 el 区域内使用。 如果希望在多个 vue 实例之间共享过滤器，则可以按照如下的格式定义全局过滤器：
-
-**==> picture [416 x 171] intentionally omitted <==**
-
-连续调用多个过滤器
-
-过滤器可以串联地进行调用，例如：
-
-**==> picture [377 x 104] intentionally omitted <==**
-
-示例代码如下：
-
-**==> picture [391 x 293] intentionally omitted <==**
-
-## 过滤器传参
-
-过滤器的本质是 JavaScript 函数，因此可以接收参数，格式如下：
-
-**==> picture [436 x 221] intentionally omitted <==**
-
-示例代码如下：
-
-**==> picture [408 x 299] intentionally omitted <==**
-
-## 过滤器的兼容性
-
-- 过滤器仅在 vue 2.x 和 1.x 中受支持，在 vue 3.x 的版本中剔除了过滤器相关的功能。
-
-- 在企业级项目开发中：
-
-   - 如果使用的是 2.x 版本的 vue，则依然可以使用过滤器相关的功能
-
-   - 如果项目已经升级到了 3.x 版本的 vue，官方建议使用计算属性或方法代替被剔除的过滤器功能
-
-- 具体的迁移指南，请参考 vue 3.x 的官方文档给出的说明：
-
-- https://v3.vuejs.org/guide/migration/filters.html#migration-strategy
+1. Vue 的核心是数据驱动视图和双向数据绑定。
+2. Vue2 通过 MVVM 思想把数据和视图连接起来。
+3. 常用指令包括 `v-bind`、`v-on`、`v-model`、`v-if`、`v-show`、`v-for`。
+4. 过滤器是 Vue2 特有的文本格式化工具，但在 Vue3 中已被移除。
+5. 学 Vue2 时要优先掌握模板语法、事件处理和列表/条件渲染。

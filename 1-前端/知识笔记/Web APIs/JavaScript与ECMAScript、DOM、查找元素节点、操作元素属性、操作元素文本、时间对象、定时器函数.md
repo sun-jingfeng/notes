@@ -1,247 +1,286 @@
 # JavaScript 与 ECMAScript、DOM、定时器
 
-ECMAScript 是一套语法标准
+## 一、先分清 JavaScript、ECMAScript 和 Web APIs
 
-## 简称ES
+很多初学者会把这些概念混在一起，但它们其实不是同一层东西。
 
-- 我们之前学的语法其实就是 ECMAScript 里的语法
+| 组成       | 作用                                                  |
+| ---------- | ----------------------------------------------------- |
+| ECMAScript | 语言规则，负责变量、函数、对象、类等语法              |
+| Web APIs   | 浏览器运行时能力，负责 DOM、BOM、定时器、网络、存储等 |
 
-   - 变量、数据类型、运算等规则都是 ECMAScript 规定的
+一句话理解：
 
-- JavaScript 是什么？
+```text
+JavaScript = ECMAScript + 当前运行环境提供的能力
+```
 
-   - 遵守 ECMAScript 规则的一套编程语言
+所以同样是写 JavaScript：
 
-   - 严格来讲，ECMAScript 配合浏览器提供的 Web APIs 才称之为 JavaScript
+1. 在浏览器里能操作 DOM。
+2. 在 Node 里能操作文件系统。
+3. 语言还是同一套语法，但环境能力不同。
 
-- Web APIs 是什么？
+---
 
+## 二、DOM 是什么
 
-   - 浏览器提供的一套操作浏览器、页面内容的功能（主要是一些对象和方法）
+DOM 是浏览器提供的一套操作网页内容的对象模型。
 
-JavaScript和node.js
+核心思想是：把 HTML 文档看成一棵对象树，JavaScript 通过对象方式去查找和修改页面内容。
 
-**==> picture [467 x 208] intentionally omitted <==**
+### 2.1 DOM 的作用
 
-## DOM是什么
+| 作用           | 说明                            |
+| -------------- | ------------------------------- |
+| 查找元素       | 获取页面中的标签节点            |
+| 修改内容       | 修改文本、HTML 结构             |
+| 修改属性和样式 | 更新 `src`、`class`、`style` 等 |
+| 实现交互       | 配合事件监听做动态效果          |
 
-一 DOM是浏览器提供的 套专门用来操作网页内容的功能
+### 2.2 DOM 树怎么理解
 
-DOM的核心思想
+浏览器会把 HTML 文档解析成树状结构：
 
-- 把网页内容当做对象来处理
+```text
+document
+  -> html
+     -> head
+     -> body
+        -> h1
+        -> div
+```
 
-DOM作用
+DOM 编程本质上就是：
 
-## 开发网页内容特效和实现用户交互
+```text
+找到节点 -> 读取或修改节点 -> 让页面产生变化
+```
 
-DOM全称
+---
 
-Document Object Model（文档对象模型）
+## 三、常见节点和 `document`
 
-**==> picture [467 x 148] intentionally omitted <==**
+DOM 树中的每个内容都叫节点。
 
-## DOM树
+| 节点类型 | 说明                             |
+| -------- | -------------------------------- |
+| 元素节点 | 各种 HTML 标签，如 `div`、`body` |
+| 属性节点 | 标签上的属性，如 `href`、`class` |
+| 文本节点 | 标签中的文本内容                 |
 
-- 将 HTML 文档以树状结构直观的表现出来，我们称之为文档树或 DOM 树
+`document` 是 DOM 编程中最核心的入口对象，整个网页内容都可以通过它来访问。
 
-- 描述网页内容关系的名词
+```js
+console.log(document.documentElement)
+console.log(document.body)
+```
 
-- 作用：文档树直观的体现了标签与标签之间的关系
+### 3.1 一个现实提醒
 
-**==> picture [467 x 268] intentionally omitted <==**
+`document.write()` 在早期资料里常见，但现代项目里几乎不作为常规 DOM 更新方式使用，因为它会打断文档流，甚至覆盖现有页面内容。
 
-**==> picture [467 x 218] intentionally omitted <==**
+---
 
-## DOM节点
+## 四、查找元素节点
 
-DOM节点
+### 4.1 按 id 查找
 
-DOM树里每一个内容都称之为节点
+```js
+const box = document.getElementById("box")
+```
 
-## 节点类型
+特点：
 
-- 元素节点
+1. 参数是 id 字符串，不需要加 `#`。
+2. 找不到返回 `null`。
 
-   - 所有的标签 比如 body、 div
+### 4.2 使用选择器查找
 
-   - html 是根节点
+```js
+const first = document.querySelector(".item")
+const all = document.querySelectorAll(".item")
+```
 
-## 属性节点
+| 方法                 | 结果                       |
+| -------------------- | -------------------------- |
+| `querySelector()`    | 返回第一个匹配元素         |
+| `querySelectorAll()` | 返回所有匹配元素的节点集合 |
 
-   - 所有的属性 比如 href
+### 4.3 怎么选
 
-- 文本节点
+1. 已知唯一 id 时，`getElementById()` 简单直接。
+2. 需要复用 CSS 选择器表达能力时，更常用 `querySelector()`。
+3. 需要一批节点时，用 `querySelectorAll()`。
 
-   - 所有的文本
+### 4.4 一个常见坑
 
-**==> picture [22 x 10] intentionally omitted <==**
+查找结果可能为 `null`，尤其是脚本执行时机不对或者选择器写错时，操作前最好先确认节点是否存在。
 
-**----- Start of picture text -----**<br>
-其他<br>**----- End of picture text -----**<br>
+---
 
-**==> picture [467 x 183] intentionally omitted <==**
+## 五、操作元素属性和样式
 
-## document
+### 5.1 直接修改属性
 
-- 是 DOM 里提供的一个对象
+```js
+const img = document.querySelector("img")
+img.src = "./images/new.png"
+img.alt = "新图片"
+```
 
-- 所以它提供的属性和方法都是用来访问和操作网页内容的
+### 5.2 使用 `setAttribute()`
 
-   - 例：document.write()
+```js
+img.setAttribute("title", "这是提示文字")
+```
 
-- 代表浏览器显示网页内容的区域
+| 方式             | 适用场景                 |
+| ---------------- | ------------------------ |
+| 直接点语法       | 操作常见标准属性         |
+| `setAttribute()` | 动态设置任意属性，更通用 |
 
-- 网页所有内容都在document里面
+### 5.3 修改样式
 
-- document 是学习 DOM 的核心
+```js
+const box = document.querySelector(".box")
+box.style.width = "200px"
+box.style.backgroundColor = "pink"
+```
 
-**==> picture [349 x 461] intentionally omitted <==**
+注意：JavaScript 中样式名通常使用驼峰写法，例如 `background-color` 要写成 `backgroundColor`。
 
-## 查找元素节点
+### 5.4 一个实战建议
 
-- 根据 id 来查找dom元素节点
+如果只是切换视觉状态，很多时候更推荐切换类名，而不是在 JS 里堆大量内联样式。
 
-语法：
+---
 
-**==> picture [270 x 34] intentionally omitted <==**
+## 六、操作文本和 HTML
 
-- 根据id查找标签
+### 6.1 `innerText`
 
-- 传入的id是字符串，记得加引号，直接写id名即可，不需要加 #
+```js
+box.innerText = "<strong>你好</strong>"
+```
 
-- 返回一个匹配到 ID 的 DOM Element 对象（所有节点都是对象）
+特点：只写文本，标签不会被解析。
 
-- 找不到会得到null
+### 6.2 `innerHTML`
 
-- 可以通过对象里面的 nodeType 属性来标识节点类型
+```js
+box.innerHTML = "<strong>你好</strong>"
+```
 
-**==> picture [421 x 158] intentionally omitted <==**
+特点：会解析 HTML 标签，可以动态插入结构。
 
-查找html和body元素节点
+### 6.3 怎么选
 
-查找 html 元素
+| 方式        | 更适合              |
+| ----------- | ------------------- |
+| `innerText` | 单纯写文字          |
+| `innerHTML` | 需要插入结构化 HTML |
 
-**==> picture [213 x 32] intentionally omitted <==**
+### 6.4 一个重要边界
 
-查找 body 元素
+`innerHTML` 很灵活，但如果内容来自不可信输入，可能带来 XSS 风险。所以用户输入、后端返回内容不能不加处理就直接拼进 `innerHTML`。
 
-**==> picture [212 x 32] intentionally omitted <==**
+---
 
-## 操作元素属性
+## 七、时间对象 `Date`
 
-- 直接修改元素的属性
+### 7.1 创建时间对象
 
-语法：
+```js
+const now = new Date()
+const target = new Date("2026-03-17 12:00:00")
+```
 
-**==> picture [214 x 38] intentionally omitted <==**
+### 7.2 常见方法
 
-**==> picture [335 x 128] intentionally omitted <==**
+| 方法            | 作用                   |
+| --------------- | ---------------------- |
+| `getFullYear()` | 获取年                 |
+| `getMonth()`    | 获取月，范围 `0 ~ 11`  |
+| `getDate()`     | 获取日                 |
+| `getDay()`      | 获取星期，范围 `0 ~ 6` |
+| `getHours()`    | 获取小时               |
+| `getMinutes()`  | 获取分钟               |
+| `getSeconds()`  | 获取秒                 |
 
-通过 setAttribute 方法修改
+注意：`getMonth()` 返回值从 0 开始，所以实际展示时通常要 `+ 1`。
 
-## 语法：
+### 7.3 时间戳
 
-**==> picture [252 x 35] intentionally omitted <==**
+时间戳是从 1970-01-01 00:00:00 UTC 开始到当前时刻的毫秒数。
 
-**==> picture [467 x 84] intentionally omitted <==**
+```js
+const ts1 = new Date().getTime()
+const ts2 = +new Date()
+const ts3 = Date.now()
+```
 
-修改元素的样式
+| 方式          | 特点                       |
+| ------------- | -------------------------- |
+| `getTime()`   | 可获取指定时间对象的时间戳 |
+| `+new Date()` | 简写形式                   |
+| `Date.now()`  | 最简洁，但只能获取当前时间 |
 
-语法：
+### 7.4 常见场景
 
-**==> picture [270 x 37] intentionally omitted <==**
+1. 倒计时。
+2. 时间差计算。
+3. 排序和比较时间先后。
 
-**==> picture [467 x 91] intentionally omitted <==**
+---
 
-## 操作元素文本
+## 八、定时器
 
-- document.write
+### 8.1 `setInterval`
 
-   - 只能将文本内容追加到 </body> 前面的位置
+```js
+const timerId = setInterval(function () {
+  console.log("每秒执行一次")
+}, 1000)
+```
 
-   - 文本中包含的标签会被解析
+### 8.2 `clearInterval`
 
-**==> picture [357 x 66] intentionally omitted <==**
+```js
+clearInterval(timerId)
+```
 
-- innerText 属性
+### 8.3 `setTimeout`
 
-   - 将文本内容添加/更新到任意标签位置
+```js
+const timeoutId = setTimeout(function () {
+  console.log("只执行一次")
+}, 1000)
 
-   - 文本中包含的标签不会被解析
+clearTimeout(timeoutId)
+```
 
-**==> picture [364 x 86] intentionally omitted <==**
+### 8.4 `setInterval` 和 `setTimeout` 怎么选
 
-## innerHTML 属性
+| 方式          | 更适合           |
+| ------------- | ---------------- |
+| `setTimeout`  | 延后执行一次     |
+| `setInterval` | 固定间隔反复执行 |
 
-- 将文本内容添加/更新到任意标签位置
+### 8.5 一个常见误区
 
-- 文本中包含的标签会被解析
+定时器并不保证绝对精确时间，只是“尽量在这之后执行”。如果主线程忙、标签页被挂起，执行时机会继续延后。
 
-**==> picture [388 x 40] intentionally omitted <==**
+### 8.6 一个实战提醒
 
-## 时间对象实例化
+页面销毁、组件卸载、业务结束后记得清理定时器，否则容易造成重复执行和内存浪费。
 
-- 在代码中发现了 new 关键字时，一般将这个操作称为实例化
+---
 
-- 创建一个时间对象并获取时间
+## 九、小结
 
-   - 获得当前时间
-
-**==> picture [251 x 34] intentionally omitted <==**
-
-获得指定时间
-
-**==> picture [255 x 34] intentionally omitted <==**
-
-- 时间对象：用来表示时间的对象
-
-- 作用：可以得到当前系统时间
-
-## 时间对象方法
-
-因为时间对象返回的数据我们不能直接使用，所以需要转换为实际开发中常用的格式
-
-**==> picture [467 x 183] intentionally omitted <==**
-
-## 时间戳
-
-## 什么是时间戳
-
-一 是指1970年01月01日00时00分00秒起至现在的毫秒数，它一种特殊的计量时间的方式
-
-- 三种方式获取时间戳
-
-使用 getTime() 方法
-
-**==> picture [275 x 76] intentionally omitted <==**
-
-简写 +new Date()
-
-**==> picture [275 x 34] intentionally omitted <==**
-
-使用 Date().now()
-
-**==> picture [236 x 34] intentionally omitted <==**
-
-- 无需实例化
-
-- 但是只能得到当前的时间戳， 而前面两种可以返回指定时间的时间戳
-
-## 定时器函数使用
-
-开启定时器
-
-**==> picture [287 x 29] intentionally omitted <==**
-
-作用：每隔一段时间调用这个函数
-
-间隔时间单位是毫秒
-
-**==> picture [467 x 79] intentionally omitted <==**
-
-## 关闭定时器
-
-**==> picture [308 x 50] intentionally omitted <==**
-
-一般不会刚创建就停止，而是满足一定条件再停止
+1. JavaScript 语言本身是 ECMAScript，浏览器里真正能操作页面和时间的是 Web APIs。
+2. DOM 的主线就是“找到节点 -> 修改节点 -> 驱动页面变化”。
+3. 节点查找、属性操作、文本更新和时间处理，是最常见的基础能力组合。
+4. `innerText` 和 `innerHTML`、`setTimeout` 和 `setInterval` 这两组知识一定要能分清使用边界。
+5. 学这一篇时，重点不是孤立记 API，而是建立“语言层”和“浏览器能力层”的区分意识。

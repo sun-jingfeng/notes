@@ -1,454 +1,361 @@
-# 前端工程化、webpack、loader、打包、Source Map
+# 前端工程化、webpack、webpack中的插件、webpack中的loader、打包发布、Source Map
 
-- 小白眼中的前端开发 vs 实际的前端开发
+## 一、什么是前端工程化
 
-   - 小白眼中的前端开发：
+前端工程化指的是把前端开发中涉及的目录结构、模块组织、构建流程、代码规范、自动化能力统一起来，让项目更可维护、更可协作。
 
-      - 会写 HTML + CSS + JavaScript 就会前端开发
+它解决的不是“页面能不能写出来”，而是“项目能不能稳定长期维护”。
 
-      - 需要美化页面样式，就拽一个 bootstrap 过来
+| 维度   | 典型内容                             |
+| ------ | ------------------------------------ |
+| 模块化 | JS、CSS、资源文件拆分与组织          |
+| 组件化 | 复用 UI 与逻辑                       |
+| 规范化 | ESLint、命名规范、目录规范、Git 流程 |
+| 自动化 | 构建、测试、发布、部署               |
 
-      - 需要操作 DOM 或发起 Ajax 请求，再拽一个 jQuery 过来
+---
 
-      - 需要快速实现网页布局效果，就拽一个 Layui 过来
+## 二、webpack 是什么
 
-   - 实际的前端开发：
+webpack 是前端工程化中的经典打包工具，用来分析项目依赖关系，并把代码、样式、图片等资源打包成浏览器可运行的产物。
 
-      - 模块化（js 的模块化、css 的模块化、资源的模块化）
+它擅长：
 
-      - 组件化（复用现有的 UI 结构、样式、行为）
+1. 模块依赖分析。
+2. 资源打包。
+3. loader 转换。
+4. plugin 扩展。
+5. 构建优化。
 
-      - 规范化（目录结构的划分、编码规范化、接口规范化、文档规范化、 Git 分支管理）
+### 2.1 现代补充
 
-      - 自动化（自动化构建、自动部署、自动化测试）
+在现代 Vue 新项目里，Vite 已经越来越常见；但 webpack 仍然是很多 Vue2 老项目、企业存量项目和复杂构建场景的核心工具。
 
-## 什么是前端工程化
+### 2.2 学 webpack 时别只盯配置项
 
-   - 前端工程化指的是：在企业级的前端项目开发中，把前端开发所需的工具、技术、流程、经验等进行规范
+真正值得先搞清楚的是：
 
-   - 化、标准化。
+1. 它在解决什么工程问题。
+2. 各个能力处在构建流程的哪一层。
+3. 这个问题更应该交给 loader、plugin，还是发布阶段配置去处理。
 
-   - 企业中的 Vue 项目和 React 项目，都是基于工程化的方式进行开发的。
+---
 
-   - 好处：前端开发自成体系，有一套标准的开发方案和流程。
+## 三、webpack 的基本工作方式
 
-- 前端工程化的解决方案
+可以把 webpack 理解为：
 
-   - 早期的前端工程化解决方案：
+```text
+入口文件
+  -> 分析 import / require
+  -> 递归收集依赖
+  -> 通过 loader 处理特殊文件
+  -> 通过 plugin 扩展能力
+  -> 输出打包结果
+```
 
-      - grunt（ https://www.gruntjs.net/ ）
+### 3.1 loader 和 plugin 在流程中的位置
 
-      - gulp（ https://www.gulpjs.com.cn/ ）
+1. loader 更像“文件转换流水线”。
+2. plugin 更像“构建过程的扩展钩子”。
 
-   - 目前主流的前端工程化解决方案：
+### 3.2 一个判断口诀
 
-      - webpack（ https://www.webpackjs.com/ ）
+可以把它记成一句话：
 
-      - parcel（ https://zh.parceljs.org/ ）
+```text
+文件内容怎么变，先想 loader
+构建过程怎么扩展，先想 plugin
+```
 
-## webpack 的基本使用
+这句虽然不覆盖全部细节，但足够帮你先分清大方向。
 
-什么是 webpack
+---
 
-   - 概念：webpack 是前端项目工程化的具体解决方案。
+## 四、最小可用配置
 
-   - 主要功能：它提供了友好的前端模块化开发支持，以及代码压缩混淆、处理浏览器端 JavaScript 的兼容
+### 4.1 安装
 
-   - 性、性能优化等强大的功能。
+```bash
+npm install webpack webpack-cli -D
+```
 
-   - 好处：让程序员把工作的重心放到具体功能的实现上，提高了前端开发效率和项目的可维护性。
+### 4.2 配置文件
 
-   - 注意：目前 Vue，React 等前端项目，基本上都是基于 webpack 进行工程化开发的。
+```js
+const path = require("path")
 
-- 创建列表隔行变色项目
+module.exports = {
+  mode: "development",
+  entry: path.join(__dirname, "./src/index.js"),
+  output: {
+    path: path.join(__dirname, "./dist"),
+    filename: "bundle.js",
+  },
+}
+```
 
-   - 新建项目空白目录，并运行 npm init –y 命令，初始化包管理配置文件 package.json
+### 4.3 package.json 中的脚本
 
-   - 新建 src 源代码目录
+```json
+{
+  "scripts": {
+    "dev": "webpack"
+  }
+}
+```
 
-   - 新建 src -> index.html 首页和 src -> index.js 脚本文件
+### 4.4 一个学习提醒
 
-   - 初始化首页基本的结构
+先把入口、出口、模式、loader、plugin 这几个最小闭环理解清楚，再去碰复杂优化配置，效率更高。
 
-   - 运行 npm install jquery –S 命令，安装 jQuery
+---
 
-   - 通过 ES6 模块化的方式导入 jQuery，实现列表隔行变色效果
+## 五、webpack 的核心配置项
 
-- 在项目中安装 webpack
+| 配置项         | 作用                 |
+| -------------- | -------------------- |
+| `entry`        | 入口文件             |
+| `output`       | 输出目录与输出文件名 |
+| `mode`         | 构建模式             |
+| `module.rules` | loader 规则          |
+| `plugins`      | 插件列表             |
+| `devServer`    | 开发服务器配置       |
+| `devtool`      | Source Map 配置      |
 
-   - 在终端运行如下的命令，安装 webpack 相关的两个包：
+### 5.1 `mode`
 
-npm install webpack@5.42.1 webpack-cli@4.7.2 -D
+| 值            | 说明                       |
+| ------------- | -------------------------- |
+| `development` | 开发环境，构建快、便于调试 |
+| `production`  | 生产环境，自动压缩优化     |
 
-- 在项目中配置 webpack
+### 5.2 一个实战理解
 
-   - 在项目根目录中，创建名为 webpack.config.js 的 webpack 配置文件，并初始化如下的基本配置：
+`development` 更关注开发反馈速度，`production` 更关注最终产物质量和体积。
 
-**==> picture [467 x 66] intentionally omitted <==**
+### 5.3 为什么很多项目会拆成多份配置
 
-在 package.json 的 scripts 节点下，新增 dev 脚本如下：
+因为开发和生产关注点天然不同：
 
-**==> picture [467 x 66] intentionally omitted <==**
+1. 开发更在意构建速度、热更新、可调试性。
+2. 生产更在意体积、缓存、部署路径、线上排障。
 
-在终端中运行 npm run dev 命令，启动 webpack 进行项目的打包构建
+所以真实项目里，常见做法往往不是把所有配置都塞进一个文件，而是按环境拆分公共配置和差异配置。
 
-- mode 的可选值
+---
 
-mode 节点的可选值有两个，分别是：development、production
+## 六、webpack-dev-server
 
-development：
+开发阶段如果每改一次代码都要手动重新打包、刷新页面，效率会很低。
 
-- 开发环境
+`webpack-dev-server` 可以：
 
-- 不会对打包生成的文件进行代码压缩和性能优化
+1. 监听源码变化。
+2. 自动重新构建。
+3. 提供本地开发服务。
 
-- 打包速度快，适合在开发阶段使用
+```json
+{
+  "scripts": {
+    "dev": "webpack serve"
+  }
+}
+```
 
-production
+```js
+devServer: {
+  port: 8080,
+  open: true,
+}
+```
 
-      - 生产环境
+### 6.1 一个关键区别
 
-      - 会对打包生成的文件进行代码压缩和性能优化
+开启开发服务器后，打包结果通常存在内存里，而不是直接落到物理磁盘。
 
-      - 打包速度很慢，仅适合在项目发布阶段使用
+### 6.2 HMR 怎么理解
 
-- webpack.config.js 文件的作用
+很多项目会继续接入热更新，让局部模块替换而不是整页刷新。它解决的是“改动后尽量少丢页面状态”。
 
-   - webpack.config.js 是 webpack 的配置文件。webpack 在真正开始打包构建之前，会先读取这个配置文
+### 6.3 一个边界提醒
 
-   - 件，从而基于给定的配置，对项目进行打包。
+开发服务器解决的是“开发体验”问题，不是生产部署问题。
 
-   - 注意：由于 webpack 是基于 node.js 开发出来的打包工具，因此在它的配置文件中，支持使用 node.js 相
+很多初学者把 `webpack-dev-server` 跑起来后，会误以为项目已经具备完整上线能力；实际上：
 
-   - 关的语法和模块进行 webpack 的个性化配置。
+1. 开发服务通常基于内存构建结果。
+2. 生产环境仍然需要真正生成产物并部署到服务器或静态托管环境。
 
-- webpack 中的默认约定
+---
 
-   - 在 webpack 4.x 和 5.x 的版本中，有如下的默认约定：
+## 七、plugin 插件
 
-      - 默认的打包入口文件为 src -> index.js
+### 7.1 插件和 loader 的区别
 
-      - 默认的输出文件路径为 dist -> main.js
+| 对比项     | loader                | plugin                            |
+| ---------- | --------------------- | --------------------------------- |
+| 解决的问题 | 处理某类文件          | 扩展 webpack 整体能力             |
+| 常见用途   | 转换 CSS、Less、Babel | 生成 HTML、清理目录、注入环境变量 |
 
-   - 注意：可以在 webpack.config.js 中修改打包的默认约定
+### 7.2 常见插件
 
-- 自定义打包的入口与出口
+`html-webpack-plugin`：根据模板生成 HTML，并自动注入打包后的资源。
 
-在 webpack.config.js 配置文件中，通过 entry 节点指定打包的入口。通过 output 节点指定打包的出口。
+`clean-webpack-plugin`：打包前清理旧产物。
 
-**==> picture [467 x 202] intentionally omitted <==**
+### 7.3 plugin 更像什么
 
-## webpack 中的插件
+它更像“构建流程上的扩展点”，不是只盯着某一种文件，而是能参与整个打包过程。
 
-- webpack 插件的作用
+### 7.4 常见判断场景
 
-   - 通过安装和配置第三方的插件，可以拓展 webpack 的能力，从而让 webpack 用起来更方便。最常用的
+| 需求                                   | 更常想到 |
+| -------------------------------------- | -------- |
+| 把 Less 转成 CSS                       | loader   |
+| 把 ES 新语法转成兼容语法               | loader   |
+| 自动生成 HTML 并注入资源               | plugin   |
+| 清理旧产物、注入环境变量、分析构建结果 | plugin   |
 
-   - webpack 插件有如下两个。
+---
 
-   - webpack-dev-server
+## 八、loader 加载器
 
-      - 类似于 node.js 阶段用到的 nodemon 工具
+### 8.1 为什么需要 loader
 
-      - 每当修改了源代码，webpack 会自动进行项目的打包和构建
+webpack 默认只认识 JS 和 JSON。对于 CSS、Less、图片、部分高级 JS 语法，需要借助 loader 做转换。
 
-   - html-webpack-plugin
+### 8.2 常见 loader
 
-      - webpack 中的 HTML 插件（类似于一个模板引擎插件）
+1. `css-loader`：解析 CSS。
+2. `style-loader`：把样式插入页面。
+3. `less-loader`：把 Less 转成 CSS。
+4. `babel-loader`：转译高级 JS。
 
-      - 可以通过此插件自定制 index.html 页面的内容
+注意：多个 loader 的执行顺序通常是从后往前。
 
-- webpack-dev-server
+### 8.3 一个常见理解方式
 
-   - webpack-dev-server 可以让 webpack 监听项目源代码的变化，从而进行自动打包构建。
+```text
+less-loader 先把 Less 变成 CSS
+css-loader 再处理 CSS 依赖
+style-loader 最后把样式放进页面
+```
 
-   - 安装 webpack-dev-server
+### 8.4 webpack 5 的资源处理
 
-      - 运行如下的命令，即可在项目中安装此插件：
+webpack 5 更常用 `asset` 模块而不是旧版 `url-loader` / `file-loader`。
 
-1
+### 8.5 一个常见踩坑点
 
-npm install webpack-dev-server@3.11.2 -D
+loader 链写对了不代表结果一定对，很多问题其实出在：
 
-- 配置 webpack-dev-server
+1. 执行顺序理解反了。
+2. 某个 loader 漏装或配置位置不对。
+3. 文件匹配规则没命中。
 
-   - 修改 package.json -> scripts 中的 dev 命令如下：
+所以看到“样式没生效”“语法没转译”时，先别急着怀疑 webpack 整体失效，先查规则是否真的命中了目标文件。
 
-**==> picture [467 x 74] intentionally omitted <==**
+---
 
-   - 再次运行 npm run dev 命令，重新进行项目的打包
+## 九、打包发布
 
-   - 在浏览器中访问 http://localhost:8080 地址，查看自动打包效果
+开发环境和生产环境的目标不同：
 
-- 打包生成的文件哪儿去了？
+| 环境     | 目标                   |
+| -------- | ---------------------- |
+| 开发环境 | 构建快、调试方便       |
+| 生产环境 | 产物小、性能好、可部署 |
 
-   - 不配置 webpack-dev-server 的情况下，webpack 打包生成的文件，会存放到实际的物理磁盘上
+### 9.1 构建命令
 
-         - 严格遵守开发者在 webpack.config.js 中指定配置
+```json
+{
+  "scripts": {
+    "build": "webpack --mode production"
+  }
+}
+```
 
-         - 根据 output 节点指定路径进行存放
+### 9.2 为什么要区分打包发布
 
-      - 配置了 webpack-dev-server 之后，打包生成的文件存放到了内存中
+1. 开发环境产物往往不压缩。
+2. 开发环境可能依赖内存中的构建结果。
+3. 生产环境需要真正输出到 `dist` 并做压缩优化。
 
-         - 不再根据 output 节点指定的路径，存放到实际的物理磁盘上
+### 9.3 常见生产优化思路
 
-         - 提高了实时打包输出的性能，因为内存比物理磁盘速度快很多
+1. 资源压缩。
+2. 按路由或模块拆包。
+3. 利用 `contenthash` 做缓存。
+4. 提取公共依赖。
 
-   - 生成到内存中的文件该如何访问？
+### 9.4 一个实战提醒
 
-      - webpack-dev-server 生成到内存中的文件，默认放到了项目的根目录中，而且是虚拟的、不可见的。
+打包发布不只是“生成 dist”，而是要考虑部署路径、缓存策略、静态资源引用和线上调试能力。
 
-      - 可以直接用 / 表示项目根目录，后面跟上要访问的文件名称，即可访问内存中的文件
+### 9.5 发布阶段最值得先确认的几件事
 
-      - 例如 /bundle.js 就表示要访问 webpack-dev-server 生成到内存中的 bundle.js 文件
+1. 资源引用路径是否和部署环境一致。
+2. 是否需要 hash 命名来配合浏览器缓存。
+3. HTML、JS、CSS、静态资源是否都能被正确访问。
+4. 线上报错后是否还有可用的定位手段。
 
-- html-webpack-plugin
+---
 
-   - html-webpack-plugin 是 webpack 中的 HTML 插件，可以通过此插件自定制 index.html 页面的内容。
+## 十、Source Map
 
-   - 需求：通过 html-webpack-plugin 插件，将 src 目录下的 index.html 首页，复制到项目根目录中一份！
+Source Map 是“构建后代码和源码之间的映射文件”。
 
-   - 安装 html-webpack-plugin
+有了它，浏览器在报错时才能从压缩后的代码位置还原到原始源码位置。
 
-      - 运行如下的命令，即可在项目中安装此插件：
+### 10.1 常见配置
 
-**==> picture [5 x 7] intentionally omitted <==**
+| `devtool` 值           | 适用场景           | 特点               |
+| ---------------------- | ------------------ | ------------------ |
+| `eval-source-map`      | 开发环境           | 调试体验较好       |
+| `source-map`           | 生产环境需完整定位 | 能暴露源码         |
+| `nosources-source-map` | 生产环境仅定位     | 不直接暴露源码内容 |
+| `false`                | 生产环境禁用       | 最安全，但调试不便 |
 
-**----- Start of picture text -----**<br>
-1<br>**----- End of picture text -----**<br>
+### 10.2 使用建议
 
-npm install html-webpack-plugin@5.3.2 -D
+1. 开发环境优先保证调试效率。
+2. 生产环境优先考虑安全性和源码暴露风险。
+3. 如果使用完整 `source-map`，要确保服务端对 `.map` 文件有访问策略。
 
-配置 html-webpack-plugin
+### 10.3 一个判断标准
 
-**==> picture [467 x 279] intentionally omitted <==**
+如果团队线上排障压力大，通常不会完全关掉 Source Map；但如果源码暴露风险很敏感，就会更偏 `nosources-source-map` 或更严格控制访问。
 
-解惑 html-webpack-plugin
+### 10.4 一个排查思路
 
-- 通过 HTML 插件复制到项目根目录中的 index.html 页面，也被放到了内存中
+当线上 Source Map 没发挥作用时，优先检查：
 
-- HTML 插件在生成的 index.html 页面，自动注入了打包的 bundle.js 文件
+1. 构建时是否真的生成了 `.map` 文件。
+2. 部署时 `.map` 文件是否被上传或被拦截。
+3. 线上环境的资源路径是否和产物映射一致。
+4. 当前 `devtool` 策略是否本来就不包含完整源码信息。
 
-devServer 节点
+---
 
-- 在 webpack.config.js 配置文件中，可以通过 devServer 节点对 webpack-dev-server 插件进行更多的配
+## 十一、前端工程化的学习顺序
 
-- 置，示例代码如下：
+建议按下面顺序理解：
 
-**==> picture [332 x 114] intentionally omitted <==**
+1. 先理解为什么需要工程化。
+2. 再理解 webpack 的入口、出口、mode。
+3. 学会 loader 和 plugin 的职责边界。
+4. 再补开发服务器、构建发布、Source Map。
+5. 最后再看更复杂的优化配置，比如拆包、缓存和按环境分配置。
 
-- 注意：凡是修改了 webpack.config.js 配置文件，或修改了 package.json 配置文件，必须重启实时打包的 服务器，否则最新的配置文件无法生效
+---
 
-## webpack 中的 loader
+## 十二、小结
 
-- loader 概述
-
-   - 在实际开发过程中，webpack 默认只能打包处理以 .js 后缀名结尾的模块。其他非 .js 后缀名结尾的模块，
-
-   - webpack 默认处理不了，需要调用 loader 加载器才可以正常打包，否则会报错！
-
-   - loader 加载器的作用：协助 webpack 打包处理特定的文件模块。比如：
-
-      - css-loader 可以打包处理 .css 相关的文件
-
-      - less-loader 可以打包处理 .less 相关的文件
-
-      - babel-loader 可以打包处理 webpack 无法处理的高级 JS 语法
-
-- . loader 的调用过程
-
-**==> picture [467 x 208] intentionally omitted <==**
-
-- 打包处理 css 文件
-
-   - 运行 npm i style-loader@3.0.0 css-loader@5.2.6 -D 命令，安装处理 css 文件的 loader
-
-   - 在 webpack.config.js 的 module -> rules 数组中，添加 loader 规则如下：
-
-**==> picture [431 x 125] intentionally omitted <==**
-
-- 其中，test 表示匹配的文件类型， use 表示对应要调用的 loader
-
-注意：
-
-      - use 数组中指定的 loader 顺序是固定的
-
-      - 多个 loader 的调用顺序是：从后往前调用
-
-- 打包处理 less 文件
-
-   - 运行 npm i less-loader@10.0.1 less@4.1.1 -D 命令
-
-   - 在 webpack.config.js 的 module -> rules 数组中，添加 loader 规则如下：
-
-**==> picture [467 x 104] intentionally omitted <==**
-
-**==> picture [187 x 10] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-打包处理样式表中与 url 路径相关的文件<br>**----- End of picture text -----**<br>
-
-- 运行 npm i url-loader@4.1.1 file-loader@6.2.0 -D 命令
-
-- 在 webpack.config.js 的 module -> rules 数组中，添加 loader 规则如下：
-
-**==> picture [455 x 118] intentionally omitted <==**
-
-其中 ? 之后的是 loader 的参数项：
-
-      - limit 用来指定图片的大小，单位是字节（byte）
-
-      - 只有 ≤ limit 大小的图片，才会被转为 base64 格式的图片
-
-- 打包处理 js 文件中的高级语法
-
-   - webpack 只能打包处理一部分高级的 JavaScript 语法。对于那些 webpack 无法处理的高级 js 语法，需要 借助于 babel-loader 进行打包处理。例如 webpack 无法处理下面的 JavaScript 代码：
-
-**==> picture [222 x 256] intentionally omitted <==**
-
-安装 babel-loader 相关的包
-
-- 运行如下的命令安装对应的依赖包：
-
-**==> picture [5 x 7] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-1<br>**----- End of picture text -----**<br>
-
-npm i babel-loader@8.2.2 @babel/core@7.14.6 @babel/plugin-proposaldecorators@7.14.5 -D
-
-在 webpack.config.js 的 module -> rules 数组中，添加 loader 规则如下：
-
-**==> picture [467 x 48] intentionally omitted <==**
-
-配置 babel-loader
-
-在项目根目录下，创建名为 babel.config.js 的配置文件，定义 Babel 的配置项如下：
-
-**==> picture [467 x 102] intentionally omitted <==**
-
-详情请参考 Babel 的官网 https://babeljs.io/docs/en/babel-plugin-proposal-decorators
-
-## 打包发布
-
-为什么要打包发布
-
-- 项目开发完成之后，需要使用 webpack 对项目进行打包发布，主要原因有以下两点：
-
-   - 开发环境下，打包生成的文件存放于内存中，无法获取到最终打包生成的文件
-
-   - 开发环境下，打包生成的文件不会进行代码压缩和性能优化
-
-- 为了让项目能够在生产环境中高性能的运行，因此需要对项目进行打包发布。
-
-- 配置 webpack 的打包发布
-
-   - 在 package.json 文件的 scripts 节点下，新增 build 命令如下：
-
-**==> picture [467 x 93] intentionally omitted <==**
-
-   - --model 是一个参数项，用来指定 webpack 的运行模式。production 代表生产环境，会对打包生成的文
-
-   - 件进行代码压缩和性能优化。
-
-   - 注意：通过 --model 指定的参数项，会覆盖 webpack.config.js 中的 model 选项。
-
-- 把 JavaScript 文件统一生成到 js 目录中
-
-   - 在 webpack.config.js 配置文件的 output 节点中，进行如下的配置：
-
-**==> picture [467 x 107] intentionally omitted <==**
-
-
-- 把图片文件统 生成到 image 目录中
-
-修改 webpack.config.js 中的 url-loader 配置项，新增 outputPath 选项即可指定图片文件的输出路径：
-
-**==> picture [467 x 244] intentionally omitted <==**
-
-自动清理 dist 目录下的旧文件
-
-为了在每次打包发布时自动清理掉 dist 目录中的旧文件，可以安装并配置 clean-webpack-plugin 插件：
-
-**==> picture [425 x 212] intentionally omitted <==**
-
-## Source Map
-
-## 生产环境遇到的问题
-
-- 前端项目在投入生产环境之前，都需要对 JavaScript 源代码进行压缩混淆，从而减小文件的体积，提高文
-
-
-- 件的加载效率。此时就不可避免的产生了另一个问题——对压缩混淆之后的代码除错（debug）是 件极其 困难的事情：
-
-   - 变量被替换成没有任何语义的名称
-
-   - 空行和注释被剔除
-
-**==> picture [467 x 130] intentionally omitted <==**
-
-## 什么是 Source Map
-
-   - Source Map 就是一个信息文件，里面储存着位置信息。也就是说，Source Map 文件中存储着压缩混淆后
-
-   - 的代码，所对应的转换前的位置。
-
-   - 有了它，出错的时候，除错工具将直接显示原始代码，而不是转换后的代码，能够极大的方便后期的调
-
-   - 试。
-
-- webpack 开发环境下的 Source Map
-
-   - 在开发环境下，webpack 默认启用了 Source Map 功能。当程序运行出错时，可以直接在控制台提示错误
-
-   - 行的位置，并定位到具体的源代码：
-
-**==> picture [467 x 189] intentionally omitted <==**
-
-默认 Source Map 的问题
-
-开发环境下默认生成的 Source Map，记录的是生成后的代码的位置。会导致运行时报错的行数与源代 码的行数不一致的问题。示意图如下：
-
-**==> picture [396 x 268] intentionally omitted <==**
-
-- 解决默认 Source Map 的问题
-
-   - 开发环境下，推荐在 webpack.config.js 中添加如下的配置，即可保证运行时报错的行数与源代码的行
-
-   - 数保持一致：
-
-**==> picture [467 x 152] intentionally omitted <==**
-
-webpack 生产环境下的 Source Map
-
-在生产环境下，如果省略了 devtool 选项，则最终生成的文件中不包含 Source Map。这能够防止原始代码 通过 Source Map 的形式暴露给别有所图之人。
-
-**==> picture [467 x 250] intentionally omitted <==**
-
-只定位行数不暴露源码
-
-在生产环境下，如果只想定位报错的具体行数，且不想暴露源码。此时可以将 devtool 的值设置为 nosources-source-map。实际效果如图所示：
-
-**==> picture [467 x 252] intentionally omitted <==**
-
-## 定位行数且暴露源码
-
-在生产环境下，如果想在定位报错行数的同时，展示具体报错的源码。此时可以将 devtool 的值设置 为source-map。实际效果如图所示：
-
-**==> picture [467 x 245] intentionally omitted <==**
-
-采用此选项后：你应该将你的服务器配置为，不允许普通用户访问 source map 文件！
-
-- Source Map 的最佳实践
-
-   - 开发环境下：
-
-      - 建议把 devtool 的值设置为 eval-source-map
-
-      - 好处：可以精准定位到具体的错误行
-
-   - 生产环境下：
-
-      - 建议关闭 Source Map 或将 devtool 的值设置为 nosources-source-map
-
-      - 好处：防止源码泄露，提高网站的安全性
+1. 前端工程化的目标是让项目更规范、更可维护、更可协作。
+2. webpack 是经典的工程化打包工具，核心围绕入口、依赖分析、loader、plugin 和输出构建。
+3. loader 负责文件转换，plugin 负责扩展构建流程，这两者一定要分清。
+4. `webpack-dev-server` 服务于开发阶段，打包发布服务于生产阶段，关注点并不相同。
+5. Source Map 解决“构建后代码难调试”的问题，开发和生产环境的配置策略应分开考虑。
+6. 学 webpack 时最重要的不是背所有配置名，而是先建立“问题属于哪一层”的判断能力。

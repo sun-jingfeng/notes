@@ -1,277 +1,291 @@
 # rem 布局
 
-为什么要学 rem 布局？
+## 一、一句话理解
 
-rem 主要解决什么问题？
+`rem` 布局的本质，是把页面尺寸统一挂到根字号上，让整套视觉尺寸能随屏幕宽度按比例缩放。
 
-文字大小没有自适应
+---
 
-元素的高度没有自适应
+## 二、为什么要学 rem 布局
 
-如何解决？
+在移动端开发里，屏幕宽度差异很大，如果只使用固定 `px`，文字和盒子尺寸往往难以自适应。
 
-rem布局
+`rem` 布局的核心目标，是让尺寸能随着屏幕宽度变化而整体缩放。
 
-- 媒体查询 + rem单位
+常见移动端适配方案包括：
 
-- flexible.js + rem单位
+| 方案                  | 说明                   |
+| --------------------- | ---------------------- |
+| **媒体查询 + rem**    | 早期常见方案           |
+| **flexible.js + rem** | 曾经非常流行           |
+| **vw / vh**           | 现代更常见，心智更直接 |
 
-- vw/vh
+---
 
-## 媒体查询
+## 三、什么是 rem
 
-作用：
+`rem` 是相对长度单位，表示相对于根元素 `html` 的 `font-size`。
 
-根据设备不同的特性应用不同的css样式
+```css
+html {
+  font-size: 16px;
+}
 
-语法：
+.box {
+  width: 10rem;
+}
+```
 
-**==> picture [284 x 82] intentionally omitted <==**
+此时 `10rem = 160px`。
 
-**==> picture [467 x 29] intentionally omitted <==**
+### 1. `em` 和 `rem` 的区别
 
-语法介绍：
+| 单位      | 相对谁                           |
+| --------- | -------------------------------- |
+| **`em`**  | 相对于当前元素自身或父级文字环境 |
+| **`rem`** | 相对于根元素 `html` 的字号       |
 
-@media（media媒体）：告诉浏览器："我要使用媒体查询了！"
+因此，`rem` 更适合做整站统一缩放。
 
-and：且
+---
 
-设备特性的值有：
+## 四、媒体查询基础
 
-设备宽度width/max-width/min-width（基本上只使用max-width和min-width，且包含端点 ）
+媒体查询用于根据设备特征应用不同样式。
 
-设备高度height/max-height/min-height（包含端点）
+```css
+@media (min-width: 375px) {
+  body {
+    background-color: #f5f5f5;
+  }
+}
+```
 
-更多@语法参考：@规则
+### 1. 常见条件
 
-## rem单位
+| 条件                            | 说明         |
+| ------------------------------- | ------------ |
+| **`width`**                     | 视口宽度     |
+| **`min-width`**                 | 最小宽度     |
+| **`max-width`**                 | 最大宽度     |
+| **`height`**                    | 视口高度     |
+| **`min-height` / `max-height`** | 高度范围判断 |
 
-em相对的是谁？
+实际移动端开发里，最常见的是 `min-width` 和 `max-width`。
 
-自身的font-size值
+---
 
-rem相对的是谁？
+## 五、媒体查询与 rem 的结合思路
 
-html的font-size值
+如果只使用媒体查询去逐项改所有元素尺寸，会造成 CSS 大量重复。
 
-rem的由来：root em
+更合理的做法是：
 
-px是绝对单位，而em、rem是相对单位
+1. 媒体查询只负责修改 `html` 的 `font-size`
+2. 其他元素统一使用 `rem`
 
-## 媒体查询与rem结合使用
+### 1. 错误思路：每个元素都写媒体查询
 
-只使用媒体查询，不使用rem
+```css
+@media (width: 400px) {
+  header {
+    height: 20px;
+  }
+}
 
-> 1 @media (width: 400px) {
+@media (width: 500px) {
+  header {
+    height: 25px;
+  }
+}
+```
 
-> 2 header {
+这种方式代码冗余很大。
 
-> 3 height: 20px;
+### 2. 更合理的思路：只改根字号
 
-> 4 }
+```css
+@media (width: 400px) {
+  html {
+    font-size: 40px;
+  }
+}
 
-> 5 footer {
+@media (width: 500px) {
+  html {
+    font-size: 50px;
+  }
+}
+```
 
-> 6 height: 40px;
+然后业务元素统一写成 `rem`：
 
-> 7 }
+```css
+.header {
+  height: 1rem;
+}
+```
 
-> 8 更多样式 …
+---
 
-> 9 }
+## 六、常见 rem 适配写法
 
-> 10 @media (width: 500px) {
+### 1. 区间写法
 
-> 11 header {
+```css
+@media (min-width: 0) and (max-width: 320px) {
+  html {
+    font-size: 32px;
+  }
+}
 
-> 12 height: 25px;
+@media (min-width: 375px) and (max-width: 414px) {
+  html {
+    font-size: 37.5px;
+  }
+}
+```
 
-> 13 }
+### 2. 递增写法
 
-> 14 footer {
+```css
+@media (min-width: 320px) {
+  html {
+    font-size: 32px;
+  }
+}
 
-> 15 height: 22.5px ；
+@media (min-width: 375px) {
+  html {
+    font-size: 37.5px;
+  }
+}
 
-> 16 }
+@media (min-width: 414px) {
+  html {
+    font-size: 41.4px;
+  }
+}
+```
 
-> 17 更多样式 …
+> **注意**：如果只使用 `min-width` 或只使用 `max-width`，媒体查询书写顺序非常重要。
 
-> 18 }
+---
 
-## 媒体查询 + rem
+## 七、flexible.js 思路
 
-> 1 @media (width: 400px) {
+`flexible.js` 曾经是移动端 `rem` 适配的常用方案之一。
 
-> 2 html {
+### 1. 核心思路
 
-> 3 font-size: 40px;
+把视口宽度按比例换算成根字号，例如：
 
-> 4 }
+视口宽度 ÷ 10 = `html` 的 `font-size`
 
-> 5 }
+如果视口宽度是 `375px`，那么根字号就是 `37.5px`。
 
-> 6 @media (width: 500px) {
+这样：
 
-> 7 html {
+```text
+1rem = 37.5px
+```
 
-> 8 font-size: 50px;
+### 2. 价值
 
-> 9 }
+开发时只要关心把设计稿尺寸换算成 `rem` 即可。
 
-> 10 }
+但它也带来一个成本：开发者需要始终记得“真实尺寸不是直接写出来的，而是通过根字号间接换算出来的”。
 
-结论：只使用媒体查询会造成大量css代码冗余
+---
 
-## 当浏览器窗口不等于媒体查询中的width怎么办
+## 八、px 转 rem 的换算
 
-方案一：在媒体查询中使用max-width和min-width代替width
+假设设计稿宽度是 `750px`，而实际开发常以 `375px` 逻辑宽度为基准：
 
-- 方案二：给每一个浏览器宽度设置一个html的font-size值
+1. 先把设计稿尺寸除以 2，得到逻辑像素
+2. 再除以根字号，得到 rem 值
 
-一 第 种方案
+例如：
 
-> 1 @media (min-width: 0) and (max-width: 320px) {
+设计稿宽度 `346px`：
 
-> 2 html {
+```text
+346 ÷ 2 = 173
+173 ÷ 37.5 ≈ 4.61rem
+```
 
-> 3 font-size: 32px;
+因此可以写：
 
-> 4 }
+```css
+width: 4.61rem;
+```
 
-> 5 }@media (min-width: 320px) and (max-width: 375px) {
+---
 
-> 6 html {
+## 九、px 转 rem 工具
 
-> 7 font-size: 32px;
+在过去的工作流里，常会使用编辑器插件自动把 `px` 转成 `rem`。
 
-> 8 }
+### 1. 作用
 
-> 9 }@media (min-width: 375px) and (max-width: 414px) {
+| 作用             | 说明         |
+| ---------------- | ------------ |
+| **减少手算成本** | 自动换算     |
+| **统一换算基准** | 降低人工误差 |
 
-> 10 html {
+不过在现代项目中，如果团队已经改用 `vw`、设计 token 或构建工具自动转换，就不一定还需要单独依赖这类插件。
 
-> 11 font-size: 37.5px;
+所以这些工具的价值更像是过渡期提效，而不是长期一定要保留的核心依赖。
 
-> 12 }
+---
 
-> 13 }@media (min-width: 414px) and (max-width: 480px) {
+## 十、vw / vh 与 rem 的关系
 
-> 14 html {
+### 1. 基本概念
 
-> 15 font-size: 41.4px;
+| 单位     | 含义          |
+| -------- | ------------- |
+| **`vw`** | 视口宽度的 1% |
+| **`vh`** | 视口高度的 1% |
 
-> 16 }
+```text
+1vw = 视口宽度的 1%
+1vh = 视口高度的 1%
+```
 
-> 17 } 18
+### 2. 为什么现在更常用 vw
 
-> 19 /* 还有 480-580 、 580-640 这两个区间 */
+因为移动端很多自适应，本质上都是围绕视口宽度进行缩放，而 `vw` 天然就是相对视口宽度，不需要再绕到 `html font-size`。
 
-> 20 @media (min-width: 640px) {
+### 3. 什么时候 rem 仍然有价值
 
-> 21 html {
+| 场景                   | 说明                      |
+| ---------------------- | ------------------------- |
+| **老项目维护**         | 很多历史项目仍是 rem 方案 |
+| **根字号统一缩放设计** | 整体缩放逻辑明确          |
+| **配合设计系统**       | 某些设计体系仍基于 rem    |
 
-> 22 font-size: 64px;
+---
 
-> 23 }
+## 十一、真实项目里怎么选
 
-> 24 } 25
+| 场景                          | 更适合的方案           |
+| ----------------------------- | ---------------------- |
+| **维护历史移动站**            | rem 往往改动成本更低   |
+| **新项目只做宽度自适应**      | `vw` 通常更直接        |
+| **已有成熟 px 转 rem 工具链** | rem 依然可行           |
+| **团队对根字号换算不熟**      | 优先选心智更直观的方案 |
 
-## 或
+一个实战判断是：如果团队每次写样式都要频繁手算和来回换算，说明这套方案的心智成本已经偏高。
 
-> 1 @media (min-width: 0px) {
+---
 
-> 2 html {
+## 十二、小结
 
-> 3 font-size: 32px;
-
-> 4 }
-
-> 5 }
-
-> 6 @media (min-width: 320px) {
-
-> 7 html {
-
-> 8 font-size: 32px;
-
-> 9 }
-
-> 10 }
-
-> 11 @media (min-width: 375px) {
-
-> 12 html {
-
-> 13 font-size: 37.5px;
-
-> 14 }
-
-> 15 } 16
-
-> 17 /* 还有 480 、 580 这两个 min-width */ 18
-
-> 19 @media (min-width: 640px) {
-
-> 20 html {
-
-> 21 font-size: 64px;
-
-> 22 }
-
-> 23 }
-
-> 24 /* 注意：只使用 min-width 或 max-width 时媒体查询的顺序不能颠倒 */
-
-## 第二种方案 - flexible.js插件
-
-- 作用：将视口宽度除以10设置给html的font-size
-
-- 使用：通过<script>标签引入到页面中
-
-**==> picture [425 x 73] intentionally omitted <==**
-
-## 如何将px值转换为rem值
-
-- 由于这个UI设计稿宽度为750px，为二倍图，所以我们应该先将346px除以2得到逻辑像素，为173px。
-
-- 然后再用173px除以37.5（由于当视口宽度和UI设计稿宽度一样时html的font-size值为37.5px）得到4.61rem。 所以在css中写width: 4.61rem;
-
-**==> picture [281 x 379] intentionally omitted <==**
-
-## px to rem插件
-
-作用
-
-自动帮我们把px单位转换为rem单位
-
-安装
-
-在vscode里安装 px2rem
-
-**==> picture [197 x 56] intentionally omitted <==**
-
-设置
-
-基准根字号大小
-
-**==> picture [206 x 78] intentionally omitted <==**
-
-取消注释
-
-**==> picture [236 x 51] intentionally omitted <==**
-
-vw/vh的介绍
-
-vw : 1vw = 1%视口宽度
-
-vh : 1vh = 1%视口高度
-
-## 兼容性
-
-android4.4+ ios8+
-
-由于在实现元素宽度、高度、字体大小等自适应时，都是依据视口的宽度，所以一般只会使用vw，很少使用vh
-
-## 如何将px转换为vw
-
-这样想：如果flexible.js是将屏幕的宽度除以100赋值给html的font-size，这时候1rem=1%视口宽度。所以vw的 使用方法和rem非常类似
+| 知识点               | 结论                       |
+| -------------------- | -------------------------- |
+| **rem 相对谁**       | 相对 `html` 的 `font-size` |
+| **rem 核心价值**     | 让整体尺寸按根字号缩放     |
+| **媒体查询角色**     | 常用于动态设置根字号       |
+| **flexible.js 思路** | 视口宽度按比例换成根字号   |
+| **现代替代方案**     | `vw` 往往更直接            |

@@ -1,379 +1,375 @@
-# 精灵图、字体图标、CSS 三角等
+# 精灵图、字体图标、CSS三角、CSS用户界面样式、vertical-align、溢出的文字省略号显示、常见布局技巧、CSS 初始化、边框图片
 
-## 使用精灵图核心
+## 一、这篇怎么理解
 
+这一篇本质上是一组 CSS 高频杂项能力的集合。为了更好复习，可以把它们分成 4 类：
 
-   - 精灵技术主要针对于背景图片使用。把多个小背景图整合到一张大图中。
+| 类别           | 主题                                 |
+| -------------- | ------------------------------------ |
+| **资源与图形** | 精灵图、字体图标、CSS 三角、边框图片 |
+| **交互样式**   | `cursor`、`outline`、`resize`        |
+| **排版细节**   | `vertical-align`、文字溢出省略号     |
+| **工程与布局** | 常见布局技巧、CSS 初始化             |
 
-   - 这个大图片也称为 sprites 精灵图 或者 雪碧图
+如果把这篇直接当成“零碎知识点合集”，会很难记；如果按“资源方案、交互反馈、排版细节、工程兜底”四条线去理解，会更容易复习和选型。
 
-   - 移动背景图片位置， 此时可以使用 background-position 。
+---
 
-   - 移动的距离就是这个目标图片的 x 和 y 坐标。注意网页中的坐标有所不同
+## 二、资源与图形方案
 
+### 2.1 精灵图
 
-   - 一般情况下向上、向左移动，数值为负。
+**精灵图** 也叫雪碧图，本质是把多个小背景图合并成一张大图，再通过 `background-position` 显示其中某一块区域。
 
-   - 使用精灵图的时候需要精确测量，每个小背景图片的大小和位置。
+```css
+.icon-home {
+  width: 20px;
+  height: 20px;
+  background-image: url("./sprite.png");
+  background-repeat: no-repeat;
+  background-position: -40px -20px;
+}
+```
 
-- 使用精灵图核心总结：
+#### 什么时候用
 
-   - 精灵图主要针对于小的背景图片使用。
+1. 老项目历史方案。
+2. 多个小背景图需要合并请求。
+3. 背景类图标场景。
 
-   - 主要借助于背景位置来实现---background-position 。
+#### 注意点
 
-   - 一般情况下精灵图都是负值。（千万注意网页中的坐标： x轴右边走是正值，左边走是负值， y轴同理）
+1. 通常用于背景图，不是普通 `img` 标签。
+2. `background-position` 往左、往上移动时经常是负值。
+3. 图标维护成本较高，修改一个图可能影响整张图。
 
-## 字体图标
+### 2.2 字体图标
 
-- 字体图标推荐下载网站：
+**字体图标** 是把图标做成字体文件，通过字符编码显示图形。
 
-   - 阿里 iconfont 字库 http://www.iconfont.cn/
+```css
+@font-face {
+  font-family: "iconfont";
+  src:
+    url("./fonts/iconfont.woff2") format("woff2"),
+    url("./fonts/iconfont.woff") format("woff"),
+    url("./fonts/iconfont.ttf") format("truetype");
+}
 
-   - icomoon 字库 http://icomoon.io
+.iconfont {
+  font-family: "iconfont";
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+```
 
-## 字体图标的引入
+标签中使用：
 
-- 把下载包里面的五个不认识格式的文件放入页面根目录下的新建文件夹fonts中。（html文件是说明文档）
+```html
+<span class="iconfont">&#xe603;</span>
+```
 
-**==> picture [467 x 179] intentionally omitted <==**
+伪元素中使用：
 
-**==> picture [467 x 167] intentionally omitted <==**
+```css
+.download::after {
+  content: "\e603";
+  font-family: "iconfont";
+}
+```
 
-## 在 CSS 样式中全局声明字体： 简单理解把这些字体文件通过css引入到我们页面中（一定注意字体文件路
+### 2.3 精灵图、字体图标、SVG 怎么选
 
-径的问题）。
+| 方案         | 优点                     | 局限                     |
+| ------------ | ------------------------ | ------------------------ |
+| **精灵图**   | 减少请求、老项目常见     | 维护成本高，不灵活       |
+| **字体图标** | 改色方便、接入成熟       | 多色图标和复杂图形能力弱 |
+| **SVG 图标** | 现代项目最灵活、可控性高 | 接入方式相对更多样       |
 
-> 1 /* 改路径之前 */
+结论通常是：
 
-> 2 @font-face {
+1. 新项目优先考虑 SVG。
+2. 已有 iconfont 体系时可继续用字体图标。
+3. 精灵图更多是维护历史项目时会遇到。
 
-> 3 font-family: 'iconfont';
+### 2.4 一个更贴近项目的判断方式
 
-> 4 src: url('iconfont.eot');
+| 场景                       | 更推荐方案        | 原因             |
+| -------------------------- | ----------------- | ---------------- |
+| **维护老后台或老活动页**   | 精灵图 / 字体图标 | 历史包袱已存在   |
+| **单色图标体系**           | 字体图标 / SVG    | 成本可控         |
+| **多色、复杂、可交互图标** | SVG               | 灵活度最高       |
+| **只是做一个小箭头或角标** | CSS 三角          | 无需引图或引字体 |
 
-> 5 src: url('iconfont.eot?#iefix') format('embedded-opentype'),
+### 2.4 CSS 三角
 
-> 6 url('iconfont.woff2') format('woff2'),
+把盒子的宽高设为 `0`，再利用边框形成三角形。
 
-> 7 url('iconfont.woff') format('woff'),
+```css
+.triangle {
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-left-color: pink;
+}
+```
 
-> 8 url('iconfont.ttf') format('truetype'),
+常见用途：
 
-> 9 url('iconfont.svg#iconfont') format('svg');
+1. 气泡箭头。
+2. 下拉箭头。
+3. 标签角标。
 
-> 10 } 11
+### 2.5 CSS 三角的边界
 
-> 12 /* 改路径之后（字体文件夹名字为 fonts 且在根目录） */
+CSS 三角适合做简单装饰，不适合复杂图形。遇到需要圆角、阴影、多色渐变时，往往还是 SVG 或图片更稳。
 
-> 13 @font-face {
+### 2.5 `border-image`
 
-> 14 font-family: 'iconfont';
+`border-image` 可以用一张图片来绘制边框。
 
-> 15 src: url('./fonts/iconfont.eot');
+```css
+.panel {
+  border: 20px solid transparent;
+  border-image: url("./border.png") 20 round;
+}
+```
 
-> 16 src: url('./fonts/iconfont.eot?#iefix') format('embedded-opentype'),
+需要知道：
 
-> 17 url('./fonts/iconfont.woff2') format('woff2'),
+1. 先要有实际边框宽度。
+2. `slice` 表示切割区域。
+3. `repeat`、`round`、`stretch` 决定边框如何铺开。
 
-> 18 url('./fonts/iconfont.woff') format('woff'),
+适合场景：
 
-> 19 url('./fonts/iconfont.ttf') format('truetype'),
+1. 特殊装饰风格边框。
+2. 游戏化、活动页视觉。
+3. 不规则边框需求。
 
-> 20 url('./fonts/iconfont.svg#iconfont') format('svg');
+这类能力平时不常用，但一旦遇到视觉稿里有“非普通边框”，它会很有价值。
 
-> 21 }
+---
 
-## html 标签内添加小图标。
+## 三、交互样式
 
-**==> picture [85 x 11] intentionally omitted <==**
+### 3.1 `cursor`
 
-**----- Start of picture text -----**<br>
-在正常标签中添加<br>**----- End of picture text -----**<br>
+```css
+button {
+  cursor: pointer;
+}
+```
 
-**==> picture [302 x 176] intentionally omitted <==**
+常见值：
 
-> 1 <span class="iconfont">&#xe603;</span>
+1. `default`
+2. `pointer`
+3. `move`
+4. `not-allowed`
+5. `text`
 
-## 在伪元素中添加
+一个常见规范是：可点击元素给 `pointer`，不可点击但禁用的元素给 `not-allowed`，避免用户误判可操作性。
 
-**==> picture [275 x 163] intentionally omitted <==**
+### 3.2 `outline`
 
-> 1 span::after {
+```css
+input {
+  outline: none;
+}
+```
 
-> 2 content: "\e603";/* 复制后四位，且前面加个 \ */
+它常用于去掉默认焦点轮廓，但不能只顾美观而忽略可访问性。
 
-> 3 }
+更稳妥的做法通常是：
 
-## 给标签定义字体。
+```css
+input:focus {
+  outline: 2px solid #409eff;
+}
 
-正常标签中的字体图标。
+也就是说，不要为了美观直接把焦点提示彻底删掉，而应该替换成更符合设计系统的焦点样式。
+```
 
-> 1 <style>
+### 3.3 `resize`
 
-> 2 .iconfont {
+```css
+textarea {
+  resize: none;
+}
+```
 
-> 3 font-family: "iconfont" !important;
+用于控制文本域是否允许拖拽缩放。
 
-> 4 font-size: 16px;
+一个实战判断标准：
 
-> 5 font-style: normal;
+1. 内容区尺寸固定且布局敏感时，可禁用缩放。
+2. 用户需要自由调整编辑空间时，保留缩放能力更友好。
 
-> 6 -webkit-font-smoothing: antialiased;
+这里的本质不是“要不要禁止”，而是要不要把布局稳定性放在用户自由调节之前。
 
-> 7 -moz-osx-font-smoothing: grayscale;
+---
 
-> 8 }
+## 四、排版细节
 
-> 9 </style> 10
+### 4.1 `vertical-align`
 
-> 11 <body>
+`vertical-align` 只对行内元素、行内块元素、表格单元格等场景有效。
 
-> 12 <span class="iconfont">&#xe603;</span>
+常见值：
 
-> 13 </body>
+```css
+vertical-align: baseline;
+vertical-align: top;
+vertical-align: middle;
+vertical-align: bottom;
+```
 
-伪元素中的字体图标。
+高频场景：
 
-> 1 <style>
+1. 图片、输入框和文字对齐。
+2. 去掉图片底部空白缝隙。
 
-> 2 span::after {
+```css
+img,
+input {
+  vertical-align: middle;
+}
+```
 
-> 3 content: "\e603";
+去掉图片底部缝隙的常见方法：
 
-> 4 font-size: 16px;
+1. `vertical-align: middle | top | bottom`
+2. `display: block`
 
-> 5 font-style: normal;
+一个易错点：
 
-> 6 -webkit-font-smoothing: antialiased;
+很多人把 `vertical-align` 当成通用垂直居中方案，这是不对的，它有明确适用范围。
 
-> 7 -moz-osx-font-smoothing: grayscale;
+也就是说，它更像“行内对齐细节工具”，不是现代布局里的主居中方案。
 
-> 8 }
+### 4.2 文字溢出省略号
 
-> 9 </style>
+单行省略号：
 
-## 注意：
+```css
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+```
 
-- 这种方法如果图标和文字对不齐，可加一条vertical-align: middle;进行调节
+这 3 个条件缺一不可。
 
-- 如果还是对不齐，可以再调节字体图标的行高（需要先把这个伪元素设置成行内块或者块并 使其高度高于字体图标）
+多行省略号：
 
-## 字体图标的追加
+```css
+.multi-ellipsis {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+```
 
-- 如果工作中，原来的字体图标不够用了，我们需要添加新的字体图标到原来的字体文件中。
+常见边界：
 
-- 重新下载文件，把压缩包里面的不认识的五个文件替换一下。
+1. 多行省略依赖浏览器实现，不是完全统一标准。
+2. 父容器宽度不明确时，省略号可能失效。
+3. 如果内容必须完整可访问，还要补 `title` 或展开查看机制。
 
-## CSS 三角
+真正要记住的是：省略号不是简单写一行属性，而是“容器宽度、显示模式、溢出处理”一起成立才会生效。
 
-- 一张图，你就知道 CSS 三角是怎么来的了, 做法如下：
+---
 
-**==> picture [82 x 76] intentionally omitted <==**
+## 五、常见布局技巧
 
-## 代码：
+### 5.1 负 `margin` 压边框
 
-> 1 div {
+当多个盒子相邻排列时，可以让后一个盒子 `margin-left: -1px`，把重复边框压住，视觉上看起来只有一条线。
 
-> 2 width: 0;
+### 5.2 提升层级处理 hover 边框
 
-> 3 height: 0;
+如果鼠标移入时边框加粗导致布局抖动，可以通过相对定位或 `z-index` 提升当前项层级，而不是破坏整体排列。
 
-> 4 line-height: 0;
+### 5.3 文字环绕浮动元素
 
-> 5 font-size: 0;
+浮动元素不会完全压住普通文字流，所以图文混排时可以利用 `float` 形成环绕效果。
 
-> 6 border: 50px solid transparent;
+### 5.4 行内块水平居中
 
-> 7 border-left-color: pink;
+```css
+.pager {
+  text-align: center;
+}
+```
 
-> 8 }
+如果一组分页按钮本身是 `inline-block`，可通过父元素 `text-align: center` 实现整体居中。
 
-CSS 用户界面样式
+### 5.5 这些技巧在今天怎么用
 
+它们多数属于“边角技巧”而不是现代布局主方案。
 
-- 所谓的界面样式，就是更改一些用户操作样式，以便提高更好的用户体验。
+也就是说：
 
-   - 更改用户的鼠标样式
+1. 主布局优先 `flex`、`grid`。
+2. 这些技巧主要用于老代码维护或特殊细节修补。
 
-表单轮廓
+如果把这些技巧当成现代布局主方案，后续代码通常会越来越难维护。
 
-- 防止表单域拖拽
+---
 
-## 鼠标样式 cursor
+## 六、CSS 初始化
 
-代码：
+### 6.1 为什么需要初始化
 
-> 1 li {
+浏览器对标题、列表、表单等标签有默认样式，不同浏览器之间也存在差异，所以项目通常会先做一层 reset 或 normalize。
 
-> 2 cursor: pointer;
+### 6.2 一个常见思路
 
-> 3 }
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-设置或检索在对象上移动的鼠标指针采用何种系统预定义的光标形状。
+ul,
+ol {
+  list-style: none;
+}
 
-**==> picture [467 x 149] intentionally omitted <==**
+a {
+  text-decoration: none;
+  color: inherit;
+}
+```
 
-- 轮廓线 outline
+### 6.3 Reset 和 Normalize 的区别
 
-给表单添加 outline: 0; 或者 outline: none; 样式之后，就可以去掉默认的蓝色边框。
+| 方案          | 特点                             |
+| ------------- | -------------------------------- |
+| **Reset**     | 更彻底地清空默认样式             |
+| **Normalize** | 尽量保留合理默认值，同时统一差异 |
 
-> 1 input {
+### 6.4 一个实战建议
 
-> 2 outline: none;
+现代项目里通常不会盲目把所有标签都抹平，而是：
 
-> 3 }
+1. 统一基础差异。
+2. 保留有价值的默认行为。
+3. 再接入自己的设计系统样式。
 
-## 防止拖拽文本域 resize
+换句话说，初始化的目标不是“把浏览器全清空”，而是“让不同浏览器的起点更可控”。
 
-实际开发中，我们文本域右下角是不可以拖拽的。
+---
 
-> 1 textarea{
+## 七、小结
 
-> 2 resize: none;
-
-> 3 }
-
-vertical-align 属性介绍
-
-- CSS 的 vertical-align 属性使用场景： 经常用于设置图片或者表单(行内块元素）和文字垂直对齐。
-
-- 官方解释： 用于设置一个元素的垂直对齐方式，但是它只针对于行内元素或者行内块元素有效。
-
-- 语法：
-
-1
-
-vertical-align : baseline | top | middle | bottom
-
-**==> picture [467 x 129] intentionally omitted <==**
-
-**==> picture [464 x 112] intentionally omitted <==**
-
-## vertical-align 属性应用
-
-- 图片、表单和文字对齐
-
-图片、表单都属于行内块元素，默认的 vertical-align 是基线对齐。
-
-**==> picture [289 x 121] intentionally omitted <==**
-
-   - 此时可以给图片、表单这些行内块元素的 vertical-align 属性设置为 middle 就可以让文字和图片垂直 居中 对齐了。
-
-- 解决图片、iframe底部默认空白缝隙问题
-
-   - bug：图片、iframe底侧会有一个空白缝隙，原因是行内块元素会和文字的基线对齐。
-
-   - 主要解决方法有两种：
-
-      - 添加 vertical-align:middle | top| bottom 等。 （提倡使用的）
-
-      - 转换为块级元素 display: block;
-
-**==> picture [467 x 127] intentionally omitted <==**
-
-## 溢出的文字省略号显示
-
--- 单行文本溢出显示省略号 必须满足三个条件
-
-> 1 /* 强制行内显示文本 */
-
-> 2 white-space: nowrap; （ 默认 normal 自动换行）
-
-> 3 /* 文字用省略号替代超出的部分 */
-
-> 4 text-overflow: ellipsis;
-
-> 5 /* 超出的部分隐藏 */
-
-> 6 overflow: hidden;
-
-多行文本溢出显示省略号
-
-- 多行文本溢出显示省略号，有较大兼容性问题， 适合于webKit浏览器或移动端（移动端大部分是webkit内 核）
-
-> 1 /* 弹性伸缩盒子模型显示 */
-
-> 2 display: -webkit-box;
-
-> 3 /* 设置或检索伸缩盒对象的子元素的排列方式 */
-
-> 4 -webkit-box-orient: vertical;
-
-> 5 /* 限制在一个块元素显示的文本的行数 */
-
-> 6 -webkit-line-clamp: 2;
-
-> 7 /* 超出的部分隐藏 */
-
-> 8 overflow: hidden;
-
-## 常见布局技巧
-
-## margin负值运用
-
-**==> picture [314 x 208] intentionally omitted <==**
-
-**==> picture [274 x 12] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-让每个盒子margin 往左侧移动 -1px 正好压住相邻盒子边框<br>**----- End of picture text -----**<br>
-
-   - 鼠标经过某个盒子的时候，提高当前盒子的层级即可（如果没有有定位，则加相对定位（保留位置），如 果有定位，则加z-index）
-
-- 文字围绕浮动元素
-
-**==> picture [247 x 134] intentionally omitted <==**
-
-**==> picture [183 x 11] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-巧妙运用浮动元素不会压住文字的 特性<br>**----- End of picture text -----**<br>
-
-**==> picture [193 x 11] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-行内块巧妙运用（页码在页面中间显示:）<br>**----- End of picture text -----**<br>
-
-**==> picture [467 x 125] intentionally omitted <==**
-
-**==> picture [311 x 12] intentionally omitted <==**
-
-**----- Start of picture text -----**<br>
-把这些链接盒子转换为行内块， 之后给父级指定 text-align:center;<br>**----- End of picture text -----**<br>
-
-- 利用行内块元素中间有缝隙，并且给父级添加 text-align:center; 行内块元素会水平会居中
-
-- CSS 三角强化
-
-**==> picture [144 x 45] intentionally omitted <==**
-
-原理：
-
-**==> picture [212 x 54] intentionally omitted <==**
-
-代码：
-
-> 1 width: 0;
-
-> 2 height: 0;
-
-> 3 border-color: transparent red transparent transparent;
-
-- 4 border-style: solid;
-
-- 5 border-width: 22px 8px 0 0;
-
-## CSS 初始化
-
-- 不同浏览器对有些标签的默认值是不同的，为了消除不同浏览器对HTML文本呈现的差异，照顾浏览器的兼容，
-
-- 我们需要对CSS 初始化。
-
-- 简单理解： CSS初始化是指重设浏览器的样式。 (也称为CSS reset）。每个网页都必须首先进行 CSS初始化。 这里我们以 京东CSS初始化代码为例。
-
-- Unicode编码字体：把中文字体的名称用相应的Unicode编码来代替，这样就可以有效的避免浏览器解释CSS代
-
-- 码时候出现乱码的问题。
-
-- 比如：黑体 \9ED1\4F53、宋体 \5B8B\4F53、微软雅黑 \5FAE\8F6F\96C5\9ED1。
+1. 精灵图、字体图标和 `border-image` 都属于资源与视觉实现方案，但现代项目通常更偏向 SVG。
+2. `cursor`、`outline`、`resize` 主要解决交互反馈问题。
+3. `vertical-align` 和省略号处理属于高频排版细节，最怕误用场景。
+4. 布局技巧更多是补充方案，主布局仍应优先 `flex`、`grid`。
+5. CSS 初始化解决的是浏览器默认差异问题，但现代项目更强调“统一 + 可控”，而不是无差别清空。

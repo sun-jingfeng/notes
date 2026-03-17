@@ -1,487 +1,405 @@
 # 浏览器中的 JavaScript、Node、fs/path/http 模块
 
-## 组成部分
+## 一、先理解运行环境
 
-JS核心语法（ECMAScript）
+很多初学者会把 JavaScript 当成一整套固定能力，但实际上，JavaScript 语言本身和“运行环境提供的 API”是两回事。
 
-- 变量、数据类型
+浏览器环境中的 JavaScript 可以理解为两部分：
 
-**==> picture [85 x 11] intentionally omitted <==**
+| 部分       | 说明                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| ECMAScript | 语言核心语法，例如变量、函数、对象、数组、类等                     |
+| Web APIs   | 浏览器提供的能力，例如 DOM、BOM、`fetch`、`localStorage`、`canvas` |
 
-**==> picture [93 x 30] intentionally omitted <==**
+也就是说，JavaScript 语言本身只负责语法，而“能不能操作页面、发请求、操作浏览器窗口”取决于运行环境提供了什么 API。
 
-WebAPI
+---
 
-- DOM BOM
+## 二、浏览器和 Node 的区别
 
-- XMLHttpRequest
+浏览器和 Node 都可以运行 JavaScript，但两者可用的 API 并不相同。
 
-- canvas
+| 对比项   | 浏览器              | Node                         |
+| -------- | ------------------- | ---------------------------- |
+| 主要定位 | 客户端运行环境      | 服务端 / 本地运行环境        |
+| 共同点   | 都能执行 ECMAScript | 都能执行 ECMAScript          |
+| 特有能力 | DOM、BOM、页面渲染  | 文件系统、网络服务、进程能力 |
 
-- etc…
+一个最关键的结论：
 
-**==> picture [451 x 345] intentionally omitted <==**
+1. `document`、`window` 这类 API 只能在浏览器环境中使用。
+2. `fs`、`path`、`http` 这类模块只能在 Node 环境中使用。
 
-## JavaScript代码是如何被转换成最终效果的
+### 2.2 真实开发里怎么快速判断代码该放哪边
 
-- 不同的浏览器使用不同的 JavaScript 解析引擎
+| 需求                           | 更适合     |
+| ------------------------------ | ---------- |
+| 操作页面、读 DOM、监听用户交互 | 浏览器环境 |
+| 读写文件、起本地服务、跑脚本   | Node 环境  |
+| 构建工具、脚手架、代码生成     | Node 环境  |
 
-   - Chrome 浏览器 => V8
+### 2.1 为什么前端也要学 Node
 
-   - Firefox 浏览器=> OdinMonkey(奥丁猴)
+因为现代前端开发除了写页面，还会依赖：
 
-   - Safri 浏览器=> JSCore
+1. 构建工具。
+2. 脚手架。
+3. 本地开发服务。
+4. 自动化脚本。
 
-   - IE 浏览器=> Chakra(查克拉)
+这些场景大多都建立在 Node 之上。
 
-   - etc...
+---
 
-- 其中，Chrome 浏览器的 V8 解析引擎性能最好
+## 三、什么是 Node.js
 
-**==> picture [369 x 399] intentionally omitted <==**
+Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。
 
-JavaScript 运行环境
+它让 JavaScript 不再只能跑在浏览器里，还可以运行在服务端、本地脚本和命令行工具中。
 
+### 3.1 Node.js 常见用途
 
-- 环境，和生活中的环境一样，比如人生存的环境
+1. 编写后端服务。
+2. 编写构建工具、脚手架、CLI。
+3. 读写文件和批处理脚本。
+4. 支撑前端工程化工具链，例如 Vite、Webpack、ESLint、npm scripts。
 
-   - 必须有水
+### 3.2 一个实战理解
 
-   - 必须有氧气
+如果浏览器更偏“页面运行环境”，那 Node 更偏“工程和服务运行环境”。
 
-   - 必须有女朋友
+---
 
-   - ……
+## 四、在 Node 环境中运行 JavaScript
 
-- 运行环境指的是代码正常运行所需的必要条件。
+### 4.1 REPL 交互模式
 
-   - 必须有内置API （才能写代码）
+在终端输入：
 
-   - 必须有解析引擎（才能运行代码）
+```bash
+node
+```
 
-**==> picture [386 x 322] intentionally omitted <==**
+进入后可以直接写 JavaScript 表达式：
 
-## Node.js 介绍
+```js
+1 + 2
+```
 
-- Node.js可以做什么
+适合做简单测试。
 
-   - 基于 Express/Koa 框架(http://www.expressjs.com.cn/)，可以快速构建 Web 应用
+### 4.2 脚本模式
 
-   - 基于 Electron 框架(https://electronjs.org/)， 可以构建跨平台的桌面应用，比如 vscode
+把代码写到文件中，例如 `index.js`：
 
-   - 基于 restify 框架(http://restify.com/)，可以快速构建 API 接口项目
+```js
+console.log("hello node")
+```
 
-   - 读写和操作数据库、创建实用的命令行工具辅助前端开发
+终端执行：
 
-- Node 环境
+```bash
+node index.js
+```
 
-   - Node 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。
+这才是更常见的工作方式。
 
-   - 通俗的理解：Node 为 Node.js 代码的正常运行，提供的必要的环境。
+---
 
-**==> picture [467 x 180] intentionally omitted <==**
+## 五、Node 中的模块化
 
-## 总结：
+在 Node 中，每个文件都可以看成一个模块。
 
-- 浏览器 和 Node，都是 JS 的运行环境
+### 5.1 模块分类
 
-- 具体来说，浏览器是客户端的JS（JavaScript ）环境；Node是服务端的JS（Node.js）运行环境
+| 类型       | 说明          | 示例                 |
+| ---------- | ------------- | -------------------- |
+| 自定义模块 | 自己写的文件  | `./utils.js`         |
+| 内置模块   | Node 自带     | `fs`、`path`、`http` |
+| 第三方模块 | 通过 npm 安装 | `express`、`axios`   |
 
-- 不同环境中，都可以运行 ECMAScript 核心代码
+### 5.2 导出与导入
 
-- WebAPI是浏览器特有的，只能在浏览器环境下使用；
+```js
+// utils.js
+function add(a, b) {
+  return a + b
+}
 
-- Node内置API（内置模块）是Node环境特有的，只能在Node环境中使用
+module.exports = {
+  add,
+}
+```
 
-**==> picture [467 x 130] intentionally omitted <==**
+```js
+// index.js
+const utils = require("./utils")
 
-## Node.js 安装
+console.log(utils.add(1, 2))
+```
 
-- 获取Node.js
+### 5.3 `require` 的使用规则
 
-   - 安装包可以从 Node.js 的官网首页直接下载，进入到 Node.js 的官网首页，点 击绿色的按钮，下载所需的 版本后，双击直接安装即可。
+1. 加载自定义模块时必须写路径，如 `./utils`。
+2. 加载内置模块时直接写模块名，如 `require("fs")`。
+3. 加载第三方模块前必须先安装。
 
-**==> picture [467 x 73] intentionally omitted <==**
+---
 
-   - 长期支持版，基本没用重大bug，推荐大多数用户使用
+## 六、`fs` 模块
 
-   - 当前发布版，含最新功能，但可能存在未发现的重大bug
+`fs` 是 file system 的缩写，用于操作文件和目录。
 
-- 安装Node.js
+```js
+const fs = require("fs")
+```
 
-   - 打开下载好的安装包，一直下一步即可安装。
+### 6.1 `fs.readFile()`
 
-   - 如果不想安装在C盘，则把安装路径中的C修改为D或者E即可。
+```js
+fs.readFile("./test.txt", "utf8", (err, dataStr) => {
+  if (err) {
+    console.log("读取失败：" + err.message)
+    return
+  }
 
-   - 安装后，打开终端窗口，执行 node -v 命令，如果看到版本号，说明安装成功。
+  console.log("读取成功：", dataStr)
+})
+```
 
-**==> picture [467 x 122] intentionally omitted <==**
+### 6.2 `fs.writeFile()`
 
-## Node环境中运行JavaScript
+```js
+fs.writeFile("./demo.txt", "hello node", "utf8", err => {
+  if (err) {
+    console.log("写入失败：" + err.message)
+    return
+  }
 
-## 交互模式
+  console.log("写入成功")
+})
+```
 
-- REPL(Read-Eval -Print-Loop)交互模式
+### 6.3 学 `fs` 的重点
 
-- 指的是在终端窗口中，执行简单的JavaScript代码
+1. 路径是否正确。
+2. 编码是否明确写了 `utf8`。
+3. 写文件会不会覆盖原内容。
 
-- 操作步骤：
+如果把 `fs` 用在前端工具脚本里，它常见于：读配置、写产物、批量处理文件。
 
-   - 打开任意终端，直接输入 node 命令并回车
+### 6.4 一个实践提醒
 
-   - 执行你的JS代码，按回车表示执行
+读写文件问题排查时，通常先看三件事：
 
-   - 按两次"Ctrl+C"退出
+1. 当前工作目录和相对路径是不是你以为的那个位置。
+2. 文件是否真的存在，权限是否足够。
+3. 是否误把异步回调里的错误忽略掉了。
 
-**==> picture [467 x 239] intentionally omitted <==**
+---
 
-## 脚本模式
+## 七、`path` 模块
 
-- 如果有大段的JS代码需要在Node环境中运行
+`path` 用于处理路径字符串，适合解决路径拼接和跨平台兼容问题。
 
-- 可以把JS代码写到JS文件中
+```js
+const path = require("path")
+```
 
-- 终端中，使用 node xxx.js 命令即可运行文件中的代码
+### 7.1 `path.join()`
 
-**==> picture [467 x 141] intentionally omitted <==**
+```js
+const filePath = path.join(__dirname, "./files", "a.txt")
+console.log(filePath)
+```
 
-## vscode中的终端
+作用：把多个路径片段拼接成完整路径。
 
-**==> picture [305 x 52] intentionally omitted <==**
+### 7.2 `path.basename()`
 
-**----- Start of picture text -----**<br>
-无论执行 git 命令，还是 node 命令，都需要使用终端工具<br>vscode内置了终端工具，我们可以使用它来执行 git 或 node 命令<br>最佳打开vscode终端的方式<br>**----- End of picture text -----**<br>
+```js
+const fullPath = "/Users/demo/index.html"
 
-- 在文件或文件夹上，鼠标右键，在集成终端中打开
+console.log(path.basename(fullPath))
+console.log(path.basename(fullPath, ".html"))
+```
 
-- 这样打开的好处是，终端路径刚好是 当前文件或文件夹的路径
+### 7.3 `path.extname()`
 
-**==> picture [467 x 136] intentionally omitted <==**
+```js
+console.log(path.extname("index.html"))
+```
 
-**==> picture [54 x 11] intentionally omitted <==**
+### 7.4 为什么不要手写字符串拼路径
 
-**----- Start of picture text -----**<br>
-模块化设计<br>**----- End of picture text -----**<br>
+因为不同系统路径分隔符可能不同，直接拼字符串容易埋下兼容性问题。
 
-## Node中的模块化
+---
 
-   - 规定，用户创建的每个JS文件，就是一个小模块，叫做自定义模块
+## 八、`querystring` 模块
 
+`querystring` 用于处理 URL 查询参数字符串。
 
-   - 我们可以按照 定的语法将这些小模块组合到一起，形成一个完整的项目
+```js
+const querystring = require("querystring")
+```
 
-   - Node中的模块化，通俗的说，就是在JS文件中，能够使用另一个文件中的变量
+### 8.1 `querystring.parse()`
 
+```js
+const qs = "name=zs&age=20&city=beijing"
+const obj = querystring.parse(qs)
 
-   - 言外之意，就是把两个毫不相干的JS文件（零件）组装到一起
+console.log(obj)
+```
 
-- Node中模块化的实现
+### 8.2 `querystring.stringify()`
 
-**==> picture [467 x 271] intentionally omitted <==**
+```js
+const str = querystring.stringify({
+  name: "zs",
+  age: 20,
+})
 
-## Node中的模块分类
+console.log(str)
+```
 
-   - 自定义模块：用户自己创建的每个JS文件，都是自定义模块
+### 8.3 一个补充认知
 
-   - 内置模块（核心模块）：Node安装后，即可使用的模块，Node环境自带
+现代项目中也常会使用 `URLSearchParams` 处理查询参数，但 `querystring` 仍然是理解 Node 经典写法的重要基础。
 
-   - 第三方模块：其他人或公司、组织开发的模块，发布到 npm 网站，我们需要下载使用的模块
+### 8.4 `querystring` 和 `URLSearchParams` 怎么看
 
-- 加载模块的语法
+| 场景                      | 更常见            |
+| ------------------------- | ----------------- |
+| 看老 Node 教程和历史代码  | `querystring`     |
+| 新代码里处理 URL 查询参数 | `URLSearchParams` |
 
-   - 加载自定义模块
+---
 
-      - a 文件，必须通过 module.exports 共享（导出、暴露）当前模块中的变量
+## 九、`http` 模块
 
-      - b 文件，需要通过 require() 加载（导入）。（a 文件导出什么，b 文件就得到什么）
+`http` 模块可以创建 Web 服务器。
 
-      - 加载自定义模块时，必须要带路径 （相对路径、绝对路径都可以；但必须带路径，哪怕是 ./ 也不能省 略）
+```js
+const http = require("http")
 
-      - 加载自定义模块时，可以省略后缀
+const server = http.createServer((req, res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8")
+  res.end("hello node")
+})
 
-   - 加载内置模块
+server.listen(3000, () => {
+  console.log("server running at http://127.0.0.1:3000")
+})
+```
 
-      - 直接使用 require() 加载即可。
+### 9.1 `http` 模块能做什么
 
-      - 加载模块时，无需带路径，比如 require('fs')
+1. 接收请求。
+2. 返回响应。
+3. 处理路径和方法。
 
-      - 加载内置模块，得到对象类型，对象中内置了很多API方法
+### 9.2 为什么现代业务很少直接裸写 `http`
 
-   - 加载第三方模块
+因为真实项目通常会继续使用 `express`、`koa`、`nest` 这类框架来组织路由、中间件和错误处理。
 
-      - 必须先下载（后续讲解）
+但学 `http` 模块的价值在于理解服务端最基础的请求响应模型。
 
-内置模块介绍
+### 9.3 一个选择标准
 
-- 内置模块，顾名思义，即 Node 环境自带的模块；安装完Node即可直接使用
+1. 学底层请求响应模型，用 Node 原生 `http`。
+2. 快速搭接口、做中间件链、组织业务服务，更常用 Express / Koa 等框架。
 
-- Node内置模块有很多，具体参见 http://nodejs.cn/api/
+---
 
-- 加载内置模块：let 变量 = require('模块名');
+## 十、这几块知识怎么串起来
 
-- 模块和模块之间很好区分，看模块名即可确定他们的作用
+可以用下面这条主线理解：
 
-## 内置模块 - fs 模块
+```text
+先分清浏览器环境和 Node 环境
+再理解 Node 是一个运行时
+再理解 Node 通过模块提供文件、路径、查询字符串、网络服务等能力
+```
 
-- fs 模块，f（file）s（system），文件系统；所有关于文件的操作，都可以通过这个模块完成
+如果这条主线没建立起来，后面学工程化、CLI、服务端开发时会很容易混乱。
 
-   - 比如创建文件
+---
 
-   - 获取文件里面的内容
+## 十一、小结
 
-   - 向文件中添加内容
+1. JavaScript 语言本身只是一套语法，真正决定能力边界的是运行环境。
+2. 浏览器擅长页面交互和渲染，Node 擅长文件、服务、脚本和工程化能力。
+3. `fs`、`path`、`querystring`、`http` 分别解决文件、路径、查询参数和基础网络服务问题。
+4. 学这一篇时，重点不是把模块 API 全背下来，而是理解“为什么这些能力只在 Node 环境里存在”。
+5. 这篇本质上是在帮你建立浏览器前端和 Node 运行时之间的边界意识。
 
-## 创建文件夹
+### 12.3 一个重要注意点
 
-- 遍历文件夹里面的文件
+`res.end()` 通常要放在最后；做出响应后，不能再继续设置响应头或多次结束响应。
 
-- 监视文件的变化
+---
 
-- 判断文件是否存在
+## 十三、搭建一个简单静态服务器
 
-- ……
+如果把 `http`、`fs`、`path` 串起来，就可以实现最基础的静态资源服务。
 
-## fs模块 - fs.readFile()
+```js
+const http = require("http")
+const fs = require("fs")
+const path = require("path")
 
-- fs.readFile() 方法的作用是：读取文件
+const server = http.createServer()
 
-   - 读取：获取
+server.on("request", (req, res) => {
+  const url = req.url === "/" ? "/index.html" : req.url
+  const filePath = path.join(__dirname, url)
 
-   - 读取文件：获取文件里面的内容
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.statusCode = 404
+      res.end("404 Not Found")
+      return
+    }
 
-   - 注意，这是一个异步方法
+    res.end(data)
+  })
+})
 
-**==> picture [467 x 138] intentionally omitted <==**
+server.listen(3000)
+```
 
-## fs模块 - fs.writeFile()
+### 13.1 这个示例体现了什么
 
-- fs.writeFile() 方法的作用是：写入文件
+1. `http` 负责接收请求。
+2. `req.url` 决定要读取哪个文件。
+3. `path.join()` 负责安全拼路径。
+4. `fs.readFile()` 负责把文件内容读出来。
+5. `res.end()` 把内容返回给客户端。
 
-## 写入：向文件中添加内容
+这其实就是很多 Web 框架底层能力的简化版。
 
-- 特点：如果文件不存在，则会创建文件（但不能递归创建）
+---
 
-- 特点：如果文件中有内容，将会被覆盖
+## 十四、学习路径建议
 
-- 注意，这是一个异步方法
+如果是前端转 Node，可以按这个顺序学：
 
-**==> picture [467 x 110] intentionally omitted <==**
+1. Node 是什么，和浏览器环境有什么区别。
+2. 会用终端运行脚本。
+3. 掌握模块化和 `require`。
+4. 学会 `fs` 和 `path`。
+5. 理解 `http` 服务的基本工作方式。
+6. 再进入 Express、数据库和身份认证。
 
-fs模块 - fs.access()
+---
 
-- fs.access() 方法的作用是：判断文件是否存在（是否可读、是否可写）
+## 十五、小结
 
-   - 参数2可选；
-
-      - fs.constants.F_OK或不填，表示判断文件是否存在；
-
-      - fs.constants.R_OK表示判断文件是否可读；
-
-      - fs.constants.W_OK表示文件是否可写
-
-   - 注意，这是一个异步方法
-
-**==> picture [467 x 112] intentionally omitted <==**
-
-## 内置模块 - path 模块
-
-- path 模块，path 是路径的意思；所有和路径相关的操作，都可以通过这个模块完成
-
-   - 拼接一个路径
-
-   - 获取当前文件所在的路径
-
-   - 获取路径中的文件名
-
-   - 获取路径中的后缀
-
-……
-
-- path模块 - path.extname()
-
-   - path.extname() 方法的作用是：获取路径中的后缀
-
-      - 参数：一个路径
-
-**==> picture [467 x 171] intentionally omitted <==**
-
-## path模块 - path.join()
-
-- path.join() 方法的作用是：拼接给出的路径
-
-   - 参数：两个或更多个路径
-
-   - 额外补充：Node中，有一个全局变量 __dirname ，它表示当前 JS 文件所在的绝对路径
-
-**==> picture [467 x 183] intentionally omitted <==**
-
-## 内置模块 - querystring 模块
-
-querystring 模块，querystring 是查询字符串的意思；所有和查询字符串相关的操作，都可以通过这个模块完
-
-- 成
-
-- 什么格式的字符串是查询字符串：id=1&name=zs&age=20
-
-- 将查询字符串，转换成对象
-
-- 将对象转成查询字符串
-
-……
-
-querystring模块 - querystring.parse()
-
-querystring.parse() 方法的作用是：将查询字符串转换成JS对象
-
-- 参数：一个查询字符串
-
-**==> picture [467 x 100] intentionally omitted <==**
-
-querystring模块 - querystring.stringify()
-
-querystring.stringify() 方法的作用是：将JS对象 转成 查询字符串
-
-- 参数：一个字面量JS对象
-
-**==> picture [467 x 102] intentionally omitted <==**
-
-## http模块
-
-请求一个网站的基本流程
-
-**==> picture [467 x 219] intentionally omitted <==**
-
-- http模块介绍
-
-   - http模块，也是Node的内置模块，也是通过 require('http') 加载使用
-
-   - http模块，是和网络请求相关的模块
-
-   - http模块，可以搭建web服务器，可以向其他服务器发送http请求
-
-- 搭建web服务器的步骤
-
-   - 加载http模块
-
-> 1 const http = require('http');
-
-## 创建 server 对象
-
-1
-
-const server = http.createServer();
-
-## 注册 request 事件
-
-> 1 server.on('request', (req, res) => {
-
-> 2 res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-
-> 3 res.end(' 你好世界 ');
-
-> 4 })
-
-指定端口，启动服务
-
-1
-
-server.listen(4000, () => console.log(' 服务器启动了 '))
-
-## 步骤解析
-
-- 第 ① 步：写法固定
-
-- 第 ② 步：写法基本固定
-
-- 第 ③ 步：用于处理客户端的请求；
-
-
-   - 这 步，可以和第 ② 步合并到一起
-
-   - 当客户端发送请求到达服务器的时候，就会触发 request 事件，执行 (req, res) => {} 函数
-
-   - 通过 req （request）对象，可以获取到请求相关的信息
-
-   - 通过 res （response）对象，可以做出响应处理
-
-- 第 ④ 步：写法基本固定
-
-   - 端口 4000 可以修改，只要不和其他程序的端口冲突即可
-
-## res对象
-
-这里指的 res ，是处理函数的第二个形参
-
-> 1 server.on('request', (req, res) => {
-
-> 2 // 取自单词 response ，响应的意思
-
-> 3 });
-
-## 处理响应信息，都可以通过它完成
-
-- res.statusCode = 200； 可以设置响应状态码
-
-- res.setHeader('key', 'value'); 可以设置响应头
-
-   - 如果响应中文，必须设置 res.setHeader('Content-Type', 'xxx/xxx; charset=utf-8'); 否则乱码
-
-- res.end(响应体); 设置响应体，并做出响应
-
-   - 这个方法，必须放到最后；做出响应后，不能再设置响应状态码和响应头了，也不能多次调用
-
-   - res.end() 方法
-
-   - 响应体，只能是 字符串，如果要响应对象必须先转成字符串，即便是数字也必须加引号，比如 '123'
-
-## req对象
-
-- 这里指的 req ，是处理函数的第一个形参
-
-> 1 server.on('request', (req, res) => {
-
-> 2 // 取自单词 request ，请求的意思
-
-> 3 });
-
-## 所有请求相关信息，都可以通过它获取到
-
-- req.method 获取请求方式，比如得到 GET 、POST等等
-
-- req.url 获取请求地址中的除根路径以为的部分
-
-   - http://localhost:3006 ===> req.url = '/'
-
-   - http://localhost:3006/api/getbooks ===> req.url = '/api/getbooks'
-
-http://localhost:3006/index.html ===> req.url = '/index.html'
-
-- http://localhost:3006/index.html?id=1 ===> req.url = '/index.html?id=1'
-
-## 搭建静态服务器
-
-> 1 server.on('request', (req, res) => {
-
-> 2 // 获取请求路径，如果请求路径 为 / ，也读取 /index.html
-
-> 3 if (req.url === '/') req.url = '/index.html';
-
-> 4 // 根据请求路径判断文件是否存在
-
-> 5 fs.access('.' + req.url, err => {
-
-> 6 // 根据 err 判断文件是否存在
-
-> 7 if (err) {
-
-> 8 // 响应 404
-
-> 9 } else {
-
-> 10 // 读取文件，响应
-
-> 11 }
-
-> 12 })
-
-> 13 });
+1. 浏览器和 Node 都能执行 JavaScript，但提供的 API 完全不同。
+2. Node.js 让 JavaScript 可以运行在服务端和命令行环境中。
+3. `fs` 用来操作文件，`path` 用来处理路径，`querystring` 用来处理查询字符串，`http` 用来创建服务器。
+4. `req` 负责拿请求信息，`res` 负责组织响应结果。
+5. 把 `http`、`fs`、`path` 串起来后，就能理解一个最基础的静态服务器是怎么工作的。
+6. 理解 Node 的模块化和内置模块，是继续学习 npm、Express 和工程化工具链的前提。

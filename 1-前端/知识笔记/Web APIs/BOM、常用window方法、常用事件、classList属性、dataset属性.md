@@ -1,134 +1,290 @@
 # BOM、常用 window 方法、常用事件、classList、dataset
 
-BOM：浏览器对象模型
+## 一、什么是 BOM
 
-**==> picture [467 x 120] intentionally omitted <==**
+BOM 指的是浏览器对象模型，用来操作浏览器窗口、本地历史记录、地址栏、屏幕信息等。
 
-## Navigator：浏览器
+它和 DOM 的区别是：
 
-- navigator 对象下包含有许多信息，如 platform、userAgent
+| 模型 | 主要操作对象           |
+| ---- | ---------------------- |
+| DOM  | 页面内容、HTML 元素    |
+| BOM  | 浏览器窗口和浏览器环境 |
 
-- onLine 属性检测当前是否处理联网状态
+常见 BOM 对象包括：
 
-- geolocation 属性可以获取用户所在经纬度位置
+1. `window`
+2. `navigator`
+3. `history`
+4. `location`
+5. `screen`
 
-- 注：众多的信息中有许多并不准确，如 appName、appCodeName等。
+一句话理解：DOM 更偏页面内容，BOM 更偏浏览器环境。
 
-## History：历史记录
+---
 
-- length 属性记录了与当前页面相关的页面的数量
+## 二、常见 BOM 对象
 
-- back 方法跳转至上一个链接地址对应的页面，与浏览器的"后退"操作一致
+### 2.1 `navigator`
 
-- forward 方法跳转至下一个连接地址对应的页面，与浏览器的"前进"操作一致
+`navigator` 用于获取浏览器和设备环境信息。
 
-- go 方法跳转到历史记录中任一链接地址对应的页面，参数可以正数也可以是负数
+```js
+console.log(navigator.userAgent)
+console.log(navigator.onLine)
+```
 
-## location：地址栏
+| 属性          | 说明             |
+| ------------- | ---------------- |
+| `userAgent`   | 浏览器标识信息   |
+| `platform`    | 平台信息         |
+| `onLine`      | 当前是否联网     |
+| `geolocation` | 地理位置相关能力 |
 
-- location 的数据类型是对象，它拆分并保存了 URL 地址的各个组成部分。
+注意：`navigator` 中有些信息并不绝对可靠，业务判断不要过度依赖字符串识别。
 
-- URL 即我们平时所说的链接地址，它有着固定的格式如下图所示：协议、主机、端口、路径、参数、哈希。
+### 2.2 `history`
 
-**==> picture [467 x 143] intentionally omitted <==**
+`history` 用来操作浏览器历史记录。
 
-## 总结：
+```js
+history.back()
+history.forward()
+history.go(-1)
+```
 
-- location.href 属性获取完整的 URL 地址，对其赋值时用于地址的跳转
+| 成员        | 作用               |
+| ----------- | ------------------ |
+| `length`    | 历史记录数量       |
+| `back()`    | 后退一页           |
+| `forward()` | 前进一页           |
+| `go(n)`     | 前进或后退指定步数 |
 
-- location.search 属性获取地址中携带的参数，符号 ？后面部分
+### 2.3 `location`
 
-- location.hash 属性获取地址中的哈希值，符号 # 后面部分
+`location` 表示当前页面地址信息，是处理 URL 的常用对象。
 
-- location.reload 方法用来刷新当前页面，传入参数 true 时表示强制刷新
+```js
+console.log(location.href)
+console.log(location.search)
+console.log(location.hash)
+```
 
-- location.assign：方法用于加载指定的url，会产生历史记录
+| 成员           | 作用                     |
+| -------------- | ------------------------ |
+| `href`         | 完整 URL，赋值可跳转     |
+| `search`       | 查询参数部分，如 `?id=1` |
+| `hash`         | 哈希部分，如 `#tab1`     |
+| `reload()`     | 刷新页面                 |
+| `assign(url)`  | 跳转并保留历史记录       |
+| `replace(url)` | 跳转但替换当前记录       |
 
-- location.replace：方法用于替换url，不会产生历史记录
+### 2.4 `screen`
 
-## screen：屏幕
+`screen` 用于获取屏幕信息。
 
-- screen 属性的数据类型是对象，它记录用户电脑屏幕的相关参数，如宽度、高度等。
+```js
+console.log(screen.width)
+console.log(screen.height)
+```
 
-- Screen.width是屏幕宽度像素数（例如1920）
+常见场景不多，通常只在少数适配或设备分析需求中使用。
 
-- Screen.height是屏幕高度像素数（例如1080）
+---
 
-- 总结：该对象的使用场景并不多。
+## 三、常用 `window` 方法
 
-## 常用window方法
+### 3.1 `alert()`
 
-- Alert
+```js
+alert("操作成功")
+```
 
-警告提示框会阻止程序继续执行，直到用户点击确认后。
+用于弹出提示框，会阻塞页面后续执行。
 
-- Comfirm
+### 3.2 `confirm()`
 
-   - 用户点击确定返回值为 true ，点击取消返回值为 false。
+```js
+const ok = confirm("确定删除吗？")
+```
 
-- Prompt
+返回布尔值：
 
-   - 传入第 2 个参数可以充当默认值。
+1. 点击确定返回 `true`。
+2. 点击取消返回 `false`。
 
-## load、DOMContentLoaded事件
+### 3.3 `prompt()`
 
-- load 会等待所有的资源（图片、样式、脚本、音视频等）加载完毕后才触发
+```js
+const name = prompt("请输入姓名", "张三")
+```
 
-- DOMContentLoaded 只要 HTML 结构加载完毕就会被触发，该事件通过 document 进行监听
+可接收用户输入，第二个参数可作为默认值。
 
-- 将 script 标签写在 head 标签中时，查找 DOM 会失败
+### 3.4 一个实际边界
 
-- 由于 DOMContentLoaded 比 load 更早被触发，因此通常推荐使用 DOMContentLoaded 事件
+`alert`、`confirm`、`prompt` 适合理解浏览器基础交互，但现代项目里更常用自定义弹窗组件，因为默认弹窗样式不可控、体验也较弱。
 
-## beforeunload事件
+---
 
-- beforeunload 事件在关闭页面、跳转新页面、刷新当前页面时触发
+## 四、常用页面生命周期和窗口事件
 
-- 该事件常用于提示用户即将离开当前页面
+### 4.1 `load`
 
-- 出于安全考虑不允许自定义提示信息
+```js
+window.addEventListener("load", function () {
+  console.log("所有资源加载完成")
+})
+```
 
-- event.returnValue = '' ，这条语句可用来阻止事件的发生（谷歌）
+特点：页面中的图片、样式、脚本等资源全部加载完毕后才触发。
 
-## resize事件
+### 4.2 `DOMContentLoaded`
 
-- 在窗口变化监听的过程中能实时获取视口的大小，可添加在window对象和某个元素上（例如可缩放的文本
+```js
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM 结构加载完成")
+})
+```
 
-- 域），不能加给document
+特点：只要 HTML 结构解析完成就会触发，不必等待图片等资源加载完成。
 
-- documentElement 能够获得视口的大小
+### 4.3 `beforeunload`
 
-- 基于 resize 可以动态计算 html 的字号大小，完成移动端 rem 屏幕适配
+```js
+window.addEventListener("beforeunload", function (event) {
+  event.returnValue = ""
+})
+```
 
-## dragover、drop事件
+常用于离开页面前提醒用户，但现代浏览器对自定义提示内容有限制。
 
-- 用户拖动文件至监听了 dragover 事件的元素之上时，dragover 事件就会被触发
+### 4.4 `resize`
 
-- 用户拖动文件至监听了 drop 事件的元素之上然后松开拖拽文件时，drop 事件就会被触发
+```js
+window.addEventListener("resize", function () {
+  console.log(document.documentElement.clientWidth)
+})
+```
 
-- 事件对象 dataTransfer.files 是 File 类型对象，包含了文件的大小、名称、格式等信息
+适用于监听窗口尺寸变化，例如移动端 `rem` 适配。
 
-- 通过 FileReader 实现文件的进行读取
+### 4.5 `load` 和 `DOMContentLoaded` 怎么选
 
-## classList属性
+| 事件               | 更适合                               |
+| ------------------ | ------------------------------------ |
+| `DOMContentLoaded` | 只依赖 DOM 结构就能开始的逻辑        |
+| `load`             | 必须等图片、样式等资源都准备好的逻辑 |
 
+---
 
-   - classList 是专门用于类名对象，该对象下包含了一些方法能够非常方便地进行类名的操作
+## 五、拖放相关事件
 
-- add 用于为元素节点添加一个类名
+拖拽文件上传常会用到 `dragover` 和 `drop`。
 
-- remove 用于为元素节点删除一个类名
+```js
+const box = document.querySelector(".upload-box")
 
-- contains 用于检测是否包含某个类名
+box.addEventListener("dragover", function (event) {
+  event.preventDefault()
+})
 
-- toggle 用于切换某个类名（如果有这个类名则删掉，如果没有这个类名要添加）
+box.addEventListener("drop", function (event) {
+  event.preventDefault()
+  const files = event.dataTransfer.files
+  console.log(files)
+})
+```
 
-## dataset属性
+| 事件       | 说明                       |
+| ---------- | -------------------------- |
+| `dragover` | 文件拖到目标区域上方时触发 |
+| `drop`     | 松开文件时触发             |
 
-- 为了区分 HTML 的标准属性，要求所有的自定义属性均为 data- 做为固定的前缀，形如 data-index、data-myinfo
+注意：想让元素真正接收拖放，通常需要在 `dragover` 中调用 `event.preventDefault()`。
 
-- 上述代码中 my-info、index 即自定义属性，data- 是语法前缀
+---
 
-- 通过 DOM 节点的 dataset 属性可以获取自定义属性，也可以重新为自定义属性赋值
+## 六、`classList` 属性
 
-- 通过 dataset 赋值的自定义属性不存在时，会自动添加
+`classList` 提供了方便的类名操作方法。
+
+```js
+const box = document.querySelector(".box")
+
+box.classList.add("active")
+box.classList.remove("hidden")
+console.log(box.classList.contains("active"))
+box.classList.toggle("open")
+```
+
+| 方法         | 作用                 |
+| ------------ | -------------------- |
+| `add()`      | 添加类名             |
+| `remove()`   | 删除类名             |
+| `contains()` | 判断是否包含某个类名 |
+| `toggle()`   | 有则删、无则加       |
+
+### 6.1 为什么更推荐 `classList`
+
+和直接改 `className` 相比，`classList` 更适合增删单个状态类，不容易把原有类名整体覆盖掉。
+
+---
+
+## 七、`dataset` 属性
+
+`dataset` 用来读取和设置 `data-*` 自定义属性。
+
+```html
+<div id="box" data-index="1" data-user-name="tom"></div>
+```
+
+```js
+const box = document.querySelector("#box")
+
+console.log(box.dataset.index)
+console.log(box.dataset.userName)
+
+box.dataset.status = "done"
+```
+
+| HTML 写法        | JavaScript 访问    |
+| ---------------- | ------------------ |
+| `data-index`     | `dataset.index`    |
+| `data-user-name` | `dataset.userName` |
+
+### 7.1 `dataset` 适合做什么
+
+1. 给节点挂轻量级标识。
+2. 配合事件委托读取当前项信息。
+3. 存一些和视图强相关的小数据。
+
+### 7.2 一个边界提醒
+
+`dataset` 适合轻量数据，不适合挂太大对象。复杂数据更适合放在 JS 状态里。
+
+---
+
+## 八、这些 API 怎样配合起来
+
+真实项目里，这几块知识通常会一起出现，例如做一个“用户偏好设置”：
+
+```text
+DOMContentLoaded 初始化页面
+  -> 读取 location / hash 判断当前视图
+  -> 用 dataset 读取按钮标识
+  -> 用 classList 切换高亮态
+  -> 页面离开前通过 beforeunload 做提醒
+```
+
+所以这篇不是在记一堆零散对象，而是在建立“浏览器环境 API + 页面状态控制”的基础组合能力。
+
+---
+
+## 九、小结
+
+1. BOM 主要操作浏览器环境而不是页面结构，常见对象是 `navigator`、`history`、`location`、`screen` 和 `window`。
+2. `DOMContentLoaded`、`load`、`beforeunload`、`resize` 这些事件要按触发时机和用途区分。
+3. `classList` 适合做状态类切换，`dataset` 适合做轻量级节点数据传递。
+4. 学这一篇时，重点不是背对象名，而是理解这些 API 如何一起服务页面初始化、状态切换和浏览器交互。
+5. 这篇本质上是在补 DOM 之外的浏览器环境能力基础。

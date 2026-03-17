@@ -1,171 +1,310 @@
 # extends、infer、-
 
-## extends 操作符
+## 一、一句话理解
 
-## 约束泛型的类型
+这三个关键字经常一起出现，是因为很多高级工具类型本质上都在走同一条链路: 先约束，再匹配，再提取，最后重组。
 
-基本类型
+---
 
-> 1 type Num<T extends number> = any
+## 二、先理解这三个关键字分别管什么
 
-2
+这三个关键字经常一起出现，是因为它们都高频出现在 **泛型、条件类型、工具类型** 中。
 
-> 3 type T1 = Num<123>
+| 关键字         | 主要作用                                 | 常见出现位置             |
+| -------------- | ---------------------------------------- | ------------------------ |
+| **`extends`**  | 约束泛型，或作为条件类型的“是否满足”判断 | 泛型、条件类型、接口继承 |
+| **`infer`**    | 在条件类型里“提取”某部分类型             | 返回值、参数、元组拆解   |
+| **`-` 修饰符** | 在映射类型中移除 `?`、`readonly`         | 自定义工具类型           |
 
-> 4 type T2 = Num<"abc"> // 报错：类型 "string" 不满足约束 "number" 。
+一句话概括：**`extends` 负责判断和约束，`infer` 负责提取，`-` 负责去掉修饰符。**
 
-## 对象
+---
 
-> 1 type MyType<T extends object, U extends T> = any
+## 三、`extends`
 
-2
+### 2.1 在泛型里：做约束
 
-> 3 type Obj1 = {
+最常见的用法是约束泛型参数必须满足某种类型。
 
-> 4 name: string
+```ts
+type Num<T extends number> = T
 
-> 5 age: number
+type T1 = Num<123>
+// type T2 = Num<"abc"> // 报错
+```
 
-- 6 }
+这里的意思是：`T` 必须是 `number` 类型或其更具体的类型。
 
-> 7 type Obj2 = {
+### 2.2 对对象做约束
 
-> 8 name: string
+```ts
+type MyType<T extends object, U extends T> = [T, U]
 
-> 9 } 10
+type Obj1 = {
+  name: string
+  age: number
+}
 
-> 11 type T = MyType<Obj1, Obj2> // 报错：类型 "Obj2" 不满足约束 "Obj1" 。类型 "Obj2" 中缺少属 性 "age" ，但类型 "Obj1" 中需要该属性。
+type Obj2 = {
+  name: string
+}
 
-## 三元表达式
+// type T = MyType<Obj1, Obj2> // 报错，因为 Obj2 不是 Obj1 的子集结构
+```
 
-> 1 type T = 1 extends number ? true : false
+### 2.3 为什么泛型约束重要
 
-> 2 // type T = true
+因为很多工具类型只有在参数满足前提时才有意义。
 
-## 接口拓展
+例如：
 
-> 1 interface A {
+1. 只有函数类型才能提取参数和返回值。
+2. 只有对象类型才能做键映射。
+3. 只有数组 / 元组类型才能做拆分。
 
-> 2 name: string
+---
 
-> 3 }
+## 四、`extends` 在条件类型里
 
-> 4 interface B extends A {
+### 3.1 基本语法
 
-> 5 age: number
+```ts
+type T = 1 extends number ? true : false
+```
 
-> 6 }
+这可以理解为类型系统里的三元表达式：
 
-7
+```ts
+条件 ? 结果1 : 结果2
+```
 
-> 8 const speak: B = {
+### 3.2 典型理解方式
 
-> 9 name: "Sun",
+`A extends B ? X : Y` 的含义是：
 
-> 10 age: 20,
+**如果 `A` 可以赋值给 `B`，就返回 `X`，否则返回 `Y`。**
 
-> 11 }
+### 3.3 最常见用途
 
-## infer操作符
+1. 判断类型之间的包含关系。
+2. 做工具类型分支。
+3. 搭配 `infer` 提取部分类型。
 
-## 获取函数返回值的类型
+---
 
-- 1 function getData() {
+## 五、`extends` 在接口继承里
 
-> 2 return 1
+`extends` 不只在泛型和条件类型里出现，也常用于接口继承。
 
-- 3 }
+```ts
+interface A {
+  name: string
+}
 
-4
+interface B extends A {
+  age: number
+}
 
-> 5 type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any
+const person: B = {
+  name: "Sun",
+  age: 20,
+}
+```
 
-- 6 type T1 = ReturnType<typeof getData> // type T1 = number
+这里表示 `B` 在 `A` 的基础上扩展了新属性。
 
-## 获取函数参数的类型
+---
 
-- 1 function getData(name: string, age: number) { }
+## 六、`infer`
 
-2
+### 5.1 什么是 `infer`
 
-> 3 type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
+`infer` 只能出现在条件类型中，用来在匹配过程中“声明一个临时类型变量”，然后把某一部分类型提取出来。
 
-- 4 type T1 = Parameters<typeof getData> // type T1 = [name: string, age: number]
+可以把它理解为：
 
-## 获取实例的类型
+**如果这个类型能匹配某个结构，就顺手把其中一部分类型取出来。**
 
-- 1 class Person { }
+### 5.2 提取函数返回值
 
-- 2
+```ts
+function getData() {
+  return 1
+}
 
-> 3 type InstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer R ? R : any;
+type MyReturnType<T extends (...args: any[]) => any> = T extends (
+  ...args: any[]
+) => infer R
+  ? R
+  : never
 
-- 4 type T1 = InstanceType<typeof Person>
+type T1 = MyReturnType<typeof getData>
+```
 
-获取构造函数的参数类型
+这里的 `infer R` 表示：如果 `T` 能匹配函数结构，那么把返回值类型记为 `R`。
 
-> 1 class Person {
+### 5.3 提取函数参数
 
-> 2 constructor(name: string, age: number) { }
+```ts
+function getData(name: string, age: number) {}
 
-> 3 }
+type MyParameters<T extends (...args: any[]) => any> = T extends (
+  ...args: infer P
+) => any
+  ? P
+  : never
 
-4
+type T1 = MyParameters<typeof getData>
+```
 
-- 5 type ConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never;
+此时 `P` 就是参数元组类型。
 
-- 6 type T1 = ConstructorParameters<typeof Person> // type T1 = [name: string, age: number]
+### 5.4 提取实例类型
 
-## 交换元组类型的头尾
+```ts
+class Person {}
 
-- 1 type Exchange<T extends any[]> = T extends [infer L, ...infer M, infer R] ? [R, ...M, L] : any
+type MyInstanceType<T extends abstract new (...args: any[]) => any> =
+  T extends abstract new (...args: any[]) => infer R ? R : never
 
-- 2 type T1 = Exchange<[string, 1, 2, 3, boolean]> // type T1 = [boolean, 1, 2, 3, string]
+type T1 = MyInstanceType<typeof Person>
+```
 
-## 获取元组类型的联合类型
+### 5.5 提取构造函数参数
 
-> 1 type ElementOf<T extends any[]> = T extends Array<infer R> ? R : any
+```ts
+class Person {
+  constructor(name: string, age: number) {}
+}
 
-> 2 type TupleToUnion = ElementOf<[string, number, boolean]> // type TupleToUnion = string | number | boolean
+type MyConstructorParameters<T extends abstract new (...args: any[]) => any> =
+  T extends abstract new (...args: infer P) => any ? P : never
 
-## - 操作符
+type T1 = MyConstructorParameters<typeof Person>
+```
 
-## 说明
+### 5.6 元组拆解
 
-## 去掉某些操作符，例如?、readonly
+```ts
+type Exchange<T extends any[]> = T extends [infer L, ...infer M, infer R]
+  ? [R, ...M, L]
+  : T
 
-示例
+type T1 = Exchange<[string, 1, 2, 3, boolean]>
+```
 
-> 1 // 示例 1
+这里的意思是：
 
-> 2 type MyTool<T> = {
+1. 取头部为 `L`
+2. 中间为 `M`
+3. 尾部为 `R`
+4. 再重新拼回去
 
-> 3 [key in keyof T]-?: T[key]
+### 5.7 从数组提取元素联合类型
 
-> 4 } 5
+```ts
+type ElementOf<T extends any[]> = T extends Array<infer R> ? R : never
 
-> 6 type T1 = MyTool<{
+type TupleToUnion = ElementOf<[string, number, boolean]>
+```
 
-> 7 name: string
+---
 
-> 8 age?: number
+## 六、`infer` 的核心使用规律
 
-> 9 }> // type T1 = { name: string; age: number }
+| 场景             | 常见结构                         |
+| ---------------- | -------------------------------- |
+| 提取函数返回值   | `(...args) => infer R`           |
+| 提取函数参数     | `(...args: infer P) => any`      |
+| 提取构造函数参数 | `new (...args: infer P) => any`  |
+| 提取数组元素     | `Array<infer R>`                 |
+| 提取元组头尾     | `[infer L, ...infer M, infer R]` |
 
-10
+所以 `infer` 的关键不在背语法，而在于：**先看目标类型长什么样，再决定从哪一段把类型“挖出来”。**
 
-> 11 // 示例 2
+---
 
-> 12 type MyTool<T> = {
+## 七、`-` 修饰符
 
-> 13 -readonly [key in keyof T]: T[key]
+### 7.1 它出现在哪里
 
-> 14 } 15
+`-` 修饰符主要出现在 **映射类型** 中，用来移除属性上的某些修饰。
 
-> 16 type T1 = MyTool<{
+最常见的是：
 
-> 17 name: string
+1. `-?`：去掉可选修饰
+2. `-readonly`：去掉只读修饰
 
-> 18 readonly age: number
+### 7.2 去掉可选修饰
 
-> 19 }> // type T1 = { name: string; age: number }
+```ts
+type RemoveOptional<T> = {
+  [Key in keyof T]-?: T[Key]
+}
+
+type T1 = RemoveOptional<{
+  name: string
+  age?: number
+}>
+```
+
+结果会把 `age?: number` 变成 `age: number`。
+
+### 7.3 去掉只读修饰
+
+```ts
+type RemoveReadonly<T> = {
+  -readonly [Key in keyof T]: T[Key]
+}
+
+type T1 = RemoveReadonly<{
+  name: string
+  readonly age: number
+}>
+```
+
+结果会把 `readonly age` 变成普通可修改属性。
+
+### 7.4 和 `+` 的关系
+
+映射类型里其实还存在：
+
+1. `+?`
+2. `+readonly`
+
+只是很多时候“加上修饰”本身就是默认行为，所以更常见的是用 `-` 去掉已有修饰。
+
+---
+
+## 八、真实开发里怎么快速判断
+
+| 需求                                     | 更该想到什么           |
+| ---------------------------------------- | ---------------------- |
+| **限制泛型只能接某些类型**               | `extends` 约束         |
+| **根据类型是否满足条件做分支**           | 条件类型里的 `extends` |
+| **从函数 / 元组 / 数组里提取一部分类型** | `infer`                |
+| **去掉可选或只读修饰**                   | `-?` / `-readonly`     |
+
+这篇最值得记住的不是零散例子，而是“约束 -> 匹配 -> 提取 -> 重组”这条工具类型主线。
+
+---
+
+## 九、这三个知识点怎么串起来
+
+可以这样理解一条常见工具类型链路：
+
+1. 先用 `extends` 限定输入类型是否合法。
+2. 再在条件类型里用 `infer` 把想要的部分提取出来。
+3. 最后在映射类型里用 `-` 去修饰属性结构。
+
+这几乎就是很多 TS 内置工具类型和高级题目的基础套路。
+
+---
+
+## 十、小结
+
+1. `extends` 在泛型里常用来做约束，在条件类型里常用来做判断。
+2. `infer` 只能写在条件类型中，用来从匹配结构里提取类型。
+3. `-?` 和 `-readonly` 用来在映射类型中移除修饰符。
+4. 这三个知识点是理解 TS 高级工具类型的基础。
+5. 学这篇时，重点不是记死每个例子，而是掌握“约束 → 匹配 → 提取 → 重组”的思路。

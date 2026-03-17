@@ -1,360 +1,363 @@
 # 元素节点、位置尺寸、动画、hover 事件
 
-元素节点——插入
+## 一、元素节点的插入
 
-jQuery 中封装了在指定位置动态插入元素节点的方法，其用法如下代码所示：
+jQuery 提供了一组高频 DOM 插入方法，用来把新节点放进页面结构中。
 
-1 <script> 2 // 待插入的元素节点 ` 3 let tr = $( 4 <tr> 5 <td> 学员 </td> 6 <td>17</td> 7 <td> 女 </td> 8 <td>13632369876</td> 9 <td> 10 <button class="btn btn-xs btn-info edit"> 编辑 </button> 11 <button class="btn btn-xs btn-danger delete"> 删除 </button> 12 </td> 13 </tr> 14 `); 15 16 // 1. 参照父元素的位置插入 17 $('tbody').append(tr); 18 $('tbody').prepend(tr); 19 20 // 2. 参照兄弟元素的位置插入 21 $('tbody').eq(2).after(tr); 22 $('tbody').eq(3).before(tr); 23 </script>
+### 1. 常见方法
 
-## 总结：
+```js
+const row = $(
+  `<tr>
+    <td>学员</td>
+    <td>17</td>
+    <td>女</td>
+    <td>13632369876</td>
+  </tr>`,
+)
 
-- `append`、`prepend` 以父元素为参考分别在结尾处和开头处插入新的元素节点
+$("tbody").append(row)
+$("tbody").prepend(row)
+$("tbody tr").eq(1).before(row)
+$("tbody tr").eq(2).after(row)
+```
 
-- `after`、`before` 以当前元素为参考在之前或之后插入新的元素节点
+### 2. 区别
 
-- `append`、`prepend`、`after`、`before` 均支持直接将 html 字符串做为节点插入
+| 方法            | 作用                 |
+| --------------- | -------------------- |
+| **`append()`**  | 插入到父元素内部末尾 |
+| **`prepend()`** | 插入到父元素内部开头 |
+| **`before()`**  | 插入到当前元素前面   |
+| **`after()`**   | 插入到当前元素后面   |
 
-## 元素节点——删除
+### 3. 一个易错点
 
-jQuery 中封装了动态删除元素节点的方法，其用法如下代码所示：
+同一个真实节点多次插入时，默认是“移动”而不是“复制”。如果想保留原节点，需要先 `clone()`。
 
-> 1 <script>
+---
 
-> 2 // 删除 li 元素
+## 二、元素节点的删除与清空
 
-> 3 $(this).parents('tr').remove();
+### 1. `remove()`
 
-> 4 </script>
+```js
+$(this).parents("tr").remove()
+```
 
-总结：
+删除当前匹配元素本身。
 
-- `remove` 方法删除的是当前调用方法的元素节点
+### 2. `empty()`
 
-- `empty` 方法删除的是当前调用方法的元素节点的后代
+```js
+$("ul").empty()
+```
 
-## 元素节点——复制
+只清空元素内部子节点，不删除外层容器。
 
-jQuery 中封装了复制（克隆）元素节点的方法，其用法如下代码所示：
+### 3. `detach()`
 
-> 1 <script>
+`detach()` 和 `remove()` 很像，但它会保留 jQuery 绑定的数据和事件，更适合临时移出后再插回 DOM。
 
-> 2 // 通过复制获得新的节点
+### 4. `remove()`、`empty()`、`detach()` 怎么选
 
-> 3 $(this).parents('tr').clone(true);
+| 需求                         | 更推荐     |
+| ---------------------------- | ---------- |
+| 连容器本身一起删掉           | `remove()` |
+| 只清空内部内容               | `empty()`  |
+| 临时挪走后还想保留事件和数据 | `detach()` |
 
-> 4 </script>
+---
 
-## 总结：
+## 三、元素节点的复制
 
-- `clone` 方法复制得到的元素节点仍是 jQuery 对象
+```js
+const newRow = $(this).parents("tr").clone(true)
+```
 
-- 待复制的节点中如果有事件监听，需要为 `clone` 方法传入参数 `true`
+### 1. `clone(true)` 的意义
 
-## 元素节点——事件委托
+传入 `true` 时，连同事件处理器和数据一起复制。
 
-- jQuery 中封装了事件委托的支持，其用法如下代码所示：
+### 2. 默认情况
 
-> 1 <script>
+不传参数时，通常只复制结构和属性，不复制事件。
 
-> 2 // on 方法内置支持事件委托
+---
 
-> 3 $('table').on('click', '.delete', function () {
+## 四、事件委托
 
-> 4 $(this).parents('tr').remove();
+### 1. 推荐写法
 
-> 5 }) 6
+```js
+$("table").on("click", ".delete", function () {
+  $(this).parents("tr").remove()
+})
+```
 
-> 7 // 或者使用
+### 2. 适合场景
 
-> 8 $('table').delegate('.delete', 'click', function () {
+1. 动态插入的元素。
+2. 大量同类子元素。
+3. 需要把事件统一挂在父层时。
 
-> 9 $(this).parents('tr').remove();
+### 3. 为什么委托能生效
 
-> 10 })
+因为事件会冒泡到父元素，父元素统一接住事件后，再判断真正触发的是哪个子元素。
 
-> 11 </script>
+### 4. 旧写法
 
-## 总结：
+```js
+$("table").delegate(".delete", "click", function () {})
+```
 
-- 事件委托需要为某个在 DOM 中已经存在的祖先元素添加事件监听
+`delegate()` 属于旧式写法，现在优先使用 `on()`。
 
-- `delegate` 方法是 jQuery 中专门的事件委托的方法
+### 5. 一个现代补充
 
-- `on` 方法中也内置支持事件委托，推荐使用 `on` 方法
+如果你正在维护老 jQuery 页面，事件委托仍然很有价值；如果你已经迁到组件化框架，很多事件绑定会直接跟着组件生命周期走，不再需要大量手写父层委托。
 
-## 位置和尺寸——位置
+---
 
-**==> picture [477 x 12] intentionally omitted <==**
+## 五、位置相关方法
 
-**----- Start of picture text -----**<br>
-jQuery 对获取元素位置进行了封装，使得在不同场景中获取元素位置十分方便，其用法如下代码所示：<br>**----- End of picture text -----**<br>
+### 1. `offset()`
 
-> 1 <script>
+```js
+$(".box").offset()
+```
 
-> 2 // 获取参照 html 文档的位置
+返回元素相对整个文档的位置。
 
-> 3 $('.box').offset(); 4
+### 2. `position()`
 
-> 5 // 获取参照最近的已定位祖先元素位置
+```js
+$(".box").position()
+```
 
-> 6 $('.box').position(); 7
+返回元素相对最近定位祖先元素的位置。
 
-> 8 // 获取子元素滚动的距离
+### 3. `scrollTop()` / `scrollLeft()`
 
-> 9 $('.outer').scrollTop();
+```js
+$(".outer").scrollTop()
+$(".outer").scrollLeft()
+```
 
-> 10 $('.outer').scrollLeft();
+用于获取或设置滚动距离。
 
-> 11 </script>
+### 4. 怎么记
 
-## 总结：
+1. `offset` 看文档。
+2. `position` 看定位祖先。
+3. `scrollTop` 看滚动条。
 
-- `offset` 方法获取元素参照 html 文档的位置，无论该元素是否采用了定位
+### 5. 一个排错提醒
 
-- `position` 方法获取元素参照最近的已定位的祖先元素的位置
+位置值不对时，优先排查：
 
-- `scrollTop/scrollLeft` 方法获取子元素滚动的位置（距离）
+1. 当前参考系是整个文档，还是定位祖先。
+2. 页面或容器有没有已经发生滚动。
+3. 元素是否被动态插入、隐藏或动画改变了布局。
 
-- 了解一个细节：`offset` 计算位置时会忽略外边距（margin），而 `position` 计算位置时则以外边距 （margin）为边界
+---
 
-## 位置和尺寸——尺寸
+## 六、尺寸相关方法
 
-- jQuery 对获取元素尺寸进行了封装，使得在不同场景中获取元素尺寸十分方便，其用法如下代码所示：
+### 1. 内容区尺寸
 
-> 1 <script>
+```js
+$(".box").width()
+$(".box").height()
+```
 
-> 2 // 只包含内容区域尺寸大小
+### 2. 内容区 + 内边距
 
-> 3 $('.box').width();
+```js
+$(".box").innerWidth()
+$(".box").innerHeight()
+```
 
-> 4 $('.box').height(); 5
+### 3. 内容区 + 内边距 + 边框
 
-> 6 // 包括内容区域 + 内边距尺寸大小
+```js
+$(".box").outerWidth()
+$(".box").outerHeight()
+```
 
-> 7 $('.box').innerWidth();
+### 4. 包含外边距
 
-> 8 $('.box').innerHeight(); 9
+```js
+$(".box").outerWidth(true)
+```
 
-> 10 // 包括内容区域 + 内边距 + 边框尺寸大小
+传 `true` 时会把 `margin` 也算进去。
 
-> 11 $('.box').outerWidth();
+---
 
-> 12 $('.box').outerHeight();
+## 七、基础动画
 
-> 13 </script>
+### 1. 显示隐藏动画
 
-## 总结：
+```js
+$(".box").show()
+$(".box").hide()
+$(".box").toggle()
+```
 
-- `width/height` 方法获取元素尺寸大小时只包括盒子模型中的内容区域
+也可以传时间参数形成过渡：
 
-- `innerWidth/innerHeight` 方法获取元素尺寸大小时包括盒子模型中的内容区域 + 内边距
+```js
+$(".box").show(300)
+```
 
-- `outerWidth/outerHeight` 方法获取元素尺寸大小时包括盒子模型中的内容区域 + 内边距 + 边框
+### 2. 淡入淡出动画
 
-- 注：`outerWidth/outerHeight` 方法传入参数值 `true` 获取元素尺寸大小包括内容区域 + 内边框 + 边框 + 外边距
+```js
+$(".box").fadeIn()
+$(".box").fadeOut()
+$(".box").fadeToggle()
+$(".box").fadeTo(300, 0.5)
+```
 
-## 动画——基础动画
+### 3. 滑动动画
 
-- jQuery 中封装了元素显示/隐藏的快捷操作并且支持动画形式的交互效果，主要有以下几种用法： 显示/隐藏
+```js
+$(".box").slideDown()
+$(".box").slideUp()
+$(".box").slideToggle()
+```
 
-> 1 <script>
+---
 
-> 2 // 设置盒子显示
+## 八、自定义动画 `animate()`
 
-> 3 $('.box').show();
+```js
+$(".box").animate(
+  {
+    marginLeft: 200,
+    width: 300,
+    height: 200,
+    opacity: 0.6,
+  },
+  400,
+)
+```
 
-> 4 // 设置盒子隐藏
+### 1. 适合做什么
 
-> 5 $('.box').hide();
+1. 位移。
+2. 尺寸变化。
+3. 透明度变化。
 
-> 6 // 设置盒子显示 / 隐藏
+### 2. 注意点
 
-> 7 $('.box').toggle();
+`animate()` 更适合数值型属性，不适合现代复杂动效。新项目通常更推荐 CSS 动画或 Web Animations API。
 
-> 8 </script>
+### 3. 什么时候还适合用 jQuery 动画
 
-## 总结：
+1. 维护传统页面里的简单位移、显示隐藏、透明度变化。
+2. 项目整体已经建立在 jQuery 效果链上。
+3. 当前目标是低成本维护，而不是重做动效体系。
 
-   - `show` 方法设置元素显示，实质是设置元素样式 `display: block`
+如果需求已经涉及复杂时间轴、交互联动和跨端性能，通常就不该继续把问题都交给 jQuery 动画。
 
-   - `hide` 方法设置元素隐藏，实质是设置元素样式 `display: none`
+---
 
-   - `toggle` 方法交替设置元素显示/隐藏
+## 九、动画队列、延时与停止
 
-   - `show`、`hide`、`toggle` 方法均可以接收时间（毫秒）做为参数，此时将产生动画效果
+### 1. `delay()`
 
-- 淡入/淡出
+```js
+$(".box").delay(1500).hide()
+```
 
-> 1 <script>
+用于给动画或效果队列增加延时。
 
-> 2 // 设置盒子显示
+### 2. `stop()`
 
-> 3 $('.box').fadeIn();
+```js
+$(".box").stop().animate({ left: 100 })
+```
 
-> 4 // 设置盒子隐藏
+### 3. 为什么 `stop()` 很常见
 
-> 5 $('.box').fadeOut();
+因为鼠标频繁移入移出时，如果不停止队列，动画可能不断堆积，导致页面表现越来越怪。
 
-> 6 // 设置盒子显示 / 隐藏
+### 4. 常见理解
 
-> 7 $('.box').fadeToggle();
+| 写法                   | 含义                     |
+| ---------------------- | ------------------------ |
+| **`stop()`**           | 停止当前动画             |
+| **`stop(true)`**       | 清空后续队列             |
+| **`stop(true, true)`** | 清队列并直接跳到最终状态 |
 
-> 8 </script>
+---
 
-## 总结：
+## 十、动画回调
 
-   - `fadeIn` 方法设置元素显示，实质是设置元素样式 `opacity: 1; display: block;`
+大多数 jQuery 动画方法都支持在动画结束后执行回调。
 
-   - `fadeOut` 方法设置元素隐藏，实质是设置元素样式 `opacity: 0; display: none`
+```js
+$(".box").fadeOut(500, function () {
+  $(this).remove()
+})
+```
 
-   - `fadeToggle` 方法交替设置元素显示/隐藏
+### 1. 回调的价值
 
-   - fadeTo：淡出到某个程度：必写参数透明度的值（0-1）
+1. 保证在动画结束后再做后续操作。
+2. 便于做删除、切换状态、串联逻辑。
 
-   - `fadeIn`、`fadeOut`、`fadeToggle` 方法默认支持动画效果，接收时间（毫秒）做为参数时能够 控制动画执行的速度
+### 2. 回调里的 `this`
 
-- 展开/折叠：滑动动画
+回调中的 `this` 通常指向当前执行动画的原生 DOM 节点，常配合 `$(this)` 使用。
 
-> 1 <script>
+---
 
-> 2 // 滑动效果
+## 十一、`hover()` 事件
 
-> 3 // 设置盒子显示
+`hover()` 可以看作 `mouseenter` 和 `mouseleave` 的简写组合。
 
-> 4 $('.box').slideDown();
+```js
+$(".menu-item").hover(
+  function () {
+    $(this).addClass("active")
+  },
+  function () {
+    $(this).removeClass("active")
+  },
+)
+```
 
-> 5 // 设置盒子隐藏
+### 1. 常见场景
 
-> 6 $('.box').slideUp();
+1. 菜单高亮。
+2. 卡片悬停效果。
+3. 二级菜单展开。
 
-> 7 // 设置盒子显示 / 隐藏
+### 2. 单参数写法
 
-> 8 $('.box').slideToggle();
+```js
+$(".menu-item").hover(function () {
+  console.log("移入或移出都会执行")
+})
+```
 
-> 9 </script>
+这种写法在移入和移出时都会执行同一个函数。
 
-## 总结：
+### 3. `hover()` 和 `mouseenter` / `mouseleave` 怎么理解
 
-- `slideUp` 方法设置元素隐藏，实质上设置元素的宽高和内外边距以及 `overflow: hidden`
+`hover(fnIn, fnOut)` 本质上是对 `mouseenter` 和 `mouseleave` 的简写封装。
 
-- `slideDown` 方法设置元素显示，实质上设置元素的宽高和内外边距
+如果你只是想快速写传统悬停交互，用 `hover()` 很方便；如果你要更明确地拆开绑定、移除或调试单侧逻辑，直接用 `.on("mouseenter", ...)` / `.on("mouseleave", ...)` 会更清楚。
 
-- `slideToggle` 方法交替设置元素的显示/隐藏
+---
 
-- `slideUp`、`slideDown`、`slideToggle` 方法默认支持动画效果，接收时间（毫秒）做为参数时 能够控制动画执行的速度
+## 十二、总结
 
-## 动画——自定义
-
-- jQuery 中提供的基础动画主要是针对元素的显示/隐藏展开的，不仅如此 jQuery 还提供了 `animate` 方法支持 开发者自定义更为丰富的动画效果，其用法如下代码所示：
-
-> 1 <script>
-
-> 2 // 自定义动画
-
-> 3 $('.box').animate({
-
-> 4 marginLeft: 200,
-
-> 5 width: 300,
-
-> 6 height: 200,
-
-> 7 backgroundColor: 'red'
-
-> 8 }, 2000)
-
-> 9 </script>
-
-## 总结：
-
-- `animate` 方法支持开发者自定义 CSS 动画样式，并控制动画执行的速度
-
-- `animate` 只支持值为数值的 CSS 样式，默认以 `px` 为长度单位
-
-## 动画——其它
-
-延时设置
-
-jQuery 不仅可以设置动画执行的速度，还能在动画执行前设置一定的延时，其用法代下代码所示：
-
-> 1 <script>
-
-> 2 // 等待 1500 毫秒后再隐藏
-
-> 3 $('.box').delay(1500).hide();
-
-> 4 // 选改变盒子宽度为 400px 等待 1000 毫秒后再改变盒子的高度为 200px
-
-> 5 $('.box').animate({width: 400}, 500).delay(15000).animate({height: 200}, 500);
-
-> 6 </script>
-
-## 总结：
-
-`delay` 方法常用来设置动画的延时执行，接受时间（毫秒）做为参数
-
-终止动画
-
-> 1 <script>
-
-> 2 // 只传一个 true 时，为 暂停
-
-> 3 $('.box').stop(true);
-
-> 4 // 传入两个 true 时，为 结束
-
-> 5 $('.box').stop(true, true);
-
-> 6 </script>
-
-## 总结：
-
-- `stop` 只传一个 true 时，为暂停
-
-- `stop` 传入两个 true 时，为结束
-
-## 回调函数
-
-- 所有的 jQuery 动画方法都支持传入回调函数，该函数会在动画执行结束时立即执行，其用法如下代码所 示：
-
-> 1 <script>
-
-> 2 $('.box').fadeOut(500, function () {
-
-> 3 // 回调函数会在动画执行结束时被调用
-
-> 4 // 引入的 this 指向了执行动画的元素节点
-
-> 5 $(this).remove();
-
-> 6 })
-
-> 7 </script>
-
-## 总结：
-
-回调函数在动画执行结束时被执行，回调函数中的 `this` 指向执行动画的元素节点x
-
-## hover事件
-
-说明：由mouseenter和mouseleave封装起来的事件。
-
-- 写两个参数函数的时候，这两个函数会在鼠标移入和移出的时候先后执行。
-
-> 1 $('div').hover(function () {
-
-> 2 console.log('111');
-
-> 3 }, function () {
-
-> 4 console.log('222');
-
-> 5 });
-
-写一个参数函数的时候，这个函数会在鼠标移入和移出的时候都执行。
-
-> 1 $('div').hover(function () {
-
-> 2 console.log('hover');
-
-> 3 })
+1. 插入、删除、克隆是 jQuery 操作 DOM 结构的基础能力。
+2. 动态节点优先考虑事件委托，不要给每个新节点单独绑定事件。
+3. `offset()`、`position()`、`width()`、`outerWidth()` 的关键区别在于参照物和是否包含内外边距。
+4. `animate()`、`delay()`、`stop()` 和回调共同组成了 jQuery 的基础动画链路。
+5. 学这篇时，重点不是记方法名，而是理解每个方法到底是在“操作结构、测量位置、还是控制动画过程”。

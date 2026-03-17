@@ -1,112 +1,229 @@
 # CSS 的背景
 
-## 背景颜色
+## 一、一句话理解
 
-- background-color 属性定义了元素的背景颜色，例如：
+背景相关属性的核心，不只是“给盒子加张图”，而是决定装饰内容如何铺、如何裁、如何和盒子尺寸一起工作。
 
-> 1 background-color: 颜色值 ;
+---
 
-一般情况下元素背景颜色默认值是 transparent（透明），我们也可以手动指定背景颜色为透明色。例如：
+## 二、背景相关属性概览
 
-1
+## 一、背景相关属性概览
 
-background-color:transparent;
+CSS 背景属性主要用于给元素添加颜色、图片以及控制图片的平铺、位置、尺寸和滚动行为。
 
-## 背景图片
+| 属性                        | 作用                   |
+| --------------------------- | ---------------------- |
+| **`background-color`**      | 设置背景颜色           |
+| **`background-image`**      | 设置背景图片           |
+| **`background-repeat`**     | 设置是否平铺           |
+| **`background-position`**   | 设置背景位置           |
+| **`background-size`**       | 设置背景尺寸           |
+| **`background-attachment`** | 设置背景是否随滚动移动 |
+| **`background`**            | 背景复合简写           |
 
-- background-image 属性描述了元素的背景图像。实际开发常见于 logo 或者一些装饰性的小图片或者是超大的背景图片， 优点是非常便于控制位置. (精灵图也是一种运用场景)。例如：
+---
 
-> 1 background-image : none | url (url)
+## 三、背景颜色 `background-color`
 
-**==> picture [467 x 80] intentionally omitted <==**
+用于给元素设置背景颜色。
 
-注意：背景图片后面的地址，千万不要忘记加 URL， 同时里面的路径不要加引号。
+```css
+background-color: #409eff;
+background-color: pink;
+background-color: transparent;
+```
 
-## 背景平铺
+### 1. 常见特点
 
-如果需要在 HTML 页面上对背景图像进行平铺，可以使用 background-repeat 属性。例如：
+| 特点                                  | 说明                |
+| ------------------------------------- | ------------------- |
+| **默认值**                            | `transparent`，透明 |
+| **可以用颜色名、十六进制、rgb、rgba** | 灵活度高            |
 
-> 1 background-repeat: repeat | no-repeat | repeat-x | repeat-y
+---
 
-**==> picture [467 x 124] intentionally omitted <==**
+## 四、背景图片 `background-image`
 
-## **背景图片位置**
+用于给元素添加背景图。
 
-利用 background-position 属性可以改变图片在背景中的位置。例如：
+```css
+background-image: url("./images/bg.png");
+```
 
-> 1 background-position: x y;  <!-- 参数代表的意思是： x 坐标和 y 坐标。 可以使用 方位名词 或 者 精确单位 -->
+### 1. 常见取值
 
-**==> picture [467 x 79] intentionally omitted <==**
+| 值             | 说明           |
+| -------------- | -------------- |
+| **`none`**     | 不使用背景图   |
+| **`url(...)`** | 指定背景图地址 |
 
-## 参数是方位名词
+### 2. 注意事项
 
+| 注意点                     | 说明                     |
+| -------------------------- | ------------------------ |
+| **要写 `url()`**           | 不能只写路径             |
+| **背景图是装饰，不是内容** | 内容图片通常更适合 `img` |
 
-   - 如果指定的两个值都是方位名词，则两个值前后顺序无关，比如 left top 和 top left 效果一致
+常见场景：
 
-   - 如果只指定了一个方位名词，另一个值省略，则第二个值默认居中对齐
+- 页面背景图
+- logo 背景图
+- 小图标背景图
+- 精灵图
 
-- 参数是精确单位
+---
 
-   - 如果参数值是精确坐标，那么第一个肯定是 x 坐标，第二个一定是 y 坐标
+## 五、背景平铺 `background-repeat`
 
-   - 如果只指定一个数值，那该数值一定是 x 坐标，另一个默认垂直居中
+背景图片默认会重复平铺。
 
-- 参数是混合单位
+```css
+background-repeat: repeat;
+background-repeat: no-repeat;
+background-repeat: repeat-x;
+background-repeat: repeat-y;
+```
 
-   - 如果指定的两个值是精确单位和方位名词混合使用，则第一个值是 x 坐标，第二个值是 y 坐标
+| 值              | 说明                   |
+| --------------- | ---------------------- |
+| **`repeat`**    | 默认值，横向纵向都平铺 |
+| **`no-repeat`** | 不平铺                 |
+| **`repeat-x`**  | 只横向平铺             |
+| **`repeat-y`**  | 只纵向平铺             |
 
-## 背景图像固定
+---
 
-- background-attachment 属性设置背景图像是否固定或者随着页面的其余部分滚动。例如：
+## 六、背景位置 `background-position`
 
-> 1 background-attachment : scroll | fixed
+用于控制背景图在盒子中的位置。
 
-**==> picture [467 x 83] intentionally omitted <==**
+```css
+background-position: center center;
+background-position: left top;
+background-position: 20px 30px;
+```
 
-## 背景图片尺寸
+### 1. 参数写法
 
-- 属性：background-size
+| 写法         | 说明                                       |
+| ------------ | ------------------------------------------ |
+| **方位名词** | `left`、`center`、`right`、`top`、`bottom` |
+| **精确单位** | 如 `20px 30px`                             |
+| **混合写法** | 如 `right 20px`、`center 10px`             |
 
-- 作用：设置背景图的大小
+### 2. 规则
 
-值
+| 情况                 | 说明                            |
+| -------------------- | ------------------------------- |
+| **两个方位名词**     | 顺序通常都可识别，如 `left top` |
+| **只写一个方位名词** | 另一个方向默认居中              |
+| **只写一个数值**     | 表示 x 坐标，y 默认居中         |
 
-- px
+---
 
-- % （注意：相对的是盒子的宽高，不是背景图片）
+## 七、背景固定 `background-attachment`
 
-- 关键字
+控制背景图是否跟随页面一起滚动。
 
-   - cover（覆盖）：盒子不可能有缝隙，图片可能部分被遮盖
+```css
+background-attachment: scroll;
+background-attachment: fixed;
+```
 
-   - contain（包含）：图片完整展示，盒子可能会有缝隙
+| 值           | 说明                         |
+| ------------ | ---------------------------- |
+| **`scroll`** | 默认值，背景随元素或页面滚动 |
+| **`fixed`**  | 背景固定，常用于视差类效果   |
 
-## **背景复合写法**
+---
 
-   - 为了简化背景属性的代码，我们可以将这些属性合并简写在同一个属性 background 中。从而节约代码量。
+## 八、背景尺寸 `background-size`
 
-   - 当使用简写属性时，没有特定的书写顺序,一般习惯约定顺序为： background: 背景颜色 背景图片地址 背景平 铺 背景图像滚动 背景图片位置 / 背景图片尺寸;例如：
+用于设置背景图片显示大小。
 
-- 1 background: transparent url(image.jpg) no-repeat fixed center / contain;
+```css
+background-size: 200px 100px;
+background-size: 50% 50%;
+background-size: cover;
+background-size: contain;
+```
 
-## 背景色半透明
+### 1. 常见取值
 
-CSS3 为我们提供了背景颜色半透明的效果。例如：
+| 值            | 说明                       |
+| ------------- | -------------------------- |
+| **长度值**    | 如 `200px 100px`           |
+| **百分比**    | 相对于元素盒子宽高         |
+| **`cover`**   | 覆盖整个盒子，可能裁切图片 |
+| **`contain`** | 完整显示图片，可能留白     |
 
-- 1 background: rgba(0, 0, 0, 0.3);
+### 2. `cover` 和 `contain` 区别
 
-   - 最后一个参数是 alpha 透明度，取值范围在 0~1之间
+| 值            | 特点                                     |
+| ------------- | ---------------------------------------- |
+| **`cover`**   | 盒子尽量铺满，不留空隙，可能裁掉部分图片 |
+| **`contain`** | 图片完整显示，但盒子可能留白             |
 
-   - 我们习惯把 0.3 的 0 省略掉，写为 background: rgba(0, 0, 0, .3);
+---
 
-   - 注意：背景半透明是指盒子背景半透明，盒子里面的内容不受影响
+## 九、背景复合写法 `background`
 
-   - CSS3 新增属性，是 IE9+ 版本浏览器才支持的
+为了简化代码，背景相关属性常写成一个复合属性。
 
-   - 但是现在实际开发,我们不太关注兼容性写法了,可以放心使用
+```css
+background: #000 url("./images/bg.jpg") no-repeat center / cover;
+```
 
-## 背景总结
+常见顺序可以理解为：
 
-**==> picture [467 x 193] intentionally omitted <==**
+背景颜色 → 背景图片 → 平铺方式 → 背景位置 / 背景尺寸
 
-背景图片:实际开发常见于 logo 或者一些装饰性的小图片或者是超大的背景图片, 优点是非常便于控制位置. (精灵图也是一种运用场景)
+> **注意**：`background` 是简写属性，使用时可能会重置其他背景子属性。
+
+---
+
+## 十、半透明背景
+
+常见做法是使用 `rgba()` 或现代的 `rgb()` 带透明度写法。
+
+```css
+background: rgba(0, 0, 0, 0.3);
+```
+
+### 1. 特点
+
+| 特点                     | 说明                       |
+| ------------------------ | -------------------------- |
+| **只让背景半透明**       | 不会直接影响内部文字透明度 |
+| **最后一个参数是透明度** | 范围是 `0` 到 `1`          |
+
+例如：
+
+```css
+background: rgba(255, 255, 255, 0.6);
+```
+
+---
+
+## 十一、背景图和 `img` 的区别
+
+| 场景                       | 更适合用什么 |
+| -------------------------- | ------------ |
+| **纯装饰图**               | 背景图       |
+| **内容图片**               | `img`        |
+| **需要便于控制位置和平铺** | 背景图       |
+| **需要 SEO / 可访问性**    | `img` 更合适 |
+
+---
+
+## 十二、小结
+
+| 知识点       | 结论                              |
+| ------------ | --------------------------------- |
+| **背景颜色** | 用 `background-color`             |
+| **背景图片** | 用 `background-image`             |
+| **平铺控制** | 用 `background-repeat`            |
+| **位置控制** | 用 `background-position`          |
+| **尺寸控制** | 用 `background-size`              |
+| **复合简写** | 用 `background`，但要注意重置效果 |

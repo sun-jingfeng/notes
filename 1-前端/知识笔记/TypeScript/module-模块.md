@@ -1,203 +1,275 @@
 # module 模块
 
-module 关键字，模块名需加双引号。
+## 一、一句话理解
 
-> 1 // d.ts 文件
+`declare module` 的核心任务，是把某个可被导入的模块在类型层描述清楚，让 TS 知道这个模块能导出什么、该怎么被使用。
 
-> 2 module "mitt" 3
+---
 
-> 4 // ts 文件
+## 二、什么是 `declare module`
 
-> 5 import mitt from "mitt"
+在 TypeScript 中，`declare module` 常用于：
 
-## 只提供类型，但并不能真正使用
+1. 给一个现有模块补类型声明。
+2. 为没有类型的第三方包手写 `.d.ts`。
+3. 为特定资源文件声明导入类型，例如 `*.png`、`*.svg`。
 
-> 1 // d.ts 文件
+一句话概括：**它解决的是“某个模块该怎么被 TS 理解”。**
 
-> 2 module "mitt" 3
+---
 
-> 4 // ts 文件
+## 三、最基本的写法
 
-> 5 import mitt from "mitt" 6
+```ts
+declare module "mitt"
+```
 
-- 7 console.log(mitt) // 控制台报错： mitt is not defined
+模块名通常写在双引号里。
 
-## 无默认导出
+这表示：**项目中存在一个叫 `mitt` 的模块，只是这里还没有给它写出完整类型结构。**
 
-声明
+---
 
-> 1 module "mitt" {
+## 四、只声明模块名，不等于真的有运行时代码
 
-> 2 type T = string 3
+这是最容易误解的点。
 
-> 4 export const a = 123 5
+### 3.1 只补类型，不补实现
 
-> 6 const b = "abc"
+如果你在 `.d.ts` 中这样写：
 
-> 7 }
+```ts
+declare module "mitt"
+```
 
-## 使用
+TypeScript 只会觉得“这个模块在类型层是合法的”，但并不会真的帮你生成模块实现。
 
-所有声明可按需导入
+### 3.2 这意味着什么
 
-> 1 import { type T, a, b } from "mitt" 2
+```ts
+import mitt from "mitt"
+console.log(mitt)
+```
 
-> 3 const name: T = "sun"
+如果运行时并没有这个包或实现，依旧会报错。
 
-> 4 a // 123
+所以要明确区分：
 
-> 5 b // "abc"
+| 层面           | 作用               |
+| -------------- | ------------------ |
+| **类型声明**   | 让 TS 不报类型错误 |
+| **运行时代码** | 让程序真的能执行   |
 
-可默认导入，所有声明为导入数据的属性
+---
 
-- 1 import mitt from "mitt"
+## 五、在模块中声明导出内容
 
-2
+### 4.1 无默认导出
 
-> 3 mitt.a // 123
+```ts
+declare module "mitt" {
+  export type T = string
+  export const a: number
+  export const b: string
+}
+```
 
-> 4 mitt.b // "abc"
+使用时：
 
-全部导入时，与默认导入结果相同，所有声明为导入数据的属性
+```ts
+import { type T, a, b } from "mitt"
+```
 
-> 1 import * as mitt from "mitt" 2
+这里的规则和普通 TS 模块一致：
 
-> 3 mitt.a // 123
+1. 导出了什么，就能按需导入什么。
+2. 没导出的内容，外部无法引用。
 
-> 4 mitt.b // "abc"
+### 4.2 默认导出
 
-## 有默认导出
+```ts
+declare module "mitt" {
+  export type T2 = string
+  export const b: string
 
-## 声明
+  const api: {
+    name: string
+  }
 
-- 1 module "mitt" {
+  export default api
+}
+```
 
-- 2 type T1 = number
+使用时：
 
-- 3 export type T2 = string 4
+```ts
+import mitt from "mitt"
+import { type T2, b } from "mitt"
+```
 
-- 5 const a = 123
+### 4.3 怎么理解
 
-> 6 export const b = "abc" 7
+可以把 `declare module "xxx" {}` 大括号里的内容，当成“这个模块内部长什么样”的类型描述。
 
-- 8 export default {
+---
 
-> 9 name: "abc",
+## 六、未导出的声明不能在外部使用
 
-> 10 }
+如果某个值或类型没有 `export`，外部就不能导入。
 
-> 11 }
+```ts
+declare module "mitt" {
+  type T1 = number
+  const a: number
+  export const b: string
+}
+```
 
-## 使用
+外部只能稳定使用被导出的内容，例如 `b`。
 
-把大括号里的内容，看作是一个ts模块的内容，用法与此相同
+---
 
-> 1 // 默认导入
+## 七、模块内导入
 
-> 2 import mitt from "mitt" 3
+在 `declare module` 里，也可以导入其他类型来辅助声明。
 
-> 4 mitt.name // string 5
+```ts
+declare module "mitt" {
+  import type { Component } from "vue"
 
-> 6 // 按需导入
+  export type T = Component
+}
+```
 
-> 7 import { type T2, b } from "mitt" 8
+这和普通 TS 模块内部写 `import type` 的思路一致。
 
-> 9 b // "abc"
+适用场景：
 
-> 10 const name: T2 = "sun" 11
+1. 需要复用已有类型。
+2. 给第三方库补声明时引用宿主框架类型。
 
-> 12 // 全部导入
+---
 
-> 13 import * as mitt from "mitt" 14
+## 八、同名模块声明会合并
 
-> 15 mitt.b // "abc"
+```ts
+declare module "mitt" {
+  export const a: number
+}
 
-> 16 mitt.default.name // string
+declare module "mitt" {
+  export const b: string
+}
+```
 
-## 未导出声明无法引用
+最终效果会合并为同一个模块声明。
 
-> 1 import { type T1, a } from "mitt" // 报错：导入声明中的所有导入都未使用。
+### 7.1 常见用途
 
-## 模块内导入
+1. 给第三方库做模块扩展。
+2. 分文件补充同一模块的声明。
 
-导入内容存在时，与ts文件模块内导入时的效果相同
+---
 
-> 1 // .d.ts 文件
+## 九、模块名可以使用通配符
 
-> 2 module 'mitt' {
+这是前端项目里非常常见的写法。
 
-> 3 import type { Component } from 'vue' 4
+```ts
+declare module "*.png" {
+  const src: string
+  export default src
+}
+```
 
-> 5 type T = Component
+这样 TS 就知道：
 
-> 6 } 7
+```ts
+import icon from "./icon.png"
+```
 
-> 8 // .ts 文件
+中的 `icon` 是一个字符串路径。
 
-> 9 import type { T } from 'mitt' // Component
+### 8.1 常见文件类型声明
 
-同名合并
+1. `*.png`
+2. `*.jpg`
+3. `*.svg`
+4. `*.module.css`
 
-> 1 // .d.ts 文件
+---
 
-> 2 module 'mitt' {
+## 十、值和类型可以同名
 
-> 3 const a = 123
+TS 中“值空间”和“类型空间”是分开的，因此会出现这样的写法：
 
-> 4 } 5
+```ts
+declare module "mitt" {
+  export const valueOrType: number
+  export type valueOrType = string
+}
+```
 
-> 6 module 'mitt' {
+使用时：
 
-> 7 const b = 'abc'
+```ts
+import * as mitt from "mitt"
 
-> 8 } 9
+mitt.valueOrType
+type T = mitt.valueOrType
+```
 
-> 10 // .ts 文件
+看起来同名，但一个在值空间，一个在类型空间。
 
-> 11 import mitt from "mitt" 12
+### 9.1 为什么容易绕
 
-> 13 mitt.a // 123
+因为阅读体验会变差，所以实际项目里应尽量避免把值名和类型名起成同一个名字。
 
-> 14 mitt.b // "abc"
+---
 
-## 模块名可以使用通配符
+## 十一、和 `declare global` 的区别
 
-> 1 // .d.ts 文件
+| 写法                 | 作用对象     |
+| -------------------- | ------------ |
+| **`declare module`** | 某个具体模块 |
+| **`declare global`** | 全局作用域   |
 
-> 2 module "*.png" 3
+简单判断方法：
 
-> 4 // .ts 文件
+1. 想补 `import xxx from "xxx"` 这种模块声明，用 `declare module`
+2. 想补 `window`、全局类型、全局变量，用 `declare global`
 
-- 5 import icon from "icon.png" // module icon
+这一点非常关键，因为很多声明问题本质上不是语法不会，而是补错了作用域。
 
-## 同名声明问题
+---
 
-## 演示
+## 十二、实际开发中的高频场景
 
-- 1 // .d.ts 文件
+### 11.1 给没有类型声明的第三方包补类型
 
-- 2 module 'mitt' {
+### 11.2 给资源文件补导入类型
 
-- 3 const valueOrType = 123
+### 11.3 扩展已有库的模块声明
 
-- 4 type valueOrType = string
+比如给某个 UI 库增加自定义主题字段，或给某个第三方包追加插件能力。
 
-- 5 }
+---
 
-6
+## 十三、真实开发里怎么快速判断
 
-- 7 // .ts 文件
+| 问题                               | 更该想到什么            |
+| ---------------------------------- | ----------------------- |
+| **某个 npm 包能 import，但没类型** | `declare module "xxx"`  |
+| **图片 / 样式 / 资源导入报错**     | 通配符模块声明          |
+| **要给已有模块补导出成员**         | 模块扩展 / 同名声明合并 |
+| **明明声明了，运行时还报错**       | 检查是否真的有实现      |
 
-> 8 import mitt from "mitt"
+---
 
-9
+## 十四、小结
 
-> 10 mitt.valueOrType // 值： 123
-
-> 11 type T = mitt.valueOrType // 类型： string
-
-## 避免方法
-
-- 使用【导出命名空间为模块】的方式替代【模块】
-
-- 参考【命名空间】的避免方法
+1. `declare module` 用来描述“某个模块长什么样”。
+2. 它只解决类型层问题，不会生成运行时代码。
+3. 模块内部导出的内容，决定了外部可以怎么导入。
+4. 同名模块声明会合并，通配符模块声明在前端工程里非常常见。
+5. 学这篇时，重点是分清“类型声明”和“运行时实现”不是同一件事。
