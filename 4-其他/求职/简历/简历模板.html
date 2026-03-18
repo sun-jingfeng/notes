@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>孙景峰 - Web 全栈开发（React+Java，AI 辅助）</title>
+    <title>简历</title>
     <style>
       * {
         margin: 0;
@@ -135,20 +135,28 @@
         align-items: baseline;
         margin-bottom: 2px;
         font-size: 13px;
+        gap: 8px;
       }
       .work-item .company {
         font-weight: 600;
         font-size: 13.5px;
       }
+      .work-item .work-inline {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .work-item .work-role {
+        font-size: 12px;
+        color: #555;
+      }
       .work-item .period {
         color: #666;
         font-size: 12px;
         white-space: nowrap;
-      }
-      .work-meta {
-        font-size: 12px;
-        color: #555;
-        margin-bottom: 3px;
       }
 
       /* Project */
@@ -288,8 +296,8 @@
       <div class="contact" style="margin-top: 5px">
         <span><strong>工作时长</strong> 4 年</span>
         <span
-          ><strong>求职意向</strong> Web 全栈开发（React+Java，AI
-          辅助）</span
+          ><strong>求职意向</strong> AI Agent 全栈开发（React / Vue +
+          Java）</span
         >
         <span><strong>地点</strong> 北京</span>
       </div>
@@ -311,17 +319,21 @@
       <div class="section-title">工作经历</div>
       <div style="margin-bottom: 5px">
         <div class="work-item">
-          <span class="company">北京弘象科技有限公司</span>
+          <span class="work-inline">
+            <span class="company">北京弘象科技有限公司</span>
+            <span class="work-role">共享开发中心 · 研发一组组长</span>
+          </span>
           <span class="period">2023.02 – 2025.12</span>
         </div>
-        <div class="work-meta">共享开发中心 · 研发一组组长</div>
       </div>
       <div>
         <div class="work-item">
-          <span class="company">北京百炼智能科技有限公司</span>
+          <span class="work-inline">
+            <span class="company">北京百炼智能科技有限公司</span>
+            <span class="work-role">技术部 · 前端工程师</span>
+          </span>
           <span class="period">2021.12 – 2022.12</span>
         </div>
-        <div class="work-meta">技术部 · 前端工程师</div>
       </div>
     </div>
 
@@ -330,18 +342,16 @@
       <div class="section-title">工作内容</div>
       <ul class="work-summary-list">
         <li>
-          作为项目负责人，主导中大型项目前端、后端从搭建到部署的全流程，完成项目的全栈交付
+          作为项目负责人兼研发组长，主导中大型项目从方案设计、开发到部署的全流程，负责前端、后端与
+          AI Agent 核心能力开发及落地
         </li>
-        <li>作为研发组长，统筹组内任务分配与交付质量</li>
         <li>
-          通过组件封装、逻辑抽象提升前端代码复用率，通过合理的分层架构、公共模块抽取降低后端维护成本
+          通过组件封装、分层架构设计与公共模块沉淀推进代码复用，持续优化前端性能、接口响应效率与服务稳定性
         </li>
-        <li>持续优化前端性能、后端接口响应效率</li>
         <li>
-          参与技术选型，搭建项目基础框架、代码规范体系，主导微服务架构设计、落地
+          负责技术选型，搭建项目基础框架、代码规范体系、微服务架构及部署环境，并推动
+          AI Coding 在研发流程中的落地
         </li>
-        <li>负责 Nginx 配置、Docker 容器化部署、Linux 服务器环境搭建</li>
-        <li>攻克团队技术难点，定期分享新技术，推动团队技术成长</li>
       </ul>
     </div>
 
@@ -350,21 +360,24 @@
       <div class="section-title">专业技能</div>
 
       <div class="skill-group">
-        <div class="skill-group-title">AI 工具与工程化</div>
+        <div class="skill-group-title">AI Agent 与 AI Coding</div>
         <ul class="skills-list">
           <li>
-            熟练掌握 AI 辅助开发工具（Cursor、Copilot、OpenClaw 等），能借助 AI
-            提升编码与排错效率
+            具备独立封装 AI Agent 服务，并在内网环境下与 React 前端、Java
+            微服务集成落地的项目经验
           </li>
           <li>
-            熟练掌握 提示词工程与规则配置（Rules、AI Skills、MCP
-            等），能编写可复用提示与项目级 AI 规范
+            具备 LangChain 落地经验与私有化模型接入实践经验，了解 LangGraph
+            在复杂工作流中的适用场景
           </li>
           <li>
-            熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD
-            流程搭建
+            AI Coding 工具（Cursor、Copilot、OpenClaw
+            等），可用于提升编码、排错效率
           </li>
-          <li>了解 项目监控体系，如 Google Analytics、Sentry 等</li>
+          <li>
+            提示词设计与规则配置（Rules、Skills、MCP
+            等），可编写可复用提示与项目级 AI 规范
+          </li>
         </ul>
       </div>
 
@@ -372,68 +385,64 @@
         <div class="skill-group-title">前端</div>
         <ul class="skills-list">
           <li>
-            熟练掌握 TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+
+            TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+
             语法特性、异步编程模型
           </li>
           <li>
-            熟练掌握 React 及其生态（React Router、Redux/RTK），理解 Fiber
-            架构、虚拟 DOM、Diff 算法等核心原理
+            React 及其生态（React Router、Redux/RTK），理解 Fiber 架构、虚拟
+            DOM、Diff 算法等核心原理
           </li>
           <li>
-            熟练掌握 Vue3、Vue2 及其生态（Vue
+            Vue3、Vue2 及其生态（Vue
             Router、Pinia/Vuex），理解响应式原理、编译优化机制
           </li>
           <li>
-            熟练掌握 Ant Design、Element Plus、ECharts、Leaflet
+            Ant Design、Element Plus、ECharts、Leaflet
             等主流库，具备快速上手新框架的能力
           </li>
           <li>
-            熟练掌握
             前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
           </li>
           <li>
-            熟练掌握 组件化开发、逻辑复用，擅长通过自定义 Hook/组合式函数
+            组件化开发、逻辑复用，擅长通过自定义 Hook / 组合式函数
             提升代码复用率、模块解耦
           </li>
           <li>
-            能够使用 Performance、Memory、Lighthouse
-            等面板定位性能瓶颈、分析内存占用，并进行针对性性能优化
+            Performance、Memory、Lighthouse
+            等面板，用于定位性能瓶颈、分析内存占用并进行针对性优化
           </li>
           <li>
-            能够使用 微前端框架、iframe
-            构建多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
+            微前端框架、iframe
+            多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
           </li>
-          <li>了解 Next.js、Nuxt 及 SSR、SSG、ISR 等服务端渲染模式</li>
         </ul>
       </div>
 
       <div class="skill-group">
         <div class="skill-group-title">后端</div>
         <ul class="skills-list">
-          <li>熟练掌握 Java，熟悉集合框架、Stream 流、IO、多线程、网络编程</li>
+          <li>Java，熟悉集合框架、Stream 流、IO、多线程、网络编程</li>
           <li>
-            熟练掌握 Spring Boot、Maven，能独立完成 RESTful API
+            Spring Boot、Maven，能独立完成 RESTful API
             开发，熟悉自动配置、AOP、JWT 认证等核心机制
           </li>
-          <li>熟练掌握 MySQL、MyBatis，熟悉索引优化、事务管理、动态 SQL</li>
+          <li>MySQL、MyBatis，熟悉索引优化、事务管理、动态 SQL</li>
+          <li>Redis，包括常用数据结构及其在缓存、会话管理等场景的应用</li>
           <li>
-            熟练掌握 Docker，能通过 Dockerfile、Docker Compose
-            完成应用容器化部署
-          </li>
-          <li>
-            熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
-          </li>
-          <li>
-            熟练掌握 微服务架构、Spring Cloud
+            微服务架构、Spring Cloud
             组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
           </li>
+          <li>消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式</li>
           <li>
-            熟练掌握 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
+            Docker、Nginx、Git，具备基于 Dockerfile、Docker Compose
+            的应用容器化部署经验
           </li>
-          <li>熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter 进行接口压测与性能验证</li>
           <li>
-            了解 Elasticsearch
-            及倒排索引原理，能完成全文检索、聚合分析的基本操作
+            Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter
+            进行接口压测与性能验证
+          </li>
+          <li>
+            熟悉 Python，了解 FastAPI、Pydantic，具备相关接口开发与服务落地经验
           </li>
         </ul>
       </div>
@@ -449,11 +458,33 @@
           <span class="project-title-desc"
             ><span class="project-name">气象雷达监测预警系统系列</span
             ><span class="project-desc-inline"
-              >基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统</span
+              >基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统，并在此基础上建设气象预警文案生成智能体能力</span
             ></span
           >
           <span class="project-period">2025.02 – 2025.12</span>
         </div>
+
+        <div class="project-tech">
+          <strong>AI Agent 技术：</strong>Python、FastAPI、Pydantic、LangChain
+        </div>
+        <ul class="project-list">
+          <li>
+            实现气象预警文案生成智能体，作为独立 Python 微服务接入原有 Java
+            业务服务体系
+          </li>
+          <li>
+            基于时间、气象要素、地图视窗经纬度范围，实现预警文案生成功能，完成前后端联调与页面展示
+          </li>
+          <li>
+            完成业务上下文组装，查询原始业务数据，进行视窗范围过滤后交给模型处理
+          </li>
+          <li>
+            通过工具调用实现经纬度转地名等确定性信息获取，避免模型直接脑补地名，提升预警文案准确性与可解释性
+          </li>
+          <li>
+            统一封装模型调用、工具调用、结果解析与接口入参出参结构，提升项目内智能体能力的可维护性与稳定性
+          </li>
+        </ul>
 
         <div class="project-tech">
           <strong>前端技术：</strong>React、Immer、React Router、Redux、Ant
@@ -481,7 +512,9 @@
           <li>修复极慢网络环境下 GIF 生成功能的边界 bug</li>
           <li>开发超长时间轴组件，支持时间选择、播放控制</li>
           <li>实现双地图联动交互</li>
-          <li>制定同项目多省版本的差异化适配方案，各省相同逻辑复用、不同逻辑隔离互不影响</li>
+          <li>
+            制定同项目多省版本的差异化适配方案，各省相同逻辑复用、不同逻辑隔离互不影响
+          </li>
           <li>实现可配置的图例颜色编辑功能</li>
         </ul>
 
@@ -495,20 +528,24 @@
             API，涵盖雷达数据查询、气象预警、文件管理等业务模块
           </li>
           <li>
-            基于 Spring Cloud 构建微服务架构，各省复用核心能力、可扩展本省个性化需求
+            基于 Spring Cloud
+            构建微服务架构，各省复用核心能力、可扩展本省个性化需求
           </li>
           <li>
-            使用 Nacos 实现服务注册发现与公共配置管理，OpenFeign 实现服务间声明式调用
+            使用 Nacos 实现服务注册发现与公共配置管理，OpenFeign
+            实现服务间声明式调用
           </li>
           <li>
-            使用 Gateway 统一 API 路由与鉴权过滤，基于 JWT 设计统一认证服务，支持父子项目单点登录与接口级权限校验
+            使用 Gateway 统一 API 路由与鉴权过滤，基于 JWT
+            设计统一认证服务，支持父子项目单点登录与接口级权限校验
           </li>
           <li>
             使用线程池对气象数据进行多线程处理，并将处理结果写入 Redis
             缓存，提升数据处理效率、减轻数据库压力
           </li>
           <li>
-            使用 JMeter 压测定位瓶颈，结合 Sentinel 限流与熔断降级，以降精度计算、同格式返回作为备用方案，保障高并发下系统稳定性
+            使用 JMeter 压测定位瓶颈，结合 Sentinel
+            限流与熔断降级，以降精度计算、同格式返回作为备用方案，保障高并发下系统稳定性
           </li>
           <li>
             使用 RabbitMQ 异步处理雷达数据预解析、预警通知推送，提升系统响应速度
@@ -757,42 +794,20 @@
           </li>
         </ul>
       </div>
-
-      <!-- Project 9 -->
-      <div class="project">
-        <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">领航营销云-智能触达</span
-            ><span class="project-desc-inline"
-              >部门核心 SaaS 产品，覆盖从线索到转化的完整营销闭环；基于微前端架构，包含商机线索、智能触达、租户管理等子系统</span
-            ></span
-          >
-          <span class="project-period">2022.06 – 2022.12</span>
-        </div>
-        <div class="project-tech">
-          <strong>主要技术：</strong>微前端（qiankun）、Vue2、Vue
-          Router、Vuex、Element UI、Webpack
-        </div>
-        <ul class="project-list">
-          <li>参与技术栈与组件库选型，完成父项目与智能触达子项目搭建</li>
-          <li>配置 qiankun 微前端，实现子应用嵌入、样式隔离与跨应用通信</li>
-          <li>制定多分辨率适配策略并封装 Mixin，统一各页面视觉风格</li>
-          <li>统一分页列表接口逻辑并封装 Mixin，提升列表类页面开发效率</li>
-          <li>
-            独立完成营销活动、邮件/短信自动群发、可拖拽自定义表单等业务模块开发
-          </li>
-          <li>配置 Nginx 支持 History 路由、HTTPS 与跨域</li>
-          <li>搭建 Jenkins 流水线，实现父子项目自动化部署</li>
-        </ul>
-      </div>
     </div>
 
     <!-- Self Evaluation -->
     <div class="section">
       <div class="section-title">自我评价</div>
       <ul class="eval-list">
-        <li>扎实的前端、后端基础，丰富的项目经验，有团队管理经验</li>
-        <li>熟练使用 AI 工具，拥抱新技术，适应新趋势</li>
+        <li>
+          具备 React / Vue + Java 全栈开发经验，兼具 AI Agent
+          功能落地、系统集成与团队管理经验
+        </li>
+        <li>
+          熟悉业务系统与智能体能力结合的工程化方案，能够将 AI Agent 与 AI Coding
+          能力应用于实际研发场景
+        </li>
       </ul>
     </div>
   </body>
