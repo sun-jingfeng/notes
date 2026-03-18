@@ -8,16 +8,19 @@ v-once、v-memo
 
 shallowRef()、triggerRef()、shallowReactive()、shallowReadonly()、markRaw()
 
+***
 ## 异步组件
 
 Suspense
 
 defineAsyncComponent()
 
+***
 ## 应用实例
 
 createApp()、app.mount()、app.unmount()
 
+***
 ## 卸载的应用实例无法重新挂载
 
 app.component()、app.directive()、app.provide()、app.use()
@@ -34,6 +37,7 @@ app.config.compilerOptions
 
 参考浏览器内模板编译注意事项
 
+***
 ## 工具
 
 isRef()、isProxy()、isReactive()、isReadonly()
@@ -43,27 +47,22 @@ isRef有类型收窄功能
 具有类型收窄功能的操作符
 
    - js操作符：typeof、instanceof、in、===、isArray
-
    - ts操作符：is
-
 - unref()、toValue()
 
 toRef()、toRefs()
 
    - 对ref、reactive均有效
-
    - toRef会为当前不存在的属性建立起联系，但toRefs不会
-
 - customRef()
-
    - track负责订阅
-
    - trigger负责分发
 
 toRaw()
 
 - TypeScript 工具类型
 
+***
 ## 服务端渲染
 
 服务端渲染 (SSR)
@@ -71,3 +70,4 @@ toRaw()
 createSSRApp()
 
 - onServerPrefetch() 服务端渲染 API
+
