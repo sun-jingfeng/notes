@@ -2,7 +2,7 @@
 
 **手机**：195-2460-3214（同微信） | **邮箱**：jlu_sunjingfeng@163.com | **年龄**：31
 
-**工作时长**：4 年 | **求职意向**：Web 全栈开发（React + Java，AI 辅助） | **地点**：北京
+**工作时长**：4 年 | **求职意向**：AI Agent 全栈开发（React / Vue + Java） | **地点**：北京
 
 ---
 
@@ -31,48 +31,43 @@
 
 ## 工作内容
 
-- 作为项目负责人，主导中大型项目前端、后端从搭建到部署的全流程，完成项目的全栈交付
-- 作为研发组长，统筹组内任务分配与交付质量
-- 通过组件封装、逻辑抽象提升前端代码复用率，通过合理的分层架构、公共模块抽取降低后端维护成本
-- 持续优化前端性能、后端接口响应效率
-- 参与技术选型，搭建项目基础框架、代码规范体系，主导微服务架构设计、落地
-- 负责 Nginx 配置、Docker 容器化部署、Linux 服务器环境搭建
-- 攻克团队技术难点，定期分享新技术，推动团队技术成长
+- 作为项目负责人兼研发组长，主导中大型项目从方案设计、开发到部署的全流程，负责前端、后端与 AI Agent 核心能力开发及落地
+- 通过组件封装、分层架构设计与公共模块沉淀推进代码复用，持续优化前端性能、接口响应效率与服务稳定性
+- 负责技术选型，搭建项目基础框架、代码规范体系、微服务架构及部署环境，并推动 AI Coding 在研发流程中的落地
 
 ---
 
 ## 专业技能
 
-**AI 工具与工程化：**
+**AI Agent 与工程化：**
 
-- 熟练掌握 AI 辅助开发工具（Cursor、Copilot、OpenClaw 等），能借助 AI 提升编码与排错效率
-- 熟练掌握 提示词工程与规则配置（Rules、AI Skills、MCP 等），能编写可复用提示与项目级 AI 规范
-- 熟练掌握 Git、Nginx、Jenkins，能完成版本管理、域名配置、CI/CD 流程搭建
-- 了解 项目监控体系，如 Google Analytics、Sentry 等
+- 具备独立封装 AI Agent 服务，并在内网环境下与 React 前端、Java 微服务集成落地的项目经验
+- 具备 LangChain 落地经验与私有化模型接入实践经验，了解 LangGraph 在复杂工作流中的适用场景
+- AI Coding 工具（Cursor、Copilot、OpenClaw 等），可用于提升编码、排错效率
+- 提示词设计与规则配置（Rules、Skills、MCP 等），可编写可复用提示与项目级 AI 规范
+- Docker、Nginx、Git，具备基于 Dockerfile、Docker Compose 的应用容器化部署经验
 
 **前端：**
 
-- 熟练掌握 TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+ 语法特性、异步编程模型
-- 熟练掌握 React 及其生态（React Router、Redux/RTK），理解 Fiber 架构、虚拟 DOM、Diff 算法等核心原理
-- 熟练掌握 Vue3、Vue2 及其生态（Vue Router、Pinia/Vuex），理解响应式原理、编译优化机制
-- 熟练掌握 Ant Design、Element Plus、ECharts、Leaflet 等主流库，具备快速上手新框架的能力
-- 熟练掌握 前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
-- 熟练掌握 组件化开发、逻辑复用，擅长通过自定义 Hook/组合式函数 提升代码复用率、模块解耦
-- 能够使用 Performance、Memory、Lighthouse 等面板定位性能瓶颈、分析内存占用，并进行针对性性能优化
-- 能够使用 微前端框架、iframe 构建多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
-- 了解 Next.js、Nuxt 及 SSR、SSG、ISR 等服务端渲染模式
+- TypeScript、JavaScript、HTML5、CSS3，涵盖 ES6+ 语法特性、异步编程模型
+- React 及其生态（React Router、Redux/RTK），理解 Fiber 架构、虚拟 DOM、Diff 算法等核心原理
+- Vue3、Vue2 及其生态（Vue Router、Pinia/Vuex），理解响应式原理、编译优化机制
+- Ant Design、Element Plus、ECharts、Leaflet 等主流库，具备快速上手新框架的能力
+- 前端工程化体系，包括包管理（pnpm/npm）、构建工具（Vite/Webpack）、代码规范（ESLint/Stylelint/Prettier）等
+- 组件化开发、逻辑复用，擅长通过自定义 Hook / 组合式函数提升代码复用率、模块解耦
+- Performance、Memory、Lighthouse 等面板，用于定位性能瓶颈、分析内存占用并进行针对性优化
+- 微前端框架、iframe 多应用集成架构，具备单点登录、权限管控、样式隔离、跨应用通信等生产经验
 
 **后端：**
 
-- 熟练掌握 Java，熟悉集合框架、Stream 流、IO、多线程、网络编程
-- 熟练掌握 Spring Boot、Maven，能独立完成 RESTful API 开发，熟悉自动配置、AOP、JWT 认证等核心机制
-- 熟练掌握 MySQL、MyBatis，熟悉索引优化、事务管理、动态 SQL
-- 熟练掌握 Docker，能通过 Dockerfile、Docker Compose 完成应用容器化部署
-- 熟练掌握 Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
-- 熟练掌握 微服务架构、Spring Cloud 组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
-- 熟练掌握 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
-- 熟练掌握 Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter 进行接口压测与性能验证
-- 了解 Elasticsearch 及倒排索引原理，能完成全文检索、聚合分析的基本操作
+- Java，熟悉集合框架、Stream 流、IO、多线程、网络编程
+- Spring Boot、Maven，能独立完成 RESTful API 开发，熟悉自动配置、AOP、JWT 认证等核心机制
+- MySQL、MyBatis，熟悉索引优化、事务管理、动态 SQL
+- Redis，包括常用数据结构及其在缓存、会话管理等场景的应用
+- 微服务架构、Spring Cloud 组件（Nacos、OpenFeign、Gateway、Sentinel、Seata）
+- 消息队列 RabbitMQ，掌握异步解耦、流量削峰等常见应用模式
+- Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter 进行接口压测与性能验证
+- Python，了解 FastAPI、Pydantic，具备相关接口开发与服务落地经验
 
 ---
 
@@ -80,7 +75,17 @@
 
 ### 2025年2月 – 2025年12月 | 气象雷达监测预警系统系列
 
-**项目描述**：基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统
+**项目描述**：基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统，并在此基础上建设气象预警文案生成智能体能力
+
+**AI Agent 技术**：Python、FastAPI、Pydantic、LangChain
+
+**AI Agent 成果**：
+
+1. 实现气象预警文案生成智能体，作为独立 Python 微服务接入原有 Java 业务服务体系
+2. 基于时间、气象要素、地图视窗经纬度范围，实现预警文案生成功能，完成前后端联调与页面展示
+3. 完成业务上下文组装，查询原始业务数据，进行视窗范围过滤后交给模型处理
+4. 通过工具调用实现经纬度转地名等确定性信息获取，避免模型直接脑补地名，提升预警文案准确性与可解释性
+5. 统一封装模型调用、工具调用、结果解析与接口入参出参结构，提升项目内智能体能力的可维护性与稳定性
 
 **前端技术**：React、Immer、React Router、Redux、Ant Design、TypeScript、Vite、React Compiler
 
@@ -242,25 +247,7 @@
 
 ---
 
-### 2022年6月 – 2022年12月 | 领航营销云-智能触达
-
-**项目描述**：部门核心 SaaS 产品，覆盖从线索到转化的完整营销闭环；基于微前端架构，包含商机线索、智能触达、租户管理等子系统
-
-**主要技术**：微前端（qiankun）、Vue2、Vue Router、Vuex、Element UI、Webpack
-
-**主要成果**：
-
-1. 参与技术栈与组件库选型，完成父项目与智能触达子项目搭建
-2. 配置 qiankun 微前端，实现子应用嵌入、样式隔离与跨应用通信
-3. 制定多分辨率适配策略并封装 Mixin，统一各页面视觉风格
-4. 统一分页列表接口逻辑并封装 Mixin，提升列表类页面开发效率
-5. 独立完成营销活动、邮件/短信自动群发、可拖拽自定义表单等业务模块开发
-6. 配置 Nginx 支持 History 路由、HTTPS 与跨域
-7. 搭建 Jenkins 流水线，实现父子项目自动化部署
-
----
-
 ## 自我评价
 
-- 扎实的前端、后端基础，丰富的项目经验，有团队管理经验
-- 熟练使用 AI 工具，拥抱新技术，适应新趋势
+- 具备 React / Vue + Java 全栈开发经验，兼具 AI Agent 功能落地、系统集成与团队管理经验
+- 熟悉业务系统与智能体能力结合的工程化方案，能够将 AI Agent 与 AI Coding 能力应用于实际研发场景
