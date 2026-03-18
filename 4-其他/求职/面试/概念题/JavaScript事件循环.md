@@ -1,66 +1,52 @@
-# JavaScript事件循环
+# JavaScript 事件循环
 
-**一句话总结**：
-JavaScript 是单线程的，事件循环是浏览器 / Node 用来**安排“现在执行什么、稍后执行什么”**的一套机制，让异步代码看起来像是“以后再执行”。
+**一句话回答：** 事件循环是 JavaScript 运行时协调“调用栈、宏任务、微任务、渲染机会”的调度机制，保证单线程也能处理异步任务。
 
-## JavaScript 事件循环到底在干什么？
+***
 
-### 基本概念
+## 一、核心模型
 
-#### 调用栈（Call Stack）
-- 同步代码一行一行进栈执行，执行完出栈。
-- 栈为空时，事件循环才有机会把“排队的回调”压进来执行。
+| 组成 | 作用 |
+| --- | --- |
+| **调用栈（Call Stack）** | 执行同步代码，函数先进后出 |
+| **Web APIs / 宿主能力** | 处理定时器、网络请求、DOM 事件等异步能力 |
+| **宏任务队列（Macrotask）** | 存放 `setTimeout`、I/O、消息事件等 |
+| **微任务队列（Microtask）** | 存放 `Promise.then`、`queueMicrotask`、`MutationObserver` 等 |
+| **渲染机会** | 浏览器在合适时机执行布局、绘制与合成 |
 
-#### 任务队列（Task Queue / Callback Queue）
-- 放**宏任务（macrotask）**：比如 `setTimeout`、`setInterval`、DOM 事件回调、`XMLHttpRequest` 回调等。
-- 当调用栈清空后，事件循环会从宏任务队列取出一个任务执行。
+**执行顺序：** 先执行同步代码，调用栈清空后，立即清空当前轮的微任务队列，再进入下一个宏任务；浏览器通常会在宏任务与微任务之间寻找渲染时机。
 
-#### 微任务队列（Microtask Queue）
-- 放**微任务（microtask）**：比如 `Promise.then/catch/finally`、`queueMicrotask`、`MutationObserver`。
-- 每执行完一个宏任务之后，立即把当前所有微任务执行完，然后再去取下一个宏任务。
+***
 
-### 典型执行顺序（浏览器中）
+## 二、为什么微任务优先级更高
 
-1. 执行全局同步代码（这是第一个宏任务的一部分）。
-2. 遇到 `setTimeout`：把回调丢进宏任务队列（等时间到了再排队）。
-3. 遇到 `Promise.then`：把回调丢进微任务队列。
-4. 全局代码执行结束 → 调用栈清空。
-5. **事件循环**：
-   - 先清空所有微任务队列（FIFO，依次执行 then 等）。
-   - 微任务执行过程中如果又产生新的微任务，继续加到本轮微任务队列末尾，本轮都要执行完。
-   - 微任务队列清空后 → 取出一个宏任务执行（比如某个 `setTimeout` 回调）。
-   - 该宏任务执行完 → 再次执行它产生的所有微任务 → 再取下一个宏任务……
+1. **微任务用于补完当前轮逻辑。** Promise 回调常常依赖前面同步代码的执行结果。
+2. **如果微任务不先执行，状态会延迟到下一轮。** 这会让很多库的更新时机变得不可预测。
+3. **浏览器希望在渲染前先把本轮逻辑收尾。** 这样可以减少中间状态闪烁。
 
-### 一个常见例子
+```js
+console.log('start')
 
-```javascript
-console.log('start'); // 1
+setTimeout(() => console.log('timeout'), 0)
+Promise.resolve().then(() => console.log('promise'))
 
-setTimeout(() => {
-  console.log('timeout'); // 4
-}, 0);
-
-Promise.resolve().then(() => {
-  console.log('promise'); // 3
-});
-
-console.log('end'); // 2
+console.log('end')
+// 输出：start -> end -> promise -> timeout
 ```
 
-**执行顺序与分析**：
-1. `console.log('start')`
-2. 注册 `setTimeout` 回调（放到宏任务队列）
-3. 注册 `Promise.then` 回调（放到微任务队列）
-4. `console.log('end')`
-5. 全局代码结束 → 调用栈为空
-6. 开始清空微任务队列 → 打印 `promise`
-7. 微任务队列清空 → 取出宏任务 → 执行 `setTimeout` 回调 → 打印 `timeout`
+***
 
-最终输出顺序：`start` → `end` → `promise` → `timeout`
+## 三、常见面试追问
 
-### Node.js 中的事件循环（简单对比）
+| 问题 | 回答要点 |
+| --- | --- |
+| **为什么 `setTimeout(fn, 0)` 不是立刻执行？** | 它只是把回调放入宏任务队列，必须等当前调用栈和当前轮微任务清空后才有机会执行。 |
+| **`async/await` 本质是什么？** | `await` 后续逻辑会被拆成 Promise 的微任务继续执行。 |
+| **UI 为什么会卡顿？** | 因为 JavaScript 长任务长期占用主线程，浏览器拿不到渲染机会。 |
+| **如何优化长任务？** | 拆分任务、延后非关键计算、使用 Web Worker、虚拟列表、避免主线程重计算。 |
 
-Node 也有事件循环，但基于 libuv，分了更多阶段（timers、I/O callbacks、check 等）。但核心规律类似：
-- **宏任务**：`setTimeout`、`setImmediate`、I/O 回调等（按不同阶段排队）。
-- **微任务**：`process.nextTick`、`Promise.then`。
-- **执行规律**：在一个阶段里，执行回调 → 清空微任务 → 进入下一个阶段。
+***
+
+## 四、面试答题模板
+
+可以直接答：**JavaScript 是单线程执行模型，事件循环负责把同步任务、宏任务和微任务协调起来。一次循环里先跑同步代码，再清空微任务，之后才取下一个宏任务。Promise 回调优先于 `setTimeout`，也是很多框架更新调度的基础。实际工程里如果主线程有长任务，就会阻塞渲染，导致页面卡顿。**

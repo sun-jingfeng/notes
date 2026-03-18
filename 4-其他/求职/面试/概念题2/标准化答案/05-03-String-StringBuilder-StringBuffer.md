@@ -1,5 +1,7 @@
 # String / StringBuilder / StringBuffer
 
+**一句话回答：** 这一题面试时要先说清“String / StringBuilder / StringBuffer”的核心定义，再补关键机制、适用场景和答题要点。
+
 ## 一、对比
 
 | 类 | 可变性 | 线程安全 | 性能 | 适用场景 |

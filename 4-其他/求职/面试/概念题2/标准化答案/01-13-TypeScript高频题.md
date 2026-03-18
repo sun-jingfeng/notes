@@ -1,5 +1,7 @@
 # TypeScript 高频题
 
+**一句话回答：** 这一题面试时要先说清“TypeScript 高频题”的核心定义，再补关键机制、适用场景和答题要点。
+
 ## 一、interface 与 type
 
 | 对比项 | **interface** | **type** |

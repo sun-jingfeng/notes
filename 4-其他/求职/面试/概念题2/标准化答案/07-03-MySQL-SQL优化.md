@@ -1,5 +1,7 @@
 # MySQL SQL 优化
 
+**一句话回答：** 这一题面试时要先说清“MySQL SQL 优化”的核心定义，再补关键机制、适用场景和答题要点。
+
 ## 一、分析手段
 
 - **EXPLAIN**：看执行计划；关注 **type**（const/ref/range/index/ALL）、**key**（用的索引）、**rows**（预估行数）、**Extra**（Using index/Using filesort/Using temporary 等）。

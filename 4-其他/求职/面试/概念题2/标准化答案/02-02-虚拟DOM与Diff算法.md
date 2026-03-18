@@ -1,5 +1,7 @@
 # 虚拟 DOM 与 Diff 算法
 
+**一句话回答：** 这一题面试时要先说清“虚拟 DOM 与 Diff 算法”的核心定义，再补关键机制、适用场景和答题要点。
+
 ## 一、虚拟 DOM 是什么
 
 **虚拟 DOM（Virtual DOM）** 是用 **JavaScript 对象** 对真实 DOM 的一层抽象描述。React 将组件树先转成虚拟 DOM 树（一般包含 type、props、key、children 等），在内存中对比前后两棵虚拟 DOM 的差异（**Diff**），再**只把变更应用到真实 DOM**，从而减少直接操作 DOM 的次数，并便于跨平台（如 React Native）。

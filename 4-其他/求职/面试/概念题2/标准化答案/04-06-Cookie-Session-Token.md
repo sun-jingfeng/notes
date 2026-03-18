@@ -1,5 +1,7 @@
 # Cookie / Session / Token（JWT）
 
+**一句话回答：** 这一题面试时要先说清“Cookie / Session / Token（JWT）”的核心定义，再补关键机制、适用场景和答题要点。
+
 ## 一、三者对比
 
 | 方案 | 存储位置 | 特点 |
