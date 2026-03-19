@@ -766,7 +766,87 @@ public class MyBean implements InitializingBean, DisposableBean, BeanNameAware {
 
 ***
 
-### 4.3 启动时执行任务
+### 4.3 `@PostConstruct` 详解
+
+**`@PostConstruct`** 用于标记 **Bean 初始化完成后的回调方法**：当对象已经实例化、依赖已经注入完成，Spring 会在 Bean 正式可用前自动调用该方法。
+
+**它解决的问题是：** 有些初始化逻辑依赖注入后的资源才能执行，例如读取配置、预热缓存、注册监听器、构建本地索引等。这类逻辑写在构造方法里往往太早，写在业务方法里又太晚，因此适合放在 `@PostConstruct`。
+
+| 对比项 | `@PostConstruct` | 构造方法 | `InitializingBean.afterPropertiesSet()` | `@Bean(initMethod = "init")` |
+| ------ | ---------------- | -------- | ---------------------------------------- | ------------------------------ |
+| **执行时机** | 依赖注入完成后 | 对象刚创建时 | 依赖注入完成后 | 依赖注入完成后 |
+| **能否拿到注入依赖** | **可以** | 通常不适合依赖完整注入结果 | 可以 | 可以 |
+| **侵入性** | 低 | 无框架注解，但时机过早 | 较高，依赖 Spring 接口 | 中等，偏配置式 |
+| **常见用途** | 初始化当前 Bean 所需资源 | 基础字段赋值 | 历史 Spring 写法 | 第三方 Bean 初始化 |
+
+#### `@PostConstruct` 适合做什么
+
+| 适合场景 | 说明 |
+| -------- | ---- |
+| **初始化本地缓存** | 例如启动时先从数据库加载字典、权限、地区数据到内存 |
+| **注册监听器** | 依赖某个客户端 Bean 已注入完成后，再注册配置监听、消息监听 |
+| **构建运行时状态** | 如预编译规则、建立映射表、准备线程安全容器 |
+| **做一次必要校验** | 如检查关键配置是否缺失，缺失则直接让启动失败 |
+
+#### 不适合做什么
+
+| 不推荐场景 | 原因 |
+| ---------- | ---- |
+| **非常耗时的初始化** | 会拖慢启动，甚至导致启动超时 |
+| **不稳定的远程调用重试** | 初始化阶段失败可能直接导致整个 Bean 创建失败 |
+| **与当前 Bean 无关的全局启动任务** | 更适合 `CommandLineRunner`、`ApplicationRunner` 或应用事件 |
+| **需要按应用完全就绪后再执行的逻辑** | 更适合 `ApplicationReadyEvent` |
+
+#### 示例：依赖注入后加载缓存
+
+```java
+@Service
+@RequiredArgsConstructor
+public class PermissionCacheService {
+
+  private final PermissionMapper permissionMapper;
+  private final Map<Long, String> permissionCache = new ConcurrentHashMap<>();
+
+  @PostConstruct
+  public void initCache() {
+    List<Permission> permissions = permissionMapper.selectList(null);
+    for (Permission permission : permissions) {
+      permissionCache.put(permission.getId(), permission.getCode());
+    }
+  }
+}
+```
+
+| 关键点 | 说明 |
+| ------ | ---- |
+| **为什么不用构造方法** | 构造方法阶段不适合放依赖数据库访问这类初始化逻辑 |
+| **为什么适合 `@PostConstruct`** | 此时 `permissionMapper` 已完成注入，可以安全访问数据库 |
+| **失败后会怎样** | 若抛异常，当前 Bean 创建失败，通常应用启动也会受影响 |
+
+#### 与启动钩子的区别
+
+| 方式 | 执行时机 | 适合场景 |
+| ---- | -------- | -------- |
+| **`@PostConstruct`** | 单个 Bean 初始化后 | 初始化当前 Bean 自己依赖的资源 |
+| **`CommandLineRunner`** | 所有 Bean 初始化后 | 执行应用启动任务、打印启动参数 |
+| **`ApplicationRunner`** | 所有 Bean 初始化后 | 处理带结构化参数的启动任务 |
+| **`ApplicationReadyEvent`** | 应用完全就绪后 | 对外服务已经可用后再执行的逻辑 |
+
+#### 使用注意事项
+
+| 注意点 | 说明 |
+| ------ | ---- |
+| **Spring Boot 3.x 导包** | 使用 `jakarta.annotation.PostConstruct`，不是 `javax.annotation.PostConstruct` |
+| **方法签名** | 通常应为无参、无返回值实例方法，由容器自动调用 |
+| **异常影响** | 抛出异常会中断当前 Bean 初始化，严重时导致应用启动失败 |
+| **执行次数** | 对单例 Bean 通常在容器启动时执行一次；不是每次调用方法都执行 |
+| **AOP 时机** | `@PostConstruct` 发生在 Bean 完全可用前，设计初始化逻辑时要考虑代理与生命周期顺序 |
+
+> 💡 `@PostConstruct` 是 **Bean 生命周期钩子**，不是“微服务专用注解”。在微服务项目中，它常被用于动态路由首次加载、配置监听注册、缓存预热等，但这些都只是它在业务场景中的具体应用。
+
+***
+
+### 4.4 启动时执行任务
 
 | 方式                    | 执行时机             | 说明                       |
 | ----------------------- | -------------------- | -------------------------- |
