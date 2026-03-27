@@ -2,7 +2,7 @@
 
 ### 1.1 简介与核心特性
 
-**Spring Boot** 是 Spring 家族中的一个全新框架，用于简化 Spring 应用的初始搭建和开发过程。
+**Spring Boot** 是基于 Spring Framework 的快速开发框架，用于简化 Spring 应用的搭建、配置、运行与部署过程。
 
 | 特性       | 说明                                            |
 | ---------- | ----------------------------------------------- |
@@ -11,6 +11,25 @@
 | 自动配置   | 尽可能自动配置 Spring 和第三方库                |
 | 无需 XML   | 提倡使用 Java 配置，摆脱繁琐的 XML 配置         |
 | 生产级特性 | 提供运行时监控、健康检查、外部化配置等功能      |
+
+#### Spring Boot 主要解决什么问题
+
+| 开发痛点 | 传统 Spring 开发方式 | Spring Boot 的处理方式 |
+| -------- | -------------------- | ---------------------- |
+| **依赖繁杂** | 需要手动挑选并维护一组依赖及版本 | 通过 `starter` 聚合依赖，版本由 Spring Boot 统一管理 |
+| **配置繁琐** | 需要编写大量 XML 或 Java 配置 | 借助自动配置提供默认 Bean 与默认行为 |
+| **启动麻烦** | 需要打 WAR 并部署到外部容器 | 内嵌 Tomcat/Jetty/Undertow，直接运行 main 方法 |
+| **环境切换零散** | 配置分散在代码、XML、服务器参数中 | 统一使用外部化配置和 Profile 管理 |
+| **生产运维支持弱** | 健康检查、指标、信息暴露需自行组装 | Actuator 等能力可直接接入 |
+
+#### 学习主线
+
+理解 Spring Boot 时，可以先抓住 4 条主线：
+
+1. **Starter** 负责把某类能力需要的依赖带进来
+2. **自动配置** 负责根据依赖和条件创建默认 Bean
+3. **配置文件** 负责修改默认行为
+4. **用户自定义 Bean** 负责覆盖或补充默认实现
 
 ***
 
@@ -33,6 +52,17 @@ Spring Boot = Spring Framework + 自动配置 + 内嵌服务器 + 起步依赖
 1. **自动配置**：根据引入的依赖自动配置 Spring，无需手写大量配置
 2. **起步依赖**：一个 starter 引入一组相关依赖，无需自己凑版本
 3. **内嵌服务器**：直接运行 main 方法启动，无需部署到外部 Tomcat
+
+#### Spring Boot、Spring MVC、Spring Cloud 的关系
+
+| 技术 | 关注点 | 解决的问题 |
+| ---- | ------ | ---------- |
+| **Spring Framework** | IOC、AOP、数据访问、MVC 等基础能力 | 提供企业应用开发的基础设施 |
+| **Spring MVC** | Web 请求分发、参数绑定、视图解析 | 处理 Web 层开发 |
+| **Spring Boot** | 自动配置、内嵌容器、启动与部署简化 | 提升单体应用或微服务的开发效率 |
+| **Spring Cloud** | 服务治理、注册发现、配置中心、网关等 | 解决分布式系统协作问题 |
+
+> 💡 **Spring Boot 不是 Spring MVC 的替代品**。Web 项目中常见的关系是：Spring Boot 负责装配和启动，Spring MVC 负责处理 Web 请求。
 
 #### Spring 生态体系
 
@@ -95,6 +125,21 @@ mvn spring-boot:run          # 或直接运行 main 方法
 curl http://localhost:8080/hello  # 输出：Hello, Spring Boot!
 ```
 
+#### 最小项目结构
+
+```text
+src/main/java
+└── com/example
+  ├── Application.java          # 启动类，尽量放在根包
+  └── controller
+    └── HelloController.java
+
+src/main/resources
+└── application.yml
+```
+
+> 💡 启动类通常放在项目的**根包**下，这样 `@SpringBootApplication` 的默认组件扫描才能覆盖业务代码所在子包。
+
 ***
 
 ## 二、核心原理
@@ -141,11 +186,29 @@ public @interface SpringBootApplication { }
 | `spring-boot-starter-validation` | 参数校验      |
 | `mybatis-spring-boot-starter`  | MyBatis 集成    |
 
+#### Starter、自动配置、依赖管理的分工
+
+| 组成部分 | 本质 | 主要职责 |
+| -------- | ---- | -------- |
+| **Starter** | 依赖聚合器 | 把某类场景需要的依赖一起引入 |
+| **AutoConfiguration** | 一组配置类 | 按条件创建默认 Bean、组装默认行为 |
+| **依赖管理/BOM** | 版本约束清单 | 统一各类依赖版本，减少冲突 |
+
+> 💡 可以把它理解成：`starter` 负责“带材料”，自动配置负责“默认装配”，配置文件负责“调参数”。
+
 ***
 
 ### 2.3 自动配置原理
 
 **自动配置**：根据引入的依赖自动配置 Spring，无需手动编写大量配置。
+
+先从开发视角记住自动配置的核心：**Spring Boot 先判断条件，再决定是否注册默认 Bean。**
+
+| 核心理解 | 说明 |
+| -------- | ---- |
+| **有相关依赖** | 类路径里先要有对应能力需要的类 |
+| **条件满足** | 属性、Bean、应用类型等条件要通过 |
+| **用户没自己定义** | 如果用户已经声明同类 Bean，默认配置通常让位 |
 
 #### 核心机制
 
@@ -161,6 +224,38 @@ public @interface SpringBootApplication { }
         ↓
 根据 @Conditional 条件注解决定是否生效
 ```
+
+#### 自动配置生效的常见前提
+
+| 前提 | 典型判断方式 | 示例 |
+| ---- | ------------ | ---- |
+| **相关依赖已引入** | `@ConditionalOnClass` | 引入 JDBC 依赖后才可能配置数据源 |
+| **配置项满足条件** | `@ConditionalOnProperty` | 开启某个开关后才创建对应 Bean |
+| **用户未自定义同类 Bean** | `@ConditionalOnMissingBean` | 用户自己声明 `DataSource` 后，默认数据源退场 |
+
+自动配置的常见运行模式可以概括为：
+
+```text
+引入 starter
+  ↓
+类路径中出现相关依赖
+  ↓
+自动配置类被候选加载
+  ↓
+条件注解判断通过
+  ↓
+注册默认 Bean
+  ↓
+若用户自定义了同类 Bean，则优先使用用户 Bean
+```
+
+#### 开发中先记住这 3 个结论
+
+| 结论 | 说明 |
+| ---- | ---- |
+| **自动配置不是无条件生效** | 它依赖一组 `@Conditional...` 条件注解 |
+| **自动配置本质上是在补默认值** | 目的是少写配置，而不是禁止自定义 |
+| **用户配置优先于默认配置** | 自己声明 Bean 后，很多默认 Bean 就不会再创建 |
 
 #### 常用条件注解
 
@@ -191,6 +286,16 @@ public class DataSourceAutoConfiguration {
 ```
 
 > 💡 在配置文件中设置 `debug: true`（或 `logging.level.org.springframework.boot.autoconfigure=DEBUG`），启动时会打印自动配置报告（ConditionEvaluationReport），可查看哪些配置生效、哪些未生效及原因。
+
+#### 自动配置排查方式
+
+| 排查方式 | 作用 |
+| -------- | ---- |
+| `debug: true` | 启动时输出条件评估报告 |
+| 查看 `ConditionEvaluationReport` | 判断某个自动配置为什么生效/不生效 |
+| `mvn dependency:tree` | 确认相关依赖是否真的在类路径中 |
+| 查看 `@Conditional...` 注解 | 判断受哪些类、属性、Bean 条件控制 |
+| 查看 `/actuator/conditions` | 运行中查看条件评估结果（需引入 Actuator） |
 
 ***
 
@@ -235,9 +340,23 @@ public class DataSourceAutoConfiguration {
 </dependency>
 ```
 
+| 服务器 | 特点 | 常见场景 |
+| ------ | ---- | -------- |
+| **Tomcat** | 生态成熟、资料多、默认选择 | 大多数传统 Web 项目 |
+| **Jetty** | 轻量、嵌入式体验较好 | 对 Jetty 生态熟悉的项目 |
+| **Undertow** | 启动快、线程模型简洁 | 追求轻量和较高吞吐的场景 |
+
 ***
 
 ### 2.5 启动流程
+
+**启动流程** 讲的是整个 Spring Boot 应用从 `main()` 方法开始，到应用可对外提供服务的过程。
+
+| 关注点 | 典型问题 |
+| ------ | -------- |
+| **配置什么时候加载** | `application.yml` 在哪一步生效 |
+| **Bean 什么时候创建** | 容器在哪一步开始实例化单例 Bean |
+| **应用什么时候 ready** | Runner 和 `ApplicationReadyEvent` 何时执行 |
 
 ```
 1. main() 方法启动
@@ -258,6 +377,14 @@ public class DataSourceAutoConfiguration {
       ↓
 9. 发布 ApplicationReadyEvent，应用就绪
 ```
+
+#### 开发中先记住这 3 个结论
+
+| 结论 | 说明 |
+| ---- | ---- |
+| **配置先于 Bean 创建** | Spring 先准备环境，再创建容器和 Bean |
+| **自动配置属于启动流程的一部分** | 它发生在容器准备阶段，不是应用跑起来之后再补配 |
+| **`ApplicationReadyEvent` 最靠后** | 它表示应用已经基本准备完毕，可以对外提供服务 |
 
 ***
 
@@ -512,15 +639,34 @@ com.other/                ❌ 不会被扫描
 public class Application { }
 ```
 
+#### Bean 没被扫描到的常见原因
+
+| 现象 | 常见原因 | 处理方式 |
+| ---- | -------- | -------- |
+| **启动时报找不到 Bean** | 类不在启动类所在包及子包下 | 调整包结构或补 `@ComponentScan` |
+| **第三方类无法直接注入** | 第三方类不能加 `@Component` | 用 `@Configuration + @Bean` 显式注册 |
+| **Mapper/Feign 接口未生效** | 需要额外启用扫描注解 | 使用 `@MapperScan`、`@EnableFeignClients` 等 |
+| **明明写了注解却不生效** | 注解加在未被 Spring 管理的类上 | 确保该类本身由容器创建 |
+
 ***
 
 ### 3.5 依赖注入方式
+
+**依赖注入方式** 的选择，本质上是在解决“依赖是否清晰、是否便于测试、是否容易误用”的问题。
 
 | 方式         | 推荐程度    | 说明                       |
 | ------------ | ----------- | -------------------------- |
 | 构造函数注入 | ✅ **推荐** | 可声明 final，依赖明确     |
 | 属性注入     | ⚠️ 不推荐  | 无法声明 final，不利于测试 |
 | Setter 注入  | ⚠️ 可选    | 适合可选依赖               |
+
+#### 开发中直接采用的原则
+
+| 场景 | 优先选择 |
+| ---- | -------- |
+| **绝大多数业务 Bean** | 构造函数注入 |
+| **依赖是可选项** | Setter 注入 |
+| **历史代码或简单示例** | 可能看到属性注入，但不建议延续 |
 
 **属性注入（不推荐）**：
 
@@ -556,6 +702,8 @@ public class UserController {
 
 ### 3.6 多个同类型 Bean
 
+**多个同类型 Bean** 的问题，本质上是：Spring 能按类型找到多个候选对象，但不知道该注入哪一个。
+
 当接口有多个实现时，需要指定注入哪一个：
 
 | 方案         | 说明             | 示例                                   |
@@ -580,13 +728,39 @@ private UserService userService;
 
 | 特性     | @Autowired          | @Resource        |
 | -------- | ------------------- | ---------------- |
-| 来源     | Spring              | JDK（JSR-250）   |
+| 来源     | Spring              | Jakarta Annotations（历史上属 JSR-250） |
 | 注入方式 | 默认按**类型**      | 默认按**名称**   |
 | 指定名称 | 需配合 `@Qualifier` | 使用 `name` 属性 |
+
+#### 注入一组同类型 Bean
+
+除了只注入一个 Bean，也可以一次性注入一组实现：
+
+```java
+@Service
+public class NotifyService {
+
+  private final List<MessageSender> senders;
+  private final Map<String, MessageSender> senderMap;
+
+  public NotifyService(List<MessageSender> senders,
+             Map<String, MessageSender> senderMap) {
+    this.senders = senders;
+    this.senderMap = senderMap;
+  }
+}
+```
+
+| 注入形式 | 说明 |
+| -------- | ---- |
+| `List<MessageSender>` | 注入所有同类型 Bean，适合顺序遍历 |
+| `Map<String, MessageSender>` | 键为 Bean 名称，适合按名称选择实现 |
 
 ***
 
 ### 3.7 Bean 作用域与创建时机
+
+**Bean 作用域** 决定的是“容器里有几个实例”，**创建时机** 决定的是“这些实例什么时候被创建出来”。
 
 #### 作用域
 
@@ -684,169 +858,192 @@ public class OrderService { }
 
 ## 四、Bean 生命周期
 
-### 4.1 生命周期流程
+### 4.1 什么是 Bean 生命周期
 
-Bean 从创建到销毁经历的阶段如下。**AOP 代理**在步骤 8 的 `postProcessAfterInitialization` 中生成，之后 Bean 进入可用状态。
+**Bean 生命周期** 指一个 Bean 从被 Spring 创建、完成依赖注入、执行初始化逻辑，到最终被销毁的全过程。
 
+从日常开发视角看，最常遇到的是这 5 个阶段：
+
+```text
+对象创建
+  ↓
+依赖注入
+  ↓
+初始化
+  ↓
+业务使用
+  ↓
+容器关闭时销毁
 ```
-1. 实例化（Instantiation）
-   - 调用构造函数创建对象
-      ↓
-2. 属性注入（Populate Properties）
-   - @Autowired、@Value 等注入
-      ↓
-3. Aware 接口回调
-   - BeanNameAware、BeanFactoryAware、ApplicationContextAware
-      ↓
-4. BeanPostProcessor.postProcessBeforeInitialization()
-   - 初始化前置处理
-      ↓
-5. @PostConstruct 方法
-      ↓
-6. InitializingBean.afterPropertiesSet()
-      ↓
-7. 自定义 init-method
-   - @Bean(initMethod = "init")
-      ↓
-8. BeanPostProcessor.postProcessAfterInitialization()
-   - 初始化后置处理（AOP 代理在此生成）
-      ↓
-9. Bean 就绪，可以使用
-      ↓
-   ────────── 容器关闭时 ──────────
-      ↓
-10. @PreDestroy 方法
-      ↓
-11. DisposableBean.destroy()
-      ↓
-12. 自定义 destroy-method
-   - @Bean(destroyMethod = "cleanup")
-```
+
+| 阶段 | Spring 在做什么 | 开发中最常接触的点 |
+| ---- | --------------- | ------------------ |
+| **对象创建** | 调用构造方法创建对象 | 构造方法 |
+| **依赖注入** | 注入 `@Autowired`、`@Value` 等依赖 | 成员变量、构造器参数 |
+| **初始化** | 执行初始化逻辑 | `@PostConstruct` |
+| **业务使用** | Bean 进入可用状态 | Controller / Service 正常调用 |
+| **销毁** | 容器关闭前执行清理逻辑 | `@PreDestroy` |
+
+#### 开发中先记住这 4 个结论
+
+| 结论 | 说明 |
+| ---- | ---- |
+| **构造方法先执行** | 这时对象刚创建，依赖通常还没注入完成 |
+| **依赖注入发生在构造方法之后** | 所以不要在构造方法里依赖 `@Autowired` 字段做复杂逻辑 |
+| **`@PostConstruct` 在注入完成后执行** | 适合初始化缓存、校验配置、注册监听器 |
+| **`@PreDestroy` 在 Bean 销毁前执行** | 适合释放连接、线程池、缓存等资源 |
+
+#### 容易混淆的点
+
+| 问题 | 正确认识 |
+| ---- | -------- |
+| **构造方法和 `@PostConstruct` 有什么区别** | 构造方法更早；`@PostConstruct` 要等依赖注入完成后执行 |
+| **Bean 生命周期和应用启动流程是不是一回事** | 不是。生命周期看单个 Bean，启动流程看整个应用 |
+| **`@PreDestroy` 会不会每次调用方法后执行** | 不会，它只在容器关闭、Bean 即将销毁时执行 |
+| **业务里怎么做到“初始化后再使用 Bean”** | 正常通过依赖注入拿到 Bean，在业务方法里调用即可，Spring 会先把它初始化好 |
 
 ***
 
-### 4.2 初始化与销毁回调
+### 4.2 开发中最常用的生命周期写法
+
+日常开发里，最值得先掌握的是这 4 类写法：
+
+| 写法 | 执行时机 | 适合做什么 | 推荐程度 |
+| ---- | -------- | ---------- | -------- |
+| **构造方法** | 对象创建时 | 最基础的对象创建与简单赋值 | ✅ 可用 |
+| **`@PostConstruct`** | 依赖注入完成后 | 初始化缓存、做启动校验、注册监听器 | ✅ **最常用** |
+| **`@PreDestroy`** | Bean 销毁前 | 资源回收、关闭连接、清理缓存 | ✅ **最常用** |
+| **`@Bean(initMethod / destroyMethod)`** | 初始化后 / 销毁前 | 第三方类初始化与清理 | ✅ 特定场景 |
+
+#### 最常见用法：`@PostConstruct` + `@PreDestroy`
 
 ```java
 @Component
-@Slf4j
-public class MyBean implements InitializingBean, DisposableBean, BeanNameAware {
+@RequiredArgsConstructor
+public class CacheService {
 
-    private String beanName;
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-        log.info("1. BeanNameAware.setBeanName: {}", name);
-    }
+    private final PermissionMapper permissionMapper;
+    private final Map<Long, String> permissionCache = new ConcurrentHashMap<>();
 
     @PostConstruct
-    public void postConstruct() {
-        log.info("2. @PostConstruct 执行");
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        log.info("3. InitializingBean.afterPropertiesSet 执行");
+    public void init() {
+        List<Permission> permissions = permissionMapper.selectList(null);
+        for (Permission permission : permissions) {
+            permissionCache.put(permission.getId(), permission.getCode());
+        }
     }
 
     @PreDestroy
-    public void preDestroy() {
-        log.info("4. @PreDestroy 执行");
-    }
-
-    @Override
-    public void destroy() {
-        log.info("5. DisposableBean.destroy 执行");
+    public void clear() {
+        permissionCache.clear();
     }
 }
 ```
 
-> 💡 **推荐使用 `@PostConstruct` 和 `@PreDestroy`**，代码简洁且与 Spring 解耦。
+| 写法 | 应放逻辑 |
+| ---- | -------- |
+| **构造方法** | 最基础的字段初始化 |
+| **`@PostConstruct`** | 依赖已经注入完成后才能执行的初始化逻辑 |
+| **`@PreDestroy`** | 容器关闭前的清理逻辑 |
+
+> 💡 业务开发里，优先记住 `@PostConstruct` 和 `@PreDestroy` 即可，其他扩展点是进阶内容。
 
 ***
 
 ### 4.3 `@PostConstruct` 详解
 
-**`@PostConstruct`** 用于标记 **Bean 初始化完成后的回调方法**：当对象已经实例化、依赖已经注入完成，Spring 会在 Bean 正式可用前自动调用该方法。
+**`@PostConstruct`** 是 Bean 初始化阶段最常用的回调注解。它表示：**当前 Bean 的依赖已经注入完成，Spring 现在开始执行它自己的初始化逻辑。**
 
-**它解决的问题是：** 有些初始化逻辑依赖注入后的资源才能执行，例如读取配置、预热缓存、注册监听器、构建本地索引等。这类逻辑写在构造方法里往往太早，写在业务方法里又太晚，因此适合放在 `@PostConstruct`。
-
-| 对比项 | `@PostConstruct` | 构造方法 | `InitializingBean.afterPropertiesSet()` | `@Bean(initMethod = "init")` |
-| ------ | ---------------- | -------- | ---------------------------------------- | ------------------------------ |
-| **执行时机** | 依赖注入完成后 | 对象刚创建时 | 依赖注入完成后 | 依赖注入完成后 |
-| **能否拿到注入依赖** | **可以** | 通常不适合依赖完整注入结果 | 可以 | 可以 |
-| **侵入性** | 低 | 无框架注解，但时机过早 | 较高，依赖 Spring 接口 | 中等，偏配置式 |
-| **常见用途** | 初始化当前 Bean 所需资源 | 基础字段赋值 | 历史 Spring 写法 | 第三方 Bean 初始化 |
+| 对比项 | `@PostConstruct` | 构造方法 |
+| ------ | ---------------- | -------- |
+| **执行时机** | 依赖注入完成后 | 对象刚创建时 |
+| **能否安全使用注入依赖** | **可以** | 通常不适合 |
+| **常见用途** | 初始化缓存、注册监听器、检查配置 | 简单赋值、创建基础对象 |
 
 #### `@PostConstruct` 适合做什么
 
 | 适合场景 | 说明 |
 | -------- | ---- |
-| **初始化本地缓存** | 例如启动时先从数据库加载字典、权限、地区数据到内存 |
-| **注册监听器** | 依赖某个客户端 Bean 已注入完成后，再注册配置监听、消息监听 |
-| **构建运行时状态** | 如预编译规则、建立映射表、准备线程安全容器 |
-| **做一次必要校验** | 如检查关键配置是否缺失，缺失则直接让启动失败 |
+| **初始化缓存** | 启动时把字典、权限、配置等数据读入内存 |
+| **注册监听器** | 依赖其他 Bean 已就绪后，再进行监听注册 |
+| **做启动校验** | 检查关键配置是否缺失，缺失则直接启动失败 |
+| **准备运行时状态** | 构建索引、映射表、线程安全容器等 |
 
-#### 不适合做什么
+#### `@PostConstruct` 不适合做什么
 
 | 不推荐场景 | 原因 |
 | ---------- | ---- |
-| **非常耗时的初始化** | 会拖慢启动，甚至导致启动超时 |
-| **不稳定的远程调用重试** | 初始化阶段失败可能直接导致整个 Bean 创建失败 |
-| **与当前 Bean 无关的全局启动任务** | 更适合 `CommandLineRunner`、`ApplicationRunner` 或应用事件 |
-| **需要按应用完全就绪后再执行的逻辑** | 更适合 `ApplicationReadyEvent` |
-
-#### 示例：依赖注入后加载缓存
-
-```java
-@Service
-@RequiredArgsConstructor
-public class PermissionCacheService {
-
-  private final PermissionMapper permissionMapper;
-  private final Map<Long, String> permissionCache = new ConcurrentHashMap<>();
-
-  @PostConstruct
-  public void initCache() {
-    List<Permission> permissions = permissionMapper.selectList(null);
-    for (Permission permission : permissions) {
-      permissionCache.put(permission.getId(), permission.getCode());
-    }
-  }
-}
-```
-
-| 关键点 | 说明 |
-| ------ | ---- |
-| **为什么不用构造方法** | 构造方法阶段不适合放依赖数据库访问这类初始化逻辑 |
-| **为什么适合 `@PostConstruct`** | 此时 `permissionMapper` 已完成注入，可以安全访问数据库 |
-| **失败后会怎样** | 若抛异常，当前 Bean 创建失败，通常应用启动也会受影响 |
+| **特别耗时的初始化** | 会直接拖慢启动 |
+| **大量不稳定的远程调用** | 初始化失败可能导致整个 Bean 创建失败 |
+| **与当前 Bean 无关的全局启动任务** | 更适合 `CommandLineRunner`、`ApplicationRunner`、`ApplicationReadyEvent` |
 
 #### 与启动钩子的区别
 
 | 方式 | 执行时机 | 适合场景 |
 | ---- | -------- | -------- |
 | **`@PostConstruct`** | 单个 Bean 初始化后 | 初始化当前 Bean 自己依赖的资源 |
-| **`CommandLineRunner`** | 所有 Bean 初始化后 | 执行应用启动任务、打印启动参数 |
-| **`ApplicationRunner`** | 所有 Bean 初始化后 | 处理带结构化参数的启动任务 |
-| **`ApplicationReadyEvent`** | 应用完全就绪后 | 对外服务已经可用后再执行的逻辑 |
+| **`CommandLineRunner`** | 所有 Bean 初始化后 | 执行启动任务 |
+| **`ApplicationRunner`** | 所有 Bean 初始化后 | 处理结构化启动参数 |
+| **`ApplicationReadyEvent`** | 应用完全就绪后 | 应用可以对外服务后再执行 |
+
+> 💡 简单判断：**只影响当前 Bean，用 `@PostConstruct`；影响整个应用启动，用 Runner 或应用事件。**
 
 #### 使用注意事项
 
 | 注意点 | 说明 |
 | ------ | ---- |
-| **Spring Boot 3.x 导包** | 使用 `jakarta.annotation.PostConstruct`，不是 `javax.annotation.PostConstruct` |
-| **方法签名** | 通常应为无参、无返回值实例方法，由容器自动调用 |
-| **异常影响** | 抛出异常会中断当前 Bean 初始化，严重时导致应用启动失败 |
-| **执行次数** | 对单例 Bean 通常在容器启动时执行一次；不是每次调用方法都执行 |
-| **AOP 时机** | `@PostConstruct` 发生在 Bean 完全可用前，设计初始化逻辑时要考虑代理与生命周期顺序 |
-
-> 💡 `@PostConstruct` 是 **Bean 生命周期钩子**，不是“微服务专用注解”。在微服务项目中，它常被用于动态路由首次加载、配置监听注册、缓存预热等，但这些都只是它在业务场景中的具体应用。
+| **Spring Boot 3.x 导包** | 使用 `jakarta.annotation.PostConstruct` |
+| **方法签名** | 通常为无参、无返回值实例方法 |
+| **异常影响** | 抛异常会导致当前 Bean 初始化失败 |
+| **执行次数** | 单例 Bean 一般只在容器启动时执行一次 |
 
 ***
 
-### 4.4 启动时执行任务
+### 4.4 进阶了解：底层扩展点执行顺序
+
+除了日常开发最常用的注解，Spring 底层还有一组生命周期扩展点。它们更偏框架机制理解，不是业务开发的第一优先级。
+
+| 扩展点 | 作用 | 日常开发使用频率 |
+| ------ | ---- | ---------------- |
+| `BeanNameAware` 等 Aware 接口 | 让 Bean 感知容器信息 | 低 |
+| `BeanPostProcessor` | 在初始化前后统一处理 Bean | 中 |
+| `InitializingBean` | 初始化回调接口 | 低 |
+| `DisposableBean` | 销毁回调接口 | 低 |
+| `initMethod` / `destroyMethod` | 为第三方类指定初始化与销毁方法 | 中 |
+
+完整顺序大致如下：
+
+```text
+构造方法
+  ↓
+依赖注入
+  ↓
+Aware 接口回调
+  ↓
+BeanPostProcessor 初始化前处理
+  ↓
+@PostConstruct
+  ↓
+InitializingBean.afterPropertiesSet()
+  ↓
+自定义 initMethod
+  ↓
+BeanPostProcessor 初始化后处理
+  ↓
+Bean 可用
+  ↓
+@PreDestroy
+  ↓
+DisposableBean.destroy()
+  ↓
+自定义 destroyMethod
+```
+
+> **注意**：AOP 代理通常在初始化后处理阶段生成，因此某些依赖代理的行为，在 `@PostConstruct` 阶段未必已经完全处于最终形态。
+
+***
+
+### 4.5 启动时执行任务
 
 | 方式                    | 执行时机             | 说明                       |
 | ----------------------- | -------------------- | -------------------------- |
@@ -901,7 +1098,14 @@ public class MyListener {
 }
 ```
 
-**执行顺序**：`@PostConstruct` → `CommandLineRunner` → `ApplicationRunner` → `ApplicationReadyEvent`
+**执行顺序**：`@PostConstruct` → `CommandLineRunner` / `ApplicationRunner` → `ApplicationReadyEvent`
+
+| 需求 | 更适合的方式 |
+| ---- | ------------ |
+| **初始化当前 Bean 自己的数据** | `@PostConstruct` |
+| **启动时跑一段脚本或预热任务** | `CommandLineRunner` |
+| **需要读取结构化启动参数** | `ApplicationRunner` |
+| **等应用完全 ready 后再执行** | `ApplicationReadyEvent` |
 
 ***
 
@@ -1023,6 +1227,13 @@ logging:
 
 ### 5.4 获取配置值
 
+**获取配置值** 主要有两种思路：少量配置直接取值，大量配置统一绑定。
+
+| 思路 | 适用情况 |
+| ---- | -------- |
+| **直接取值** | 只有 1 到 2 个简单配置项 |
+| **统一绑定** | 一组相关配置需要集中管理 |
+
 #### @Value 注入
 
 ```java
@@ -1083,6 +1294,51 @@ public class AppConfig {
 }
 ```
 
+#### `@ConfigurationProperties` 的注册方式
+
+| 方式 | 说明 | 适用场景 |
+| ---- | ---- | -------- |
+| `@Component` + `@ConfigurationProperties` | 直接把配置类注册成 Bean | 单个配置类、最常见 |
+| `@EnableConfigurationProperties(AppConfig.class)` | 显式启用配置绑定 | 第三方配置类或集中管理 |
+| `@ConfigurationPropertiesScan` | 扫描指定包下的配置类 | 配置类较多时更整洁 |
+
+#### 松散绑定（Relaxed Binding）
+
+`@ConfigurationProperties` 支持松散绑定，即配置名写法不同，也能映射到同一个 Java 字段：
+
+| 配置写法 | Java 字段 |
+| -------- | -------- |
+| `app.first-name` | `firstName` |
+| `app.first_name` | `firstName` |
+| `APP_FIRSTNAME` | `firstName` |
+
+#### 配置校验
+
+当配置项是启动必需项时，建议在绑定阶段直接做校验，而不是等业务运行时报错。
+
+```java
+@Component
+@Validated
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+  @NotBlank
+  private String name;
+
+  @Min(1)
+  @Max(65535)
+  private Integer port;
+
+  // getter / setter
+}
+```
+
+| 注解 | 作用 |
+| ---- | ---- |
+| `@Validated` | 开启配置绑定后的参数校验 |
+| `@NotBlank` | 字符串不能为空 |
+| `@Min` / `@Max` | 限制数值范围 |
+
 **两种方式对比**：
 
 | 特性         | @Value           | @ConfigurationProperties             |
@@ -1092,6 +1348,8 @@ public class AppConfig {
 | **列表/Map** | 支持（写法复杂） | 支持（写法简单）                     |
 | **松散绑定** | 不支持           | 支持（驼峰、下划线、短横线自动转换） |
 | **类型安全** | 需手动指定类型   | 自动类型转换                         |
+
+> 💡 实际开发中可以直接这样记：**零散小配置用 `@Value`，成组业务配置用 `@ConfigurationProperties`。**
 
 ***
 
@@ -1147,9 +1405,27 @@ spring:
 
 **使用场景**：Docker/K8s 部署、敏感信息、CI/CD 流水线。
 
+#### 配置来源的推荐分工
+
+| 配置类型 | 推荐放置位置 |
+| -------- | ------------ |
+| **通用默认配置** | `application.yml` |
+| **环境差异配置** | `application-{profile}.yml` |
+| **敏感信息** | 环境变量、密钥管理系统 |
+| **一次性调试参数** | 命令行参数、JVM 参数 |
+
+> **注意**：数据库密码、密钥、Token 等敏感信息不应直接提交到 Git 仓库。
+
 ***
 
 ### 5.6 多环境配置
+
+**多环境配置** 解决的是同一套代码在开发、测试、生产环境中使用不同配置的问题。
+
+| 配置策略 | 适用场景 |
+| -------- | -------- |
+| **多文件配置** | 大多数项目，结构清晰，最常见 |
+| **单文件多段配置** | 配置量较小，想集中写在一个文件里 |
 
 #### 方式一：多文件配置
 
@@ -1248,6 +1524,8 @@ java -jar app.jar --spring.profiles.active=prod
 java -Dspring.profiles.active=prod -jar app.jar
 ```
 
+> 💡 如果没有明确约束，项目中优先使用“**多文件 + 环境变量/命令行激活**”这套方式，可读性和可维护性通常更好。
+
 ***
 
 ### 5.7 配置优先级
@@ -1263,6 +1541,15 @@ java -Dspring.profiles.active=prod -jar app.jar
 | 5         | jar 包内配置文件 | `classpath:application.yml` |
 | 6（最低） | 代码默认值       | `@Value` 默认值             |
 
+#### 记忆方法
+
+```text
+离启动命令越近，优先级通常越高
+离代码默认值越近，优先级通常越低
+```
+
+> 💡 上表是日常开发最常见的**实用化归纳**。Spring Boot 实际的配置加载规则还会受到 Config Data、导入文件、Profile 激活顺序等因素影响，但排查大多数项目问题时可先按这张表定位。
+
 #### 配置文件位置优先级
 
 ```
@@ -1273,6 +1560,85 @@ java -Dspring.profiles.active=prod -jar app.jar
 ```
 
 > 💡 **建议**：开发用配置文件，生产敏感信息用环境变量，临时调试用命令行参数。
+
+***
+
+## 六、常见问题与排查
+
+### 6.1 Bean 注入失败
+
+**Bean 注入失败** 指 Spring 容器在创建对象时，找不到所需依赖或找到多个候选实现而无法决定注入哪一个。
+
+| 常见报错 | 根因 | 处理方式 |
+| -------- | ---- | -------- |
+| `NoSuchBeanDefinitionException` | 容器中没有对应 Bean | 检查扫描范围、注解、配置类注册 |
+| `NoUniqueBeanDefinitionException` | 同类型 Bean 有多个 | 使用 `@Primary`、`@Qualifier` 或按名称注入 |
+| 循环依赖相关异常 | Bean 之间相互依赖 | 优先重构依赖关系，必要时用 `@Lazy` |
+
+排查顺序：
+
+```text
+先看报错类型
+  ↓
+确认目标类是否被 Spring 管理
+  ↓
+确认包扫描或配置类注册是否覆盖到
+  ↓
+若有多个实现，确认是否指定 @Primary / @Qualifier
+  ↓
+若是构造器循环依赖，考虑拆分职责或引入延迟代理
+```
+
+> 💡 排查这类问题时，优先区分是“**根本没有这个 Bean**”还是“**有多个 Bean 不知道选哪个**”，处理思路完全不同。
+
+***
+
+### 6.2 自动配置没有生效
+
+**自动配置没有生效** 往往不是“Spring Boot 失灵”，而是条件注解没有满足。
+
+| 检查项 | 典型问题 |
+| ------ | -------- |
+| **依赖是否存在** | 以为引入了某个 starter，实际依赖被排除或版本不匹配 |
+| **配置属性是否开启** | 某个自动配置要求显式开关属性 |
+| **是否被用户 Bean 覆盖** | 已经自定义了同类型 Bean，默认配置自然失效 |
+| **是否处于正确应用类型** | 某些配置只在 Servlet Web 应用或响应式应用中生效 |
+
+常用排查命令：
+
+```bash
+# 查看依赖树
+mvn dependency:tree
+
+# 启动时打印自动配置报告
+mvn spring-boot:run -Dspring-boot.run.arguments=--debug
+```
+
+***
+
+### 6.3 配置绑定失败或值不符合预期
+
+| 现象 | 常见原因 | 处理方式 |
+| ---- | -------- | -------- |
+| **字段为 `null`** | 前缀写错、类未注册为 Bean、字段无 setter | 检查 `prefix`、注册方式、访问器方法 |
+| **环境变量没覆盖成功** | 命名不符合转换规则 | 确认 `server.port` 对应 `SERVER_PORT` |
+| **Profile 切换后配置没变** | 激活方式被更高优先级来源覆盖 | 检查命令行参数、环境变量、JVM 参数 |
+| **启动即失败** | 配置校验不通过 | 查看 `@Validated` 与约束注解的报错信息 |
+
+> 💡 当配置问题很隐蔽时，优先确认“最终生效值来自哪里”，而不是只盯着某一个 `application.yml` 文件。
+
+***
+
+### 6.4 什么时候该自己写配置，而不是依赖默认配置
+
+| 场景 | 建议 |
+| ---- | ---- |
+| **默认行为已经满足需求** | 直接使用 Spring Boot 默认配置 |
+| **只需要改少量参数** | 优先改配置文件，而不是重写自动配置 |
+| **需要替换核心组件实现** | 自定义 Bean，并理解可能覆盖默认 Bean |
+| **需要统一封装某类能力** | 编写自定义 starter 或独立配置模块 |
+
+这也是 Spring Boot 的典型使用顺序：**先用默认，后调参数，再做覆盖，最后才考虑自定义装配体系。**
 
 ***
 
@@ -1287,6 +1653,8 @@ java -Dspring.profiles.active=prod -jar app.jar
 | `@Configuration`           | 声明配置类                         |
 | `@EnableAutoConfiguration` | 开启自动配置                       |
 | `@ComponentScan`           | 组件扫描                           |
+| `@ConfigurationPropertiesScan` | 扫描配置属性类                 |
+| `@EnableConfigurationProperties` | 显式启用配置属性绑定        |
 | `@Import`                  | 导入配置类/普通类/ImportSelector   |
 | `@ImportResource`          | 导入 XML 配置文件                  |
 
@@ -1312,9 +1680,10 @@ java -Dspring.profiles.active=prod -jar app.jar
 | -------------------------- | ---------------------- |
 | `@Autowired`               | 按类型注入             |
 | `@Qualifier`               | 指定 Bean 名称         |
-| `@Resource`                | 按名称注入（JDK 标准） |
+| `@Resource`                | 按名称注入（Jakarta 标准） |
 | `@Value`                   | 注入配置值             |
 | `@ConfigurationProperties` | 批量绑定配置           |
+| `@Validated`               | 配置绑定或参数校验     |
 
 ### 生命周期
 

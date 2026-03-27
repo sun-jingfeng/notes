@@ -230,7 +230,19 @@ public class BestPracticeDemo {
 
 ### 2.1 简介
 
-**MyBatis** 是一款优秀的**持久层框架**，用于简化 JDBC 开发。
+**ORM（Object Relational Mapping，对象关系映射）** 是一种把**Java 对象**与**关系型数据库表**建立映射关系的思想。
+
+**核心思想：** 在应用层操作对象，在持久层由框架负责完成对象、SQL、结果集之间的转换。
+
+| 映射对象       | 面向对象世界 | 关系型数据库世界 |
+| -------------- | ------------ | ---------------- |
+| **结构映射**   | 类、对象     | 表、记录         |
+| **属性映射**   | 字段、属性   | 列、字段值       |
+| **关系映射**   | 引用、集合   | 主外键、一对多   |
+
+**MyBatis** 是一款优秀的**持久层框架**，也是典型的**半自动 ORM** 框架，用于简化 JDBC 开发。
+
+**定位特点：** MyBatis 负责参数绑定、结果映射和执行流程封装，但 SQL 仍由开发者显式编写，因此它比 JPA 更灵活，也更适合复杂查询和性能可控场景。
 
 **特点：**
 
@@ -238,6 +250,20 @@ public class BestPracticeDemo {
 *   自动设置参数和获取结果集
 *   通过 XML 或注解配置 SQL
 *   支持动态 SQL
+
+**执行主线：**
+
+    Mapper 接口调用
+        ↓
+    MyBatis 读取 XML / 注解中的 SQL
+        ↓
+    参数映射为 PreparedStatement 参数
+        ↓
+    执行 SQL
+        ↓
+    ResultSet 映射为 Java 对象
+        ↓
+    返回给业务层
 
 **持久层框架对比：**
 
@@ -1010,9 +1036,163 @@ XML 中某些字符需要转义或使用 CDATA：
 
 ***
 
-### 2.5 分页查询（PageHelper）
+### 2.5 缓存机制
 
-#### 2.5.1 基本使用
+**MyBatis 缓存** 是 MyBatis 在执行查询时对结果进行复用的机制，目标是减少重复 SQL 执行和数据库访问次数。
+
+**核心思想：** 先判断能否复用已有查询结果，能复用就直接返回，不能复用再访问数据库。
+
+| 对比项         | 一级缓存                      | 二级缓存                         |
+| -------------- | ----------------------------- | -------------------------------- |
+| **作用域**     | `SqlSession` 级别            | `Mapper` / `namespace` 级别      |
+| **是否默认开启** | 默认开启                      | 需显式开启                       |
+| **是否跨会话** | 不跨 `SqlSession`            | 可跨 `SqlSession`                |
+| **共享范围**   | 当前会话内部                   | 同一 Mapper 命名空间下共享       |
+| **常见使用情况** | 日常开发天然存在               | 生产中使用较谨慎                 |
+
+#### 1. 一级缓存
+
+**一级缓存** 是 `SqlSession` 级别缓存，同一个 `SqlSession` 中，相同查询条件的查询结果可以直接复用。
+
+**命中条件：**
+
+| 条件 | 说明 |
+| ---- | ---- |
+| **同一个 `SqlSession`** | 会话不同就不是同一份一级缓存 |
+| **相同的 SQL 和参数** | SQL 文本、入参、分页条件等都要一致 |
+| **中间没有清缓存操作** | 手动清理后无法继续命中 |
+| **中间没有增删改** | 写操作通常会触发缓存失效 |
+
+**示例：**
+
+```java
+@Test
+void testFirstLevelCache() {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+
+        // 第一次查询：访问数据库
+        User user1 = mapper.selectById(1);
+
+        // 第二次相同查询：直接命中一级缓存
+        User user2 = mapper.selectById(1);
+
+        System.out.println(user1 == user2);  // 通常为 true
+    }
+}
+```
+
+**一级缓存失效场景：**
+
+| 场景 | 原因 |
+| ---- | ---- |
+| **执行增删改** | MyBatis 为避免脏读会清空当前会话缓存 |
+| **调用 `sqlSession.clearCache()`** | 手动清除一级缓存 |
+| **关闭 `SqlSession`** | 会话结束，缓存随之销毁 |
+| **查询条件变化** | 不再命中同一条缓存记录 |
+
+#### 2. 二级缓存
+
+**二级缓存** 是 `Mapper` 级别缓存，多个 `SqlSession` 可以共享同一个命名空间下的缓存数据。
+
+**生效前提：**
+
+| 条件 | 说明 |
+| ---- | ---- |
+| **全局开启二级缓存** | MyBatis 配置中启用 `cacheEnabled` |
+| **Mapper 显式声明缓存** | XML 用 `<cache/>`，或注解用 `@CacheNamespace` |
+| **查询结果可序列化** | 被缓存对象通常需要实现 `Serializable` |
+| **会话提交或关闭** | 一级缓存中的结果刷入二级缓存 |
+
+**XML 开启方式：**
+
+```yaml
+mybatis:
+  configuration:
+    cache-enabled: true
+```
+
+```xml
+<mapper namespace="com.example.mapper.UserMapper">
+    <cache/>
+
+    <select id="selectById" resultType="User">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+</mapper>
+```
+
+**示例：**
+
+```java
+@Test
+void testSecondLevelCache() {
+    // 第一个 SqlSession
+    try (SqlSession sqlSession1 = sqlSessionFactory.openSession()) {
+        UserMapper mapper1 = sqlSession1.getMapper(UserMapper.class);
+        mapper1.selectById(1);   // 先查数据库
+        sqlSession1.commit();    // 提交后一级缓存数据才可能写入二级缓存
+    }
+
+    // 第二个 SqlSession
+    try (SqlSession sqlSession2 = sqlSessionFactory.openSession()) {
+        UserMapper mapper2 = sqlSession2.getMapper(UserMapper.class);
+        mapper2.selectById(1);   // 命中二级缓存时，不再访问数据库
+    }
+}
+```
+
+**二级缓存失效场景：**
+
+| 场景 | 原因 |
+| ---- | ---- |
+| **同一 Mapper 下发生增删改** | MyBatis 会清空对应命名空间缓存 |
+| **数据一致性要求高** | 缓存数据可能与数据库短暂不一致 |
+| **跨服务共享数据** | 本地二级缓存无法覆盖分布式场景 |
+
+#### 3. 一级缓存 vs 二级缓存执行关系
+
+    发起查询
+        ↓
+    先查一级缓存（SqlSession）
+        ↓
+    未命中时再查二级缓存（Mapper）
+        ↓
+    仍未命中才访问数据库
+        ↓
+    查询结果先进入一级缓存
+        ↓
+    会话提交 / 关闭后，才可能写入二级缓存
+
+#### 4. 实际开发中有没有用
+
+**一级缓存** 在实际开发中一直存在，但它更多是 MyBatis 会话内的默认优化，开发者通常不需要专门设计。
+
+**二级缓存** 在实际项目中相对少用，尤其是微服务、分布式系统或高并发场景，原因主要有以下几点：
+
+| 原因 | 说明 |
+| ---- | ---- |
+| **一致性控制复杂** | 数据更新后要保证缓存及时失效并不容易 |
+| **作用域有限** | 只在单应用、单 Mapper 命名空间内共享 |
+| **调试成本较高** | 容易出现“为什么没查数据库”或“为什么数据旧了”的问题 |
+| **替代方案更常见** | 很多项目更倾向用 Redis 做集中式缓存 |
+
+> **注意**：面试中应至少答出“一级缓存是 `SqlSession` 级，二级缓存是 `Mapper` 级；二级缓存需要显式开启，实战里常被 Redis 等集中式缓存替代”。
+
+#### 5. 使用建议
+
+| 场景 | 建议 |
+| ---- | ---- |
+| **普通 CRUD 项目** | 理解一级缓存机制即可 |
+| **单体应用、读多写少** | 可评估二级缓存，但要先验证一致性策略 |
+| **微服务 / 分布式系统** | 更常使用 Redis 等集中式缓存 |
+| **面试准备** | 必须掌握作用域、开启方式、失效场景和实战取舍 |
+
+***
+
+### 2.6 分页查询（PageHelper）
+
+#### 2.6.1 基本使用
 
 **添加依赖：**
 
@@ -1060,7 +1240,7 @@ System.out.println("当前页数据：" + pageInfo.getList());
 | `pageSize` | 每页记录数 |
 | `list`     | 当前页数据 |
 
-#### 2.5.2 实现原理
+#### 2.6.2 实现原理
 
 PageHelper 基于 **MyBatis 插件机制（Interceptor）** 实现，核心流程如下：
 
@@ -1099,7 +1279,7 @@ SELECT COUNT(*) FROM user WHERE status = 1
 SELECT * FROM user WHERE status = 1 LIMIT 10, 10
 ```
 
-#### 2.5.3 注意事项
+#### 2.6.3 注意事项
 
 **1. startPage 必须紧跟查询方法**
 
@@ -1175,7 +1355,7 @@ pagehelper:
   support-methods-arguments: true      # 支持通过方法参数传递分页参数
 ```
 
-#### 2.5.4 常见问题
+#### 2.6.4 常见问题
 
 | 问题        | 原因                   | 解决方案                       |
 | --------- | -------------------- | -------------------------- |
@@ -1187,9 +1367,9 @@ pagehelper:
 
 ***
 
-### 2.6 特殊类型映射
+### 2.7 特殊类型映射
 
-#### 2.6.1 日期时间映射
+#### 2.7.1 日期时间映射
 
 **Java 日期类型与数据库类型对应：**
 
@@ -1238,7 +1418,7 @@ public class User {
 }
 ```
 
-#### 2.6.2 枚举类型映射
+#### 2.7.2 枚举类型映射
 
 **方式一：默认映射（枚举名称）**
 
@@ -1339,9 +1519,9 @@ mybatis:
 
 ***
 
-### 2.7 开发配置
+### 2.8 开发配置
 
-#### 2.7.1 SQL 日志输出
+#### 2.8.1 SQL 日志输出
 
 ```yaml
 mybatis:
@@ -1359,13 +1539,13 @@ mybatis:
     ==> Parameters: 1(Integer)
     <==      Total: 1
 
-#### 2.7.2 IDEA SQL 智能提示
+#### 2.8.2 IDEA SQL 智能提示
 
 1.  **配置数据库连接**：`View → Tool Windows → Database` → 添加 MySQL 连接
 2.  **注入 SQL 语言**：光标放在 SQL 字符串上 → `Alt + Enter` → `Inject language` → **MySQL**
 3.  **关联数据源**：`Alt + Enter` → `Language injection settings` → 选择数据源
 
-#### 2.7.3 MybatisX 插件
+#### 2.8.3 MybatisX 插件
 
 IDEA 插件市场搜索 **MybatisX** 安装，主要功能：
 
@@ -1395,6 +1575,8 @@ IDEA 插件市场搜索 **MybatisX** 安装，主要功能：
 
 **MyBatis-Plus** 是 MyBatis 的增强工具，在 MyBatis 基础上只做增强不做改变，可与现有 MyBatis 共存。
 
+**核心目标：** 减少单表 CRUD、条件拼装、分页、通用字段处理等重复模板代码，把开发精力放到真正有业务含义的 SQL 和服务逻辑上。
+
 **核心能力：**
 
 | 能力           | 说明                                       |
@@ -1411,6 +1593,17 @@ IDEA 插件市场搜索 **MybatisX** 安装，主要功能：
 | **定位**     | 持久层框架     | MyBatis 的增强包                 |
 | **单表 CRUD**| 手写 SQL/XML   | 继承即得，可再手写复杂 SQL       |
 | **SQL 编写** | 全部手写       | 简单操作用封装，复杂仍用 Mapper 方法 |
+
+**适用判断：**
+
+| 场景 | 是否适合 MyBatis-Plus | 说明 |
+| ---- | --------------------- | ---- |
+| **单表 CRUD 较多** | ✅ 很适合 | 能明显减少重复代码 |
+| **后台管理系统** | ✅ 常用 | 分页、条件查询、逻辑删除需求高频 |
+| **复杂报表 / 多表联查** | ⚠️ 部分适合 | 常配合原生 MyBatis XML 一起使用 |
+| **性能敏感、SQL 高度定制** | ⚠️ 视情况而定 | 复杂部分通常回到手写 SQL |
+
+> **注意**：MyBatis-Plus 不是替代 MyBatis，而是建立在 MyBatis 之上的增强层。实际项目中“简单场景用 MyBatis-Plus，复杂场景回到 MyBatis”是很常见的组合。
 
 ***
 
@@ -1452,9 +1645,63 @@ mybatis-plus:
 
 > 💡 使用 MyBatis-Plus 后，启动类上仍可用 `@MapperScan("com.example.mapper")` 扫描 Mapper 接口。
 
+**常见配置项：**
+
+| 配置项 | 作用 |
+| ------ | ---- |
+| `map-underscore-to-camel-case` | 开启下划线到驼峰映射 |
+| `log-impl` | 控制 SQL 日志输出 |
+| `id-type` | 配置主键生成策略 |
+| `logic-delete-field` | 指定逻辑删除字段 |
+
 ***
 
-### 3.3 Mapper 层：BaseMapper
+### 3.3 分页插件
+
+**MyBatis-Plus 分页** 基于拦截器机制对 SQL 进行改写，实现分页查询和总数统计。
+
+**配置拦截器：**
+
+```java
+@Configuration
+public class MybatisPlusConfig {
+
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        return interceptor;
+    }
+}
+```
+
+**分页查询示例：**
+
+```java
+@Test
+void testPage() {
+    Page<User> page = new Page<>(1, 10);
+
+    LambdaQueryWrapper<User> wrapper = Wrappers.<User>lambdaQuery()
+            .eq(User::getStatus, 1)
+            .orderByDesc(User::getCreateTime);
+
+    Page<User> result = userMapper.selectPage(page, wrapper);
+
+    System.out.println("总记录数：" + result.getTotal());
+    System.out.println("当前页数据：" + result.getRecords());
+}
+```
+
+| 组件 | 作用 |
+| ---- | ---- |
+| `Page<T>` | 封装页码、页大小、总数、结果集 |
+| `PaginationInnerInterceptor` | 拦截并改写分页 SQL |
+| `selectPage` | 执行条件分页查询 |
+
+***
+
+### 3.4 Mapper 层：BaseMapper
 
 Mapper 接口继承 **BaseMapper<Entity>** 即拥有单表 CRUD 方法，无需写 XML。
 
@@ -1479,7 +1726,7 @@ public interface UserMapper extends BaseMapper<User> {
 
 ***
 
-### 3.4 Service 层标准写法
+### 3.5 Service 层标准写法
 
 **标准做法：** 通过**继承 ServiceImpl** 获得通用数据库操作能力，通过**实现自定义接口**完成具体业务逻辑。
 
@@ -1551,7 +1798,7 @@ public class UserController {
 
 ***
 
-### 3.5 实体类与表映射
+### 3.6 实体类与表映射
 
 **表名、主键、字段与逻辑删除：**
 
@@ -1580,9 +1827,17 @@ public class User {
 | `@TableField`    | 字段映射，`exist = false` 表示非库表字段 |
 | `@TableLogic`    | 逻辑删除字段                 |
 
+**常见主键策略：**
+
+| 策略 | 含义 |
+| ---- | ---- |
+| `IdType.AUTO` | 数据库自增 |
+| `IdType.ASSIGN_ID` | 使用雪花算法生成主键 |
+| `IdType.INPUT` | 由业务手动赋值 |
+
 ***
 
-### 3.6 条件构造器（简要）
+### 3.7 条件构造器
 
 简单条件可用 **LambdaQueryWrapper**，避免字段名硬编码：
 
@@ -1595,7 +1850,106 @@ List<User> list = userService.lambdaQuery()
         .list();
 ```
 
+**常用条件方法：**
+
+| 方法 | 作用 |
+| ---- | ---- |
+| `eq` / `ne` | 等于 / 不等于 |
+| `gt` / `ge` / `lt` / `le` | 大于、大于等于、小于、小于等于 |
+| `like` / `likeLeft` / `likeRight` | 模糊匹配 |
+| `in` | `IN` 条件 |
+| `orderByAsc` / `orderByDesc` | 排序 |
+
+**动态拼装示例：**
+
+```java
+public List<User> listUsers(String name, Integer status) {
+    LambdaQueryWrapper<User> wrapper = Wrappers.<User>lambdaQuery()
+            .like(name != null && !name.isBlank(), User::getName, name)
+            .eq(status != null, User::getStatus, status)
+            .orderByDesc(User::getCreateTime);
+
+    return userMapper.selectList(wrapper);
+}
+```
+
 复杂条件可用 **QueryWrapper**，或在 Mapper 中写方法配合 XML。
+
+***
+
+### 3.8 自动填充与乐观锁
+
+**自动填充** 用于在新增、更新时自动维护通用字段，如创建时间、更新时间、创建人、更新人。
+
+**实体字段声明：**
+
+```java
+@Data
+public class User {
+    private Long id;
+    private String name;
+
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
+
+    @Version
+    private Integer version;
+}
+```
+
+**自动填充处理器：**
+
+```java
+@Component
+public class MyMetaObjectHandler implements MetaObjectHandler {
+
+    @Override
+    public void insertFill(MetaObject metaObject) {
+        this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
+        this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+    }
+
+    @Override
+    public void updateFill(MetaObject metaObject) {
+        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+    }
+}
+```
+
+**乐观锁插件：**
+
+```java
+@Bean
+public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+    interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+    interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+    return interceptor;
+}
+```
+
+| 能力 | 作用 |
+| ---- | ---- |
+| `@TableField(fill = ...)` | 声明自动填充字段 |
+| `MetaObjectHandler` | 编写自动填充逻辑 |
+| `@Version` | 标记乐观锁版本字段 |
+| `OptimisticLockerInnerInterceptor` | 开启乐观锁拦截 |
+
+***
+
+### 3.9 使用建议
+
+| 问题 | 建议 |
+| ---- | ---- |
+| **是不是所有项目都用 MyBatis-Plus** | 不是，很多项目是 MyBatis 与 MyBatis-Plus 混用 |
+| **什么时候优先用 MyBatis-Plus** | 单表 CRUD、多条件筛选、分页管理后台 |
+| **什么时候回到原生 MyBatis** | 复杂联表、复杂报表、定制 SQL、性能调优 |
+| **面试怎么回答** | 强调它是 MyBatis 增强包，不是完全替代关系 |
+
+**选型结论：** MyBatis-Plus 适合减少模板代码，但不应该为了“全用它”而牺牲 SQL 可读性和可控性。对业务复杂部分，继续使用 MyBatis XML / 注解是正常且合理的做法。
 
 ***
 
