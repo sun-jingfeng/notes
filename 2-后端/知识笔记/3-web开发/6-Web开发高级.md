@@ -664,9 +664,11 @@ public void createOrder(OrderDTO dto) {
 | ------------- | -------------- |
 | `rollbackFor` | 回滚的异常类型 |
 | `propagation` | 传播行为       |
-| `isolation`   | 隔离级别       |
+| `isolation`   | 隔离级别，常见值有 `READ_COMMITTED`、`REPEATABLE_READ` |
 | `readOnly`    | 是否只读       |
 | `timeout`     | 超时时间（秒） |
+
+> **注意**：`@Transactional(isolation = ...)` 只是声明事务隔离要求，最终仍由底层数据库实现。MySQL InnoDB 默认隔离级别是 `Repeatable Read`。
 
 ***
 
