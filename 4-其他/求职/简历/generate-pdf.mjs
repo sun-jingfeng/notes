@@ -5,7 +5,7 @@ import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const htmlContent = readFileSync(path.join(__dirname, '简历模板.html'), 'utf-8');
-const fileName = 'AI Agent全栈(React+Vue+Java)-985统招-北京-孙景峰';
+const fileName = '智能体 Web 全栈(React+Vue+Java)-985统招-北京-孙景峰';
 const pdfPath = path.join(__dirname, `${fileName}.pdf`);
 
 // 使用本机安装的 Chrome（macOS 默认路径，Windows/Linux 可改为对应可执行路径）

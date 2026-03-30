@@ -179,8 +179,8 @@ MGET k1 k2 k3
 HSET user:1001 name "张三"
 HSET user:1001 age 25
 
-# 设置多个字段
-HMSET user:1001 name "张三" age 25 email "zhangsan@example.com"
+# 一次设置多个字段
+HSET user:1001 name "张三" age 25 email "zhangsan@example.com"
 
 # 获取单个字段
 HGET user:1001 name
@@ -336,6 +336,9 @@ ZREM leaderboard "player1"
 KEYS *
 KEYS user:*
 
+# 渐进式扫描（生产推荐）
+SCAN 0 MATCH user:* COUNT 100
+
 # 判断 key 是否存在
 EXISTS name
 
@@ -376,11 +379,100 @@ FLUSHALL
 
 ***
 
-## 四、Java 中使用 Redis
+## 四、Redis 核心机制
+
+### 4.1 Redis 为什么快
+
+**Redis 的高性能**来自“内存访问 + 高效数据结构 + 事件驱动 + 避免大量线程切换”的组合，而不是单靠“单线程”三个字。
+
+| 因素 | 说明 |
+| --- | --- |
+| **基于内存** | 绝大多数读写都在内存完成，避免磁盘随机 IO 开销。 |
+| **数据结构高效** | String、Hash、ZSet 等都针对典型场景做了优化。 |
+| **单线程执行命令** | 命令串行执行，避免了共享数据下的锁竞争与上下文切换。 |
+| **IO 多路复用** | 用一个线程监听多个连接事件，提升网络处理效率。 |
+| **协议简单** | RESP 协议解析成本低，客户端实现也较轻。 |
+
+> **注意**：Redis 6.0 起引入了多线程 IO，用于网络读写，命令执行本身仍主要是单线程模型。
+
+### 4.2 过期删除与内存淘汰
+
+Redis 通过**过期删除**和**内存淘汰**两套机制控制数据生命周期：前者处理“已经过期”的 key，后者处理“内存已满但仍要写入”的场景。
+
+| 机制 | 触发时机 | 核心做法 | 目的 |
+| --- | --- | --- | --- |
+| **过期删除** | key 到达过期时间 | 惰性删除 + 定期删除 | 清理失效数据 |
+| **内存淘汰** | 达到 `maxmemory` 上限 | 按淘汰策略移除部分 key | 避免继续写入导致 OOM |
+
+#### 1. 过期删除
+
+- **惰性删除**：访问某个 key 时才检查是否过期，过期则删除。
+- **定期删除**：Redis 周期性随机抽样带过期时间的 key，删除其中已过期的部分。
+
+惰性删除节省 CPU，但可能让过期 key 在内存中停留更久；定期删除用于补足这一点。两者组合能在 CPU 与内存之间取得平衡。
+
+#### 2. 内存淘汰策略
+
+当设置了 `maxmemory` 后，写入新数据且内存不足时，Redis 会按 `maxmemory-policy` 决定是否淘汰旧 key。
+
+| 策略 | 说明 | 适用场景 |
+| --- | --- | --- |
+| **noeviction** | 不淘汰，直接报错 | 对数据完整性要求高，不接受自动删除 |
+| **allkeys-lru** | 所有 key 中淘汰最近最少使用的 | 通用缓存场景，最常见 |
+| **volatile-lru** | 只在设置了 TTL 的 key 中淘汰 LRU | 同时存在持久数据与缓存数据 |
+| **allkeys-lfu** | 所有 key 中淘汰最不经常使用的 | 热点分布明显且长期不均的场景 |
+| **volatile-ttl** | 优先淘汰剩余生存时间更短的 key | TTL 设计清晰的缓存场景 |
+| **volatile-random** | 随机淘汰设置了 TTL 的 key | 很少单独使用 |
+
+### 4.3 持久化机制
+
+Redis 虽然以内存为主，但可通过 **RDB** 和 **AOF** 持久化降低重启或宕机后的数据丢失风险。
+
+| 方式 | 核心机制 | 优点 | 缺点 | 适用场景 |
+| --- | --- | --- | --- | --- |
+| **RDB** | 按时间点生成内存快照 | 文件紧凑、恢复快、适合备份 | 两次快照之间的数据可能丢失 | 备份、全量恢复 |
+| **AOF** | 追加记录写命令 | 数据更完整、可读性更好 | 文件更大、恢复通常更慢 | 对数据完整性要求较高 |
+
+常见建议：
+
+- **RDB** 适合做定时快照和备份。
+- **AOF everysec** 是生产中常见折中方案，通常最多丢失 1 秒数据。
+- 对恢复速度和数据安全都敏感时，可同时开启 **RDB + AOF**。
+
+```properties
+# RDB
+save 900 1
+save 300 10
+save 60 10000
+
+# AOF
+appendonly yes
+appendfsync everysec
+```
+
+### 4.4 高可用方案
+
+Redis 单实例简单但有单点风险，常见高可用方案有**主从复制**、**Sentinel 哨兵**和 **Cluster 集群**。
+
+| 方案 | 解决的问题 | 特点 | 局限 |
+| --- | --- | --- | --- |
+| **主从复制** | 数据冗余、读写分离 | 主节点写，从节点同步并可承担读请求 | 主节点故障需人工切换 |
+| **Sentinel** | 自动故障转移 | 监控主从状态，自动选主并通知客户端 | 主要解决高可用，不解决大规模分片 |
+| **Cluster** | 高可用 + 水平扩容 | 数据按槽位分片，多主多从 | 架构更复杂，对客户端有要求 |
+
+简单理解：
+
+- **主从复制**解决“备份”和“读压力分担”。
+- **Sentinel**解决“主节点挂了怎么办”。
+- **Cluster**解决“单机放不下、单机扛不住怎么办”。
+
+***
+
+## 五、Java 中使用 Redis
 
 Spring Data Redis 通过 **RedisConnection** 封装与 Redis 的 TCP 通信，**RedisTemplate** 在其之上提供类型化 API（opsForValue、opsForHash 等）并负责序列化/反序列化。推荐使用**连接池**（如 Lettuce 的 pool）：复用连接、限制并发连接数，避免频繁建连带来的延迟与资源消耗。
 
-### 4.1 Spring Boot 集成 Redis
+### 5.1 Spring Boot 集成 Redis
 
 #### 添加依赖
 
@@ -464,7 +556,7 @@ public class RedisConfig {
 }
 ```
 
-### 4.2 RedisTemplate 操作
+### 5.2 RedisTemplate 操作
 
 `RedisTemplate<K, V>` 是 Spring 对 Redis 的**门面**：内部通过 `RedisConnectionFactory` 获取连接，按数据类型调用 `opsForValue()`、`opsForHash()` 等得到 `*Operations`，再通过配置的 Serializer 把 Java 对象与字节数组互转。Key 一般固定为 String，Value 可为 Object（需配置 JSON 等序列化）；若只存字符串，可直接用 `StringRedisTemplate`。
 
@@ -656,7 +748,7 @@ DataType type = redisTemplate.type("name");
 Set<String> keys = redisTemplate.keys("user:*");
 ```
 
-### 4.3 封装 Redis 工具类
+### 5.3 封装 Redis 工具类
 
 将常用 Key/Value、Hash、过期、删除等操作封装成工具类，可统一 key 前缀、过期策略和异常处理，避免在业务代码里到处写 `redisTemplate.opsForValue().set(...)`，便于维护与替换实现。
 
@@ -744,7 +836,7 @@ public class RedisUtils {
 }
 ```
 
-### 4.4 使用示例
+### 5.4 使用示例
 
 - **缓存**：采用 **Cache-Aside** 模式——读时先查缓存，未命中再查库并回写缓存；写时先更新库再删缓存（或更新缓存），避免长期脏数据。  
 - **分布式锁**：用 Redis 的 `SET key value NX EX seconds` 实现“仅当 key 不存在时设置并带过期”，避免死锁；释放时需校验 value 再 DEL，防止误删他人锁。  
@@ -799,7 +891,13 @@ public class UserService {
 public class OrderService {
 
     @Autowired
-    private RedisUtils redisUtils;
+    private StringRedisTemplate stringRedisTemplate;
+
+    private static final DefaultRedisScript<Long> UNLOCK_SCRIPT =
+        new DefaultRedisScript<>(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+            Long.class
+        );
 
     public boolean createOrder(Long productId, Long userId) {
         String lockKey = "lock:order:" + productId;
@@ -807,7 +905,8 @@ public class OrderService {
 
         try {
             // 获取锁（30 秒过期）
-            Boolean locked = redisUtils.setIfAbsent(lockKey, lockValue, 30, TimeUnit.SECONDS);
+            Boolean locked = stringRedisTemplate.opsForValue()
+                .setIfAbsent(lockKey, lockValue, 30, TimeUnit.SECONDS);
             if (!Boolean.TRUE.equals(locked)) {
                 return false; // 获取锁失败
             }
@@ -817,11 +916,8 @@ public class OrderService {
 
             return true;
         } finally {
-            // 释放锁（需确保只释放自己的锁）
-            Object value = redisUtils.get(lockKey);
-            if (lockValue.equals(value)) {
-                redisUtils.delete(lockKey);
-            }
+            // 使用 Lua 脚本保证“比较锁值 + 删除锁”原子执行
+            stringRedisTemplate.execute(UNLOCK_SCRIPT, Collections.singletonList(lockKey), lockValue);
         }
     }
 }
@@ -858,11 +954,9 @@ public class RateLimitService {
 // 使用
 @RestController
 public class ApiController {
-
     @Autowired
     private RateLimitService rateLimitService;
 
-    @GetMapping("/api/data")
     public Result getData(HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         String key = "rate_limit:" + ip;
@@ -880,11 +974,11 @@ public class ApiController {
 
 ***
 
-## 五、Spring Cache 注解方式
+## 六、Spring Cache 注解方式
 
 Spring 提供了一套**缓存抽象**（不绑定具体实现），通过声明式注解即可使用缓存，底层可切换为 Redis、Caffeine、Ehcache 等。何时用注解、何时用 RedisTemplate：注解适合“按方法返回值缓存/失效”的读多写少场景，配置简单、与业务解耦；需要细粒度控制（如复杂 key、多 key、管道、分布式锁、限流）或非返回值型缓存时，用 RedisTemplate 或封装好的工具类更合适。二者可并存：同一项目里部分用 `@Cacheable`，部分用 `RedisUtils`。
 
-### 5.1 启用缓存
+### 6.1 启用缓存
 
 **`@EnableCaching`** 用来开启 Spring 的声明式缓存。不加它的话，后面的 `@Cacheable` 等注解不会生效（相当于没开“缓存开关”）。一般加在**配置类**或**启动类**上即可。
 
@@ -898,7 +992,7 @@ public class Application {
 }
 ```
 
-### 5.2 配置 Redis 作为缓存
+### 6.2 配置 Redis 作为缓存
 
 开启缓存后，需要指定**缓存实现**。这里用 Redis：`spring.cache.type=redis`。其他常用项：`time-to-live` 控制过期时间，`key-prefix` 避免与其他 key 冲突，`cache-null-values: true` 可缓存空结果，减轻缓存穿透。
 
@@ -913,7 +1007,7 @@ spring:
       cache-null-values: true # 是否缓存空值（防止缓存穿透）
 ```
 
-### 5.3 缓存注解
+### 6.3 缓存注解
 
 - **@Cacheable**：适合**读多写少**的查询。执行前先按 key 查缓存，命中则直接返回、不执行方法；未命中才执行方法，并把返回值写入缓存。因此**写操作不要用 @Cacheable**，否则每次都会执行方法。
 - **@CachePut**：**总是执行方法**，并用返回值更新缓存。常用于新增、更新后要把最新结果放入缓存，保证后续读到的是一致的。
@@ -971,7 +1065,7 @@ public class UserService {
 }
 ```
 
-### 5.4 SpEL 表达式
+### 6.4 SpEL 表达式
 
 Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、Bean 等，实现**动态 key**（如 `#id`、`#user.id`）和**条件缓存**（`condition` 决定是否查缓存、`unless` 决定是否写缓存），同一方法在不同参数下对应不同缓存条目，避免 key 冲突或误用。注解里的 `key`、`condition`、`unless` 等支持 SpEL，常用写法如下。
 
@@ -986,20 +1080,113 @@ Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、
 
 ***
 
-## 六、常见问题与最佳实践
+## 七、常见问题与最佳实践
 
-### 6.1 缓存问题
+### 7.1 缓存异常与一致性总览
 
-引入缓存后会出现穿透、击穿、雪崩与一致性问题，本质是“请求没被缓存挡住直打存储”或“缓存与库不一致”。理解成因才能正确选方案（空值/布隆、互斥锁/永不过期、过期时间打散、先更新库再删缓存等）。
+引入缓存后常见问题有**缓存穿透、缓存击穿、缓存雪崩**和**缓存一致性**。前三者的共同点都是“缓存没有挡住请求，压力回到数据库或下游服务”，区别在于失效范围和请求特征不同。
 
-| 问题         | 描述                                  | 解决方案                             |
-| ------------ | ------------------------------------- | ------------------------------------ |
-| **缓存穿透** | 查询不存在的数据，请求直达数据库      | 缓存空值；布隆过滤器                 |
-| **缓存击穿** | 热点 key 过期瞬间，大量请求直达数据库 | 互斥锁重建缓存；热点 key 永不过期    |
-| **缓存雪崩** | 大量 key 同时过期，导致数据库压力骤增 | 过期时间加随机值；多级缓存；限流降级 |
-| **数据一致** | 缓存与数据库数据不一致                | 先更新数据库，再删除缓存；延迟双删   |
+| 问题 | 本质 | 典型现象 | 常见方案 |
+| --- | --- | --- | --- |
+| **缓存穿透** | 查的是不存在的数据 | 缓存和数据库都没有，请求反复打到数据库 | 缓存空值、布隆过滤器、参数校验 |
+| **缓存击穿** | 单个热点 key 失效 | 某个高并发热点 key 过期瞬间打穿数据库 | 互斥锁、singleflight、逻辑过期 |
+| **缓存雪崩** | 大量 key 同时失效 | 某一时刻大批请求同时回源 | TTL 打散、多级缓存、限流降级 |
+| **缓存一致性** | 缓存与数据库值不一致 | 更新后读到旧值 | 先更新库再删缓存、延迟双删、订阅 binlog |
 
-### 6.2 缓存过期时间（TTL）的设定
+### 7.2 缓存穿透
+
+**缓存穿透**是指请求的数据在缓存中不存在，在数据库中也不存在，导致每次请求都会穿过缓存直接访问数据库。
+
+常见场景：
+
+- 恶意构造大量不存在的 ID。
+- 业务侧查询条件不合法，频繁请求无效数据。
+- 新系统上线时未对空结果做缓存。
+
+| 方案 | 说明 | 注意点 |
+| --- | --- | --- |
+| **缓存空值** | 数据库查不到时，也把空结果写入缓存并设置较短 TTL | 防止长期缓存脏空值 |
+| **布隆过滤器** | 在访问缓存/数据库前先判断 key 是否可能存在 | 可能有误判，但不会漏判 |
+| **参数校验** | 非法 ID、明显错误参数直接拦截 | 适合第一层防护 |
+
+```java
+public User getUserById(Long id) {
+    String key = "user:" + id;
+    String nullMarker = "__NULL__";
+
+    Object cached = redisTemplate.opsForValue().get(key);
+    if (cached != null) {
+        return nullMarker.equals(cached) ? null : (User) cached;
+    }
+
+    User user = userMapper.selectById(id);
+    if (user == null) {
+        redisTemplate.opsForValue().set(key, nullMarker, 5, TimeUnit.MINUTES);
+        return null;
+    }
+
+    redisTemplate.opsForValue().set(key, user, 30, TimeUnit.MINUTES);
+    return user;
+}
+```
+
+### 7.3 缓存击穿
+
+**缓存击穿**是指某个**热点 key**在过期瞬间失效，大量并发请求同时回源，把数据库或下游服务打满。
+
+它与穿透的区别是：击穿查的是**真实存在且很热的数据**；与雪崩的区别是：击穿通常集中在**单个热点 key**。
+
+| 方案 | 说明 | 适用场景 |
+| --- | --- | --- |
+| **互斥锁重建** | 只有一个线程去查库并回填缓存，其他线程等待或快速失败 | 热点 key 不多，允许短时等待 |
+| **逻辑过期** | key 不真正过期，只在 value 中记录过期时间，后台异步刷新 | 热点稳定、读性能优先 |
+| **热点数据不过期** | 对极少数热点 key 取消 TTL，由业务主动更新 | 热点非常稳定、更新少 |
+
+简单流程：
+
+请求到来 → 发现热点 key 失效 → 抢互斥锁 → 一个线程查库回填 → 其他线程读取新缓存
+
+### 7.4 缓存雪崩
+
+**缓存雪崩**是指大量缓存 key 在同一时间集中失效，或 Redis 整体不可用，导致大量请求同时回源，引发数据库或服务链路压力骤增。
+
+常见诱因：
+
+- 批量 key 使用了相同 TTL。
+- Redis 实例重启、故障或网络抖动。
+- 大促、热点流量与集中过期叠加。
+
+| 方案 | 说明 |
+| --- | --- |
+| **TTL 加随机值** | 避免大量 key 在同一时刻过期 |
+| **多级缓存** | 本地缓存 + Redis，减少全部回源数据库的概率 |
+| **限流降级** | 回源流量过大时，对非核心请求做限流、熔断或兜底 |
+| **高可用部署** | 主从 + Sentinel 或 Cluster，降低 Redis 整体不可用概率 |
+
+```java
+int baseTtl = 1800;
+int randomSeconds = ThreadLocalRandom.current().nextInt(0, 300);
+redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SECONDS);
+```
+
+### 7.5 缓存一致性
+
+缓存不是事务数据库，业务里更常见的目标是**最终一致性**而不是绝对强一致。
+
+最常见的实践是 **Cache-Aside**：
+
+- **读**：先查缓存，未命中再查数据库并回填缓存。
+- **写**：先更新数据库，再删除缓存。
+
+原因是“更新缓存”容易遗漏并发场景，而“删缓存”更简单、失败恢复路径也更清晰。
+
+| 方案 | 做法 | 特点 |
+| --- | --- | --- |
+| **先更新库，再删缓存** | 最常见实践 | 简单、适合大多数业务 |
+| **延迟双删** | 更新库后删缓存，再延迟一段时间再删一次 | 降低并发读旧值概率 |
+| **订阅 binlog / MQ** | 数据变更后异步通知删除或刷新缓存 | 适合复杂系统 |
+
+### 7.6 缓存过期时间（TTL）的设定
 
 未设置过期时间的 key 会常驻内存并可能被持久化到磁盘，易导致内存占满；设置 TTL 时需综合业务与资源情况，常见参考要素如下。
 
@@ -1014,7 +1201,7 @@ Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、
 
 只读且不变的共享数据（如静态 JSON）多线程并发读无需考虑线程安全；若会定期更新，可设 TTL 略大于更新周期，或在更新时删除对应 key 使下次请求回源并重新写入缓存。
 
-### 6.3 Key 设计规范
+### 7.7 Key 设计规范
 
 Key 要有**业务前缀**和**层次**，便于按业务或类型批量管理、排查和隔离；避免不同业务 key 冲突；控制单 key 长度，可读即可。常见格式为“业务名:数据类型:数据标识”，必要时加版本或环境前缀。
 
@@ -1029,17 +1216,19 @@ session:token:abc123    # 会话 Token
 rate:limit:192.168.1.1  # 限流计数
 ```
 
-### 6.4 最佳实践
+### 7.8 最佳实践
 
 1. **设置过期时间**：避免内存无限增长；根据数据可变性、请求量、内存等因素设置合理 TTL，不设过期则 key 常驻内存，易 OOM。
 2. **避免大 Key**：单个 Value 不超过 10KB，集合元素不超过 1 万；大 key 会拉高网络与序列化成本，阻塞主线程，删除时易卡顿。
 3. **避免热点 Key**：单 key  QPS 过高会打满单机能力；可拆 key、加本地缓存或读从库分散压力。
-4. **禁用危险命令**：生产环境禁用 `KEYS *`、`FLUSHALL`、`FLUSHDB`，防止误操作或恶意扫库导致阻塞/数据清空。
+4. **优先使用 SCAN**：生产环境避免 `KEYS *` 全量扫描，改用 `SCAN` 渐进遍历，降低阻塞风险。
 5. **使用连接池**：复用连接、限制并发，避免频繁建连带来的延迟与端口耗尽。
 6. **合理使用管道**：批量操作使用 Pipeline 将多次往返合并为一次，减少 RTT，注意单次 pipeline 不宜过大。
 7. **监控告警**：监控内存使用、命中率、慢查询，便于容量规划与问题定位。
+8. **删除缓存优先于更新缓存**：写路径优先采用“更新数据库后删除缓存”，减少并发覆盖旧值的风险。
+9. **热点数据要有保护策略**：热点 key 至少考虑互斥重建、逻辑过期或本地缓存，否则容易在高并发下击穿。
 
-### 6.5 生产环境配置建议
+### 7.9 生产环境配置建议
 
 以下配置从安全（bind、密码、禁用危险命令）、资源（maxmemory、淘汰策略）、持久化与可观测性（AOF、slowlog）几方面给出建议，实际需按机器规格与业务调整。
 
@@ -1074,23 +1263,24 @@ rename-command KEYS ""
 
 ***
 
-## 七、常用命令速查表
+## 八、常用命令速查表
 
-### 7.1 数据操作
+### 8.1 数据操作
 
 | 数据类型   | 常用命令                                         |
 | ---------- | ------------------------------------------------ |
 | String     | SET、GET、INCR、DECR、SETNX、SETEX、MSET、MGET   |
-| Hash       | HSET、HGET、HMSET、HMGET、HGETALL、HDEL、HINCRBY |
+| Hash       | HSET、HGET、HMGET、HGETALL、HDEL、HINCRBY        |
 | List       | LPUSH、RPUSH、LPOP、RPOP、LRANGE、LLEN、BLPOP    |
 | Set        | SADD、SMEMBERS、SISMEMBER、SREM、SINTER、SUNION  |
 | Sorted Set | ZADD、ZSCORE、ZRANK、ZRANGE、ZREVRANGE、ZINCRBY  |
 
-### 7.2 通用命令
+### 8.2 通用命令
 
 | 命令    | 说明                 |
 | ------- | -------------------- |
 | KEYS    | 查找 key（生产慎用） |
+| SCAN    | 渐进式扫描 key       |
 | EXISTS  | 判断 key 是否存在    |
 | DEL     | 删除 key             |
 | EXPIRE  | 设置过期时间（秒）   |
@@ -1101,7 +1291,7 @@ rename-command KEYS ""
 | FLUSHDB | 清空当前数据库       |
 | INFO    | 查看服务器信息       |
 
-### 7.3 Java 操作对照
+### 8.3 Java 操作对照
 
 | Redis 命令 | RedisTemplate 方法                    |
 | ---------- | ------------------------------------- |
