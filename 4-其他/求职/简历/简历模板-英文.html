@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Resume</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #2c3e50;
+        background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 4px;
+        padding-bottom: 4px;
+        border-bottom: 2px solid #2c3e50;
+        line-height: 1;
+      }
+      .header h1 {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        color: #1a252f;
+        padding-bottom: 4px;
+      }
+      .contact {
+        display: flex;
+        justify-content: center;
+        gap: 0;
+        font-size: 12px;
+        color: #555;
+        flex-wrap: wrap;
+      }
+      .contact span {
+        white-space: nowrap;
+      }
+      .contact span + span {
+        margin-left: 12px;
+        padding-left: 12px;
+        border-left: 1px solid #d9d9d9;
+      }
+
+      /* Section */
+      .section {
+        margin-bottom: 11px;
+      }
+      .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a252f;
+        border-bottom: 1.5px solid #3498db;
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+      }
+
+      /* Education */
+      .edu-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+      }
+      .edu-row .school {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+
+      /* Skills */
+      .skill-group {
+        margin-bottom: 6px;
+      }
+      .skill-group-title {
+        font-weight: 700;
+        font-size: 13px;
+        color: #2c3e50;
+        margin-bottom: 2px;
+      }
+      .skills-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .skills-list li {
+        position: relative;
+        padding-left: 14px;
+        line-height: 1.5;
+        font-size: 12px;
+      }
+      .skills-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      /* Work summary */
+      .work-summary-list {
+        list-style: none;
+        padding-left: 0;
+        columns: 2;
+        column-gap: 28px;
+      }
+      .work-summary-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        break-inside: avoid;
+        line-height: 1.5;
+      }
+      .work-summary-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      /* Work experience */
+      .work-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+        font-size: 13px;
+        gap: 8px;
+      }
+      .work-item .company {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .work-item .work-inline {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .work-item .work-role {
+        font-size: 12px;
+        color: #555;
+      }
+      .work-item .period {
+        color: #666;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      /* Project */
+      .project {
+        margin-bottom: 10px;
+      }
+      .project + .project {
+        border-top: 1px solid #e0e0e0;
+        padding-top: 10px;
+      }
+      .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+        gap: 8px;
+      }
+      .project-title-desc {
+        flex: 1;
+        min-width: 0;
+        font-size: 13.5px;
+      }
+      .project-name {
+        font-weight: 700;
+        color: #2c3e50;
+      }
+      .project-desc-inline {
+        font-weight: normal;
+        color: #666;
+        font-size: 12px;
+      }
+      .project-desc-inline::before {
+        content: " · ";
+        color: #999;
+      }
+      .project-period {
+        font-size: 11.5px;
+        color: #888;
+        white-space: nowrap;
+      }
+      .project-desc {
+        display: none;
+      }
+      .project-tech {
+        font-size: 11px;
+        color: #3498db;
+        margin-bottom: 4px;
+      }
+      .project-tech strong {
+        color: #2c3e50;
+      }
+      .project-sub {
+        font-weight: 600;
+        font-size: 12px;
+        color: #2c3e50;
+        margin-top: 3px;
+        margin-bottom: 1px;
+      }
+      .project-two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 28px;
+        margin-top: 2px;
+      }
+      .project-two-cols .project-sub {
+        margin-top: 0;
+      }
+      .project-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .project-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .project-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+      .project-list li strong {
+        font-weight: 600;
+      }
+
+      /* Sub list for nested items */
+      .project-sublist {
+        list-style: none;
+        padding-left: 14px;
+        margin-top: 1px;
+      }
+      .project-sublist li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .project-sublist li::before {
+        content: "◦";
+        position: absolute;
+        left: 2px;
+        color: #7fb3d8;
+      }
+
+      /* Self evaluation */
+      .eval-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .eval-list li {
+        position: relative;
+        padding-left: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .eval-list li::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #3498db;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Sun Jingfeng</h1>
+      <div class="contact">
+        <span><strong>Phone</strong> 195-2460-3214 (WeChat)</span>
+        <span><strong>Email</strong> jlu_sunjingfeng@163.com</span>
+        <span><strong>Age</strong> 31</span>
+      </div>
+      <div class="contact" style="margin-top: 5px">
+        <span><strong>Experience</strong> 4 Years</span>
+        <span><strong>Target Role</strong> AI Agent Full-Stack Web Developer (Vue + React + Java)</span>
+        <span><strong>Location</strong> Beijing</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Education</div>
+      <div class="edu-row">
+        <span class="school">Jilin University (Project 985) · B.Eng. in Software Engineering</span>
+        <span style="color: #666; font-size: 12px">2014-2020</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Work Experience</div>
+      <div style="margin-bottom: 5px">
+        <div class="work-item">
+          <span class="work-inline">
+            <span class="company">Beijing Hongxiang Technology Co., Ltd.</span>
+            <span class="work-role">Shared Development Center · Team Lead, R&amp;D Group 1</span>
+          </span>
+          <span class="period">2023.02 – 2025.12</span>
+        </div>
+      </div>
+      <div>
+        <div class="work-item">
+          <span class="work-inline">
+            <span class="company">Beijing Bailian Intelligence Technology Co., Ltd.</span>
+            <span class="work-role">Engineering Department · Front-End Engineer</span>
+          </span>
+          <span class="period">2021.12 – 2022.12</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Professional Summary</div>
+      <ul class="work-summary-list">
+        <li>
+          Led the full lifecycle of medium-to-large projects from solution design to delivery and deployment, covering front-end, back-end, and AI agent implementation.
+        </li>
+        <li>
+          Improved code reuse through component abstraction, layered architecture, and shared modules while continuously optimizing front-end performance, API efficiency, and service stability.
+        </li>
+        <li>
+          Owned technology selection, project scaffolding, coding standards, microservice architecture, and deployment environments, and promoted AI coding practices in the engineering workflow.
+        </li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Technical Skills</div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">AI Agents &amp; AI Coding</div>
+        <ul class="skills-list">
+          <li>
+            Built and integrated AI agent services independently with Java microservices in private network environments.
+          </li>
+          <li>
+            Hands-on experience with LangChain in production and private model integration, with working knowledge of LangGraph for complex workflow orchestration.
+          </li>
+          <li>
+            Proficient with AI coding tools such as Claude Code, Cursor, and Copilot to improve development and debugging efficiency.
+          </li>
+          <li>
+            Skilled in prompt design and rule-based configuration, including Rules, Skills, and MCP, with experience creating reusable prompts and project-level AI conventions.
+          </li>
+        </ul>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">Front End</div>
+        <ul class="skills-list">
+          <li>
+            TypeScript, JavaScript, HTML5, and CSS3, including ES6+ language features and asynchronous programming models.
+          </li>
+          <li>
+            Vue 3, Vue 2, and related ecosystems including Vue Router and Pinia/Vuex, with understanding of reactivity internals and compilation optimization.
+          </li>
+          <li>
+            React and its ecosystem including React Router and Redux/RTK, with solid understanding of Fiber, virtual DOM, and diffing principles.
+          </li>
+          <li>
+            Familiar with mainstream libraries including Element Plus, Ant Design, ECharts, and Leaflet, with strong ability to ramp up on new frameworks quickly.
+          </li>
+          <li>
+            Front-end engineering practices covering package management, build tooling, and code quality tooling such as pnpm/npm, Vite/Webpack, ESLint, Stylelint, and Prettier.
+          </li>
+          <li>
+            Strong in component-driven development and logic reuse through custom composables and hooks to improve modularity and maintainability.
+          </li>
+          <li>
+            Experienced with Performance, Memory, and Lighthouse panels for diagnosing bottlenecks, analyzing memory usage, and applying targeted optimizations.
+          </li>
+          <li>
+            Production experience with micro-frontend and iframe-based multi-application integration, including SSO, permission control, style isolation, and cross-application communication.
+          </li>
+        </ul>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-title">Back End</div>
+        <ul class="skills-list">
+          <li>Java, including collections, streams, IO, multithreading, and network programming.</li>
+          <li>
+            Spring Boot and Maven, with the ability to build RESTful APIs independently and solid understanding of auto-configuration, AOP, and JWT authentication.
+          </li>
+          <li>MySQL and MyBatis, including index optimization, transaction management, and dynamic SQL.</li>
+          <li>Redis and its common data structures for caching, session management, and related scenarios.</li>
+          <li>
+            Microservice architecture and Spring Cloud components including Nacos, OpenFeign, Gateway, Sentinel, and Seata.
+          </li>
+          <li>RabbitMQ for asynchronous decoupling, traffic smoothing, and common messaging patterns.</li>
+          <li>
+            Docker, Nginx, and Git, with hands-on experience in containerized deployment using Dockerfile and Docker Compose.
+          </li>
+          <li>
+            Linux operations, server setup, routine maintenance, and API performance validation with JMeter.
+          </li>
+          <li>
+            Python, with practical familiarity with FastAPI and Pydantic for service development and delivery.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Project Experience</div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Meteorological Radar Monitoring &amp; Early Warning System Series</span
+            ><span class="project-desc-inline"
+              >Initially built for the Tianjin deployment, then expanded into multiple provincial editions and management systems for Liaoning, Jiangsu, Shanxi, and Ningxia, with an additional AI agent capability for weather warning copy generation.</span
+            ></span
+          >
+          <span class="project-period">2025.02 – 2025.12</span>
+        </div>
+
+        <div class="project-tech">
+          <strong>AI Agent Stack:</strong> Python, FastAPI, Pydantic, LangChain
+        </div>
+        <ul class="project-list">
+          <li>
+            Built a weather warning copy generation agent as an independent Python microservice integrated into the existing Java service ecosystem.
+          </li>
+          <li>
+            Implemented warning copy generation based on time, meteorological factors, and map viewport latitude/longitude ranges, and completed end-to-end front-end and back-end integration.
+          </li>
+          <li>
+            Assembled business context, queried raw domain data, filtered by viewport range, and passed structured inputs to the model.
+          </li>
+          <li>
+            Used tool calling for deterministic data such as reverse geocoding to avoid hallucinated place names and improve accuracy and explainability.
+          </li>
+          <li>
+            Standardized model invocation, tool invocation, result parsing, and API schemas to improve maintainability and reliability of agent capabilities across the project.
+          </li>
+        </ul>
+
+        <div class="project-tech">
+          <strong>Front-End Stack:</strong> React, Immer, React Router, Redux, Ant Design, TypeScript, Vite, React Compiler
+        </div>
+        <ul class="project-list">
+          <li>
+            <strong>Built a parent-child application architecture</strong>
+            <ul class="project-sublist">
+              <li>
+                Solved stale asset issues caused by browser caching differences after deployment updates.
+              </li>
+              <li>Implemented screenshot capture across iframe boundaries.</li>
+              <li>Unified light/dark theme switching across parent and child applications.</li>
+              <li>
+                Designed a permission control scheme that resolved permission-key conflicts across multiple applications and allowed child apps to sync permissions independently.
+              </li>
+              <li>Implemented unified login and SSO across parent and child applications.</li>
+            </ul>
+          </li>
+          <li>Encapsulated map interaction tools including screenshot, distance measurement, area drawing, and point-of-interest features.</li>
+          <li>
+            Authored TypeScript type definitions for the internal map package and published it as a private npm package.
+          </li>
+          <li>Fixed an edge-case bug in GIF generation under extremely slow network conditions.</li>
+          <li>Developed an ultra-long timeline component with time selection and playback controls.</li>
+          <li>Implemented synchronized dual-map interaction.</li>
+          <li>
+            Designed a multi-province adaptation strategy that maximized shared logic while isolating province-specific behavior.
+          </li>
+          <li>Implemented configurable legend color editing.</li>
+        </ul>
+
+        <div class="project-tech">
+          <strong>Back-End Stack:</strong> Spring Boot, Maven, Spring Cloud (Nacos, OpenFeign, Gateway, Sentinel), MyBatis, MySQL, Redis, RabbitMQ, Docker, JMeter
+        </div>
+        <ul class="project-list">
+          <li>
+            Developed RESTful APIs with Spring Boot for radar data query, weather warning, file management, and other business modules.
+          </li>
+          <li>
+            Built a Spring Cloud microservice architecture that reused core capabilities across provinces while supporting localized extensions.
+          </li>
+          <li>
+            Used Nacos for service discovery and centralized configuration, and OpenFeign for declarative inter-service communication.
+          </li>
+          <li>
+            Used Gateway for unified routing and authentication filtering, and designed a JWT-based authentication service supporting SSO and endpoint-level authorization.
+          </li>
+          <li>
+            Processed meteorological data with thread pools and wrote results to Redis cache to improve throughput and reduce database pressure.
+          </li>
+          <li>
+            Located bottlenecks through JMeter pressure testing and combined Sentinel rate limiting and fallback strategies to preserve stability under high concurrency.
+          </li>
+          <li>Used RabbitMQ for asynchronous radar data pre-parsing and warning notification delivery to improve responsiveness.</li>
+          <li>
+            Orchestrated all microservices and middleware with Docker Compose and completed containerized deployment on Linux servers.
+          </li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Leisheng X Single-Station Display System Optimization</span
+            ><span class="project-desc-inline"
+              >Took over an already launched single-station product and focused on performance and code structure improvements.</span
+            ></span
+          >
+          <span class="project-period">2025.01</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, TypeScript, Vite
+        </div>
+        <div class="project-two-cols">
+          <div>
+            <div class="project-sub">Performance Optimization</div>
+            <ul class="project-list">
+              <li>Reduced unnecessary deep reactivity overhead by using shallow reactive APIs.</li>
+              <li>Pre-cached raster overlay assets to improve initial rendering speed.</li>
+              <li>Supported pause and resume for cached tasks to avoid UI freezing caused by main-thread blocking.</li>
+              <li>Enabled component caching for high-complexity pages with frequent switching to improve navigation smoothness.</li>
+              <li>Used postcss-px-to-viewport for multi-resolution responsiveness.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="project-sub">Code Structure Optimization</div>
+            <ul class="project-list">
+              <li>
+                Standardized code conventions with ESLint, Stylelint, Prettier, and EditorConfig.
+              </li>
+              <li>Managed environment-specific differences through environment variables.</li>
+              <li>Refined component granularity and extracted shared constants and styles.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Huai'an Smart Meteorological Integrated Service Platform</span
+            ><span class="project-desc-inline"
+              >Led front-end development and delivered map visualization, permission management, and theming capabilities.</span
+            ></span
+          >
+          <span class="project-period">2024.08 – 2024.12</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            Built the foundational permission framework with route-level and page-level access control, including one-click synchronization of the latest permission configuration.
+          </li>
+          <li>
+            Encapsulated reusable map composables for multiple pages, supporting light/dark theme switching and manual loading options.
+          </li>
+          <li>Implemented light/dark theme switching based on CSS variables.</li>
+          <li>Implemented in-page screenshot features supporting area selection, image download, and clipboard copy.</li>
+          <li>
+            Referenced the Element Plus Message implementation and mounted DOM nodes to body to ensure highest-layer overlay behavior.
+          </li>
+          <li>Fixed incorrect child-page rendering under multi-level route caching scenarios.</li>
+          <li>Used render functions and advanced APIs to render Vue components as map markers.</li>
+          <li>
+            Identified bottlenecks through the Performance panel and optimized long-running tasks with generator functions and Web Workers.
+          </li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Hefei Smart Agriculture Meteorological Data Platform</span
+            ><span class="project-desc-inline"
+              >Developed front-end modules for maps, charts, and data presentation.</span
+            ></span
+          >
+          <span class="project-period">2024.03 – 2024.07</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            Built a clear cross-component parameter passing model using defineExpose, provide, and props to support module-level coordination.
+          </li>
+          <li>Decoupled map boundaries, stations, and raster overlays through composables.</li>
+          <li>Used dynamic components and shallow reactive data to let page structure adapt to changing data.</li>
+          <li>Implemented a region selector linked to the map with automatic focus and target highlighting.</li>
+          <li>
+            Batched ordered watchers to merge raster overlay updates triggered by multiple dependent parameters and avoid redundant rendering.
+          </li>
+          <li>
+            Encapsulated progressive chart components inspired by class inheritance ideas to reuse bar, pie, and line chart implementations.
+          </li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Vue 3 Component Library</span
+            ><span class="project-desc-inline"
+              >An internal component library designed to accumulate reusable components and patterns for complex component development and improve team productivity.</span
+            ></span
+          >
+          <span class="project-period">2024.02</span>
+        </div>
+        <div class="project-tech"><strong>Tech Stack:</strong> VitePress</div>
+        <ul class="project-list">
+          <li>
+            Evaluated VuePress, VitePress, Storybook, and Docusaurus, and selected VitePress after comparison.
+          </li>
+          <li>Set up the initial framework and integrated Vue, Element Plus, Sass, and other core dependencies.</li>
+          <li>Configured the homepage, custom theme, documentation structure, and search.</li>
+          <li>Used vitepress-theme-demoblock to present component demos alongside source code.</li>
+          <li>
+            Solved style pollution issues with postcss-prefix-selector and :not selectors.
+          </li>
+          <li>Used dynamic imports to resolve browser API availability issues in SSR environments.</li>
+          <li>Built a Node.js-based file scan process to generate grouped and ordered directory configuration automatically.</li>
+          <li>Implemented login and theme color switching through a custom theme.</li>
+          <li>Used Terser to minify and obfuscate code and remove console calls in production.</li>
+          <li>Wrote usage documentation covering Markdown syntax, component publishing flow, and conventions.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Intelligent Meteorological Integrated Platform</span
+            ><span class="project-desc-inline"
+              >Responsible for alerting and file management modules, as well as shared component abstraction and data-driven development for multiple alert page types.</span
+            ></span
+          >
+          <span class="project-period">2023.11 – 2024.01</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, TypeScript, Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            Encapsulated reusable components for page layout, paginated lists, and file operations to improve development efficiency across similar pages.
+          </li>
+          <li>
+            Built data-driven views so one codebase could support create and edit pages for multiple alert file types.
+          </li>
+          <li>Split business logic in a balanced way to preserve reuse for shared logic while keeping flexibility for differences.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">UHV Dense Corridor Meteorological Service Platform</span
+            ><span class="project-desc-inline"
+              >Responsible for map visualization, risk corridor and marker presentation, and performance optimization.</span
+            ></span
+          >
+          <span class="project-period">2023.02 – 2023.10</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            Rendered colored GeoJSON corridors and feature markers on the map based on risk-level data, with hover and click popups.
+          </li>
+          <li>Applied lazy loading and object-pool strategies to reuse frequently changing map markers and reduce memory usage.</li>
+          <li>
+            Used render and h functions to parse single-file components and dynamically render marker popup content.
+          </li>
+          <li>Encapsulated page-level components and passed parameters via route metadata to reuse multiple similar pages.</li>
+          <li>Encapsulated map-related composables to unify rendering logic across multiple pages.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-title-desc"
+            ><span class="project-name">Vue 3 Project Starter Framework</span
+            ><span class="project-desc-inline"
+              >During the department's technology upgrade from Vue 2 to Vue 3, Vuex to Pinia, JavaScript to TypeScript, and Webpack to Vite, I built the next-generation project foundation.</span
+            ></span
+          >
+          <span class="project-period">2023.02</span>
+        </div>
+        <div class="project-tech">
+          <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, TypeScript, Vite
+        </div>
+        <ul class="project-list">
+          <li>
+            Generated the initial scaffold with create-vue and integrated core dependencies such as Vue Router, Pinia, and Element Plus.
+          </li>
+          <li>
+            Referenced best practices from open-source admin frameworks including vue-element-admin, vue-pure-admin, and vue-vben-admin.
+          </li>
+          <li>
+            Integrated unplugin-auto-import and unplugin-vue-components for automatic API and component imports.
+          </li>
+          <li>
+            Configured ESLint, Stylelint, Prettier, and EditorConfig to enforce consistent team-wide coding standards.
+          </li>
+          <li>
+            Completed project configuration for environment variables, request proxying, path aliases, CSS preprocessors, TypeScript, and pnpm.
+          </li>
+          <li>
+            Wrote foundational code including route guards, request interceptors, TypeScript utilities, and global styles.
+          </li>
+          <li>
+            Provided VS Code configuration with recommended extensions and editor settings to reduce onboarding cost for the team.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Profile</div>
+      <ul class="eval-list">
+        <li>
+          Full-stack engineer with hands-on experience across Vue, React, and Java, combining AI agent delivery, system integration, and team leadership.
+        </li>
+        <li>
+          Familiar with engineering approaches that combine business systems with intelligent agent capabilities, and able to apply AI agents and AI coding in real-world development scenarios.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>
