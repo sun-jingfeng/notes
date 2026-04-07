@@ -670,20 +670,26 @@ jar -xvf app.jar        # 解压 JAR
 
 ```bash
 # 进程和监控
-jps                     # 查看 Java 进程
+jps                     # 查看 Java 进程（显示 PID + 主类名）
 jps -l                  # 显示完整主类名
 jps -v                  # 显示 JVM 参数
 
-jstack PID              # 查看线程堆栈
-jmap -heap PID          # 查看堆内存
-jmap -histo PID         # 查看对象统计
-jmap -dump:file=heap.bin PID   # 导出堆转储
+# 线程栈诊断（排查死锁、线程泄漏、CPU 100%）
+jstack <pid>                          # 导出所有线程调用栈
+jstack <pid> | grep -A 30 "BLOCKED"   # 过滤阻塞线程
 
-jstat -gc PID 1000      # 每秒显示 GC 情况
-jstat -gcutil PID 1000  # GC 百分比统计
+# 堆内存诊断
+jmap -heap <pid>                             # 查看堆内存概况（各区大小与占用）
+jmap -histo <pid>                            # 查看各类对象实例数与占用大小
+jmap -dump:format=b,file=heap.hprof <pid>    # 导出堆快照（.hprof），供 MAT/VisualVM 分析
 
-jconsole                # 图形化监控
-jvisualvm               # 可视化性能分析
+# GC 监控（-gcutil 输出各区占用百分比 + GC 次数/耗时）
+jstat -gc <pid> 1000       # 每秒显示 GC 详细数据
+jstat -gcutil <pid> 1000   # GC 百分比统计（S0/S1/E/O/M 各区占用率）
+
+# 可视化工具
+jconsole                # 图形化监控（JMX）
+jvisualvm               # 可视化性能分析（CPU/堆/线程/堆快照）
 
 # 其他工具
 jshell                  # 交互式编程（JDK 9+）
