@@ -45,6 +45,7 @@
 | **通知（Advice）**    | 切面在特定连接点执行的动作                     | 前置通知、后置通知、环绕通知    |
 | **目标对象（Target）** | 被切面增强的对象                               | UserService                     |
 | **代理（Proxy）**     | AOP 创建的代理对象，用于实现切面逻辑           | JDK 动态代理、CGLIB 代理        |
+| **织入（Weaving）**   | 将切面应用到目标对象、创建代理对象的过程       | Spring AOP 在运行时织入；AspectJ 额外支持编译时、加载时织入 |
 
 **概念关系图：**
 
@@ -140,7 +141,7 @@ public void after() { }
 @Around("servicePointcut()")
 public Object around(ProceedingJoinPoint pjp) throws Throwable {
     // 前置逻辑
-    Object result = pjp.proceed();  // 执行目标方法
+    Object result = pjp.proceed();  // 执行目标方法（⚠️ 必须调用，否则目标方法不会执行）
     // 后置逻辑
     return result;
 }
@@ -880,6 +881,8 @@ public class DataScopeAspect {
 }
 ```
 
+> ⚠️ 示例中 `deptId`/`userId` 均来自服务端已验证的数据库字段，无直接注入风险。实际使用时 `deptAlias`/`userAlias` 应来自编译期注解常量，禁止将运行时的外部输入直接拼接到 SQL 片段，否则需做严格白名单校验。
+
 ***
 
 ## 六、AOP 底层原理与注意事项
@@ -888,10 +891,10 @@ public class DataScopeAspect {
 
 Spring AOP 使用两种代理方式：
 
-| 代理方式         | 原理               | 限制                           |
-| ---------------- | ------------------ | ------------------------------ |
-| **JDK 动态代理** | 基于接口创建代理类 | 目标类必须实现接口             |
-| **CGLIB 代理**   | 基于继承创建子类   | 目标类不能是 final，方法不能是 final |
+| 代理方式         | 底层机制                   | 限制                                     |
+| ---------------- | -------------------------- | ---------------------------------------- |
+| **JDK 动态代理** | 反射，基于接口生成代理类   | 目标类必须实现接口                       |
+| **CGLIB 代理**   | 字节码，基于继承生成子类   | 目标类和被代理方法不能是 `final`         |
 
 **选择逻辑（Spring 默认）：**
 - 目标类实现了接口 → JDK 动态代理
@@ -899,15 +902,72 @@ Spring AOP 使用两种代理方式：
 
 > 💡 **Spring Boot 2.x 默认强制使用 CGLIB 代理**（`spring.aop.proxy-target-class=true`），即使目标类实现了接口也用 CGLIB。
 
+#### JDK 动态代理原理
+
+核心是 `java.lang.reflect.Proxy` + `InvocationHandler`。Spring 在运行时生成一个实现了目标接口的代理类，所有方法调用都会转发到 `InvocationHandler.invoke()`，在这里织入切面逻辑后再通过反射调用目标方法。
+
+```
+调用方 → 代理对象（实现相同接口）
+            ↓
+        InvocationHandler.invoke()
+            ↓   前置逻辑（切面）
+        反射调用目标方法
+            ↓   后置逻辑（切面）
+        返回结果
+```
+
+```java
+// Spring 内部等价逻辑（简化示意）
+Proxy.newProxyInstance(
+    target.getClass().getClassLoader(),
+    target.getClass().getInterfaces(),
+    (proxy, method, args) -> {
+        // 前置切面逻辑
+        Object result = method.invoke(target, args);  // 反射调用目标方法
+        // 后置切面逻辑
+        return result;
+    }
+);
+```
+
+#### CGLIB 代理原理
+
+CGLIB（Code Generation Library）在运行时通过 ASM 直接操作字节码，生成目标类的子类，子类中重写所有非 `final` 方法，在重写方法中插入切面逻辑，再调用 `super.xxx()` 执行原始方法。
+
+```
+调用方 → 代理子类（继承目标类）
+            ↓
+        重写的方法（MethodInterceptor.intercept()）
+            ↓   前置逻辑（切面）
+        super.method()  // 调用目标类原始方法
+            ↓   后置逻辑（切面）
+        返回结果
+```
+
+> 💡 CGLIB 是字节码级别的子类调用（`super.method()`），JDK 代理是反射调用（`method.invoke()`）。CGLIB 的调用开销略低于 JDK 代理，但两者均在微秒量级，对业务影响可忽略不计。
+
+#### Spring AOP 的适用范围限制
+
+Spring AOP 基于代理实现，有以下固有限制：
+
+| 限制                     | 说明                                                                |
+| ------------------------ | ------------------------------------------------------------------- |
+| **只能增强 public 方法** | private/protected 方法不会被代理拦截                                |
+| **只能增强 Spring Bean** | 通过 `new` 手动创建的对象不受 Spring 管理，切面不生效               |
+| **只支持方法级连接点**   | 不能拦截字段访问、构造器调用（需 AspectJ 编译时织入才能实现）       |
+| **同类方法调用不生效**   | 见 6.3                                                              |
+
 ***
 
 ### 6.2 代理对象的创建时机
 
-代理对象在 Bean 生命周期的 `BeanPostProcessor.postProcessAfterInitialization()` 阶段创建。
+代理对象在 Bean 生命周期的 `BeanPostProcessor.postProcessAfterInitialization()` 阶段创建，由 `AbstractAutoProxyCreator` 负责扫描切面并包装目标 Bean。
 
 ```
-Bean 实例化 → 属性注入 → 初始化 → 创建代理对象（AOP）
+Bean 实例化 → 属性注入 → 初始化（@PostConstruct）→ BeanPostProcessor → 创建代理对象（AOP）
 ```
+
+> 💡 代理对象创建发生在应用启动阶段，每个被增强的 Bean 只创建一次代理，与请求并发量无关，不会影响运行期性能。
 
 ***
 
@@ -976,6 +1036,74 @@ public class UserService {
     }
 }
 ```
+
+**解决方案三：将被调用方法提取到独立 Bean（推荐）**
+
+```java
+@Service
+public class UserOperationService {
+
+    @Transactional
+    public void methodB() {
+        // ...
+    }
+}
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserOperationService userOperationService;
+
+    public void methodA() {
+        userOperationService.methodB();  // ✅ 跨 Bean 调用，天然走代理
+    }
+}
+```
+
+> 💡 方案三符合单一职责原则，同时规避了方案一的循环依赖风险和方案二的强转代码气味，是生产代码中的首选做法。
+
+***
+
+### 6.4 性能开销
+
+#### 开销来源
+
+| 阶段         | 类型             | 量级       | 说明                                                   |
+| ------------ | ---------------- | ---------- | ------------------------------------------------------ |
+| **启动阶段** | 代理对象创建     | 一次性     | 随 Bean 初始化完成，与请求并发无关，可忽略             |
+| **调用阶段** | 代理调用额外开销 | 微秒级     | CGLIB 字节码子类调用；JDK 代理走反射，略慢于 CGLIB     |
+| **调用阶段** | 切面逻辑本身     | 取决于内容 | 同步 IO（写数据库、写文件）才是真正的性能瓶颈          |
+
+#### 实际影响判断
+
+代理机制本身的额外延迟在微秒量级，对毫秒级的 HTTP 接口可以忽略不计。切面是否影响性能，核心在于**切面逻辑的内容**：
+
+- 切面只做**内存操作**（提取参数、序列化字符串）：无需关注性能
+- 切面内有**同步 IO**（写数据库日志、写文件）：IO 本身是瓶颈，与 AOP 机制本身无关
+
+#### 切面 IO 异步化
+
+同步写日志会阻塞主调用链，推荐通过 `@Async` 将切面中的 IO 操作异步化：
+
+```java
+// 启动类启用异步支持
+@SpringBootApplication
+@EnableAsync
+public class Application { }
+
+// 日志服务异步写入，主线程不阻塞
+@Service
+public class SysLogService {
+
+    @Async
+    public void saveAsync(SysLog sysLog) {
+        sysLogMapper.insert(sysLog);
+    }
+}
+```
+
+> 💡 `@Async` 同样基于 Spring 代理实现，在同类内直接调用不生效；且异步方法抛出的异常不会传播到调用方，需在方法内自行捕获处理。
 
 ***
 
