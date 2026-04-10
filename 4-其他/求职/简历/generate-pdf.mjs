@@ -10,20 +10,16 @@ const targetRoles = [
   {
     zh: '智能体 Web 全栈开发（Vue + React + Java）',
     en: 'AI Agent Full-Stack Engineer (Vue + React + Java)',
+    expectedSalary: '27k',
     chinesePdfName: '智能体 Web 全栈开发(Vue+React+Java)-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Full-Stack Engineer (Vue+React+Java).pdf',
   },
   {
     zh: '智能体 Web 前端开发（Vue + React）',
     en: 'AI Agent Frontend Engineer (Vue + React)',
+    expectedSalary: '25k',
     chinesePdfName: '智能体 Web 前端开发(Vue+React)-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Frontend Engineer (Vue+React).pdf',
-  },
-  {
-    zh: '智能体 Java 开发',
-    en: 'AI Agent Java Engineer',
-    chinesePdfName: '智能体 Java 开发-985统招-北京-孙景峰.pdf',
-    englishPdfName: 'AI Agent Java Engineer.pdf',
   },
 ];
 
@@ -61,7 +57,9 @@ const a4UsableHeight = Math.round(297 * 96 / 25.4 - 2 * 12 * 96 / 25.4);
 for (const role of targetRoles) {
   for (const template of templateConfigs) {
     const rawHtml = readFileSync(path.join(__dirname, template.templateName), 'utf-8');
-    const htmlContent = rawHtml.replace(template.placeholder, role[template.roleKey]);
+    const htmlContent = rawHtml
+      .replace(template.placeholder, role[template.roleKey])
+      .replace('{{EXPECTED_SALARY}}', role.expectedSalary);
     const pdfPath = path.join(__dirname, role[template.pdfNameKey]);
     const page = await browser.newPage();
 
