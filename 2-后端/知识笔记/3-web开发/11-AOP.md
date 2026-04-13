@@ -81,6 +81,24 @@
 
 ***
 
+### 1.4 Spring AOP 与 AspectJ
+
+Spring AOP 和 AspectJ 都是 AOP 框架，但定位不同：
+
+| 维度 | Spring AOP | AspectJ |
+|------|-----------|--------|
+| **实现方式** | 运行时代理（JDK / CGLIB） | 编译时 / 加载时字节码织入 |
+| **支持的连接点** | 仅方法执行 | 方法、字段访问、构造器调用等 |
+| **依赖** | 随 Spring 容器，无额外依赖 | 需要 AspectJ 编译器或 Java Agent |
+| **适用场景** | 绝大多数业务场景 | 需拦截非 public 方法、字段访问等高级场景 |
+| **复杂度** | 低 | 高 |
+
+Spring AOP 内置了对 AspectJ 注解（`@Aspect`、`@Pointcut`、`@Around` 等）的**语法支持**，但底层仍是运行时代理，而非 AspectJ 的静态织入。因此 Spring AOP 有代理机制的固有限制（只支持公有方法、同类调用不生效等），AspectJ 编译时织入没有这些限制。
+
+> 💡 日常 Spring Boot 项目直接用 Spring AOP 即可；只有需要拦截非 public 方法或字段访问等场景，才值得引入 AspectJ。
+
+***
+
 ## 二、Spring AOP 基础
 
 ### 2.1 添加依赖
@@ -402,6 +420,22 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 // 匹配带有自定义注解的方法
 @Pointcut("@annotation(com.example.annotation.Log)")
 ```
+
+**参数绑定简写（常用）：**
+
+当通知方法的参数名称与 `@annotation()` 中的名称一致时，Spring 会自动将注解实例注入，无需手动通过反射获取注解属性：
+
+```java
+// 表达式中的 "operationLog" 与方法参数名一致，Spring 自动注入注解对象
+@Around("@annotation(operationLog)")
+public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
+    String module = operationLog.module();      // 直接读取注解属性
+    String operation = operationLog.operation();
+    return pjp.proceed();
+}
+```
+
+> 💡 这是实战中最常用的写法（见第五章实战案例），比先获取 `MethodSignature` 再反射读注解更简洁。
 
 ***
 
@@ -896,11 +930,21 @@ Spring AOP 使用两种代理方式：
 | **JDK 动态代理** | 反射，基于接口生成代理类   | 目标类必须实现接口                       |
 | **CGLIB 代理**   | 字节码，基于继承生成子类   | 目标类和被代理方法不能是 `final`         |
 
-**选择逻辑（Spring 默认）：**
-- 目标类实现了接口 → JDK 动态代理
-- 目标类未实现接口 → CGLIB 代理
+**代理选择策略：**
 
-> 💡 **Spring Boot 2.x 默认强制使用 CGLIB 代理**（`spring.aop.proxy-target-class=true`），即使目标类实现了接口也用 CGLIB。
+| 场景 | Spring Framework 默认 | Spring Boot 2.x+ 默认 |
+|------|----------------------|----------------------|
+| 目标类实现了接口 | JDK 动态代理 | CGLIB |
+| 目标类未实现接口 | CGLIB | CGLIB |
+
+Spring Boot 2.x 将 `spring.aop.proxy-target-class` 默认设为 `true`，统一使用 CGLIB，减少因「有接口用 JDK 代理 / 无接口用 CGLIB」导致的行为差异。如需显式切换：
+
+```yaml
+# 强制 JDK 动态代理（目标类必须实现接口，否则报错）
+spring:
+  aop:
+    proxy-target-class: false
+```
 
 #### JDK 动态代理原理
 
@@ -955,7 +999,7 @@ Spring AOP 基于代理实现，有以下固有限制：
 | **只能增强 public 方法** | private/protected 方法不会被代理拦截                                |
 | **只能增强 Spring Bean** | 通过 `new` 手动创建的对象不受 Spring 管理，切面不生效               |
 | **只支持方法级连接点**   | 不能拦截字段访问、构造器调用（需 AspectJ 编译时织入才能实现）       |
-| **同类方法调用不生效**   | 见 6.3                                                              |
+| **同类方法调用不生效**   | `this.method()` 绕过代理直接调用原始对象，切面不触发               |
 
 ***
 

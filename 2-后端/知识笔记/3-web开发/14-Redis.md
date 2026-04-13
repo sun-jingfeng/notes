@@ -672,19 +672,14 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
 
-        // Key 使用 String 序列化
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
+        // Key 使用 String 序列化（可读、便于 redis-cli 查看）
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
 
-        // Value 使用 JSON 序列化
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = 
-            new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.activateDefaultTyping(om.getPolymorphicTypeValidator(), 
-            ObjectMapper.DefaultTyping.NON_FINAL);
-        jsonSerializer.setObjectMapper(om);
-
+        // Value 使用 JSON 序列化（保留类型信息，支持泛型反序列化，跨语言可读）
+        GenericJackson2JsonRedisSerializer jsonSerializer =
+            new GenericJackson2JsonRedisSerializer();
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 
@@ -1024,6 +1019,8 @@ public class UserService {
 
 #### 简单分布式锁
 
+> 此处为内联示例，完整的分布式锁实现（含 UUID 防误删、Lua 原子解锁、Redisson 生产方案）见第七章。
+
 ```java
 @Service
 public class OrderService {
@@ -1109,6 +1106,73 @@ public class ApiController {
     }
 }
 ```
+
+### 5.5 Pipeline（管道批量操作）
+
+Redis 客户端默认每条命令独立发送，每次都经历"发送 → 等 Redis 处理 → 收到响应"的完整 RTT。**Pipeline** 将多条命令一次性打包发给 Redis，批量执行后一并返回结果，大幅减少网络往返次数，适合批量写入、批量查询等场景。
+
+注意：单次 Pipeline 不宜命令过多（建议不超过 500 条），否则响应体过大也会影响性能；Pipeline 内的命令是顺序执行但**不保证原子性**，有原子需求时用 Lua 脚本或事务。
+
+```java
+// 批量写入（Pipeline）
+List<Object> results = redisTemplate.executePipelined(
+    (RedisCallback<Object>) connection -> {
+        StringRedisConnection conn = (StringRedisConnection) connection;
+        for (int i = 1; i <= 100; i++) {
+            conn.setEx("user:" + i, 1800, "value-" + i); // key, 过期秒数, value
+        }
+        return null; // 必须返回 null，结果由外层收集
+    }
+);
+
+// 批量查询（Pipeline）
+List<String> keys = List.of("user:1", "user:2", "user:3");
+List<Object> values = redisTemplate.executePipelined(
+    (RedisCallback<Object>) connection -> {
+        StringRedisConnection conn = (StringRedisConnection) connection;
+        keys.forEach(conn::get);
+        return null;
+    }
+);
+// values 与 keys 一一对应，未命中返回 null
+```
+
+### 5.6 Lua 脚本执行
+
+Redis 支持在服务端**原子执行一段 Lua 脚本**。脚本发到 Redis 后，Redis 把整段脚本当作一条命令处理——执行期间不会插入任何其他命令，因此天然具备原子性，常用于"需要多步操作合并成原子"的场景，例如分布式锁的释放（先比较 value 再删除）、计数器限流、库存扣减等。
+
+**Spring 中的调用方式：**
+
+- `DefaultRedisScript<T>`：封装脚本内容和返回值类型
+- `redisTemplate.execute(script, keys, args...)`：发送脚本到 Redis 执行
+
+脚本内通过 `KEYS[n]` 和 `ARGV[n]` 接收 Java 传入的参数（下标从 1 开始）：
+
+- `KEYS` 对应 `execute` 的第二个参数（key 列表）
+- `ARGV` 对应 `execute` 的第三个及之后的参数
+
+```java
+// 定义脚本（静态常量，只需创建一次）
+private static final DefaultRedisScript<Long> MY_SCRIPT = new DefaultRedisScript<>(
+    // Lua 脚本内容（字符串）
+    "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+    "    return redis.call('del', KEYS[1]) " +
+    "else " +
+    "    return 0 " +
+    "end",
+    Long.class  // 脚本返回值类型
+);
+
+// 执行脚本
+Long result = stringRedisTemplate.execute(
+    MY_SCRIPT,
+    Collections.singletonList("myKey"),   // KEYS 列表 → 脚本内 KEYS[1] = "myKey"
+    "expectedValue"                        // ARGV[1] = "expectedValue"
+);
+// result = 1 表示执行了 del，result = 0 表示条件不满足未删除
+```
+
+> **与 Pipeline 的区别**：Pipeline 是批量发多条独立命令、不保证原子；Lua 脚本是把多步逻辑合并成一条命令、严格原子。有原子需求时用 Lua 脚本，单纯追求批量吞吐时用 Pipeline。
 
 ***
 
@@ -1249,9 +1313,234 @@ Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、
 
 ***
 
-## 七、常见问题与最佳实践
+## 七、Redis 分布式锁
 
-### 7.1 缓存异常与一致性总览
+分布式锁解决的是**多个进程/实例之间的互斥问题**。Java 的 `synchronized`、`ReentrantLock` 只在单个 JVM 进程内有效，分布式部署下每个实例各有独立的锁，无法互斥——需要借助外部共享存储（Redis、ZooKeeper 等）来实现跨进程互斥。
+
+### 7.1 核心要求
+
+| 要求 | 说明 |
+| --- | --- |
+| **互斥性** | 同一时刻只允许一个客户端持有锁 |
+| **防死锁** | 持锁客户端宕机后，锁必须能自动释放（设置过期时间） |
+| **防误删** | 释放时只能删除自己的锁，不能误删他人持有的锁 |
+| **原子性** | 加锁和解锁的关键操作必须原子执行，防止并发竞争 |
+
+### 7.2 实现方案对比
+
+| 方案 | 原理 | 优点 | 缺点 | 适用场景 |
+| --- | --- | --- | --- | --- |
+| **Redis SETNX** | `SET key value NX EX` 原子命令 | 实现简单、性能高 | 需自己处理锁续期、可重入 | 简单互斥场景 |
+| **Redisson** | 封装 SETNX + watchdog + Lua 脚本 | 功能完整（续期、可重入、公平锁） | 引入额外依赖 | 生产推荐 |
+| **ZooKeeper** | 临时顺序节点 + Watch 机制 | 强一致性、天然有序 | 性能低于 Redis | 对一致性要求极高的场景 |
+
+### 7.3 基于 SETNX 的手动实现
+
+#### 加锁与解锁原理
+
+**加锁**用一条带 `NX EX` 选项的 `SET` 命令完成：
+
+- `NX`（Not eXists）：只有 key 不存在时才写入，否则失败——这是"抢锁"语义，多个线程同时执行只有一个能成功。
+- `EX 30`：同时设置 30 秒过期时间——这是"防死锁"保障，持锁方崩溃后锁会自动释放，其他线程才能再次拿锁。
+- 两个选项在同一条命令里原子生效，不会出现"写入成功但还没设过期就崩了"的半成品状态。
+
+**解锁**需要两步：先比较 value 是否是自己的，再 DEL。两步之间有时间窗口（查完 value、还没 DEL，锁到期被别人拿走，再 DEL 就误删了别人的锁），因此必须用 **Lua 脚本**把这两步合并成原子操作（见 5.6 节）。
+
+```
+加锁：SET lock:key <唯一UUID> NX EX 30  → 只有 key 不存在时写入，同时设过期，两者原子生效
+解锁：Lua 脚本原子执行 → GET 比较 value → 是自己的才 DEL，否则什么都不做
+```
+
+#### lockValue 为什么必须唯一
+
+锁值必须是每次加锁唯一生成的（通常用 `UUID`），否则释放时无法区分是否是自己持有的锁：
+
+```
+线程 A 加锁，value = "A-uuid"，TTL = 30s
+线程 A 业务执行超时，锁自动过期
+线程 B 抢到锁，value = "B-uuid"
+线程 A 回来执行释放 → 必须先校验 value，否则会误删线程 B 的锁
+```
+
+#### 代码示例
+
+```java
+@Service
+public class DistributedLockService {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    // Lua 脚本：原子执行"比较 value + 删除"，防止误删
+    private static final DefaultRedisScript<Long> UNLOCK_SCRIPT = new DefaultRedisScript<>(
+        "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+        "    return redis.call('del', KEYS[1]) " +
+        "else " +
+        "    return 0 " +
+        "end",
+        Long.class
+    );
+
+    /**
+     * 尝试加锁
+     * @param lockKey  锁的 key
+     * @param lockValue 锁的唯一标识（UUID）
+     * @param expireSeconds 锁过期时间（秒）
+     */
+    public boolean tryLock(String lockKey, String lockValue, long expireSeconds) {
+        Boolean success = stringRedisTemplate.opsForValue()
+            .setIfAbsent(lockKey, lockValue, expireSeconds, TimeUnit.SECONDS);
+        return Boolean.TRUE.equals(success);
+    }
+
+    /**
+     * 释放锁（Lua 脚本保证原子性，防止误删他人锁）
+     */
+    public void unlock(String lockKey, String lockValue) {
+        stringRedisTemplate.execute(
+            UNLOCK_SCRIPT,
+            Collections.singletonList(lockKey),
+            lockValue
+        );
+    }
+}
+```
+
+#### 业务使用
+
+```java
+@Service
+public class OrderService {
+
+    @Autowired
+    private DistributedLockService lockService;
+
+    public boolean createOrder(Long productId) {
+        String lockKey   = "lock:order:" + productId;
+        String lockValue = UUID.randomUUID().toString(); // 每次唯一
+
+        // 1. 抢锁，失败直接返回
+        if (!lockService.tryLock(lockKey, lockValue, 30)) {
+            return false;
+        }
+
+        try {
+            // 2. 执行业务逻辑（扣减库存、创建订单等）
+            // ...
+            return true;
+        } finally {
+            // 3. 释放锁（无论业务成功或抛异常都要释放）
+            lockService.unlock(lockKey, lockValue);
+        }
+    }
+}
+```
+
+### 7.4 SETNX 方案的局限
+
+| 问题 | 说明 |
+| --- | --- |
+| **不可重入** | 同一线程重复加锁会阻塞自身 |
+| **无自动续期** | 业务执行时间超过锁 TTL，锁自动释放，其他线程可能抢锁；业务仍在执行，导致并发问题 |
+| **主从延迟风险** | 主节点写锁后未同步到从节点就宕机，从节点升主后锁丢失（Redlock 算法可缓解，但代价较高） |
+
+### 7.5 Redisson（生产推荐）
+
+Redisson 是基于 Redis 的 Java 客户端，内置了**可重入锁、watchdog 自动续期、红锁、读写锁、信号量**等完整的分布式锁实现，是生产环境的首选。
+
+#### 依赖
+
+```xml
+<dependency>
+    <groupId>org.redisson</groupId>
+    <artifactId>redisson-spring-boot-starter</artifactId>
+    <version>3.27.0</version>
+</dependency>
+```
+
+#### 配置
+
+```yaml
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: yourpassword
+```
+
+```java
+@Configuration
+public class RedissonConfig {
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer()
+              .setAddress("redis://localhost:6379")
+              .setPassword("yourpassword");
+        return Redisson.create(config);
+    }
+}
+```
+
+#### 使用示例
+
+```java
+@Service
+public class OrderService {
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    public boolean createOrder(Long productId) {
+        RLock lock = redissonClient.getLock("lock:order:" + productId);
+
+        // 尝试加锁：最多等待 3 秒，锁持有最长 30 秒
+        boolean locked;
+        try {
+            locked = lock.tryLock(3, 30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        if (!locked) {
+            return false; // 未抢到锁
+        }
+
+        try {
+            // 执行业务逻辑（Redisson watchdog 会自动续期）
+            // ...
+            return true;
+        } finally {
+            lock.unlock(); // 释放锁
+        }
+    }
+}
+```
+
+**Redisson watchdog 机制：**
+
+- 加锁时若未设置 leaseTime（或设为 -1），watchdog 启动
+- 每隔 `lockWatchdogTimeout / 3`（默认 10 秒）自动为锁续期
+- 业务结束调用 `unlock()` 后，watchdog 停止续期
+- 若 JVM 宕机，watchdog 随之停止，锁到期后自动释放，防止死锁
+
+### 7.6 本地锁 vs Redis 分布式锁
+
+| 对比项 | 本地锁（synchronized / ReentrantLock） | Redis 分布式锁 |
+| --- | --- | --- |
+| **互斥范围** | 当前 JVM 进程内 | 跨进程、跨服务器 |
+| **性能** | 极快（无网络开销） | 需网络往返 |
+| **适用场景** | 单机部署、同进程多线程 | 分布式部署、多实例共享资源 |
+| **锁续期** | 不需要 | 需要（Redisson watchdog） |
+| **实现复杂度** | 低 | 中（手动）/ 低（Redisson） |
+
+***
+
+## 八、常见问题与最佳实践
+
+### 8.1 缓存异常与一致性总览
 
 引入缓存后常见问题有**缓存穿透、缓存击穿、缓存雪崩**和**缓存一致性**。前三者的共同点都是“缓存没有挡住请求，压力回到数据库或下游服务”，区别在于失效范围和请求特征不同。
 
@@ -1263,7 +1552,7 @@ Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、
 | **缓存一致性** | 缓存与数据库值不一致 | 更新后读到旧值 | 先更新库再删缓存、延迟双删、订阅 binlog |
 | **本地缓存不一致** | 多实例本地数据不同步 | A 机器已更新，B 机器仍返回旧值 | 两级缓存、消息通知、主动失效、版本号校验 |
 
-### 7.2 缓存穿透
+### 8.2 缓存穿透
 
 **缓存穿透**是指请求的数据在缓存中不存在，在数据库中也不存在，导致每次请求都会穿过缓存直接访问数据库。
 
@@ -1278,6 +1567,8 @@ Spring 表达式语言（SpEL）可在注解中引用方法参数、返回值、
 | **缓存空值** | 数据库查不到时，也把空结果写入缓存并设置较短 TTL | 防止长期缓存脏空值 |
 | **布隆过滤器** | 在访问缓存/数据库前先判断 key 是否可能存在 | 可能有误判，但不会漏判 |
 | **参数校验** | 非法 ID、明显错误参数直接拦截 | 适合第一层防护 |
+
+**方案示例：缓存空值**
 
 ```java
 public User getUserById(Long id) {
@@ -1300,7 +1591,63 @@ public User getUserById(Long id) {
 }
 ```
 
-### 7.3 缓存击穿
+**方案示例：布隆过滤器（Redisson RBloomFilter）**
+
+```java
+// 1. 依赖（Redisson 已包含，无需额外引入）
+// 2. 初始化：服务启动时将所有合法 ID 预热进过滤器
+@Service
+public class BloomFilterService {
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    private static final String BLOOM_KEY = "bloom:user:ids";
+
+    @PostConstruct
+    public void init() {
+        RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter(BLOOM_KEY);
+        // 预计元素数量 100 万，误判率 0.01%
+        bloomFilter.tryInit(1_000_000L, 0.001);
+        // 预热：把数据库中所有用户 ID 写入过滤器
+        userMapper.selectAllIds().forEach(bloomFilter::add);
+    }
+
+    // 3. 查询前先过滤
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public User getUserById(Long id) {
+        RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter(BLOOM_KEY);
+        // 不存在（100% 准确），直接拦截
+        if (!bloomFilter.contains(id)) {
+            return null;
+        }
+        // 可能存在（有误判率），走正常缓存 → 数据库流程
+        String key = "user:" + id;
+        User cached = (User) redisTemplate.opsForValue().get(key);
+        if (cached != null) return cached;
+        User user = userMapper.selectById(id);
+        if (user != null) {
+            redisTemplate.opsForValue().set(key, user, 30, TimeUnit.MINUTES);
+        }
+        return user;
+    }
+
+    // 4. 新增用户时同步写入过滤器
+    public void addUser(User user) {
+        userMapper.insert(user);
+        redissonClient.<Long>getBloomFilter(BLOOM_KEY).add(user.getId());
+    }
+}
+```
+
+> **注意**：布隆过滤器**不支持删除**单个元素（删除用户时过滤器不能移除，可接受此误判），若删除率较高可考虑定期重建或使用 Counting Bloom Filter。
+
+### 8.3 缓存击穿
 
 **缓存击穿**是指某个**热点 key**在过期瞬间失效，大量并发请求同时回源，把数据库或下游服务打满。
 
@@ -1316,7 +1663,51 @@ public User getUserById(Long id) {
 
 请求到来 → 发现热点 key 失效 → 抢互斥锁 → 一个线程查库回填 → 其他线程读取新缓存
 
-### 7.4 缓存雪崩
+**方案示例：互斥锁重建**
+
+```java
+public User getUserById(Long id) {
+    String cacheKey = "user:" + id;
+    String lockKey = "lock:rebuild:user:" + id;
+
+    // 1. 先查缓存，命中直接返回
+    User user = (User) redisTemplate.opsForValue().get(cacheKey);
+    if (user != null) {
+        return user;
+    }
+
+    // 2. 缓存未命中，抢互斥锁（10 秒过期防止死锁）
+    Boolean locked = redisTemplate.opsForValue()
+        .setIfAbsent(lockKey, "1", 10, TimeUnit.SECONDS);
+
+    if (Boolean.TRUE.equals(locked)) {
+        try {
+            // 3. 双重检查：前一个线程可能刚回填完
+            user = (User) redisTemplate.opsForValue().get(cacheKey);
+            if (user != null) return user;
+
+            // 4. 查库并回填缓存
+            user = userMapper.selectById(id);
+            if (user != null) {
+                redisTemplate.opsForValue().set(cacheKey, user, 30, TimeUnit.MINUTES);
+            }
+            return user;
+        } finally {
+            redisTemplate.delete(lockKey); // 5. 释放锁
+        }
+    } else {
+        // 未抢到锁：短暂等待后重试（其他线程正在回填）
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return getUserById(id); // 递归重试
+    }
+}
+```
+
+### 8.4 缓存雪崩
 
 **缓存雪崩**是指大量缓存 key 在同一时间集中失效，或 Redis 整体不可用，导致大量请求同时回源，引发数据库或服务链路压力骤增。
 
@@ -1333,13 +1724,15 @@ public User getUserById(Long id) {
 | **限流降级** | 回源流量过大时，对非核心请求做限流、熔断或兜底 |
 | **高可用部署** | 主从 + Sentinel 或 Cluster，降低 Redis 整体不可用概率 |
 
+**方案示例：TTL 加随机值**
+
 ```java
 int baseTtl = 1800;
 int randomSeconds = ThreadLocalRandom.current().nextInt(0, 300);
 redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SECONDS);
 ```
 
-### 7.5 缓存一致性
+### 8.5 缓存一致性
 
 缓存不是事务数据库，业务里更常见的目标是**最终一致性**而不是绝对强一致。
 
@@ -1356,7 +1749,45 @@ redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SE
 | **延迟双删** | 更新库后删缓存，再延迟一段时间再删一次 | 降低并发读旧值概率 |
 | **订阅 binlog / MQ** | 数据变更后异步通知删除或刷新缓存 | 适合复杂系统 |
 
-### 7.6 本地缓存与两级缓存
+**方案示例：先更新库，再删缓存（Cache-Aside）**
+
+```java
+@Service
+public class UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    private static final String KEY_PREFIX = "user:";
+    private static final long TTL_MINUTES = 30;
+
+    // 读：先查缓存，未命中再查数据库并回填
+    public User getUserById(Long id) {
+        String key = KEY_PREFIX + id;
+        User cached = (User) redisTemplate.opsForValue().get(key);
+        if (cached != null) {
+            return cached;
+        }
+        User user = userMapper.selectById(id);
+        if (user != null) {
+            redisTemplate.opsForValue().set(key, user, TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return user;
+    }
+
+    // 写：先更新数据库，再删除缓存
+    @Transactional
+    public void updateUser(User user) {
+        userMapper.updateById(user);                        // 1. 更新库
+        redisTemplate.delete(KEY_PREFIX + user.getId());   // 2. 删缓存
+    }
+}
+```
+
+### 8.6 本地缓存与两级缓存
 
 本地缓存最大的优势是快，最大的限制是**只在当前实例内生效**。一旦系统是分布式部署，就要考虑不同实例上的本地缓存何时刷新、何时失效、是否允许短暂旧值。
 
@@ -1384,7 +1815,64 @@ redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SE
 
 > **注意**：本地缓存更适合缓存字典、配置、规则、热点小对象这类“读多写少、数据量小、可接受短暂不一致”的内容；库存、余额、强一致状态通常不应只依赖本地缓存。
 
-### 7.7 缓存过期时间（TTL）的设定
+**方案示例：Redis Pub/Sub 广播使各实例本地缓存失效**
+
+```java
+// 数据更新：先更新库，再删 Redis，再广播失效通知
+@Service
+public class UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private Cache<Long, User> userLocalCache; // Caffeine 本地缓存
+
+    private static final String EVICT_CHANNEL = "local-cache:evict:user";
+
+    @Transactional
+    public void updateUser(User user) {
+        userMapper.updateById(user);                                      // 1. 更新数据库
+        stringRedisTemplate.delete("user:" + user.getId());               // 2. 删除 Redis
+        stringRedisTemplate.convertAndSend(EVICT_CHANNEL,                 // 3. 广播失效通知
+            String.valueOf(user.getId()));
+    }
+}
+
+// 各实例订阅通知，收到后清除本地缓存
+@Component
+public class LocalCacheEvictListener implements MessageListener {
+
+    @Autowired
+    private Cache<Long, User> userLocalCache;
+
+    @Override
+    public void onMessage(Message message, byte[] pattern) {
+        Long userId = Long.valueOf(new String(message.getBody()));
+        userLocalCache.invalidate(userId);
+    }
+}
+
+// Pub/Sub 订阅配置
+@Configuration
+public class RedisPubSubConfig {
+
+    @Bean
+    public RedisMessageListenerContainer listenerContainer(
+            RedisConnectionFactory factory,
+            LocalCacheEvictListener listener) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        container.addMessageListener(listener, new PatternTopic("local-cache:evict:*"));
+        return container;
+    }
+}
+```
+
+### 8.7 缓存过期时间（TTL）的设定
 
 未设置过期时间的 key 会常驻内存并可能被持久化到磁盘，易导致内存占满；设置 TTL 时需综合业务与资源情况，常见参考要素如下。
 
@@ -1399,7 +1887,7 @@ redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SE
 
 只读且不变的共享数据（如静态 JSON）多线程并发读无需考虑线程安全；若会定期更新，可设 TTL 略大于更新周期，或在更新时删除对应 key 使下次请求回源并重新写入缓存。
 
-### 7.8 Key 设计规范
+### 8.8 Key 设计规范
 
 Key 要有**业务前缀**和**层次**，便于按业务或类型批量管理、排查和隔离；避免不同业务 key 冲突；控制单 key 长度，可读即可。常见格式为“业务名:数据类型:数据标识”，必要时加版本或环境前缀。
 
@@ -1414,7 +1902,7 @@ session:token:abc123    # 会话 Token
 rate:limit:192.168.1.1  # 限流计数
 ```
 
-### 7.9 最佳实践
+### 8.9 最佳实践
 
 1. **设置过期时间**：避免内存无限增长；根据数据可变性、请求量、内存等因素设置合理 TTL，不设过期则 key 常驻内存，易 OOM。
 2. **避免大 Key**：单个 Value 不超过 10KB，集合元素不超过 1 万；大 key 会拉高网络与序列化成本，阻塞主线程，删除时易卡顿。
@@ -1427,7 +1915,7 @@ rate:limit:192.168.1.1  # 限流计数
 9. **热点数据要有保护策略**：热点 key 至少考虑互斥重建、逻辑过期或本地缓存，否则容易在高并发下击穿。
 10. **本地缓存只缓存小而热的数据**：它解决的是热点与延迟问题，不负责强一致共享；一旦多实例部署，要提前设计失效和同步策略。
 
-### 7.10 生产环境配置建议
+### 8.10 生产环境配置建议
 
 以下配置从安全（bind、密码、禁用危险命令）、资源（maxmemory、淘汰策略）、持久化与可观测性（AOF、slowlog）几方面给出建议，实际需按机器规格与业务调整。
 
@@ -1462,9 +1950,9 @@ rename-command KEYS ""
 
 ***
 
-## 八、常用命令速查表
+## 九、常用命令速查表
 
-### 8.1 数据操作
+### 9.1 数据操作
 
 | 数据类型   | 常用命令                                         |
 | ---------- | ------------------------------------------------ |
@@ -1474,7 +1962,7 @@ rename-command KEYS ""
 | Set        | SADD、SMEMBERS、SISMEMBER、SREM、SINTER、SUNION  |
 | Sorted Set | ZADD、ZSCORE、ZRANK、ZRANGE、ZREVRANGE、ZINCRBY  |
 
-### 8.2 通用命令
+### 9.2 通用命令
 
 | 命令    | 说明                 |
 | ------- | -------------------- |
@@ -1490,7 +1978,7 @@ rename-command KEYS ""
 | FLUSHDB | 清空当前数据库       |
 | INFO    | 查看服务器信息       |
 
-### 8.3 Java 操作对照
+### 9.3 Java 操作对照
 
 | Redis 命令 | RedisTemplate 方法                    |
 | ---------- | ------------------------------------- |

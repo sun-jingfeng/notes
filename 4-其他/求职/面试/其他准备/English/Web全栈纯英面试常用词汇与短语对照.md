@@ -13,7 +13,7 @@
 | 5 | 这个项目的核心目标是…… | The main goal of this project was ... |
 | 6 | 我的主要贡献是…… | My main contribution was ... |
 | 7 | 核心架构和关键模块基本是我来搭的 | I built most of the core architecture and key modules myself. |
-| 8 | 如果您感兴趣，我可以展开讲这个项目 | If you are interested, I’d be happy to go into more detail. |
+| 8 | 如果您感兴趣，我可以展开讲这个项目 | If you are interested, I'd be happy to go into more detail. |
 | 9 | 我先简单介绍一下我的定位 | Let me briefly describe how I position myself. |
 | 10 | 我是前端出身，近一年做了很多全栈和 AI 落地 | I come from a front-end background, and over the past year I have taken on a lot of full-stack and AI implementation work. |
 | 11 | 我更偏向于能端到端推进项目的工程师 | I see myself more as an engineer who can drive projects end to end. |
@@ -510,13 +510,13 @@
 
 | 优先级 | 中文 | 英文 |
 | --- | --- | --- |
-| 1 | 这个项目最开始是单体，后来拆成了微服务。 | The system started as a monolith and was later refactored into microservices. |
-| 2 | 前端是父子项目结构，后端是按省份拆分的微服务。 | The front end used a parent-child application structure, and the back end was split into province-specific microservices. |
+| 1 | 这个项目最开始是单体，后来拆成了微服务。 | The system was originally built as a monolithic application and was later refactored into a microservice architecture. |
+| 2 | 前端是父子项目结构，后端是按省份拆分的微服务。 | The front end used a parent-child application architecture, and the back end was split into province-specific microservices. |
 | 3 | 这样做主要是为了兼顾代码复用和差异化需求。 | We did that to balance code reuse with customized requirements. |
 | 4 | 这个功能的前后端基本都是我来完成的。 | I handled most of the front-end and back-end work for this feature. |
-| 5 | 我们后来把 AI 能力以独立微服务的形式接进来了。 | Later, we integrated the AI capability as an independent microservice. |
+| 5 | 我们后来把 AI 能力以独立微服务的形式接进来了。 | Later, we implemented the agent as an independent Python microservice and integrated it into the existing Java microservice system. |
 | 6 | 我会先用 AI 提高效率，但一定会逐行确认生成代码的质量。 | I use AI to improve efficiency first, but I still review the generated code carefully line by line. |
-| 7 | 我们持续沉淀规则文件和技能模板，让后续任务复用同一套上下文。 | We kept refining rule files and skill templates so later tasks could reuse the same context. |
+| 7 | 我们持续沉淀规则文件和技能模板，让后续任务复用同一套上下文。 | We kept refining rule files and skill templates so the same context could be reused across tasks. |
 | 8 | 这个方案最终达到了稳定、可维护、可扩展的效果。 | This solution eventually gave us better stability, maintainability, and scalability. |
 | 9 | 如果您想听具体实现，我可以从架构、性能优化或 AI 落地三个角度展开。 | If you'd like, I can explain it from the architecture, performance, or AI-implementation angle. |
 | 10 | 我负责的不是底层模型训练，而是模型能力在业务中的接入和工程化落地。 | I was not responsible for training the underlying model. I was responsible for integrating the model capability into the business and production workflow. |
