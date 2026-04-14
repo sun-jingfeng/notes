@@ -10,14 +10,14 @@ const targetRoles = [
   {
     zh: '智能体 Web 全栈开发（Vue + React + Java）',
     en: 'AI Agent Full-Stack Engineer (Vue + React + Java)',
-    expectedSalary: '27k',
+    expectedSalary: '28k',
     chinesePdfName: '智能体 Web 全栈开发(Vue+React+Java)-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Full-Stack Engineer (Vue+React+Java).pdf',
   },
   {
     zh: '智能体 Web 前端开发（Vue + React）',
     en: 'AI Agent Frontend Engineer (Vue + React)',
-    expectedSalary: '25k',
+    expectedSalary: '28k',
     chinesePdfName: '智能体 Web 前端开发(Vue+React)-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Frontend Engineer (Vue+React).pdf',
   },
