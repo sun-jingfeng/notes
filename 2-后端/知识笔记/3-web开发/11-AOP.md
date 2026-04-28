@@ -180,6 +180,32 @@ public void afterThrowing(Exception ex) {
 }
 ```
 
+#### 注解属性参考
+
+各通知注解的完整属性列表：
+
+| 注解              | 属性                  | 类型   | 必填 | 说明                                                       |
+| ----------------- | --------------------- | ------ | ---- | ---------------------------------------------------------- |
+| `@Aspect`         | —                     | —      | —    | 无属性                                                     |
+| `@Pointcut`       | `value`               | String | 是   | 切入点表达式（默认属性，可省略属性名）                     |
+| `@Pointcut`       | `argNames`            | String | 否   | 参数名列表，逗号分隔，用于参数绑定（见 2.4）               |
+| `@Before`         | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
+| `@Before`         | `argNames`            | String | 否   | 同上                                                       |
+| `@After`          | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
+| `@After`          | `argNames`            | String | 否   | 同上                                                       |
+| `@AfterReturning` | `value` / `pointcut`  | String | 是   | 切入点表达式（两者互为别名，二选一；有其他属性时用 `pointcut`） |
+| `@AfterReturning` | `returning`           | String | 否   | 通知方法中接收返回值的参数名，类型须兼容目标方法返回类型   |
+| `@AfterReturning` | `argNames`            | String | 否   | 同上                                                       |
+| `@AfterThrowing`  | `value` / `pointcut`  | String | 是   | 切入点表达式（两者互为别名，二选一；有其他属性时用 `pointcut`） |
+| `@AfterThrowing`  | `throwing`            | String | 否   | 通知方法中接收异常的参数名，类型须兼容目标方法抛出的异常   |
+| `@AfterThrowing`  | `argNames`            | String | 否   | 同上                                                       |
+| `@Around`         | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
+| `@Around`         | `argNames`            | String | 否   | 同上                                                       |
+
+> 💡 `value` 是各通知注解的默认属性，单独使用时可省略属性名：`@Before("pointcut()")` 等价于 `@Before(value = "pointcut()")`。
+>
+> 💡 `argNames` 在编译保留了参数名信息（`-parameters` 标志或 `-g` 调试符号）时可自动推断，通常无需手动指定；仅在编译优化移除了参数名的环境下才需要显式声明，格式为逗号分隔的参数名字符串：`argNames = "joinPoint,userId"`。
+
 ***
 
 ### 2.3 基本使用示例
@@ -283,6 +309,14 @@ public class LogAspect {
 
 #### 通知方法的参数注入规则
 
+Spring AOP 对通知方法的参数注入有固定约定，分三类：
+
+| 参数类型 | 说明 | 约束 |
+| -------- | ---- | ---- |
+| `JoinPoint` / `ProceedingJoinPoint` | AspectJ 固定约定，由框架自动注入，携带被拦截方法的运行时信息（方法名、参数、目标对象等）；**不是业务参数** | 必须是**第一个参数**；不参与切入点匹配 |
+| 切入点绑定参数（注解实例、目标方法参数等） | 通过 pointcut 表达式中的名称与参数名匹配绑定，类型须与实际值兼容 | 参数名须与表达式标识符一致；类型同时参与**静态切入点过滤** |
+| `returning` / `throwing` 绑定参数 | 由 `@AfterReturning(returning=)` / `@AfterThrowing(throwing=)` 绑定返回值或异常 | 名称须与注解属性值一致；类型参与**运行时动态过滤** |
+
 ```java
 // @Before / @After：JoinPoint 作为第一个参数（可选）
 @Before("pointcut()")
@@ -302,6 +336,84 @@ public Object around(ProceedingJoinPoint pjp) throws Throwable {
     return pjp.proceed();  // 必须调用，否则目标方法不会执行
 }
 ```
+
+#### 切入点表达式参数绑定
+
+通知方法除接收 JoinPoint 外，还可以通过切入点表达式直接绑定目标方法的参数值、注解实例、目标对象等。绑定规则：表达式中的名称必须与通知方法参数名一致，类型须与实际值兼容。
+
+```java
+// 绑定目标方法参数（args()）：匹配第一个参数为 Long 类型的方法，并绑定其值
+@Before("execution(* com.example.service.*.*(..)) && args(userId,..)")
+public void before(Long userId) {
+    log.info("userId：{}", userId);
+}
+
+// 同时使用 JoinPoint：JoinPoint 必须位于第一个参数位置
+@Before("execution(* com.example.service.*.*(..)) && args(id,..)")
+public void before(JoinPoint joinPoint, Long id) {
+    log.info("方法：{}，id：{}", joinPoint.getSignature().getName(), id);
+}
+
+// 绑定注解实例（@annotation()）：名称与参数名一致，Spring 自动注入注解对象
+@Around("@annotation(operationLog)")
+public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
+    String module = operationLog.module();  // 直接读取注解属性，无需反射
+    return pjp.proceed();
+}
+
+// 绑定目标对象（target()）：绑定被代理的原始对象（非代理对象）
+@Before("target(service)")
+public void before(UserService service) { }
+
+// 绑定代理对象（this()）：绑定 Spring 代理对象
+@Before("this(proxy)")
+public void before(UserService proxy) { }
+```
+
+> 💡 参数绑定同时起到类型过滤的作用：`args(Long,..)` 只匹配第一个参数能转型为 `Long` 的调用；`target(UserService)` 只匹配目标对象是 `UserService` 类型的方法。
+
+#### 参数绑定的过滤阶段
+
+通知方法的参数绑定涉及两个阶段的过滤，均可阻止通知执行，但时机不同：
+
+| 绑定方式 | 过滤阶段 | 类型不匹配的结果 |
+| -------- | -------- | ---------------- |
+| `pointcut`/`value` 中的表达式（如 `@annotation(x)`、`args(y)`） | **启动时静态匹配**，随代理对象创建一次性确定 | 目标方法**完全不被拦截**，代理对象不介入 |
+| `returning = "x"` 绑定参数的类型 | **运行时动态过滤**，每次方法调用时判断 | 目标方法**已被拦截**，但此次通知跳过执行 |
+| `throwing = "x"` 绑定参数的类型 | **运行时动态过滤**，每次方法调用时判断 | 同上 |
+
+```
+目标方法被调用
+      │
+      ▼
+┌─────────────────────────────┐
+│  pointcut 静态匹配（启动时） │  ← 不满足 → 完全不拦截
+└─────────────┬───────────────┘
+              │ 满足，目标方法执行
+              ├──────────────────────────────────┐
+              ▼ 正常返回                          ▼ 抛出异常
+┌─────────────────────────┐        ┌─────────────────────────┐
+│  returning 参数类型检查  │        │  throwing 参数类型检查   │
+│  （运行时）              │        │  （运行时）              │
+└────────────┬────────────┘        └────────────┬────────────┘
+             │ 不满足 → 通知跳过                │ 不满足 → 通知跳过
+             ▼ 满足                             ▼ 满足
+     doAfterReturning 执行             doAfterThrowing 执行
+```
+
+`returning`/`throwing` 的参数类型写 `Object`/`Throwable` 是最宽类型，接受所有值，不做过滤——这是最常见的写法。若写具体类型，则只有实际值匹配时通知才执行：
+
+```java
+// 只有返回值实际类型是 String 时，此通知才执行
+@AfterReturning(pointcut = "@annotation(controllerLog)", returning = "result")
+public void afterReturning(Log controllerLog, String result) { ... }
+
+// 只有抛出的异常是 BusinessException（或其子类）时，此通知才执行
+@AfterThrowing(pointcut = "@annotation(controllerLog)", throwing = "e")
+public void afterThrowing(Log controllerLog, BusinessException e) { ... }
+```
+
+> 💡 能在 `pointcut` 表达式中解决的条件优先写在那里（启动时一次确定，代价最低），避免每次方法调用都走运行时类型判断。
 
 #### JoinPoint 常用方法
 
@@ -441,11 +553,37 @@ public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws 
 
 ### 3.3 @within 表达式
 
-匹配带有指定注解的类中的所有方法：
+匹配带有指定注解的**类**中的所有方法：
 
 ```java
-// 匹配 @Service 注解类中的所有方法
+// 匹配所有 @Service 注解类中的方法
 @Pointcut("@within(org.springframework.stereotype.Service)")
+
+// 匹配所有标注了自定义 @Module 注解的类中的方法
+@Pointcut("@within(com.example.annotation.Module)")
+```
+
+**`@within` vs `@annotation`：**
+
+| 表达式 | 注解加在哪 | 匹配哪些方法 |
+| ------ | ---------- | ------------ |
+| `@annotation(X)` | **方法**上 | 直接标注了 X 的方法 |
+| `@within(X)` | **类**上 | 类被 X 标注时，该类的**所有方法** |
+
+```java
+// @annotation：只有 methodA 被增强（注解在方法上）
+public class MyService {
+    @Log
+    public void methodA() { }   // ✅ 被增强
+    public void methodB() { }   // ❌ 不被增强
+}
+
+// @within：MyService 的所有方法都被增强（注解在类上）
+@Log
+public class MyService {
+    public void methodA() { }   // ✅ 被增强
+    public void methodB() { }   // ✅ 被增强
+}
 ```
 
 ***
@@ -461,6 +599,43 @@ public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws 
 // 匹配 service 或 controller 包下的方法
 @Pointcut("execution(* com.example.service.*.*(..)) || execution(* com.example.controller.*.*(..))")
 ```
+
+***
+
+### 3.5 within 与 bean 表达式
+
+**within**：按类型或包名匹配所有方法，不关心方法签名，比 `execution` 更简洁：
+
+```java
+// 匹配 service 包下所有类的所有方法
+@Pointcut("within(com.example.service.*)")
+
+// 匹配 service 包及子包下所有类的所有方法
+@Pointcut("within(com.example.service..*)")
+
+// 匹配 UserService 类的所有方法
+@Pointcut("within(com.example.service.UserService)")
+```
+
+> 💡 `within` 按**静态声明类型**匹配。使用 JDK 动态代理时（目标类实现了接口），代理对象类型与目标类型不同，`within(TargetClass)` 可能不生效——应改用 `target(TargetClass)`。Spring Boot 默认 CGLIB 代理，通常无此问题。
+
+**bean**：按 Spring Bean 名称匹配，Spring AOP 独有（AspectJ 不支持）：
+
+```java
+// 精确匹配
+@Pointcut("bean(userService)")
+
+// 通配符：所有名称以 Service 结尾的 Bean
+@Pointcut("bean(*Service)")
+```
+
+**`within` vs `execution` 选型：**
+
+| 场景 | 推荐表达式 |
+| ---- | ---------- |
+| 拦截某包/子包下所有方法 | `within(com.example.service..)` |
+| 按返回类型、参数签名精细过滤 | `execution(...)` |
+| 按 Bean 名称拦截（Spring 环境） | `bean(*Service)` |
 
 ***
 
