@@ -1111,26 +1111,54 @@ public class MyListener {
 
 ## 五、配置管理
 
-### 5.1 配置文件格式
+### 5.1 配置文件种类
 
-| 类型           | 文件名                   | 特点             |
-| -------------- | ------------------------ | ---------------- |
-| **properties** | `application.properties` | 传统键值对格式   |
-| **yml**        | `application.yml`        | 层级结构（推荐） |
+Spring Boot 应用中，配置文件按用途分为以下几类：
 
-**位置**：`src/main/resources/`
+| 文件名 | 用途 | 加载时机 |
+| ------ | ---- | -------- |
+| `application.yml` | **主配置文件**，应用的默认配置 | ApplicationContext 初始化时 |
+| `application-{profile}.yml` | **Profile 专属配置**，激活后覆盖主配置的同键值 | ApplicationContext 初始化时，主配置之后 |
+| `bootstrap.yml` | **引导配置**，连接配置中心、加解密密钥等场景 | BootstrapContext 初始化时（早于 ApplicationContext） |
+| `bootstrap-{profile}.yml` | **Profile 专属引导配置** | BootstrapContext 初始化时 |
+
+配置文件默认放在 `src/main/resources/`。
+
+**格式区别**：`application.properties`（传统键值对，每行 `key=value`）与 `application.yml`（层级结构，推荐）功能等价；`.yml` 与 `.yaml` 扩展名等价。
+
+#### bootstrap.yml 与 application.yml
+
+| 对比项 | bootstrap.yml | application.yml |
+| ------ | ------------- | --------------- |
+| **加载时机** | BootstrapContext 初始化（更早） | ApplicationContext 初始化 |
+| **核心用途** | 配置中心地址、加解密密钥、服务注册名 | 应用业务配置、框架组件配置 |
+| **优先级** | 高，通常不被 application.yml 中的同键值覆盖 | 可被 Profile 配置、环境变量等覆盖 |
+| **依赖要求** | 需 `spring-cloud-context`（2.4+ 需显式引入） | Spring Boot 内置，无需额外依赖 |
+| **适用场景** | Spring Cloud Config、Vault、Nacos 配置中心 | 绝大多数日常配置 |
+
+**bootstrap.yml 典型内容**：
 
 ```yaml
-# yml 格式示例
-server:
-  port: 8080
-
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: root
-    password: 123456
+  application:
+    name: user-service            # 服务名（注册中心 + 配置中心使用）
+  cloud:
+    config:
+      uri: http://config-server:8888   # 配置中心地址
+      profile: prod                     # 远程配置的 profile
+      label: main                       # git 分支
 ```
+
+**Spring Boot 2.4+ 的变化**：2.4 之前，引入 `spring-cloud-context` 即自动支持 `bootstrap.yml`；2.4 起该机制改为可选，需显式引入：
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-bootstrap</artifactId>
+</dependency>
+```
+
+> 💡 不使用 Spring Cloud 时，不需要创建 `bootstrap.yml`，纯 Spring Boot 项目只需要 `application.yml`。
 
 ***
 
