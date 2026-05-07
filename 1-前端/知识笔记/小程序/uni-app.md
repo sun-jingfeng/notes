@@ -169,25 +169,57 @@ export default {
 
 ### 3.3 页面生命周期
 
-uni-app 页面同时支持 Vue 生命周期和小程序页面生命周期，两者可共存。
+uni-app 页面同时支持 Vue 生命周期和小程序页面生命周期，两者可在同一页面中共存。
 
-| 生命周期           | 触发时机                                   |
-| ------------------ | ------------------------------------------ |
-| `onLoad(options)`  | 页面加载，`options` 为路由参数             |
-| `onShow`           | 页面显示（每次进入都触发，含返回）         |
-| `onReady`          | 页面初次渲染完成                           |
-| `onHide`           | 页面隐藏（跳转到其他页面）                 |
-| `onUnload`         | 页面卸载（`redirectTo`、`navigateBack`）   |
-| `onPullDownRefresh`| 用户下拉刷新（需在 pages.json 中开启）     |
-| `onReachBottom`    | 页面滚动到底部                             |
-| `onShareAppMessage`| 用户点击右上角转发                         |
+**Vue 生命周期**
+
+| 生命周期         | 触发时机                               |
+| ---------------- | -------------------------------------- |
+| `beforeCreate`   | 实例初始化，数据和事件尚未设置         |
+| `created`        | 实例创建完成，可访问 `data`、`methods` |
+| `mounted`        | 组件挂载到页面，可操作 DOM 节点        |
+| `beforeDestroy`  | 实例销毁前，适合清理定时器、取消订阅   |
+| `destroyed`      | 实例已销毁                             |
+
+**小程序页面生命周期**
+
+| 生命周期            | 触发时机                                 |
+| ------------------- | ---------------------------------------- |
+| `onLoad(options)`   | 页面加载，`options` 为路由参数，仅触发一次 |
+| `onShow`            | 页面显示（每次进入都触发，含从其他页返回） |
+| `onReady`           | 页面初次渲染完成，仅触发一次             |
+| `onHide`            | 页面隐藏（跳转到其他页面时）             |
+| `onUnload`          | 页面卸载（`redirectTo`、`navigateBack`） |
+| `onPullDownRefresh` | 用户下拉刷新（需在 pages.json 中开启）   |
+| `onReachBottom`     | 页面滚动到底部                           |
+| `onShareAppMessage` | 用户点击右上角转发                       |
+
+**执行顺序：**
+
+```
+beforeCreate → created → onLoad → onShow → mounted → onReady
+```
+
+**如何选用：**
+
+| 需求                       | 推荐使用              |
+| -------------------------- | --------------------- |
+| 接收路由参数、发起首屏请求 | `onLoad`              |
+| 页面每次显示时刷新数据     | `onShow`              |
+| 清理定时器、移除事件监听   | `onUnload` 或 `beforeDestroy` |
+| 下拉刷新                   | `onPullDownRefresh`   |
+| 上拉加载更多               | `onReachBottom`       |
+| 纯组件（非页面）内部逻辑   | Vue 生命周期          |
 
 ```javascript
 export default {
   onLoad(options) {
-    // options 包含页面跳转时传递的参数
-    const id = options.id;
-    this.fetchDetail(id);
+    // 路由参数在此获取，created 中拿不到
+    this.fetchDetail(options.id);
+  },
+  onShow() {
+    // 每次进入页面都执行，适合刷新列表
+    this.refreshCount();
   },
   onPullDownRefresh() {
     this.loadData().then(() => {
@@ -196,6 +228,9 @@ export default {
   },
   onReachBottom() {
     this.loadMore();
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
   },
 };
 ```
@@ -236,9 +271,9 @@ uni.navigateBack({ delta: 1 });
 
 ### 4.2 页面间通信
 
-**方式一：URL 参数（单向，父传子）**
+**方式一：URL 参数**
 
-跳转时拼接到 URL，目标页通过 `onLoad(options)` 接收，仅支持字符串类型。
+跳转时拼接到 URL，目标页通过 `onLoad(options)` 接收。值均为字符串类型，传递对象需先 `JSON.stringify`，接收后再 `JSON.parse`。
 
 **方式二：全局事件总线**
 
@@ -267,7 +302,7 @@ onUnload() {
 
 ### 5.1 uni.request
 
-`uni.request` 是 uni-app 封装的网络请求 API，跨端统一。
+`uni.request` 是 uni-app 封装的网络请求 API，跨端统一，原生为回调风格。实际项目中通常二次封装为 Promise 形式（见 5.2）。
 
 ```javascript
 uni.request({
@@ -278,13 +313,17 @@ uni.request({
     Authorization: "Bearer token",
   },
   success(res) {
+    // res.statusCode 为 HTTP 状态码，res.data 为响应体
     console.log(res.data);
   },
   fail(err) {
+    // 网络错误、超时等（不含 HTTP 4xx/5xx，那些走 success）
     console.error(err);
   },
 });
 ```
+
+> **注意**：`fail` 只在网络层失败时触发（无网络、超时），HTTP 4xx / 5xx 状态码仍走 `success`，需在 `success` 中判断 `res.statusCode` 或业务 `code`。
 
 ***
 
@@ -547,7 +586,7 @@ export default {
 | ------------ | ------------------------------ |
 | 父传子       | `props`                        |
 | 子传父       | `$emit` 自定义事件             |
-| 跨层级       | `provide / inject`（Vue2/3 均支持） |
+| 跨层级       | `provide / inject`（祖先向后代单向注入，Vue2/3 均支持） |
 | 全局共享状态 | Vuex / `uni.$emit` 事件总线    |
 
 ***
