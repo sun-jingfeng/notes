@@ -1,22 +1,22 @@
-# 现有笔记参考索引
+# Reference Index of Existing Notes
 
-本 skill 的生效范围为 **`/Volumes/Workspace/notes` 下所有笔记**。生成或修改任意笔记时，均可参考下列同风格笔记的表述方式和深度。
+This skill applies to **all notes under `/Volumes/Workspace/notes`**. When generating or modifying any note, use the same-style notes below as references for phrasing and depth.
 
-## 按特点推荐参考
+## Recommended References by Content Type
 
-| 要写的内容类型 | 推荐参考笔记 | 学习要点 |
-| -------------- | ------------ | -------- |
-| Java 基础概念（类、对象、继承） | `1-基础/9-面向对象基础.md` | 概念定义模式、内存图、表格对比 |
-| 异常/错误处理类 | `2-进阶/4-异常.md` | 继承关系树形图、异常分类表格 |
-| 集合/Stream 操作类 | `2-进阶/3-Stream流.md` | 传统 vs 新方式对比、链式代码示例 |
-| 框架概述（Spring Boot 等） | `3-web开发/3-Spring Boot基础.md` | 特性表格、生态体系图、快速入门 |
-| 注解/配置类 | `3-web开发/5-Web开发基础.md` | 注解属性表格、派生注解对比 |
-| 数据库/持久层 | `3-web开发/8-JDBC、MyBatis.md` | 框架对比表、SQL 代码示例、事务管理 |
-| AOP/切面类 | `3-web开发/11-AOP.md` | 概念关系图、ASCII 对比图、通知类型 |
-| 微服务/分布式 | `3-web开发/15.微服务.md` | 架构图、组件表格、配置示例 |
-| 工具/运维类 | `3-web开发/12-Linux.md`、`13-Docker.md` | 命令表格、常用操作 |
+| Content type to write | Recommended reference note | What to learn from it |
+| --------------------- | -------------------------- | --------------------- |
+| Java fundamentals (classes, objects, inheritance) | `1-基础/9-面向对象基础.md` | Concept-definition pattern, memory diagrams, comparison tables |
+| Exception / error handling | `2-进阶/4-异常.md` | Inheritance tree diagrams, exception classification tables |
+| Collections / Stream operations | `2-进阶/3-Stream流.md` | Traditional-vs-new comparisons, chained code examples |
+| Framework overviews (Spring Boot etc.) | `3-web开发/3-Spring Boot基础.md` | Feature tables, ecosystem diagrams, quick start |
+| Annotations / configuration | `3-web开发/5-Web开发基础.md` | Annotation attribute tables, derived-annotation comparisons |
+| Databases / persistence layer | `3-web开发/8-JDBC、MyBatis.md` | Framework comparison tables, SQL code examples, transaction management |
+| AOP / aspects | `3-web开发/11-AOP.md` | Concept relationship diagrams, ASCII comparison diagrams, advice types |
+| Microservices / distributed systems | `3-web开发/15.微服务.md` | Architecture diagrams, component tables, config examples |
+| Tooling / ops | `3-web开发/12-Linux.md`, `13-Docker.md` | Command tables, common operations |
 
-## 笔记完整目录（示例：2-后端/知识笔记 结构）
+## Full Note Directory (example: 2-后端/知识笔记 structure)
 
 ```
 2-后端/知识笔记/
@@ -29,15 +29,15 @@
 │   ├── 6-方法.md
 │   ├── 7-流程控制.md
 │   ├── 8-数组.md
-│   ├── 9-面向对象基础.md      ← 概念引入、内存图示范
+│   ├── 9-面向对象基础.md      ← concept intros, memory diagrams
 │   ├── 10-面向对象进阶.md
 │   ├── 11-字符串.md
 │   └── 12-集合基础.md
 ├── 2-进阶/
 │   ├── 1-Collection、List、泛型.md
 │   ├── 2-Set、Map.md
-│   ├── 3-Stream流.md           ← 对比模式、链式代码示范
-│   ├── 4-异常.md               ← 继承树形图示范
+│   ├── 3-Stream流.md           ← comparison pattern, chained code
+│   ├── 4-异常.md               ← inheritance tree diagrams
 │   ├── 5-File类、递归.md
 │   ├── 6-常用类.md
 │   ├── 7-IO流.md
@@ -47,24 +47,24 @@
 └── 3-web开发/
     ├── 1-Maven基础.md
     ├── 2-Maven高级.md
-    ├── 3-Spring Boot基础.md    ← 框架概述、生态图示范
+    ├── 3-Spring Boot基础.md    ← framework overview, ecosystem diagram
     ├── 4-Spring Boot高级.md
-    ├── 5-Web开发基础.md        ← 注解表格、RESTful 示范
+    ├── 5-Web开发基础.md        ← annotation tables, RESTful examples
     ├── 6-Web开发高级.md
     ├── 7-MySQL.md
-    ├── 8-JDBC、MyBatis.md      ← 框架对比、事务管理示范
+    ├── 8-JDBC、MyBatis.md      ← framework comparison, transactions
     ├── 9-Apifox、Nginx、日志技术.md
     ├── 10-登录认证.md
-    ├── 11-AOP.md               ← ASCII 对比图、切面示范
+    ├── 11-AOP.md               ← ASCII comparison diagrams, aspects
     ├── 12-Linux.md
     ├── 13-Docker.md
     ├── 14-Redis.md
-    └── 15.微服务.md            ← 架构图、组件表格示范
+    └── 15.微服务.md            ← architecture diagrams, component tables
 ```
 
-## 使用方式
+## How to Use
 
-1. 根据要写的主题，找到上表中的推荐参考
-2. 用 Read 工具读取对应笔记文件
-3. 学习其表述模式、表格结构、代码注释风格
-4. 按 SKILL.md 规范生成新笔记，保持风格一致
+1. Based on the topic to write about, find the recommended reference in the table above
+2. Use the Read tool to open that note file
+3. Study its phrasing patterns, table structures, and code comment style
+4. Generate the new note per SKILL.md, keeping the style consistent

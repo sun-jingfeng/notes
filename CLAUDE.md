@@ -1,10 +1,10 @@
-# 笔记仓库
+# Notes Repository
 
-个人技术笔记仓库（Java、Spring Boot、数据库、微服务、前端等），非代码项目。
+Personal technical notes repository (Java, Spring Boot, databases, microservices, frontend, etc.) — not a code project. Work in English; legacy notes were written in Chinese, and when editing one in place, keep its existing conventions.
 
-## 技能路由（重要）
+## Skill Routing (Important)
 
-- **生成、扩写、修改、润色、补充任意笔记**：必须先调用 `knowledge-notes` 技能，严格遵循其格式与表述规范。
-- **用户直接问知识点/概念/区别**（未要求查或改笔记）：调用 `direct-knowledge-answer` 技能，只作答，不读、不改笔记文件。
-- **面试复盘**（根据面试记录生成复盘、一面复盘等）：调用 `generate-interview-recap` 技能。
-- **需要安装或查找工具、依赖**（npm、pip、CLI 等）：调用 `tool-install-dir` 技能，统一在本目录查找与安装。
+- **Creating, expanding, editing, polishing, or supplementing any note**: invoke the `knowledge-notes` skill first and strictly follow its format and phrasing standards.
+- **User asks a direct knowledge/concept question** (without asking to look up or edit notes): invoke the `direct-knowledge-answer` skill — answer only; do not read or modify note files.
+- **Interview recaps** (generating a recap from interview records, first-round recap, etc.): invoke the `generate-interview-recap` skill.
+- **Installing or looking up tools/dependencies** (npm, pip, CLIs, etc.): invoke the `tool-install-dir` skill — look up and install exclusively in this directory.

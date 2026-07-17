@@ -1,98 +1,98 @@
-# 复盘文档结构参考
+# Recap Document Structure Reference
 
-以下为「根据面试记录生成复盘」时应遵循的章节与格式速查，基于现有面试复盘文档整理。
+Quick reference for the sections and formatting to follow when generating an interview recap, distilled from existing recap documents.
 
-## 文档标题与一级结构
+## Document Title and Top-Level Structure
 
 ```markdown
-# {公司} {轮次} 复盘
+# {Company} {Round} Recap
 
-## 一、面试基本信息
-（表格）
-
-***
-
-## 二、逐题复盘（问题 → 我的答案 → 评价 → 参考答案）
-
-### 1. {题目简短标题}
-
-**问题**
-{面试官原问或归纳}
-
-**我的答案要点**
-- 要点1
-- 要点2
-
-**评价**
-- 优点：…
-- 不足：…
-
-**参考答案要点**
-- 要点1
-- 要点2
-
-**话术示例**
-{1～2 段口语化表述，第一人称}
-
-（若用户与 Agent 探讨后补充：**根据对话内容生成质量最高的答案**合并进参考答案/话术，用户原话仅作参考、不照搬；只保留一份答案，不新增「复盘整理」「话术自评」等单独块。）
+## 1. Interview Basics
+(table)
 
 ***
 
-### 2. {下一题}
+## 2. Question-by-Question Recap (question → my answer → evaluation → reference answer)
+
+### 1. {Short question title} [7 pts]
+
+**Question**
+{Interviewer's original question or a distillation}
+
+**My Answer Highlights**
+- Point 1
+- Point 2
+
+**Evaluation**
+- Strengths: …
+- Weaknesses: …
+
+**Reference Answer Highlights**
+- Point 1
+- Point 2
+
+**Spoken Script**
+{1–2 conversational paragraphs, first person}
+
+(If the user supplements after discussing with the agent: **generate the highest-quality answer from the conversation** and merge it into the reference answer / script; the user's words are reference only, never copied verbatim. Keep only one answer — no standalone "Recap Notes" or "Script Self-Review" blocks.)
+
+***
+
+### 2. {Next question} [7.5 pts]
 …
 
 ***
 
-## 三、表现好的地方
+## 3. What Went Well
 
-| 点         | 说明 |
-| ---------- | ---- |
-| **项目表述** | …    |
-| **某技术点** | …    |
-
-***
-
-## 四、待改进与盲区
-
-### 4.1 技术回答
-
-| 问题     | 不足     | 可补内容     |
-| -------- | -------- | ------------ |
-| …        | …        | …            |
-
-### 4.2 表达与结构
-
--  bullets 或短段
+| Point                 | Notes |
+| --------------------- | ----- |
+| **Project narrative** | …     |
+| **A technical point** | …     |
 
 ***
 
-## 五、后续行动
+## 4. Areas to Improve and Blind Spots
 
-### 5.1 短期（针对二面/同类岗位）
+### 4.1 Technical Answers
+
+| Question | Weakness | Content to Add |
+| -------- | -------- | -------------- |
+| …        | …        | …              |
+
+### 4.2 Delivery and Structure
+
+- bullets or short paragraphs
+
+***
+
+## 5. Follow-up Actions
+
+### 5.1 Short-term (next round / similar roles)
 1. …
 2. …
 
-### 5.2 中期（知识补全）
+### 5.2 Mid-term (knowledge gaps)
 1. …
 
-### 5.3 简历与话术
+### 5.3 Resume and Scripts
 1. …
 
 ***
 
-## 六、小结
+## 6. Summary
 
-{2～4 句话：优势、劣势、岗位匹配或下一步重点}
+{2–4 sentences: strengths, weaknesses, role fit or next focus}
 ```
 
-## 每题内可选补充块
+## Optional Per-Question Supplement Block
 
-- 用户与 Agent 探讨某题后，补充方式为**根据对话生成质量最高的答案**，合并进「参考答案要点」与「话术示例」；用户的话仅作参考，不原封不动照搬。**最终只保留一份答案**；不新增「复盘整理」「话术自评」等独立小节。若文档中已有此类小节，合并进主答案后删除。
+- After the user discusses a question with the agent, supplement by **generating the highest-quality answer from the conversation** and merging it into "Reference Answer Highlights" and "Spoken Script"; the user's words are reference only, never copied verbatim. **Keep only one final answer**; do not add standalone sections like "Recap Notes" or "Script Self-Review". If such sections already exist, merge them into the main answer and delete them.
 
-## 格式约定
+## Format Conventions
 
-- 大章节之间：空行 + `***` + 空行。
-- 题目之间：`***` 分隔。
-- 列表：用 `-`；有序动作用 `1. 2. 3.`。
-- 关键词、术语：**加粗**；专有名词、工具名准确（如 Seata、JMeter、html2canvas）。
-- 话术示例：第一人称、可朗读、不写「首先接下来」等书面过渡，直接陈述。
+- Between major chapters: blank line + `***` + blank line.
+- Between questions: `***` separator.
+- Lists: use `-`; ordered actions use `1. 2. 3.`.
+- Key terms: **bold**; proper nouns and tool names must be accurate (e.g. Seata, JMeter, html2canvas).
+- Spoken scripts: first person, readable aloud, no written-style transitions like "first of all" or "next" — state directly.
