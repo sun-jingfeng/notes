@@ -11,8 +11,8 @@ Generate a structured **interview recap** document from **raw interview records*
 
 - **Input**: interview records provided by the user (as a referenced file or pasted text), typically containing the interviewer's questions and your answer highlights or verbatim content.
 - **Output**: a complete recap in Markdown following the "Recap Document Structure" below, consistent in style with existing recap notes.
-- **Location**: recaps live under `4-其他/求职/面试/面试记录/`, organized by two levels, "year.month / day", e.g. `26.4/1/`. Multiple interviews on the same day share the same day directory, distinguished by file number — do not append `-N` to the directory name.
-- **File naming**: name the recap file `recap.md` by default; for multiple interviews on the same day, use `recap2.md`, `recap3.md`, etc. Never auto-append a "(done)" suffix — the user adds that manually after finishing their review. Name the corresponding interview record file `record.txt` (`record2.txt` etc. for multiple sessions).
+- **Location**: recaps live under `4-Misc/Job Search/Interviews/Interview Records/`, organized by two levels, "year.month / day", e.g. `26.4/1/`. Multiple interviews on the same day share the same day directory, distinguished by file number — do not append `-N` to the directory name.
+- **File naming**: name the recap file `recap.md` by default; for multiple interviews on the same day, use `recap2.md`, `recap3.md`, etc. Never auto-append a ` (done)` suffix — the user adds that manually after finishing their review (e.g. `recap (done).md`). Name the corresponding interview record file `record.txt` (`record2.txt` etc. for multiple sessions).
 - **Legacy naming**: existing recap directories use Chinese file names (`复盘.md` / `记录.txt`, with `（完）` as the user's done-marker). Leave those as they are — do not rename; the English names apply to new files only.
 
 ## Recap Document Structure

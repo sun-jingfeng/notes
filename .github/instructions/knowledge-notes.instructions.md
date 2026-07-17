@@ -1,7 +1,7 @@
 ---
 description: "Use when creating, expanding, refining, or restructuring technical notes under /Volumes/Workspace/notes, including frontend/backend/AI/Git knowledge notes."
 name: "Knowledge Notes Style"
-applyTo: "1-前端/**/*.md, 2-后端/**/*.md, 3-通用/**/*.md, 4-其他/**/*.md"
+applyTo: "1-Frontend/**/*.md, 2-Backend/**/*.md, 3-General/**/*.md, 4-Misc/**/*.md"
 ---
 
 # Knowledge Note Standards
@@ -37,5 +37,5 @@ Applies to note generation, expansion, editing, polishing, supplementing, and qu
 
 ## Style Consistency
 
-- Match the existing notes: accurate terminology, clear structure, searchable, reviewable. The Golang notes (`2-后端/Golang/`) are the English style reference.
+- Match the existing notes: accurate terminology, clear structure, searchable, reviewable. The Golang notes (`2-Backend/Golang/`) are the English style reference.
 - Spell technical terms correctly; mark uncertain information as "TBD"; never fabricate.

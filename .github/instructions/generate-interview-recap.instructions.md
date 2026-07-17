@@ -5,13 +5,13 @@ name: "Generate Interview Recap"
 
 # Interview Recap Standards
 
-Generate a structured recap from raw interview records (verbatim transcript, Q&A notes, audio transcription), with a fixed chapter order. Recaps live under `4-其他/求职/面试/面试记录/{YY.M}/{D}/`.
+Generate a structured recap from raw interview records (verbatim transcript, Q&A notes, audio transcription), with a fixed chapter order. Recaps live under `4-Misc/Job Search/Interviews/Interview Records/{YY.M}/{D}/`.
 
 ## I. Interview Basics
 
 - Use a table: Company, Role, Date/Time, Interviewer, Format.
 - Write "TBD" for missing fields, or mark values as inferred from context.
-- Name new files `recap.md` / `record.txt` (`recap2.md` / `record2.txt` for multiple sessions on the same day); never auto-append a "(done)" suffix — the user maintains that marker manually. Legacy files named `复盘.md` / `记录.txt` stay as they are.
+- Name new files `recap.md` / `record.txt` (`recap2.md` / `record2.txt` for multiple sessions on the same day); never auto-append a " (done)" suffix — the user maintains that marker manually (e.g. `recap (done).md`). Legacy files named `复盘.md` / `记录.txt` stay as they are.
 
 ---
 
