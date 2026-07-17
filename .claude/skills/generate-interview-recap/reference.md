@@ -7,12 +7,12 @@ Quick reference for the sections and formatting to follow when generating an int
 ```markdown
 # {Company} {Round} Recap
 
-## 1. Interview Basics
+## I. Interview Basics
 (table)
 
 ***
 
-## 2. Question-by-Question Recap (question → my answer → evaluation → reference answer)
+## II. Question-by-Question Recap (question → my answer → evaluation → reference answer)
 
 ### 1. {Short question title} [7 pts]
 
@@ -43,7 +43,7 @@ Quick reference for the sections and formatting to follow when generating an int
 
 ***
 
-## 3. What Went Well
+## III. What Went Well
 
 | Point                 | Notes |
 | --------------------- | ----- |
@@ -52,7 +52,7 @@ Quick reference for the sections and formatting to follow when generating an int
 
 ***
 
-## 4. Areas to Improve and Blind Spots
+## IV. Areas to Improve and Blind Spots
 
 ### 4.1 Technical Answers
 
@@ -66,7 +66,7 @@ Quick reference for the sections and formatting to follow when generating an int
 
 ***
 
-## 5. Follow-up Actions
+## V. Follow-up Actions
 
 ### 5.1 Short-term (next round / similar roles)
 1. …
@@ -80,7 +80,7 @@ Quick reference for the sections and formatting to follow when generating an int
 
 ***
 
-## 6. Summary
+## VI. Summary
 
 {2–4 sentences: strengths, weaknesses, role fit or next focus}
 ```

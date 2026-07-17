@@ -11,14 +11,15 @@ Generate a structured **interview recap** document from **raw interview records*
 
 - **Input**: interview records provided by the user (as a referenced file or pasted text), typically containing the interviewer's questions and your answer highlights or verbatim content.
 - **Output**: a complete recap in Markdown following the "Recap Document Structure" below, consistent in style with existing recap notes.
+- **Location**: recaps live under `4-其他/求职/面试/面试记录/`, organized by two levels, "year.month / day", e.g. `26.4/1/`. Multiple interviews on the same day share the same day directory, distinguished by file number — do not append `-N` to the directory name.
 - **File naming**: name the recap file `recap.md` by default; for multiple interviews on the same day, use `recap2.md`, `recap3.md`, etc. Never auto-append a "(done)" suffix — the user adds that manually after finishing their review. Name the corresponding interview record file `record.txt` (`record2.txt` etc. for multiple sessions).
-- **Directory structure**: organize by two levels, "year.month / day", e.g. `26.4/1/`. Multiple interviews on the same day share the same day directory, distinguished by file number — do not append `-N` to the directory name.
+- **Legacy naming**: existing recap directories use Chinese file names (`复盘.md` / `记录.txt`, with `（完）` as the user's done-marker). Leave those as they are — do not rename; the English names apply to new files only.
 
 ## Recap Document Structure
 
 Generate strictly in the following order, with `***` between major chapters.
 
-### 1. Interview Basics
+### I. Interview Basics
 
 Present as a table with these required fields:
 
@@ -34,7 +35,7 @@ If a field is missing from the records, write "TBD" or infer from context and ma
 
 ***
 
-### 2. Question-by-Question Recap (question → my answer → evaluation → reference answer → script)
+### II. Question-by-Question Recap (question → my answer → evaluation → reference answer → script)
 
 Each question is a `### N. Short question title`, separated from the next by `***`. Each question contains the following blocks, in fixed order:
 
@@ -57,7 +58,7 @@ Each question is a `### N. Short question title`, separated from the next by `**
 
 ***
 
-### 3. What Went Well
+### III. What Went Well
 
 Summarize what went well in a table, for example:
 
@@ -68,7 +69,7 @@ Summarize what went well in a table, for example:
 
 ***
 
-### 4. Areas to Improve and Blind Spots
+### IV. Areas to Improve and Blind Spots
 
 Split into subsections (e.g. 4.1 Technical answers, 4.2 Delivery and structure), listed in tables:
 
@@ -77,13 +78,13 @@ Split into subsections (e.g. 4.1 Technical answers, 4.2 Delivery and structure),
 
 ***
 
-### 5. Follow-up Actions
+### V. Follow-up Actions
 
 Split into short-term (for the next round / similar roles), mid-term (knowledge gaps), and resume & scripts; list actionable items as ordered lists.
 
 ***
 
-### 6. Summary
+### VI. Summary
 
 2–4 sentences covering: strengths this round, weaknesses, fit with the role, or the next focus.
 

@@ -20,14 +20,14 @@ When generating or modifying notes, strictly follow the standards below to stay 
 **Headings start at level 2, with a maximum depth of 3 levels** — only **level 2 (##), level 3 (###), and level 4 (####)** headings are allowed.
 
 ```markdown
-## 1. Chapter Title (level 2)
+## I. Chapter Title (level 2, Roman numerals)
 
-### 1.1 Section Title (level 3)
+### 1.1 Section Title (level 3, Arabic numerals)
 
 #### Sub-heading (level 4, only when needed)
 ```
 
-- **Level-2 headings**: `## 1.`, `## 2.` (major chapters)
+- **Level-2 headings**: `## I.`, `## II.` (major chapters, Roman numerals)
 - **Level-3 headings**: `### 1.` or `### 1.1` (sections)
 - **Level-4 headings**: `####` (sub-headings, only when needed)
 - Never skip levels (do not jump from `##` straight to `####`)
@@ -41,13 +41,13 @@ When generating or modifying notes, strictly follow the standards below to stay 
 Separate major chapters with `***`:
 
 ```markdown
-## 1. Overview
+## I. Overview
 
 Content...
 
 ***
 
-## 2. Core Concepts
+## II. Core Concepts
 ```
 
 Only within the **lowest-level heading**, if it contains multiple **independent topic blocks** (e.g. "Producer Reconnect", "Publisher Confirm", "Consumer Ack"), also separate those blocks with `***`. Higher-level headings are already separated by their sub-headings and do not need extra `***`:
@@ -374,11 +374,7 @@ Notes state concepts and steps directly — never write lead-in sentences like "
 
 ### 4.4 Consistent Terminology
 
-Stay consistent with existing notes:
-- starter dependency (not "launcher dependency")
-- auto-configuration (not "auto-wiring")
-- service registration and discovery (not "service discovery and registration")
-- pointcut (not "cut point")
+Use each technology's official terminology, and use the same term for the same concept across all notes — never alternate between synonyms (e.g. pick one of "starter dependency" / "starter" and stick with it; "auto-configuration", "service registration and discovery", "pointcut" as Spring documents them). Before introducing a term, check how existing notes name it and follow suit.
 
 ### 4.5 Generic Expressions, Not Project-Specific Ones
 
@@ -416,7 +412,7 @@ Whatever needs explaining must be **written out in place** — never via a "see 
 ## 5. Full Example
 
 ```markdown
-## 1. AOP Overview
+## I. AOP Overview
 
 ### 1.1 What Is AOP
 
@@ -444,7 +440,7 @@ Whatever needs explaining must be **written out in place** — never via a "see 
 
 ***
 
-## 2. Spring AOP Basics
+## II. Spring AOP Basics
 
 ### 2.1 Add the Dependency
 
@@ -490,7 +486,7 @@ public class LogAspect {
 
 Before generating a note, confirm:
 
-- [ ] Heading levels are correct (start at level 2; only ## / ### / ####; integer numbering only, no 7.5-style decimals)
+- [ ] Heading levels are correct (start at level 2; only ## / ### / ####; `##` uses Roman numerals, `###` uses Arabic numerals; integer numbering only, no 7.5-style decimals)
 - [ ] Major chapters separated by `***`
 - [ ] Every concept has a one-sentence definition + summary table
 - [ ] Code is complete, runnable, and commented
