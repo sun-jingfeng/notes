@@ -4,34 +4,38 @@ name: "Knowledge Notes Style"
 applyTo: "1-前端/**/*.md, 2-后端/**/*.md, 3-通用/**/*.md, 4-其他/**/*.md"
 ---
 
-# 知识笔记统一规范
+# Knowledge Note Standards
 
-适用于笔记生成、扩写、修改、润色、补充、提质。
+Applies to note generation, expansion, editing, polishing, supplementing, and quality improvement.
 
-## 结构与层级
+**English-only**: all new notes and all added or rewritten content are written in English. Legacy Chinese notes remain until touched — when substantially reworking one, convert it to English; never mix languages within a note.
 
-- 标题层级从二级开始，常用 ## / ### / ####。
-- 大章节之间使用 \*\*\* 分隔。
-- 编号清晰连续，避免跳级和混乱编号。
+## Structure and Hierarchy
 
-## 表达与内容
+- Headings start at level 2: ## / ### / #### only. Level-2 chapters use Roman numerals (`## I.`), level-3 sections use Arabic (`### 1.1`).
+- Separate major chapters with \*\*\*.
+- Numbering is clear and sequential — no skipped levels, no decimal insertions (renumber instead).
 
-- 先给一句话定义，再给核心思想、对比表、示例、注意事项。
-- 高频使用表格做归纳与对比，关键术语加粗。
-- 代码示例要完整、可落地，并附关键注释。
-- 需要时补充流程图/树形结构/ASCII 结构图帮助理解。
-- 只写知识正文，不写“学习建议”“后续建议”“行动建议”“本篇回顾”“小结”“总结”等建议性或回顾性收尾内容。
-- 只写知识内容，不写作者过程感、交流式元叙事或存在感表述，例如“下面来看”“这一层只回答什么”“这里容易看晕”“这里这样改是为了”等。
+## Expression and Content
 
-## 提质原则
+- Give a one-sentence definition first, then the core idea, comparison tables, examples, and caveats.
+- Use tables heavily for summaries and comparisons; bold key terms.
+- Code examples must be complete, runnable, and commented at key steps.
+- Add flow diagrams / tree structures / ASCII diagrams where they aid understanding.
+- Knowledge content only — no advisory or retrospective closers ("study suggestions", "next steps", "recap", restating summaries).
+- No author-process or conversational meta-narration ("let's look at...", "this part is confusing...", "the reason I changed this is...").
+- No cross-references to other notes or other sections; explain in place.
+- Use generic names in examples (`DemoService`, `xxx-service`, `<service-name>`), never a single business domain.
 
-- 不机械照搬用户原话，提炼后用更准确专业的表达落笔。
-- 当用户提出“提质”时，以信息价值最大化为目标：
-  - 删低价值冗余内容
-  - 补关键缺失点
-  - 必要时优化章节结构和知识路径
+## Quality Improvement Principles
 
-## 风格一致性
+- Never copy the user's wording verbatim; distill and rewrite with more accurate, professional phrasing.
+- When the user asks to improve quality, maximize information value:
+  - Delete low-value, redundant content
+  - Fill in key missing points
+  - Restructure sections and knowledge paths when needed
 
-- 与现有 notes 风格保持一致：术语准确、结构清晰、可检索、可复习。
-- 技术名词拼写保持准确，不确定信息标注待确认，不编造。
+## Style Consistency
+
+- Match the existing notes: accurate terminology, clear structure, searchable, reviewable. The Golang notes (`2-后端/Golang/`) are the English style reference.
+- Spell technical terms correctly; mark uncertain information as "TBD"; never fabricate.

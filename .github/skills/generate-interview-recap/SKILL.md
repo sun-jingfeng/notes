@@ -1,114 +1,115 @@
 ---
 name: generate-interview-recap
-description: Generates structured interview recap (面试复盘) from raw interview notes or transcripts. Use when the user has interview records (e.g. 一面.txt, Q&A log, transcript) and wants to produce a 复盘 document with 问题→我的答案要点→评价→参考答案要点→话术示例, plus 表现好的地方、待改进、后续行动、小结. Trigger terms: 面试复盘、根据面试记录生成复盘、一面复盘、面试总结.
+description: Generates a structured interview recap from raw interview notes or transcripts. Use when the user has interview records (e.g. round-one.txt, a Q&A log, a transcript) and wants a recap document with question → my answer highlights → evaluation → reference answer highlights → spoken script, plus strengths, areas to improve, follow-up actions, and a summary. Trigger terms: interview recap, generate a recap from interview records, first-round recap, interview summary, interview retro.
 ---
 
-# 根据面试记录生成复盘内容
+# Generate an Interview Recap from Interview Records
 
-从**原始面试记录**（逐字稿、Q&A 笔记、录音转写等）生成结构化的**面试复盘**文档，便于后续复习与二面准备。
+Generate a structured **interview recap** document from **raw interview records** (verbatim transcripts, Q&A notes, audio transcriptions, etc.) for later review and next-round preparation.
 
-## 输入与输出
+## Input and Output
 
-- **输入**：用户提供的面试记录（可 @ 文件或粘贴），通常包含面试官提问、你的回答要点或逐字内容。
-- **输出**：一篇完整的复盘 Markdown，结构见下方「复盘文档结构」，与现有复盘笔记风格一致。
-- **文件命名**：复盘文件默认命名为 `复盘.md`，同日多场时依次为 `复盘2.md`、`复盘3.md`；不要自动追加 `（完）`，该后缀仅供用户阅读完成后手动添加。面试记录文件对应命名为 `记录.txt`（多场时为 `记录2.txt` 等）。
-- **目录结构**：按「年月 / 日」两级组织，如 `26.4/1/`；同日多场共用同一日目录，以文件序号区分，不在目录名后追加 `-序号`。
+- **Input**: interview records provided by the user (as a referenced file or pasted text), typically containing the interviewer's questions and your answer highlights or verbatim content.
+- **Output**: a complete recap in Markdown following the "Recap Document Structure" below, consistent in style with existing recap notes.
+- **Location**: recaps live under `4-其他/求职/面试/面试记录/`, organized by two levels, "year.month / day", e.g. `26.4/1/`. Multiple interviews on the same day share the same day directory, distinguished by file number — do not append `-N` to the directory name.
+- **File naming**: name the recap file `recap.md` by default; for multiple interviews on the same day, use `recap2.md`, `recap3.md`, etc. Never auto-append a "(done)" suffix — the user adds that manually after finishing their review. Name the corresponding interview record file `record.txt` (`record2.txt` etc. for multiple sessions).
+- **Legacy naming**: existing recap directories use Chinese file names (`复盘.md` / `记录.txt`, with `（完）` as the user's done-marker). Leave those as they are — do not rename; the English names apply to new files only.
 
-## 复盘文档结构
+## Recap Document Structure
 
-严格按以下顺序生成，大章节之间用 `***` 分隔。
+Generate strictly in the following order, with `***` between major chapters.
 
-### 一、面试基本信息
+### I. Interview Basics
 
-用表格呈现，必含字段：
+Present as a table with these required fields:
 
-| 项目     | 内容 |
-| -------- | ---- |
-| **公司** | …    |
-| **岗位** | …    |
-| **时间** | …    |
-| **面试官** | …  |
-| **形式** | 语音/视频，单人/双人等 |
+| Item            | Content |
+| --------------- | ------- |
+| **Company**     | …       |
+| **Role**        | …       |
+| **Date/Time**   | …       |
+| **Interviewer** | …       |
+| **Format**      | audio/video, one-on-one/panel, etc. |
 
-若记录中无某字段，可写「待补充」或根据上下文推断并标注。
-
-***
-
-### 二、逐题复盘（问题 → 我的答案 → 评价 → 参考答案 → 话术）
-
-每一道题为一个 `### N. 题目简短标题`，题与题之间用 `***` 分隔。每题包含以下块（顺序固定）：
-
-1. **问题**：面试官的原问或归纳后的一句话提问。
-2. **我的答案要点**：从面试记录中提炼的你当时的回答要点（ bullet 列表）；若记录缺失，可写「未记录」并请用户补充。
-3. **评价**：  
-   - 优点：当时答得好的地方（结构、技术点、表达等）。  
-   - 不足：漏掉的点、表述不清、可加强处。
-4. **参考答案要点**：该题更完整、可复用的回答要点（便于下次面试使用），技术题需准确、可落地。
-5. **话术示例**：一两段自然口语化表述，可直接用于下次面试口述；与参考答案要点一致，但更连贯、像在说话。
-
-**标题标记（默认带上）**：
-- 每题标题默认追加分值标记，格式固定为 `【7 分】`、`【7.5 分】`。
-- 仅当原答案里存在明确事实错误、概念错误、术语错误时，才在标题额外追加 `【错】`。
-- 不额外发明其他标签。
-- 如果标题带 `【错】`，则必须在该题正文里补一行 `**错误点**：...`，用一句短话点明错在哪。
-- `**错误点**` 只说明错误内容本身，不重复长篇评价。
-
-**补充与探讨**：部分问题用户会与 Agent 探讨，探讨后的内容补充到已有复盘的方式是**根据对话生成质量最高的答案**，合并进「参考答案要点」和「话术示例」，**最终只保留一份答案**。用户的话仅作参考，不原封不动照搬；由 Agent 综合讨论要点做归纳、提质与润色。不另加「复盘整理」「话术自评」等单独块；若已有此类块，应合并进参考答案/话术并删除，保持一题一答。
+If a field is missing from the records, write "TBD" or infer from context and mark it as inferred.
 
 ***
 
-### 三、表现好的地方
+### II. Question-by-Question Recap (question → my answer → evaluation → reference answer → script)
 
-用表格归纳本场面试中表现好的方面，例如：
+Each question is a `### N. Short question title`, separated from the next by `***`. Each question contains the following blocks, in fixed order:
 
-| 点         | 说明 |
-| ---------- | ---- |
-| **项目表述** | …    |
-| **某技术点** | …    |
+1. **Question**: the interviewer's original question or a one-sentence distillation.
+2. **My Answer Highlights**: bullet points of what you answered at the time, extracted from the records; if missing, write "Not recorded" and ask the user to supplement.
+3. **Evaluation**:
+   - Strengths: what was answered well (structure, technical points, delivery, etc.).
+   - Weaknesses: missed points, unclear phrasing, areas to strengthen.
+4. **Reference Answer Highlights**: a more complete, reusable answer for that question (usable in the next interview); technical answers must be accurate and actionable.
+5. **Spoken Script**: one or two natural, conversational paragraphs that can be spoken verbatim in the next interview; consistent with the reference answer, but more fluid and speech-like.
 
-***
+**Title tags (on by default):**
+- Every question title gets a score tag by default, in the fixed format `[7 pts]`, `[7.5 pts]`.
+- Only add `[Wrong]` to the title when the original answer contains a clear factual, conceptual, or terminology error.
+- Do not invent other tags.
+- If a title carries `[Wrong]`, the body must include a line `**Error:** ...` stating in one short sentence what was wrong.
+- `**Error:**` states only the error itself — do not repeat lengthy evaluation.
 
-### 四、待改进与盲区
-
-分小节（如 4.1 技术回答、4.2 表达与结构），用表格列出：
-
-- 问题 / 不足 / 可补内容（或对应「可补内容」列）。
-- 专有名词、工具名等若在记录中出现错误或遗漏，在此处纠正并注明正确说法。
-
-***
-
-### 五、后续行动
-
-分短期（针对二面/同类岗位）、中期（知识补全）、简历与话术等，用有序列表列出可执行项。
+**Supplementing after discussion:** the user may discuss some questions with the agent. To fold the discussion back into an existing recap, **generate the highest-quality answer based on the conversation** and merge it into "Reference Answer Highlights" and "Spoken Script", **keeping only one final answer**. Treat the user's words as reference only — do not copy them verbatim; the agent synthesizes, upgrades, and polishes the discussion points. Do not add separate blocks like "Recap Notes" or "Script Self-Review"; if such blocks already exist, merge them into the reference answer / script and delete them, keeping one answer per question.
 
 ***
 
-### 六、小结
+### III. What Went Well
 
-2～4 句话概括：本场优势、劣势、与岗位的匹配度或下一步重点。
+Summarize what went well in a table, for example:
 
-## 执行要点
+| Point                    | Notes |
+| ------------------------ | ----- |
+| **Project narrative**    | …     |
+| **A technical point**    | …     |
 
-1. **先读透面试记录**：区分哪些是面试官问、哪些是你答；若有时间线或角色标注，按角色切分。
-2. **一题一复盘**：按记录中的题目顺序生成，不合并、不跳过；若某题记录过简，仍保留该题，在「我的答案要点」中注明「记录过简，待补充」。
-3. **评价客观**：优点与不足都要写；不足要对应到「参考答案要点」和「话术示例」中能补上的内容。
-4. **话术可背诵**：话术示例以第一人称、口语化、可直接口述为准，避免书面长句。
-5. **格式与既有复盘一致**：标题层级（## / ###）、表格、`***` 分隔、加粗关键词、专有名词准确（如 Seata、JMeter）。
-6. **默认打标**：把分值和 `【错】` 放进题目标题，便于大纲快速查看；正文中不重复堆砌冗长标签说明。
-7. **不编造**：若记录中完全没有的信息（如公司名、岗位名），用「待补充」或请用户确认，不杜撰。
-8. **一题只保留一份答案**：若用户就某题与 Agent 探讨后要求补充，**根据对话内容生成质量最高的答案**，合并进「参考答案要点」和「话术示例」；用户的话仅作参考，不原封不动照搬，由 Agent 归纳、提质、润色。不新增「复盘整理」「话术自评」等独立块；若复盘里已有此类块，合并进主答案后删除，确保该题最终只有一套参考答案与话术。
+***
 
-## 探讨 vs 写入（重要）
+### IV. Areas to Improve and Blind Spots
 
-- **用户发答案说「看看对不对」「质量怎么样」「跟你探讨」等 = 是在探讨**，不是要求写入复盘文档。
-- **探讨时**：只做评价、给改进建议、讨论对错与质量；**不要**主动把用户原话或整理内容写入/修改复盘文档。
-- **仅在用户明确说**「写入」「补充进复盘」「更新第 N 题」「把这条记进去」等时，才把内容写入复盘文档。
-- 避免「用户一发答案就立刻改文档」的偷懒式处理；先回应讨论，等用户确认要写入再动文档。
+Split into subsections (e.g. 4.1 Technical answers, 4.2 Delivery and structure), listed in tables:
 
-## 可选：与知识笔记规范的关系
+- Question / weakness / content to add (or a "content to add" column).
+- If proper nouns or tool names appear wrong or missing in the records, correct them here and note the right form.
 
-若复盘存放在 `/Volumes/Workspace/notes` 下且用户希望与现有笔记风格统一，可参考 `knowledge-notes` 技能中的格式与用语习惯（如标题层级、表格、无引导语）；本技能以复盘结构为准，格式细节与 knowledge-notes 冲突时，以本技能为准。
+***
 
-## 参考示例
+### V. Follow-up Actions
 
-完整结构示例见 [reference.md](reference.md)，取自同目录下已有复盘文档的章节与格式。
+Split into short-term (for the next round / similar roles), mid-term (knowledge gaps), and resume & scripts; list actionable items as ordered lists.
+
+***
+
+### VI. Summary
+
+2–4 sentences covering: strengths this round, weaknesses, fit with the role, or the next focus.
+
+## Execution Points
+
+1. **Read the records thoroughly first**: distinguish interviewer questions from your answers; if there are timestamps or speaker labels, split by speaker.
+2. **One recap per question**: generate in the order questions appear in the records — never merge or skip. If a question's record is too thin, keep the question and note "Record too brief — to be filled in" under "My Answer Highlights".
+3. **Evaluate objectively**: write both strengths and weaknesses; each weakness must map to content that "Reference Answer Highlights" and "Spoken Script" fill in.
+4. **Scripts must be recitable**: spoken scripts are first-person, conversational, directly speakable — avoid long written-style sentences.
+5. **Format matches existing recaps**: heading levels (## / ###), tables, `***` separators, bolded key terms, accurate proper nouns (e.g. Seata, JMeter).
+6. **Tag by default**: put the score and `[Wrong]` in the question title for quick outline scanning; do not pile lengthy tag explanations into the body.
+7. **Never fabricate**: for information entirely absent from the records (e.g. company name, role name), write "TBD" or ask the user — do not make it up.
+8. **One answer per question**: if the user discusses a question with the agent and asks to supplement, **generate the highest-quality answer from the conversation** and merge it into "Reference Answer Highlights" and "Spoken Script". The user's words are reference only, not copied verbatim — the agent synthesizes, upgrades, and polishes. Do not add standalone blocks like "Recap Notes" or "Script Self-Review"; if the recap already has them, merge into the main answer and delete, so each question ends with exactly one reference answer and script.
+
+## Discussion vs. Writing (Important)
+
+- **When the user sends an answer saying "check if this is right", "how's the quality", "let's discuss", etc. — that is discussion**, not a request to write into the recap document.
+- **During discussion**: only evaluate, suggest improvements, and discuss correctness/quality; do **not** proactively write the user's words or your synthesis into the recap document.
+- **Only when the user explicitly says** "write it in", "add it to the recap", "update question N", "record this one", etc., write the content into the recap document.
+- Avoid the lazy pattern of "user sends an answer → immediately edit the document"; respond to the discussion first and wait for confirmation before touching the file.
+
+## Optional: Relationship to the Knowledge Note Standards
+
+If the recap lives under `/Volumes/Workspace/notes` and the user wants it stylistically unified with the existing notes, refer to the `knowledge-notes` skill's format and phrasing conventions (heading levels, tables, no lead-in phrases). This skill's recap structure takes precedence; where format details conflict with knowledge-notes, this skill wins.
+
+## Reference Example
+
+See [reference.md](reference.md) for the full structural template, drawn from the sections and formatting of existing recap documents.

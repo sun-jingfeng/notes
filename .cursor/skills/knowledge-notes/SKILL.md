@@ -1,218 +1,220 @@
 ---
 name: knowledge-notes
-description: 对 /Volumes/Workspace/notes 中所有笔记相关的操作生效（生成、扩写、修改、润色、补充等）。生成或修改任意笔记时，遵循既有笔记的格式、内容结构与深度。适用于 Java、Spring Boot、数据库、微服务等后端主题及其他技术笔记。
+description: Applies to all note-related operations in /Volumes/Workspace/notes (creating, expanding, editing, polishing, supplementing, etc.). When generating or modifying any note, follow the format, content structure, and depth of the existing notes. Covers Java, Spring Boot, databases, microservices, and other backend/technical topics.
 ---
 
-# 知识笔记生成规范
+# Knowledge Note Standards
 
-**适用范围：** 本规范对**所有与笔记相关的操作**生效，包括但不限于：生成新笔记、扩写、修改、润色、补充段落、整理结构等。只要操作对象是 `/Volumes/Workspace/notes` 下的任意笔记，均需遵循以下规范。
+**Scope:** These standards apply to **all note-related operations**, including but not limited to: creating new notes, expanding, editing, polishing, adding paragraphs, and restructuring. Any operation targeting a note under `/Volumes/Workspace/notes` must follow the rules below.
 
-**理解与执行用户指示：** 收到用户指示时，以理解意图并执行为准，不必逐字保留用户原话；可将用户表述自行替换为更准确、专业的用词后再执行或写入笔记。**当用户提出自己的想法、建议或期望表述时**：仅作参考，根据其要点构建自己的专业表述（术语、表格、结构等），不原封不动照写用户原话。**当用户说「提质」时**：以提升笔记质量为第一目标。可删去价值偏低、可有可无的表述，补充缺失的重要知识点或关键说明；不为了"更短"或"更长"而改。若当前大纲、章节划分或整体结构不利于理解或检索，也可一并优化。
+**Understanding and executing user instructions:** When the user gives an instruction, act on the intent — you do not need to preserve their exact wording. You may replace the user's phrasing with more accurate, professional terminology before executing or writing it into a note. **When the user offers their own ideas, suggestions, or preferred phrasing:** treat it as reference only; build your own professional wording (terminology, tables, structure) from its key points rather than copying the user's words verbatim. **When the user asks to "improve quality":** treat raising note quality as the primary goal. You may remove low-value, dispensable content and add missing important knowledge points or key explanations; do not edit merely to make things shorter or longer. If the current outline, section division, or overall structure hinders comprehension or lookup, you may improve that too.
 
-生成或修改笔记时，严格遵循以下规范，确保与现有笔记的格式、内容表述、深度完全一致。
+When generating or modifying notes, strictly follow the standards below to stay fully consistent with existing notes in format, phrasing, and depth.
 
 ---
 
-## 一、格式规范
+## 1. Format Standards
 
-### 1.1 标题层级
+### 1.1 Heading Levels
 
-**标题从二级开始，深度最深为 3 级**，即只允许使用：**二级（##）、三级（###）、四级（####）** 标题。
+**Headings start at level 2, with a maximum depth of 3 levels** — only **level 2 (##), level 3 (###), and level 4 (####)** headings are allowed.
 
 ```markdown
-## 一、大章节标题（二级，中文数字）
+## I. Chapter Title (level 2, Roman numerals)
 
-### 1.1 小节标题（三级，阿拉伯数字）
+### 1.1 Section Title (level 3, Arabic numerals)
 
-#### 子标题（四级，仅在需要时使用）
+#### Sub-heading (level 4, only when needed)
 ```
 
-- **二级标题**：`## 一、`、`## 二、`（大章节，中文数字）
-- **三级标题**：`### 1.` 或 `### 1.1`（小节，阿拉伯数字）
-- **四级标题**：`####`（子标题，仅在需要时使用）
-- 不要跳级（不能从 `##` 直接到 `####`）
-- 不使用一级标题（`#`），文档标题不算在层级内
-- **编号用整数**：四级标题若带序号，用 `#### 1.`、`#### 2.`、`#### 8.` 等整数编号，不用小数（❌ `#### 7.5`）；新增小节时顺延编号（如原 8 改为 9），不插 7.5 之类
+- **Level-2 headings**: `## I.`, `## II.` (major chapters, Roman numerals)
+- **Level-3 headings**: `### 1.` or `### 1.1` (sections)
+- **Level-4 headings**: `####` (sub-headings, only when needed)
+- Never skip levels (do not jump from `##` straight to `####`)
+- Never use level-1 headings (`#`); the document title does not count in the hierarchy
+- **Use integer numbering**: if a level-4 heading is numbered, use integers like `#### 1.`, `#### 2.`, `#### 8.` — never decimals (❌ `#### 7.5`). When inserting a new section, renumber the following ones (e.g. old 8 becomes 9); do not insert a 7.5-style number.
 
-### 1.2 章节分隔
+> **This repository is English-only.** All new notes and all added or rewritten content are written in English with the numbering above. Legacy notes written in Chinese (`## 一、` headings) remain until touched — when substantially expanding or reworking one, convert it to English and these conventions; do not mix languages within a note.
 
-大章节之间用 `***` 分隔：
+### 1.2 Chapter Separators
+
+Separate major chapters with `***`:
 
 ```markdown
-## 一、概述
+## I. Overview
 
-内容...
+Content...
 
 ***
 
-## 二、核心概念
+## II. Core Concepts
 ```
 
-仅在**最低级标题**内，若包含多个**独立主题块**（如"生产者重连"、"Publisher Confirm"、"Consumer Ack"），各主题块之间也用 `***` 分隔。高级标题的内容已通过子标题分隔，不需要额外加 `***`：
+Only within the **lowest-level heading**, if it contains multiple **independent topic blocks** (e.g. "Producer Reconnect", "Publisher Confirm", "Consumer Ack"), also separate those blocks with `***`. Higher-level headings are already separated by their sub-headings and do not need extra `***`:
 
 ```markdown
-#### 6. 消息可靠性
+#### 6. Message Reliability
 
-**生产者重连：**
+**Producer Reconnect:**
 
-内容...
+Content...
 
 ***
 
-**Publisher Confirm（发送确认）：**
+**Publisher Confirm:**
 
-内容...
+Content...
 
 ***
 
-**Consumer Ack（消费确认）：**
+**Consumer Ack:**
 
-内容...
+Content...
 ```
 
-### 1.3 表格
+### 1.3 Tables
 
-频繁使用表格归纳、对比，表格中关键词加粗：
+Use tables frequently to summarize and compare; bold the key terms in table cells:
 
 ```markdown
-| 对比项     | 异常（Exception） | 错误（Error）    |
-| ---------- | ----------------- | ---------------- |
-| **定义**   | 程序可以处理的问题 | 程序无法处理的问题 |
-| **处理**   | 可以捕获并处理     | 无法处理，只能避免 |
+| Aspect       | Exception                        | Error                              |
+| ------------ | -------------------------------- | ---------------------------------- |
+| **Definition** | A problem the program can handle | A problem the program cannot handle |
+| **Handling** | Can be caught and handled        | Cannot be handled; only avoided    |
 ```
 
-### 1.4 代码块
+### 1.4 Code Blocks
 
-- 始终带语言标识（java、xml、bash、sql、yaml）
-- 代码内写注释说明关键步骤
-- 用 `// ❌` 标注错误用法，`// ✅` 标注正确用法
-- 长代码用分隔注释划分区域
+- Always include a language identifier (java, xml, bash, sql, yaml)
+- Comment the key steps inside the code
+- Mark wrong usage with `// ❌` and correct usage with `// ✅`
+- Use separator comments to divide regions in long code
 
 ```java
 public class Demo {
-    // ========== 成员变量 ==========
+    // ========== Fields ==========
     private String name;
     
     public void test() {
-        // name = name;       // ❌ 错误！自己赋值给自己
-        this.name = name;     // ✅ 正确！this.name 是成员变量
+        // name = name;       // ❌ Wrong! Assigns the parameter to itself
+        this.name = name;     // ✅ Correct! this.name is the field
     }
 }
 ```
 
-### 1.5 流程/继承关系图
+### 1.5 Flow / Inheritance Diagrams
 
-**方式一**：缩进 + 箭头（流程）
+**Style 1**: indentation + arrows (flows)
 
 ```markdown
-    客户端发送请求
+    Client sends request
         ↓
-    DispatcherServlet 接收
+    DispatcherServlet receives it
         ↓
-    返回响应
+    Response returned
 ```
 
-**方式二**：树形结构（继承/目录）
+**Style 2**: tree structure (inheritance / directories)
 
 ```markdown
     java.lang.Throwable
         │
-        ├── Error（错误）
+        ├── Error
         │       ├── OutOfMemoryError
         │       └── StackOverflowError
         │
-        └── Exception（异常）
+        └── Exception
                 ├── RuntimeException
                 └── IOException
 ```
 
-**方式三**：行内箭头（简短流程）
+**Style 3**: inline arrows (short flows)
 
 ```markdown
-注册驱动 → 获取连接 → 执行SQL → 处理结果 → 释放资源
+Register driver → Get connection → Execute SQL → Process results → Release resources
 ```
 
-### 1.6 强调与标注
+### 1.6 Emphasis and Markup
 
-- **粗体**：强调关键概念、术语
-- `行内代码`：标注代码、命令、注解、类名
-- `**粗体** + 行内代码`组合：`**Spring Boot**` 是...
+- **Bold**: emphasize key concepts and terms
+- `Inline code`: mark code, commands, annotations, class names
+- Combine `**bold** + inline code`: `**Spring Boot**` is...
 
-### 1.7 提示与符号
+### 1.7 Tips and Symbols
 
 ```markdown
-> 💡 提示内容写在这里
+> 💡 Tip content goes here
 
-> **注意**：重要提醒写在这里
+> **Note**: important reminders go here
 ```
 
-常用符号：
-- `❌` 错误/不推荐
-- `✅` 正确/推荐
-- `💡` 提示
+Common symbols:
+- `❌` wrong / not recommended
+- `✅` correct / recommended
+- `💡` tip
 
 ---
 
-## 二、内容表述规范
+## 2. Content Expression Standards
 
-### 2.1 概念引入模式
+### 2.1 Concept Introduction Pattern
 
-每个新概念遵循固定模式：
+Introduce every new concept in a fixed pattern:
 
-**① 一句话定义**（粗体标注核心词）
-
-```markdown
-**AOP（Aspect Oriented Programming）** 面向切面编程，是一种编程范式，用于将横切关注点从业务逻辑中分离出来。
-```
-
-**② 核心思想**（可选，一句话概括）
+**① One-sentence definition** (bold the core term)
 
 ```markdown
-**核心思想：** 在不修改原有代码的情况下，对功能进行增强。
+**AOP (Aspect Oriented Programming)** is a programming paradigm that separates cross-cutting concerns from business logic.
 ```
 
-**③ 表格归纳特点/对比**
+**② Core idea** (optional, one-sentence summary)
 
 ```markdown
-| 特点         | 说明                        |
-| ------------ | --------------------------- |
-| **声明式编程** | 告诉"做什么"，而不是"怎么做" |
-| **链式调用**   | 多个操作可以链接在一起       |
+**Core idea:** enhance functionality without modifying the original code.
 ```
 
-**④ 代码示例**
-
-**⑤ 应用场景/注意事项**（可选）
-
-### 2.2 对比模式
-
-频繁使用对比来解释概念：
-
-**传统方式 vs 新方式**
+**③ Table summarizing traits / comparisons**
 
 ```markdown
-### 2. 传统方式 vs Stream 流
-
-| 方式       | 特点             |
-| ---------- | ---------------- |
-| 传统方式   | 代码繁琐、命令式 |
-| Stream 流  | 代码简洁、声明式 |
+| Trait                   | Description                                |
+| ----------------------- | ------------------------------------------ |
+| **Declarative style**   | Says *what* to do, not *how* to do it      |
+| **Method chaining**     | Multiple operations can be chained together |
 ```
 
-**两种方案对比**
+**④ Code example**
+
+**⑤ Use cases / caveats** (optional)
+
+### 2.2 Comparison Pattern
+
+Use comparisons frequently to explain concepts:
+
+**Traditional vs. new approach**
 
 ```markdown
-| 对比项   | JDBC           | MyBatis        |
-| -------- | -------------- | -------------- |
-| 代码量   | 大量重复代码   | 大幅减少       |
-| SQL 编写 | 硬编码在 Java 中 | 独立在 XML/注解 |
+### 2. Traditional Approach vs. Streams
+
+| Approach    | Traits                    |
+| ----------- | ------------------------- |
+| Traditional | Verbose, imperative       |
+| Streams     | Concise, declarative      |
 ```
 
-### 2.3 代码示例风格
+**Two-option comparison**
 
-**完整可运行**：示例代码应该完整，能直接运行或复制使用
+```markdown
+| Aspect        | JDBC                    | MyBatis                    |
+| ------------- | ----------------------- | -------------------------- |
+| Code volume   | Lots of boilerplate     | Greatly reduced            |
+| SQL authoring | Hard-coded in Java      | Separate XML / annotations |
+```
 
-**详细注释**：每个关键步骤都有注释
+### 2.3 Code Example Style
+
+**Complete and runnable**: examples should be complete enough to run or copy directly
+
+**Thoroughly commented**: every key step has a comment
 
 ```java
 public class TransactionDemo {
@@ -221,49 +223,49 @@ public class TransactionDemo {
         try {
             conn = DriverManager.getConnection(url, user, pwd);
             
-            // 1. 关闭自动提交（开启事务）
+            // 1. Disable auto-commit (start the transaction)
             conn.setAutoCommit(false);
             
-            // 2. 执行多条 SQL
+            // 2. Execute multiple SQL statements
             // ...
             
-            // 3. 提交事务
+            // 3. Commit the transaction
             conn.commit();
             
         } catch (Exception e) {
-            // 4. 回滚事务
+            // 4. Roll back the transaction
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) {}
         }
     }
 }
 ```
 
-**代码后总结**：代码示例后用表格总结关键方法/属性
+**Summary after code**: follow code examples with a table summarizing the key methods/properties
 
 ```markdown
-| 方法                     | 说明          |
-| ------------------------ | ------------- |
-| `setAutoCommit(false)`   | 关闭自动提交  |
-| `commit()`               | 提交事务      |
-| `rollback()`             | 回滚事务      |
+| Method                   | Description               |
+| ------------------------ | ------------------------- |
+| `setAutoCommit(false)`   | Disables auto-commit      |
+| `commit()`               | Commits the transaction   |
+| `rollback()`             | Rolls back the transaction |
 ```
 
-### 2.4 ASCII 图示
+### 2.4 ASCII Diagrams
 
-用于架构、对比、内存模型：
+Used for architecture, comparisons, and memory models:
 
 ```markdown
     ┌─────────────────────────────────────────────────────────────┐
-    │                        传统方式（代码侵入）                    │
+    │              Traditional approach (invasive code)            │
     │  public void transfer() {                                   │
-    │      log.info("开始转账");           // 日志                 │
-    │      // 核心业务逻辑                                         │
+    │      log.info("Transfer started");   // logging             │
+    │      // core business logic                                 │
     │      accountDao.decrease(from, money);                      │
     │  }                                                          │
     ├─────────────────────────────────────────────────────────────┤
-    │                        AOP 方式（解耦）                       │
+    │                    AOP approach (decoupled)                  │
     │  public void transfer() {                                   │
-    │      // 只关注核心业务逻辑                                    │
+    │      // only the core business logic                        │
     │      accountDao.decrease(from, money);                      │
     │  }                                                          │
     └─────────────────────────────────────────────────────────────┘
@@ -271,180 +273,182 @@ public class TransactionDemo {
 
 ---
 
-## 三、内容深度规范
+## 3. Content Depth Standards
 
-### 3.1 深度定位
+### 3.1 Depth Positioning
 
-- **偏实战、快速上手**：重点在"怎么用"
-- **底层原理点到为止**：提及但不深入，可标注"（了解即可）"
-- **不堆砌理论**：每段文字都要有实际用途
+- **Practical, quick-start oriented**: focus on "how to use it"
+- **Touch on internals lightly**: mention but don't dive deep; may mark as "(awareness is enough)"
+- **No theory dumping**: every paragraph must serve a practical purpose
 
-### 3.2 知识点组织
+### 3.2 Knowledge Organization
 
-每个主题按以下顺序组织：
+Organize every topic in this order:
 
 ```
-概念介绍（是什么）
+Concept (what it is)
     ↓
-快速入门（怎么用 - 最简单的例子）
+Quick start (how to use it — the simplest example)
     ↓
-详细用法（各种场景）
+Detailed usage (various scenarios)
     ↓
-进阶/最佳实践（可选）
+Advanced / best practices (optional)
     ↓
-常见问题/注意事项（可选）
+Common issues / caveats (optional)
 ```
 
-### 3.3 实用性导向
+### 3.3 Practicality First
 
-**应用场景表格**：
+**Use-case tables**:
 
 ```markdown
-| 场景         | 说明                               |
-| ------------ | ---------------------------------- |
-| **日志记录** | 记录方法调用、参数、返回值、耗时   |
-| **事务管理** | 统一管理数据库事务                 |
+| Scenario                  | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| **Logging**               | Record method calls, arguments, return values, timing |
+| **Transaction management** | Manage database transactions in one place         |
 ```
 
-**推荐/不推荐**：
+**Recommended / not recommended**:
 
 ```markdown
-**推荐用法：**
-- 使用 `@GetMapping` 代替 `@RequestMapping(method = GET)`
+**Recommended:**
+- Use `@GetMapping` instead of `@RequestMapping(method = GET)`
 
-**不推荐：**
-- 直接拼接 SQL 字符串（有 SQL 注入风险）
+**Not recommended:**
+- Concatenating SQL strings directly (SQL injection risk)
 ```
 
-**方式选择指导**：
+**Choice guidance**:
 
 ```markdown
-**方式一：Spring Initializr（推荐）**
-- 访问 https://start.spring.io/
+**Option 1: Spring Initializr (recommended)**
+- Visit https://start.spring.io/
 
-**方式二：IDEA 创建**
+**Option 2: Create in IDEA**
 - IDEA → New Project → Spring Initializr
 ```
 
-### 3.4 补充说明风格
+### 3.4 Parenthetical Notes
 
-用括号补充说明：
+Use parentheses for supplementary notes:
 
 ```markdown
-- MyBatis（半自动 ORM，需要写 SQL）
-- JPA（全自动 ORM，无需写 SQL）
-- 添加依赖（Spring Boot 会自动启用，无需额外配置）
-- Eureka 服务注册（可选了解 / Netflix 方案）
+- MyBatis (semi-automatic ORM; you write the SQL)
+- JPA (fully automatic ORM; no SQL needed)
+- Add the dependency (Spring Boot enables it automatically; no extra config)
+- Eureka service registry (optional / the Netflix option)
 ```
 
-### 3.5 依资料补充时的质量优先
+### 3.5 Quality First When Supplementing from Source Material
 
-按 PDF、PPT、教材等外部资料补充笔记时：
+When supplementing notes from PDFs, slide decks, textbooks, or other external material:
 
-- **优先保证笔记质量**：若资料中某段内容表述不清、技术已过时或与当前最佳实践不符，应用更准确、更新的表述或示例**替代**，而不是照抄。
-- **可替换的情况**：表述含糊、依赖旧版本 API、示例不可运行、术语与现有笔记不一致、明显错误等。
-- **仍可保留的情况**：资料仅作提纲或目录参考时，按提纲补全即可；或资料本身准确且与笔记风格一致时，可沿用并做格式统一。
-
----
-
-## 四、语言风格
-
-### 4.1 简洁口语化
-
-- 不用"我们"、"您"
-- 不用"接下来"、"首先...然后..."等过渡词
-- 直接陈述
-
-### 4.2 不写引导话语
-
-笔记直接写概念与步骤，不写「接下来我要……」「下面我们……」「下面介绍……」等引导句。
-
-- ❌ "下面介绍两种常见的……"、"下面用 XX 手写一遍，便于理解……"、"本节先说明……再给出……"
-- ❌ 表格或代码前单独用「使用步骤：」作前缀（步骤内容直接写 ① ② ③ 即可）
-- ❌ 代码块前单独写「示例：」「下面示例中：」「下面为……示例」；可改为直接陈述后接代码，或「见下表」「常用断言见下表」等
-- ✅ 直接陈述要点，必要时用「见下表」引出表格、用一句话说明后接代码
-
-### 4.3 中英混排
-
-- 中文为主
-- 专有名词保留英文：Spring Boot、MyBatis、Controller、Bean
-- 首次出现可加中文：**AOP（Aspect Oriented Programming）** 面向切面编程
-
-### 4.4 术语一致
-
-与现有笔记保持一致：
-- 起步依赖（不是"启动器依赖"）
-- 自动配置（不是"自动装配"）
-- 服务注册发现（不是"服务发现与注册"）
-- 切入点（不是"切点"）
-
-### 4.5 不用个性化表达，采用通用表达
-
-举例、示例中避免使用单一项目或业务特有的名称（如 `order-service`、`cart-service`、某具体模块名），改用**通用占位或抽象表述**：
-
-- ✅ 使用占位：`<服务名>`、`<profile>`、`xxx-service`、`{服务名}-dev.yaml`
-- ❌ 避免仅用某一具体项目名作唯一示例：如 `order-service-dev.yaml`（若全文仅此一例且易被理解为"只适用于订单服务"）
-
-**代码示例同样适用此规则：**
-
-- ✅ 类名、方法名、变量名使用通用名称：`DemoService`、`BizService`、`queryById`、`handleMessage`、`simple.queue`、`demo.exchange`
-- ✅ 参数和返回值使用通用类型：`String message`、`Long id`、`Object data`
-- ❌ 避免全篇示例绑定同一业务域：如全部使用 `OrderService`、`StockClient`、`order.queue`、`Order order`（让人以为笔记只适用于电商系统）
-- ❌ 避免在代码中出现特定业务逻辑：如 `stockService.deduct(order.getProductId())`、`accountClient.debit()`
-
-规则：示例、公式说明、命名规则、代码示例等处，**用通用表达可覆盖任意项目**，不绑定到某个具体业务名。
-
-### 4.6 不出现引用类描述
-
-笔记内容**自洽、独立**，不要出现任何引用类描述：
-
-**① 不引用其他笔记**
-- ❌ "详见《XXX》笔记"、"参考《YYY》文档"
-- ❌ "在 ZZ 中有详细说明"、"参见另一篇笔记"
-- ❌ "相关内容见 xxx/yyy/xxx.md"
-
-**② 不引用本篇内其他章节**
-- ❌ "详见上文"、"参见 1.2 节"、"在第二章中已说明"
-- ❌ "如下一节所述"、"见上文表格"
-
-需要说明的知识点**在当下位置直接写清**，不通过「见某笔记/某节」的方式跳转。
+- **Prioritize note quality**: if some content in the material is unclear, technically outdated, or conflicts with current best practices, **replace** it with a more accurate, up-to-date explanation or example rather than copying it.
+- **When to replace**: vague wording, reliance on old API versions, non-runnable examples, terminology inconsistent with existing notes, obvious errors, etc.
+- **When to keep**: when the material serves only as an outline/table of contents, fill in the content following the outline; or when the material is accurate and matches the note style, reuse it with formatting normalized.
 
 ---
 
-## 五、完整示例
+## 4. Language Style
+
+### 4.1 Concise and Direct
+
+- Do not write "we" or address the reader as "you"
+- Do not use transition words like "next", "first... then..."
+- State things directly
+
+### 4.2 No Lead-in Phrases
+
+Notes state concepts and steps directly — never write lead-in sentences like "Next, I'll...", "Below we will...", or "The following introduces...".
+
+- ❌ "The following introduces two common ways to...", "Let's hand-write XX below to aid understanding...", "This section first explains... then presents..."
+- ❌ A standalone "Steps:" prefix before a table or code block (just write the steps directly as ① ② ③)
+- ❌ A standalone "Example:" or "In the example below:" before a code block; instead state the point directly and follow with the code, or use "see the table below", "common assertions are listed below", etc.
+- ✅ State the point directly; when needed, use "see the table below" to introduce a table, or one explanatory sentence followed by the code
+
+The same applies at the end of a note and to meta-narration:
+
+- ❌ Advisory or retrospective closers: "Study suggestions", "Next steps", "Recap of this note", "Summary" sections that merely restate content
+- ❌ Author-process or conversational meta-narration: "let's look at...", "this part is easy to get confused by...", "the reason I changed it this way is..."
+- ✅ Notes contain knowledge content only
+
+### 4.3 Language
+
+- Write notes in English
+- Keep proper nouns in their standard form: Spring Boot, MyBatis, Controller, Bean
+- Expand acronyms on first occurrence: **AOP (Aspect Oriented Programming)**
+
+### 4.4 Consistent Terminology
+
+Use each technology's official terminology, and use the same term for the same concept across all notes — never alternate between synonyms (e.g. pick one of "starter dependency" / "starter" and stick with it; "auto-configuration", "service registration and discovery", "pointcut" as Spring documents them). Before introducing a term, check how existing notes name it and follow suit.
+
+### 4.5 Generic Expressions, Not Project-Specific Ones
+
+In examples and illustrations, avoid names specific to a single project or business domain (e.g. `order-service`, `cart-service`, a specific module name). Use **generic placeholders or abstract terms** instead:
+
+- ✅ Placeholders: `<service-name>`, `<profile>`, `xxx-service`, `{service-name}-dev.yaml`
+- ❌ Avoid using one specific project name as the only example: e.g. `order-service-dev.yaml` (if it's the only example, readers may think the rule applies only to an order service)
+
+**The same rule applies to code examples:**
+
+- ✅ Use generic class/method/variable names: `DemoService`, `BizService`, `queryById`, `handleMessage`, `simple.queue`, `demo.exchange`
+- ✅ Use generic parameter and return types: `String message`, `Long id`, `Object data`
+- ❌ Avoid binding all examples to one business domain: e.g. using `OrderService`, `StockClient`, `order.queue`, `Order order` throughout (makes the note look e-commerce-only)
+- ❌ Avoid domain-specific business logic in code: e.g. `stockService.deduct(order.getProductId())`, `accountClient.debit()`
+
+Rule: in examples, formula explanations, naming rules, and code samples, **use generic expressions that apply to any project** — never bind to a specific business name.
+
+### 4.6 No Cross-References
+
+Note content must be **self-contained and independent** — never include reference-style phrasing:
+
+**① No references to other notes**
+- ❌ "See the XXX note for details", "refer to the YYY document"
+- ❌ "Explained in detail in ZZ", "see another note"
+- ❌ "Related content in xxx/yyy/xxx.md"
+
+**② No references to other sections in the same note**
+- ❌ "See above for details", "see section 1.2", "already explained in chapter 2"
+- ❌ "As described in the next section", "see the table above"
+
+Whatever needs explaining must be **written out in place** — never via a "see note X / section Y" jump.
+
+---
+
+## 5. Full Example
 
 ```markdown
-## 一、AOP 概述
+## I. AOP Overview
 
-### 1.1 什么是 AOP
+### 1.1 What Is AOP
 
-**AOP（Aspect Oriented Programming）** 面向切面编程，是一种编程范式，用于将横切关注点（如日志、事务、权限）从业务逻辑中分离出来。
+**AOP (Aspect Oriented Programming)** is a programming paradigm that separates cross-cutting concerns (such as logging, transactions, and permissions) from business logic.
 
-**核心思想：** 在不修改原有代码的情况下，对功能进行增强。
+**Core idea:** enhance functionality without modifying the original code.
 
-### 1.2 核心概念
+### 1.2 Core Concepts
 
-| 概念               | 说明                               | 示例                     |
-| ------------------ | ---------------------------------- | ------------------------ |
-| **切面（Aspect）** | 封装横切关注点的类                 | 日志切面、事务切面       |
-| **切入点（Pointcut）** | 定义哪些方法会被增强           | `execution(* com.example.*.*(..))` |
-| **通知（Advice）** | 切面在特定连接点执行的动作         | 前置通知、环绕通知       |
-
-***
-
-### 1.3 应用场景
-
-| 场景         | 说明                             |
-| ------------ | -------------------------------- |
-| **日志记录** | 记录方法调用、参数、返回值       |
-| **事务管理** | 统一管理数据库事务               |
-| **权限校验** | 检查用户是否有权限执行某操作     |
+| Concept        | Description                                    | Example                            |
+| -------------- | ---------------------------------------------- | ---------------------------------- |
+| **Aspect**     | A class encapsulating a cross-cutting concern  | Logging aspect, transaction aspect |
+| **Pointcut**   | Defines which methods get enhanced             | `execution(* com.example.*.*(..))` |
+| **Advice**     | The action an aspect performs at a join point  | Before advice, around advice       |
 
 ***
 
-## 二、Spring AOP 基础
+### 1.3 Use Cases
 
-### 2.1 添加依赖
+| Scenario                  | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| **Logging**               | Record method calls, arguments, return values   |
+| **Transaction management** | Manage database transactions in one place      |
+| **Permission checks**     | Verify the user may perform an operation        |
+
+***
+
+## II. Spring AOP Basics
+
+### 2.1 Add the Dependency
 
 \`\`\`xml
 <dependency>
@@ -453,49 +457,49 @@ public class TransactionDemo {
 </dependency>
 \`\`\`
 
-> 💡 Spring Boot 会自动启用 AOP，无需额外配置。
+> 💡 Spring Boot enables AOP automatically; no extra configuration needed.
 
-### 2.2 快速入门
+### 2.2 Quick Start
 
 \`\`\`java
-@Aspect      // 声明这是一个切面类
-@Component   // 必须配合 @Component，让 Spring 管理
+@Aspect      // Declares this class as an aspect
+@Component   // Must pair with @Component so Spring manages it
 public class LogAspect {
 
-    // 定义切入点
+    // Define the pointcut
     @Pointcut("execution(* com.example.service.*.*(..))")
     public void servicePointcut() {}
 
-    // 前置通知
+    // Before advice
     @Before("servicePointcut()")
     public void before(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
-        log.info("方法执行前: {}", methodName);
+        log.info("Before method: {}", methodName);
     }
 }
 \`\`\`
 
-| 注解        | 说明                               |
-| ----------- | ---------------------------------- |
-| `@Aspect`   | 声明当前类是一个切面类             |
-| `@Pointcut` | 定义切入点，指定哪些方法会被增强   |
-| `@Before`   | 前置通知，在目标方法执行前执行     |
+| Annotation  | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `@Aspect`   | Declares the class as an aspect                      |
+| `@Pointcut` | Defines the pointcut — which methods get enhanced    |
+| `@Before`   | Before advice — runs before the target method        |
 ```
 
 ---
 
-## 六、生成前检查清单
+## 6. Pre-generation Checklist
 
-生成笔记前，确认：
+Before generating a note, confirm:
 
-- [ ] 标题层级正确（从二级开始，仅用 ## / ### / ####；`##` 用中文数字，`###` 用阿拉伯数字；序号用整数，不用 7.5 之类小数）
-- [ ] 大章节间有 `***` 分隔
-- [ ] 概念有一句话定义 + 表格归纳
-- [ ] 代码完整可运行，有注释
-- [ ] 关键词加粗，代码用行内代码标注
-- [ ] 有对比、有表格、有示例
-- [ ] 深度适中，偏实战
-- [ ] 术语与现有笔记一致
-- [ ] 无引导话语（不用「接下来」「下面介绍」「使用步骤：」「示例：」等，直接陈述）
-- [ ] 无引用类描述（不引用其他笔记，也不引用本篇内其他章节）
-- [ ] 依 PDF/PPT 等补充时：若资料质量差或技术老旧，已用更高质量或更新的内容替代
+- [ ] Heading levels are correct (start at level 2; only ## / ### / ####; `##` uses Roman numerals, `###` uses Arabic numerals; integer numbering only, no 7.5-style decimals)
+- [ ] Major chapters separated by `***`
+- [ ] Every concept has a one-sentence definition + summary table
+- [ ] Code is complete, runnable, and commented
+- [ ] Key terms bolded; code marked with inline code
+- [ ] Includes comparisons, tables, and examples
+- [ ] Depth is moderate and practice-oriented
+- [ ] Terminology consistent with existing notes
+- [ ] No lead-in phrases (no "next", "the following introduces", "Steps:", "Example:" — state directly)
+- [ ] No cross-references (neither to other notes nor to other sections of the same note)
+- [ ] When supplementing from PDF/slides etc.: low-quality or outdated material has been replaced with better, up-to-date content

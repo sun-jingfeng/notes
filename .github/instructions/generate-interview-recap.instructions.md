@@ -1,67 +1,67 @@
 ---
-description: "Use when the user asks for 面试复盘, 一面复盘, 面试总结, or wants a recap generated from interview transcript/Q&A notes."
+description: "Use when the user asks for an interview recap, first-round recap, or interview summary, or wants a recap generated from an interview transcript / Q&A notes."
 name: "Generate Interview Recap"
 ---
 
-# 面试复盘生成规范
+# Interview Recap Standards
 
-从原始面试记录（逐字稿、Q&A 笔记、录音转写）生成结构化复盘，章节顺序固定。
+Generate a structured recap from raw interview records (verbatim transcript, Q&A notes, audio transcription), with a fixed chapter order. Recaps live under `4-其他/求职/面试/面试记录/{YY.M}/{D}/`.
 
-## 一、面试基本信息
+## I. Interview Basics
 
-- 使用表格：公司、岗位、时间、面试官、形式。
-- 缺失字段写“待补充”或标注“根据上下文推断”。
-- 默认文件命名使用“{轮次}-复盘.md”，不要自动在文件名后加“（完）”；该标记仅由用户后续手动维护。
-
----
-
-## 二、逐题复盘
-
-每题使用三级标题：### N. 题目简短标题。
-当用户明确要求评分或打标时，可在标题后追加 `【7 分】`、`【7.5 分】`；若答案存在明确错误内容，可再追加 `【错】`。
-每题按固定顺序输出：
-
-- 问题
-- 我的答案要点
-- 评价（优点/不足）
-- 参考答案要点
-- 话术示例（第一人称、口语化、可直接口述）
-
-若标题带 `【错】`，需在该题正文里补一行 `**错误点**：...`，简短写清错在哪。
-
-要求：
-
-- 按原题顺序逐题复盘，不跳题、不合题。
-- 记录过简时保留该题，并写“记录过简，待补充”。
-- 不编造缺失事实信息。
+- Use a table: Company, Role, Date/Time, Interviewer, Format.
+- Write "TBD" for missing fields, or mark values as inferred from context.
+- Name new files `recap.md` / `record.txt` (`recap2.md` / `record2.txt` for multiple sessions on the same day); never auto-append a "(done)" suffix — the user maintains that marker manually. Legacy files named `复盘.md` / `记录.txt` stay as they are.
 
 ---
 
-## 三、表现好的地方
+## II. Question-by-Question Recap
 
-- 用表格归纳优势点与说明。
+Each question uses a level-3 heading: `### N. Short question title`.
+Every title gets a score tag by default: `[7 pts]`, `[7.5 pts]`; add `[Wrong]` only when the answer contains a clear factual, conceptual, or terminology error. No other tags.
+Each question outputs these blocks in fixed order:
+
+- Question
+- My Answer Highlights
+- Evaluation (strengths / weaknesses)
+- Reference Answer Highlights
+- Spoken Script (first person, conversational, directly speakable)
+
+If a title carries `[Wrong]`, add one line `**Error:** ...` in the body stating briefly what was wrong.
+
+Requirements:
+
+- Recap questions in original order — never skip or merge.
+- If a record is too thin, keep the question and write "Record too brief — to be filled in".
+- Never fabricate missing factual information.
 
 ---
 
-## 四、待改进与盲区
+## III. What Went Well
 
-- 分技术回答、表达结构等小节。
-- 用表格列出问题、不足、可补内容。
-
----
-
-## 五、后续行动
-
-- 用有序列表给出短期、中期、简历与话术改进动作。
+- Summarize strengths and notes in a table.
 
 ---
 
-## 六、小结
+## IV. Areas to Improve and Blind Spots
 
-- 2 到 4 句总结优势、短板、下一步重点。
+- Split into subsections such as technical answers, delivery and structure.
+- Use tables listing question, weakness, content to add.
 
-## 探讨与写入分离
+---
 
-- 用户说“看看对不对/讨论一下”属于探讨：只评价和建议，不改文档。
-- 仅当用户明确说“写入/补充进复盘/更新第 N 题”时，才修改复盘文档。
-- 若针对同一题有多轮讨论，最终只保留一份高质量“参考答案要点 + 话术示例”。
+## V. Follow-up Actions
+
+- Ordered lists of short-term, mid-term, and resume/script improvement actions.
+
+---
+
+## VI. Summary
+
+- 2–4 sentences on strengths, gaps, and the next focus.
+
+## Discussion vs. Writing
+
+- "Check if this is right / let's discuss" is discussion: evaluate and suggest only; do not edit the document.
+- Only modify the recap when the user explicitly says "write it in / add to the recap / update question N".
+- After multiple discussion rounds on one question, keep exactly one high-quality "Reference Answer Highlights + Spoken Script" — merge and delete any duplicates.

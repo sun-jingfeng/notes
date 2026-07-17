@@ -1,6 +1,8 @@
 # Notes Repository
 
-Personal technical notes repository (Java, Spring Boot, databases, microservices, frontend, etc.) — not a code project. Work in English; legacy notes were written in Chinese, and when editing one in place, keep its existing conventions.
+Personal technical notes repository (Java, Spring Boot, databases, microservices, frontend, etc.) — not a code project.
+
+**This repository is English-only.** Converse in English; write all new notes, recaps, and documents in English. Legacy Chinese notes remain until touched — when substantially expanding or reworking one, convert it to English; do not mix languages within a note.
 
 ## Skill Routing (Important)
 

@@ -34,7 +34,7 @@ When generating or modifying notes, strictly follow the standards below to stay 
 - Never use level-1 headings (`#`); the document title does not count in the hierarchy
 - **Use integer numbering**: if a level-4 heading is numbered, use integers like `#### 1.`, `#### 2.`, `#### 8.` — never decimals (❌ `#### 7.5`). When inserting a new section, renumber the following ones (e.g. old 8 becomes 9); do not insert a 7.5-style number.
 
-> Legacy notes in this repo were written in Chinese and use Chinese numerals for level-2 headings (`## 一、`). When editing a Chinese note in place, keep its existing conventions; new notes are written in English with the numbering above.
+> **This repository is English-only.** All new notes and all added or rewritten content are written in English with the numbering above. Legacy notes written in Chinese (`## 一、` headings) remain until touched — when substantially expanding or reworking one, convert it to English and these conventions; do not mix languages within a note.
 
 ### 1.2 Chapter Separators
 
@@ -365,6 +365,12 @@ Notes state concepts and steps directly — never write lead-in sentences like "
 - ❌ A standalone "Steps:" prefix before a table or code block (just write the steps directly as ① ② ③)
 - ❌ A standalone "Example:" or "In the example below:" before a code block; instead state the point directly and follow with the code, or use "see the table below", "common assertions are listed below", etc.
 - ✅ State the point directly; when needed, use "see the table below" to introduce a table, or one explanatory sentence followed by the code
+
+The same applies at the end of a note and to meta-narration:
+
+- ❌ Advisory or retrospective closers: "Study suggestions", "Next steps", "Recap of this note", "Summary" sections that merely restate content
+- ❌ Author-process or conversational meta-narration: "let's look at...", "this part is easy to get confused by...", "the reason I changed it this way is..."
+- ✅ Notes contain knowledge content only
 
 ### 4.3 Language
 

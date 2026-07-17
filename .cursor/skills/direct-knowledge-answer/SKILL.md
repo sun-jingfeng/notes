@@ -1,21 +1,21 @@
 ---
 name: direct-knowledge-answer
-description: When the user asks a direct knowledge or concept question (e.g. "X 和 Y 的区别？", "什么是 Z？") without asking to create, edit, or look up notes, answer from general knowledge only. Do not search the notes workspace or modify any note files.
+description: When the user asks a direct knowledge or concept question (e.g. "What's the difference between X and Y?", "What is Z?") without asking to create, edit, or look up notes, answer from general knowledge only. Do not search the notes workspace or modify any note files.
 ---
 
-# 直接知识点问答
+# Direct Knowledge Q&A
 
-## 何时生效
+## When This Applies
 
-用户**直接问知识点、概念、区别、用法**等，且**没有**要求查笔记、写笔记、改笔记、补充笔记时。
+The user **directly asks about a knowledge point, concept, difference, or usage**, and does **not** ask to look up, write, edit, or supplement notes.
 
-## 行为要求
+## Required Behavior
 
-- **只作答**：用已有知识直接回答，不查笔记、不改笔记。
-- **不触发笔记相关技能**：不因为用户在 notes 项目里就默认去查/改笔记。
-- **不读笔记文件**：除非用户明确说「查一下我笔记」「根据笔记」「补充到笔记」等，否则不读取 `*.md` 等笔记内容。
+- **Answer only**: respond from existing knowledge; do not read or modify notes.
+- **Do not trigger note-related skills**: being inside the notes project does not mean note lookup/editing is the default.
+- **Do not read note files**: unless the user explicitly says something like "check my notes", "based on my notes", or "add this to my notes", do not read `*.md` or other note content.
 
-## 示例
+## Examples
 
-- 用户：「StringBuilder 和 StringBuffer 的 API 都一样吗？」→ 直接回答知识点，不查、不改 `11-字符串.md` 等。
-- 用户：「把这段话整理成笔记」/「补充到我的字符串笔记」→ 需要查、改笔记，此时才应用笔记相关规范。
+- User: "Do StringBuilder and StringBuffer have the same API?" → Answer directly; do not read or modify `11-字符串.md` or similar.
+- User: "Turn this into a note" / "Add this to my strings note" → This requires reading/modifying notes; only then do the note standards apply.
