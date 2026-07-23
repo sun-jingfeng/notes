@@ -147,6 +147,57 @@ var u uint = uint(f)         // ✅
 
 > 💡 Removing implicit conversion avoids precision loss and surprises—every conversion is visible.
 
+### 3.3 String and Composite Type Conversion
+
+The conversion syntax `T(v)` is not limited to numeric types; it works between any two types the language defines as convertible. The most common non-numeric case is **string ↔ byte/rune slice**.
+
+```go
+msg := "hello"
+
+b := []byte(msg)      // string → []byte (byte sequence)
+s := string(b)        // []byte → string
+
+r := []rune("你好Go")  // string → []rune (Unicode code points)
+s2 := string(r)       // []rune → string
+
+// Typical use: I/O APIs take []byte, not string
+conn.Write([]byte(msg + "\n"))
+```
+
+| Conversion | Result | Note |
+| ---- | ---- | ---- |
+| `[]byte(s)` | Byte sequence of the string | One Chinese character occupies 3 bytes (UTF-8) |
+| `[]rune(s)` | Unicode code points | One Chinese character counts as 1 rune |
+| `string(b)` / `string(r)` | New string | Copies the data back |
+
+> **Note**: These conversions **copy the underlying data**—strings are immutable while slices are mutable, so they cannot share memory. Avoid repeated conversions in hot paths.
+
+Other convertible cases (see the table below):
+
+| Case | Example | Description |
+| ---- | ---- | ---- |
+| **Named type ↔ underlying type** | `type MyInt int` → `MyInt(5)`, `int(m)` | Same underlying type converts freely |
+| **Structs with identical fields** | `PointA(pointB)` | Field names and types must match exactly |
+| **Slices with the same element type** | `type IDs []int` → `IDs([]int{1, 2})` | Element type must be identical |
+| **Slice → array / array pointer** | `[4]byte(bs)` (Go 1.17+) | Panics if the slice is shorter than the array |
+
+```go
+// ❌ No element-wise conversion: element types differ
+// b := []int64([]int32{1, 2, 3})   // compile error
+
+// ✅ Convert each element in a loop instead
+src := []int32{1, 2, 3}
+dst := make([]int64, len(src))
+for i, v := range src {
+    dst[i] = int64(v)
+}
+```
+
+| Syntax | Name | Purpose |
+| ---- | ---- | ---- |
+| `T(v)` | **Type conversion** | Creates a new value of type `T`; checked at compile time |
+| `v.(T)` | **Type assertion** | Extracts the concrete type from an interface value; checked at runtime |
+
 ***
 
 ## IV. Operators
