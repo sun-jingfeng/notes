@@ -196,6 +196,32 @@ for key, value := range scores {
 | Iteration order | Not guaranteed | Explicitly randomized (differs each run) |
 | Thread safety | No (needs `ConcurrentHashMap`) | No (needs `sync.Map` or a lock) |
 
+### 3.4 Sets: map[K]struct{}
+
+Go has no built-in set type. The idiom is a map whose **value carries no information**—so the value type is `struct{}`, the zero-byte empty struct. Only the keys matter; membership is the comma-ok check from 3.2.
+
+```go
+seen := map[string]struct{}{}       // the set
+
+seen["go"] = struct{}{}             // add
+delete(seen, "go")                  // remove
+
+if _, ok := seen["rust"]; !ok {     // membership test
+    seen["rust"] = struct{}{}
+}
+```
+
+Why `struct{}` and not `bool` as the value:
+
+| Value type | Cost per entry | Ambiguity |
+| ---- | ---- | ---- |
+| `map[K]struct{}` | value is **0 bytes** | none—presence *is* the meaning |
+| `map[K]bool` | 1 byte per entry | is `false` "absent" or "present but false"? |
+
+`struct{}` has only one storable value, so a key is either present or not—there is no misleading `false` state to reason about, and large sets waste no space on values.
+
+> 💡 The trade-off is ergonomics. `map[K]bool` reads a little cleaner—`seen[k] = true` to add, and `if seen[k]` to test (a missing key yields `false`, so no comma-ok needed). Reach for `map[K]struct{}` on large sets or when a stray "present but false" entry would be a real bug; `map[K]bool` is fine otherwise. (The same zero-byte `struct{}` appears as a channel element in *Concurrency* §2.5.)
+
 ***
 
 ## IV. Strings

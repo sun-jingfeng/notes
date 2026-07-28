@@ -272,3 +272,46 @@ In Java, object variables are essentially references and are passed by reference
 | Null value | `null` | `nil` |
 
 > 💡 Java's "objects are passed by reference automatically" must be expressed with pointers in Go. When a struct is large or must be modified inside a function, pass `*T` rather than `T`.
+
+### 3.5 Allocating: new, make, and &T{}
+
+`new(T)` is a built-in that does three things in one step: **allocate** storage for a `T`, **zero** it, and return a **pointer** `*T` to it. It never returns the value itself.
+
+```go
+p := new(Point)         // p is *Point, pointing at a zeroed Point{0, 0}
+p.X = 10                // Go auto-dereferences: same as (*p).X = 10
+```
+
+**`new(T)` and `&T{}` produce the same thing** for a zero value—both allocate and return `*T`. In practice Go code almost always writes `&T{}`, because the composite literal can *also* set fields at the same time, which `new` cannot:
+
+```go
+a := new(Point)         // pointer to a zeroed Point
+b := &Point{}           // identical
+c := &Point{X: 1, Y: 2} // allocate AND initialize — new() has no way to do this
+```
+
+So `new` really earns its place only for types that have **no composite literal to write**—the basic types—where you want a pointer to a zeroed value:
+
+```go
+n := new(int)           // *int → 0        (there is no "int{}")
+f := new(float64)       // *float64 → 0.0
+```
+
+**Do not confuse `new` with `make`.** Different jobs, different return types:
+
+| | `new(T)` | `make(T, ...)` |
+| ---- | ---- | ---- |
+| Works on | **any** type | only slice, map, channel |
+| Returns | `*T` (a pointer) | `T` (the value itself) |
+| Result | zeroed | initialized and ready to use |
+
+> ⚠️ `new` does **not** make slices/maps/channels usable. `new([]int)` returns a `*[]int` pointing at a **nil** slice (the header is merely zeroed); `new(map[string]int)` gives a pointer to a nil map, and writing to that map still panics. Those three types need `make` to be ready—`make([]int, 0)`, `make(map[string]int)`, `make(chan int)`. Rule of thumb: **slice/map/channel → `make`; everything else, if you need a pointer → `&T{}` (or `new` for a bare zeroed basic type).**
+
+> 💡 **Stack or heap? The compiler decides, not `new` vs `&T{}`.** Taking an address does not force a heap allocation. Go runs **escape analysis** at compile time: if a pointer never leaves the function, its target stays on the **stack** (freed for free when the function returns); if the pointer *escapes*—returned, stored in a field, sent to a channel—the target is **moved to the heap** for the GC to manage. The same `&Point{}` goes either way depending on use:
+>
+> ```go
+> func local() int    { p := &Point{}; return p.X }  // p stays in → stack
+> func escapes() *Point { p := &Point{}; return p }  // p leaves out → heap
+> ```
+>
+> Inspect the compiler's actual decisions with `go build -gcflags='-m'` (prints `does not escape` / `escapes to heap`). Practical upshot: **write for clarity, not to "avoid the heap"**—returning `&T{}` from a constructor is idiomatic and correct; let escape analysis place it.
