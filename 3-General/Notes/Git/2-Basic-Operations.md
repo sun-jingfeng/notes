@@ -151,3 +151,79 @@ git clean -fd    # Delete untracked files and directories
 ```
 
 > 💡 Always run `git clean -n` first — the deletion is not recoverable through Git.
+
+***
+
+## VI. File Status Flags
+
+### 6.1 The Two Columns of git status
+
+```bash
+git status --porcelain     # Machine-readable status, unambiguous
+```
+
+The output uses two letters, `XY`: `X` compares the index with `HEAD`, `Y` compares the working directory with the index. A space means nothing changed at that level.
+
+| Code        | Meaning                                                       |
+| ----------- | ------------------------------------------------------------- |
+| `M `        | Modification staged, working directory clean                   |
+| ` M`        | Modified in the working directory, not staged                  |
+| `MM`        | Staged, then modified again                                    |
+| `A `        | New file staged                                                |
+| `AM`        | New file staged, then modified again                           |
+| `D `        | Deletion staged                                                |
+| ` D`        | Deleted in the working directory, not staged                   |
+| `R `        | Rename staged                                                  |
+| `C `        | Copy staged                                                    |
+| `T ` / ` T` | Type changed (regular file ↔ symlink ↔ submodule)              |
+| `??`        | Untracked                                                      |
+| `!!`        | Ignored (only shown with `--ignored`)                          |
+
+### 6.2 Single Letters in a Diff
+
+`git diff --name-status` and the `--diff-filter` option use one letter per file:
+
+| Letter | Meaning                                                                      |
+| ------ | ---------------------------------------------------------------------------- |
+| `A`    | Added — the path did not exist before                                        |
+| `M`    | Modified — the content changed                                                |
+| `D`    | Deleted                                                                       |
+| `R`    | Renamed, followed by a similarity score (`R100`, `R087`)                     |
+| `C`    | Copied from an existing file (only with `--find-copies`)                     |
+| `T`    | Type changed — regular file ↔ symlink ↔ submodule                            |
+| `U`    | Unmerged — the file is conflicted                                             |
+| `B`    | Broken pairing — a rename too dissimilar to keep, split back into add+delete  |
+| `X`    | Unknown — should never appear, it indicates a bug in Git                     |
+
+### 6.3 Conflict Codes
+
+During a merge both columns are used together and say *who* changed what:
+
+| Code | Meaning                    |
+| ---- | -------------------------- |
+| `UU` | Both modified (the common one) |
+| `AA` | Both added                 |
+| `DD` | Both deleted               |
+| `AU` | Added by us                |
+| `UA` | Added by them              |
+| `DU` | Deleted by us              |
+| `UD` | Deleted by them            |
+
+### 6.4 How VS Code Displays Them
+
+VS Code collapses the two columns into a single letter and relies on the group heading — **Staged Changes**, **Changes**, **Merge Changes** — to show which column the letter came from.
+
+| Letter | Meaning                                                          |
+| ------ | ---------------------------------------------------------------- |
+| `M`    | Modified                                                          |
+| `A`    | Added, or intent-to-add                                           |
+| `D`    | Deleted                                                           |
+| `R`    | Renamed                                                           |
+| `C`    | Copied                                                            |
+| `T`    | Type changed                                                      |
+| `U`    | **Untracked** — not the same as Git's own `U` for unmerged        |
+| `I`    | Ignored                                                           |
+
+Conflicted files are moved into a separate **Merge Changes** group instead of being given a plain letter.
+
+> **Note**: the same letter means different things in different groups — `M` under Staged Changes is `M `, `M` under Changes is ` M`. Fall back to `git status --porcelain` whenever the distinction matters.
