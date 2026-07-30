@@ -317,10 +317,12 @@ Object.entries(user)
 ### 8.4 判断类型的常见方式
 
 ```js
-[] instanceof Array
-{} instanceof Object
-Array.isArray([])
+console.log([] instanceof Array) // true
+console.log({} instanceof Object) // true
+console.log(Array.isArray([])) // true
 ```
+
+> **注意**：`{}` 写在语句开头会被解析成代码块，所以 `{} instanceof Object` 单独成行会报语法错误，必须放进表达式位置（例如上面的 `console.log()` 里，或写成 `({}) instanceof Object`）。
 
 ### 8.5 一个实战建议
 

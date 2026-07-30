@@ -105,18 +105,20 @@ html {
 ### 2. 更合理的思路：只改根字号
 
 ```css
-@media (width: 400px) {
+@media (min-width: 400px) {
   html {
     font-size: 40px;
   }
 }
 
-@media (width: 500px) {
+@media (min-width: 500px) {
   html {
     font-size: 50px;
   }
 }
 ```
+
+> **注意**：这里要用 `min-width` / `max-width`，不要写成 `(width: 400px)`。`(width: 400px)` 是“视口宽度**恰好**等于 400px”才命中，宽度 401px 就失效了，实际设备几乎不可能刚好落在这些整数上。
 
 然后业务元素统一写成 `rem`：
 

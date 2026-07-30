@@ -971,10 +971,10 @@ export const listApi = createApi({
 
 ```jsx
 // skip：参数未就绪时跳过请求
-const { data } = useGetDetailQuery(id, { skip: !id })
+const { data: detail } = useGetDetailQuery(id, { skip: !id })
 
 // 轮询：每 5 秒自动刷新
-const { data } = useGetListQuery(undefined, { pollingInterval: 5000 })
+const { data: list } = useGetListQuery(undefined, { pollingInterval: 5000 })
 ```
 
 **transformResponse：** 在数据进入缓存前做格式转换，接口返回结构与组件所需不一致时使用：

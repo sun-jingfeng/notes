@@ -20,7 +20,7 @@
 
 ## 三、具名函数与匿名函数
 
-### 2.1 具名函数
+### 3.1 具名函数
 
 具名函数就是有明确名字的函数。
 
@@ -30,7 +30,7 @@ function sum(a, b) {
 }
 ```
 
-### 2.2 匿名函数
+### 3.2 匿名函数
 
 匿名函数本身没有函数名，常见于函数表达式、回调等场景。
 
@@ -40,19 +40,19 @@ const sum = function (a, b) {
 }
 ```
 
-### 2.3 区别
+### 3.3 区别
 
 | 对比项     | 具名函数声明       | 函数表达式               |
 | ---------- | ------------------ | ------------------------ |
 | 是否有名字 | 有                 | 常见写法中没有显式函数名 |
 | 调用时机   | 通常可在声明前调用 | 必须先赋值后调用         |
 
-### 2.4 一个实战建议
+### 3.4 一个实战建议
 
 1. 复用逻辑、调试定位更重要的函数，更适合具名函数。
 2. 一次性回调、小范围逻辑，匿名函数更常见。
 
-### 2.5 一个真实选择标准
+### 3.5 一个真实选择标准
 
 如果你已经明确这段函数后续需要解绑事件、复用逻辑、单独测试或看报错堆栈，通常就别再图省事写成匿名函数。
 
@@ -72,7 +72,7 @@ handle(function () {
 })
 ```
 
-### 3.1 常见场景
+### 4.1 常见场景
 
 | 场景     | 说明                  |
 | -------- | --------------------- |
@@ -87,15 +87,15 @@ setTimeout(function () {
 }, 1000)
 ```
 
-### 3.2 一个理解重点
+### 4.2 一个理解重点
 
 回调的本质不是“写在函数里”，而是“由别的时机控制它何时执行”。
 
-### 3.3 一个常见误区
+### 4.3 一个常见误区
 
 回调不等于异步。事件监听、数组遍历、函数封装里都可能出现回调，只是执行时机由外部控制。
 
-### 3.4 做回调题或看业务代码时先问什么
+### 4.4 做回调题或看业务代码时先问什么
 
 1. 这个函数是谁来调用。
 2. 它什么时候被调用。
@@ -108,7 +108,7 @@ setTimeout(function () {
 
 `this` 表示函数运行时所处的环境对象。
 
-### 4.1 粗略判断规则
+### 5.1 粗略判断规则
 
 谁调用，`this` 就大概率指向谁。
 
@@ -123,7 +123,7 @@ const obj = {
 obj.sayHi()
 ```
 
-### 4.2 直接调用函数
+### 5.2 直接调用函数
 
 ```js
 function test() {
@@ -135,7 +135,7 @@ test()
 
 在浏览器非严格模式下，直接调用时 `this` 通常指向 `window`；严格模式下通常是 `undefined`。
 
-### 4.3 事件回调里的 `this`
+### 5.3 事件回调里的 `this`
 
 ```js
 button.addEventListener("click", function () {
@@ -145,11 +145,11 @@ button.addEventListener("click", function () {
 
 普通函数写法中，这里的 `this` 通常指向当前绑定事件的元素。
 
-### 4.4 一个边界提醒
+### 5.4 一个边界提醒
 
 如果换成箭头函数，它不会自己生成 `this`，而是继承外层上下文，这一点在事件回调里很容易踩坑。
 
-### 4.5 普通函数和箭头函数怎么选
+### 5.5 普通函数和箭头函数怎么选
 
 | 场景                            | 更常见的选择 |
 | ------------------------------- | ------------ |
@@ -157,7 +157,7 @@ button.addEventListener("click", function () {
 | **明确希望继承外层 `this`**     | 箭头函数     |
 | **对象方法依赖调用者**          | 普通函数更稳 |
 
-### 4.6 一个排错提醒
+### 5.6 一个排错提醒
 
 事件回调里如果 `this` 突然不是你预期的元素，第一时间先看有没有把普通函数改成箭头函数，或者有没有在别的地方通过 `call`、`bind`、`apply` 改过调用方式。
 
@@ -175,7 +175,7 @@ btn.addEventListener("click", function () {
 })
 ```
 
-### 5.1 事件监听三要素
+### 6.1 事件监听三要素
 
 | 要素     | 说明                   |
 | -------- | ---------------------- |
@@ -183,7 +183,7 @@ btn.addEventListener("click", function () {
 | 事件类型 | 什么行为，如 `click`   |
 | 回调函数 | 事件发生后执行什么逻辑 |
 
-### 5.2 `addEventListener` 和 L0 事件的区别
+### 6.2 `addEventListener` 和 L0 事件的区别
 
 | 写法                 | 特点                           |
 | -------------------- | ------------------------------ |
@@ -192,7 +192,7 @@ btn.addEventListener("click", function () {
 
 真实业务里通常优先 `addEventListener()`。
 
-### 5.3 事件委托意识
+### 6.3 事件委托意识
 
 如果很多相似子元素都要绑定点击事件，真实业务里通常会考虑事件委托，而不是给每个节点单独绑一遍监听器。
 
@@ -200,7 +200,7 @@ btn.addEventListener("click", function () {
 
 ## 七、查找节点
 
-### 6.1 常用方法
+### 7.1 常用方法
 
 | 方法                              | 作用                     |
 | --------------------------------- | ------------------------ |
@@ -213,7 +213,7 @@ const firstItem = document.querySelector(".item")
 const allItems = document.querySelectorAll(".item")
 ```
 
-### 6.2 伪数组
+### 7.2 伪数组
 
 像 `querySelectorAll()` 返回的结果，通常是类数组对象。
 
@@ -223,13 +223,13 @@ const allItems = document.querySelectorAll(".item")
 | 有 `length`        | 可以遍历                |
 | 不一定有真数组方法 | 比如不一定能直接 `push` |
 
-### 6.3 一个选择建议
+### 7.3 一个选择建议
 
 1. 需要第一个匹配结果，用 `querySelector()`。
 2. 需要按 CSS 选择器批量查找，用 `querySelectorAll()`。
 3. 老写法的标签 / 类名 / id 查询要会看，但新代码通常更偏向统一使用选择器 API。
 
-### 6.4 一个维护性提醒
+### 7.4 一个维护性提醒
 
 查找节点时，真正重要的不只是“能不能查到”，还包括：
 
@@ -241,7 +241,7 @@ const allItems = document.querySelectorAll(".item")
 
 ## 八、更新元素样式
 
-### 7.1 直接写 `style`
+### 8.1 直接写 `style`
 
 ```js
 box.style.width = "200px"
@@ -250,7 +250,7 @@ box.style.backgroundColor = "pink"
 
 适合修改少量样式。
 
-### 7.2 `cssText`
+### 8.2 `cssText`
 
 ```js
 box.style.cssText = "width: 200px; height: 100px; background: pink;"
@@ -258,7 +258,7 @@ box.style.cssText = "width: 200px; height: 100px; background: pink;"
 
 适合一次写多条样式，但会让样式字符串集中在 JS 中，维护性一般。
 
-### 7.3 `className` / `classList`
+### 8.3 `className` / `classList`
 
 ```js
 box.classList.add("active")
@@ -266,7 +266,7 @@ box.classList.remove("active")
 box.classList.toggle("active")
 ```
 
-### 7.4 三种方式对比
+### 8.4 三种方式对比
 
 | 方式      | 适用场景             |
 | --------- | -------------------- |
@@ -276,7 +276,7 @@ box.classList.toggle("active")
 
 一个实战结论：状态切换类样式，通常优先类名切换，而不是在 JS 里堆一长串内联样式。
 
-### 7.5 类名切换、内联样式、读计算样式怎么分工
+### 8.5 类名切换、内联样式、读计算样式怎么分工
 
 | 需求                   | 更推荐               |
 | ---------------------- | -------------------- |
@@ -297,14 +297,14 @@ console.log(style.width)
 console.log(style.getPropertyValue("background-color"))
 ```
 
-### 8.1 `style` 和 `getComputedStyle()` 的区别
+### 9.1 `style` 和 `getComputedStyle()` 的区别
 
 | 方式                 | 拿到的是什么         |
 | -------------------- | -------------------- |
 | `element.style`      | 当前元素的内联样式   |
 | `getComputedStyle()` | 最终计算后的生效样式 |
 
-### 8.2 一个容易误解的点
+### 9.2 一个容易误解的点
 
 如果样式来自外部样式表，直接读 `element.style.xxx` 往往拿不到；这时就该用 `getComputedStyle()`。
 
@@ -320,14 +320,14 @@ console.log(style.getPropertyValue("background-color"))
 <div data-info="user" data-login-name="zhangsan"></div>
 ```
 
-### 9.1 使用价值
+### 10.1 使用价值
 
 | 价值           | 说明                 |
 | -------------- | -------------------- |
 | 存储额外数据   | 方便 JS 读取业务标识 |
 | 不污染标准属性 | 结构更清晰           |
 
-### 9.2 JavaScript 读取方式
+### 10.2 JavaScript 读取方式
 
 ```js
 const box = document.querySelector("div")
@@ -336,7 +336,7 @@ console.log(box.dataset.info)
 console.log(box.dataset.loginName)
 ```
 
-### 9.3 规则
+### 10.3 规则
 
 | 规则                       | 说明                                    |
 | -------------------------- | --------------------------------------- |
@@ -344,11 +344,11 @@ console.log(box.dataset.loginName)
 | JS 中通过 `dataset` 访问   | 不写 `data-`                            |
 | 多单词转驼峰               | `data-login-name` → `dataset.loginName` |
 
-### 9.4 一个实际用途
+### 10.4 一个实际用途
 
 列表点击、事件委托、埋点标识、状态标记等场景里，`data-*` 都很常见。
 
-### 9.5 `dataset`、`getAttribute()`、业务状态存储怎么选
+### 10.5 `dataset`、`getAttribute()`、业务状态存储怎么选
 
 | 需求                   | 更推荐                       |
 | ---------------------- | ---------------------------- |

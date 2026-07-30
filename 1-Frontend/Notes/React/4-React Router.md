@@ -1184,5 +1184,5 @@ v7 的主要变化：
 | ---- | ---- |
 | **包合并** | `react-router-dom` 合并回 `react-router`，统一安装和导入 |
 | **`action` 函数** | 路由配置中可定义 `action` 处理表单提交与数据变更（Framework 模式的核心能力） |
-| **移除 `json()` 工具** | loader / action 直接 `return` 数据即可，不再需要 `json()` 包装 |
+| **废弃 `json()` / `defer()`** | 标记为 deprecated（v7 中仍可调用，未删除）；loader / action 直接 `return` 原始数据即可 |
 | **Framework 模式** | 文件路由 + SSR + 服务端数据加载，适合全栈场景 |
