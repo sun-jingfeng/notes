@@ -1,79 +1,75 @@
 # unibest
 
-## 一、概述
+## I. Overview
 
-### 1.1 什么是 unibest
+### 1.1 What unibest Is
 
-**unibest** 是基于 uni-app 的工程化项目模板，内置 Vue 3、TypeScript、Vite、Pinia、UnoCSS 等现代前端工具链，开箱即用，无需从零配置。
+**unibest** is an engineering template for uni-app projects, preconfigured with Vue 3, TypeScript, Vite, Pinia, and UnoCSS — a working toolchain from the first commit rather than one assembled by hand.
 
-**定位：** unibest 不是框架，是 uni-app 的最佳实践脚手架。类比关系：uni-app 之于 unibest，相当于 Vue 之于 create-vue。
+**Positioning:** unibest is not a framework but a best-practice scaffold for uni-app, standing in the same relation to it as create-vue does to Vue.
 
-| 对比项         | 官方 uni-app 默认模板         | unibest                          |
-| -------------- | ----------------------------- | -------------------------------- |
-| **Vue 版本**   | Vue 2 / Vue 3 可选            | Vue 3                            |
-| **语言**       | JavaScript                    | TypeScript                       |
-| **构建工具**   | HBuilderX 内置打包            | Vite                             |
-| **状态管理**   | Vuex                          | Pinia + 持久化插件               |
-| **样式方案**   | 手写 CSS / SCSS               | UnoCSS（原子化）                 |
-| **路由配置**   | `pages.json`（纯 JSON）       | `pages.config.ts`（TypeScript）  |
-| **组件注册**   | 手动 import 或 easycom        | 自动扫描注册，零配置使用         |
-| **代码规范**   | 无                            | ESLint + Prettier + husky        |
+| Aspect               | Official uni-app template     | unibest                             |
+| -------------------- | ----------------------------- | ----------------------------------- |
+| **Vue version**      | Vue 2 or Vue 3                | Vue 3                               |
+| **Language**         | JavaScript                    | TypeScript                          |
+| **Build tool**       | HBuilderX bundler             | Vite                                |
+| **State management** | Vuex                          | Pinia with a persistence plugin     |
+| **Styling**          | Hand-written CSS / SCSS       | UnoCSS (atomic)                     |
+| **Route config**     | `pages.json` (plain JSON)     | `pages.config.ts` (TypeScript)      |
+| **Component registration** | Manual import or easycom | Automatic scanning, zero configuration |
+| **Code standards**   | None                          | ESLint, Prettier, husky             |
 
-***
+### 1.2 Technology Stack
 
-### 1.2 技术栈总览
-
-```
-uni-app（跨端运行时）
-    │
-    ├── Vue 3 + TypeScript      # 语法基础
-    ├── Vite                    # 构建工具
-    ├── Pinia                   # 状态管理
-    ├── UnoCSS                  # 原子化 CSS
-    ├── pages.config.ts         # 路由配置（替代 pages.json）
-    ├── manifest.config.ts      # 应用配置（替代 manifest.json）
-    ├── uview-plus / wot-design-uni  # 组件库
-    └── pnpm                    # 包管理器
-```
+    uni-app (cross-platform runtime)
+        │
+        ├── Vue 3 + TypeScript           # Language foundation
+        ├── Vite                         # Build tool
+        ├── Pinia                        # State management
+        ├── UnoCSS                       # Atomic CSS
+        ├── pages.config.ts              # Route configuration, replacing pages.json
+        ├── manifest.config.ts           # App configuration, replacing manifest.json
+        ├── uview-plus / wot-design-uni  # Component library
+        └── pnpm                         # Package manager
 
 ***
 
-## 二、项目结构
+## II. Project Structure
 
-### 2.1 目录说明
+### 2.1 Directory Layout
 
 ```
 my-project/
 ├── src/
-│   ├── pages/              # 主包页面
-│   ├── subs/               # 分包页面（按业务模块划分）
-│   ├── components/         # 公共组件（easycom 自动注册）
-│   ├── layouts/            # 页面布局模板
-│   ├── store/              # Pinia 状态（替代 Vuex）
-│   ├── composables/        # Vue 3 组合式函数（Hooks）
-│   ├── hooks/              # 业务 Hooks
-│   ├── api/                # 接口定义
-│   ├── network/            # 请求层封装
-│   ├── utils/              # 工具函数
-│   ├── types/              # TypeScript 类型声明
-│   ├── enums/              # 枚举常量
-│   ├── configs/            # 业务配置
-│   ├── static/             # 静态资源
-│   ├── App.vue             # 根组件
-│   └── main.ts             # 入口文件
-├── pages.config.ts         # 路由与窗口配置（核心）
-├── manifest.config.ts      # 应用配置（AppID、平台权限等）
-├── vite.config.ts          # Vite 构建配置
-├── uno.config.ts           # UnoCSS 配置
-├── tsconfig.json           # TypeScript 配置
+│   ├── pages/              # Main-package pages
+│   ├── subs/               # Sub-package pages, split by business module
+│   ├── components/         # Shared components (registered automatically)
+│   ├── layouts/            # Page layout templates
+│   ├── store/              # Pinia stores
+│   ├── composables/        # Composition-API functions
+│   ├── hooks/              # Domain-specific hooks
+│   ├── api/                # API definitions
+│   ├── network/            # Request layer
+│   ├── utils/              # Utility functions
+│   ├── types/              # TypeScript type declarations
+│   ├── enums/              # Enumerated constants
+│   ├── configs/            # Application configuration
+│   ├── static/             # Static assets
+│   ├── App.vue             # Root component
+│   └── main.ts             # Entry file
+├── pages.config.ts         # Route and window configuration
+├── manifest.config.ts      # App configuration (AppID, platform permissions)
+├── vite.config.ts          # Vite build configuration
+├── uno.config.ts           # UnoCSS configuration
+├── tsconfig.json           # TypeScript configuration
 └── package.json
 ```
 
-***
+> 💡 Sub-packages exist because mini-program platforms cap the main package size (2 MB on WeChat, 20 MB in total). Splitting rarely visited flows into `subs/` keeps the main package under the limit and shortens first load.
 
 ### 2.2 pages.config.ts
 
-unibest 用 `pages.config.ts` 替代原来的 `pages.json`，可以使用 TypeScript 语法、变量引用和类型提示。
+`pages.config.ts` replaces `pages.json`, which brings TypeScript syntax, variable references, imports, and type checking to route configuration. The plugin generates the `pages.json` the runtime expects at build time.
 
 ```typescript
 import { defineUniPages } from '@uni-helper/vite-plugin-uni-pages'
@@ -83,34 +79,38 @@ export default defineUniPages({
   easycom: {
     autoscan: true,
     custom: {
-      // uview-plus 组件前缀映射
+      // Prefix mapping for a third-party component library
       '^u--(.*)': 'uview-plus/components/u-$1/u-$1.vue',
       '^u-([^-].*)': 'uview-plus/components/u-$1/u-$1.vue',
     },
   },
-  homePage: '/pages/index/index',  // 首页路径
+  homePage: '/pages/index/index',
   globalStyle: {
-    navigationBarTitleText: '应用名称',
+    navigationBarTitleText: 'Demo App',
     navigationBarBackgroundColor: '#f8f8f8',
     navigationBarTextStyle: 'black',
   },
-  tabBar: tabBar as any,  // tabBar 配置抽到独立文件维护
+  tabBar: tabBar as any,
 })
 ```
 
-> 💡 tabBar 等复杂配置可以单独放到 `src/tabbar/config.ts` 中，再 import 进来，比纯 JSON 更易维护。
-
-***
+> 💡 Extracting bulky configuration such as `tabBar` into its own module and importing it keeps this file readable — an option plain JSON never offered.
 
 ### 2.3 manifest.config.ts
 
-`manifest.config.ts` 替代 `manifest.json`，支持从环境变量读取 AppID、版本号等，避免敏感配置硬编码。
+`manifest.config.ts` replaces `manifest.json` and can read the AppID, title, and version from environment variables, so per-environment values stay out of version control.
 
 ```typescript
 import { defineManifestConfig } from '@uni-helper/vite-plugin-uni-manifest'
 import { loadEnv } from 'vite'
+import path from 'node:path'
 
-const env = loadEnv(mode, process.cwd())
+// The current mode comes from NODE_ENV; the third argument widens the
+// prefix filter so non-VITE_ keys are readable here as well
+const env = loadEnv(
+  process.env.NODE_ENV ?? 'development',
+  path.resolve(process.cwd(), 'env'),
+)
 
 export default defineManifestConfig({
   name: env.VITE_APP_TITLE,
@@ -128,22 +128,20 @@ export default defineManifestConfig({
 
 ***
 
-## 三、Pinia 状态管理
+## III. Pinia State Management
 
-### 3.1 与 Vuex 对比
+### 3.1 Compared With Vuex
 
-unibest 使用 Pinia 替代 Vuex，是 Vue 3 官方推荐的状态管理方案。
+Pinia replaces Vuex as the state library, and is the officially recommended option for Vue 3.
 
-| 对比项       | Vuex                        | Pinia                       |
-| ------------ | --------------------------- | --------------------------- |
-| **语法**     | `mutations` / `actions` 分离 | 只有 `actions`，更简洁      |
-| **TypeScript** | 类型推导差                | 原生 TypeScript 支持        |
-| **模块化**   | 需要 `modules` 配置         | 每个 store 独立文件，天然隔离 |
-| **调试**     | Vue DevTools 支持           | Vue DevTools 支持           |
+| Aspect           | Vuex                                | Pinia                                     |
+| ---------------- | ----------------------------------- | ----------------------------------------- |
+| **Syntax**       | `mutations` and `actions` separated | `actions` only — less ceremony            |
+| **TypeScript**   | Weak inference                      | Native TypeScript support                 |
+| **Modularity**   | Requires `modules` configuration    | One file per store, isolated by construction |
+| **Debugging**    | Vue DevTools                        | Vue DevTools                              |
 
-***
-
-### 3.2 定义 Store
+### 3.2 Defining a Store
 
 ```typescript
 // src/store/user.ts
@@ -166,25 +164,25 @@ export const useUserStore = defineStore('user', {
       this.userInfo = null
     },
   },
-  // 开启持久化，数据存入 uni.setStorageSync
+  // Persist through the storage adapter configured on the pinia instance
   persist: true,
 })
 ```
 
 ```typescript
-// 页面中使用
+// In a page or component
 import { useUserStore } from '@/store/user'
 
 const userStore = useUserStore()
 console.log(userStore.isLogin)
-userStore.setToken('xxx')
+userStore.setToken('<token>')
 ```
 
-***
+> **Note**: destructuring a store — `const { token } = useUserStore()` — breaks reactivity, because the extracted value is a plain copy. `storeToRefs(userStore)` preserves it.
 
-### 3.3 持久化配置
+### 3.3 Persistence
 
-unibest 在 `src/store/index.ts` 中全局配置了 `pinia-plugin-persistedstate`，底层使用 `uni.getStorageSync` / `uni.setStorageSync`，跨端统一。
+Persistence is configured once on the pinia instance, backed by `uni.getStorageSync` and `uni.setStorageSync` so the same code works on every platform.
 
 ```typescript
 // src/store/index.ts
@@ -204,51 +202,52 @@ store.use(
 export default store
 ```
 
-Store 中加 `persist: true` 即自动持久化全部 state；也可以指定只持久化部分字段：
+`persist: true` on a store persists its entire state. A subset can be selected instead:
 
 ```typescript
 persist: {
-  paths: ['token'],  // 只持久化 token，userInfo 不持久化
+  paths: ['token'],    // Persist the token only; userInfo is refetched on launch
 },
 ```
 
+> **Note**: the option selecting a subset is `paths` in v3 of the plugin and `pick` in v4. Check the installed version before copying either form.
+
 ***
 
-## 四、UnoCSS 原子化 CSS
+## IV. UnoCSS
 
-### 4.1 基本用法
+### 4.1 Basic Usage
 
-UnoCSS 通过 class 名称直接生成对应 CSS，无需手写样式文件。
+UnoCSS generates CSS from the class names found in the source, so styling stays in the template and no rule is emitted unless it is used.
 
 ```vue
 <template>
-  <!-- flex 布局，居中，间距 16rpx，字体红色 -->
   <view class="flex items-center gap-4 text-red-500">
-    <text class="text-32rpx font-bold">标题</text>
-    <text class="text-24rpx text-gray-400">副标题</text>
+    <text class="text-32rpx font-bold">Title</text>
+    <text class="text-24rpx text-gray-400">Subtitle</text>
   </view>
 </template>
 ```
 
-| class 示例            | 等价 CSS                          |
-| --------------------- | --------------------------------- |
-| `flex`                | `display: flex`                   |
-| `items-center`        | `align-items: center`             |
-| `justify-between`     | `justify-content: space-between`  |
-| `gap-4`               | `gap: 16rpx`（uni 预设下）        |
-| `p-4` / `px-4`        | `padding: 16rpx` / 水平 padding   |
-| `text-32rpx`          | `font-size: 32rpx`                |
-| `font-bold`           | `font-weight: bold`               |
-| `text-primary`        | 主题色文字（需在 uno.config.ts 定义） |
-| `bg-white`            | `background-color: white`         |
-| `rounded-8rpx`        | `border-radius: 8rpx`             |
-| `w-full` / `h-100rpx` | 宽度 100% / 高度 100rpx           |
+| Class                 | Equivalent CSS                              |
+| --------------------- | ------------------------------------------- |
+| `flex`                | `display: flex`                             |
+| `items-center`        | `align-items: center`                       |
+| `justify-between`     | `justify-content: space-between`            |
+| `gap-4`               | `gap: 16rpx` (under this project's preset)  |
+| `p-4` / `px-4`        | `padding: 16rpx` / horizontal padding only  |
+| `text-32rpx`          | `font-size: 32rpx`                          |
+| `font-bold`           | `font-weight: bold`                         |
+| `text-primary`        | Theme-coloured text, defined in `uno.config.ts` |
+| `bg-white`            | `background-color: white`                   |
+| `rounded-8rpx`        | `border-radius: 8rpx`                       |
+| `w-full` / `h-100rpx` | `width: 100%` / `height: 100rpx`            |
 
-***
+> **Note**: class names must appear as complete literal strings in the source. A dynamically assembled name such as `` `text-${size}rpx` `` is invisible to the scanner and produces no CSS — the safelist option or a full conditional class name is required instead.
 
-### 4.2 @apply 指令
+### 4.2 The @apply Directive
 
-复杂样式或复用样式可以用 `@apply` 把原子类组合写进 `<style>` 中：
+Repeated or complex combinations move into a `<style>` block through `@apply`:
 
 ```vue
 <style scoped>
@@ -261,11 +260,9 @@ UnoCSS 通过 class 名称直接生成对应 CSS，无需手写样式文件。
 </style>
 ```
 
-***
+### 4.3 Theme Colours
 
-### 4.3 主题色配置
-
-项目主题色在 `uno.config.ts` 中统一定义，引用 CSS 变量（与组件库主题联动）：
+Theme colours are declared once in `uno.config.ts` and reference a CSS variable, which keeps them in step with the component library's own theming.
 
 ```typescript
 // uno.config.ts
@@ -278,94 +275,76 @@ theme: {
 }
 ```
 
-使用时直接 `text-primary`、`bg-primary`，修改主题色只需改一处。
+`text-primary` and `bg-primary` then resolve to the theme colour everywhere, and rebranding touches one declaration.
 
 ***
 
-## 五、环境变量与多环境
+## V. Environment Variables
 
-### 5.1 环境文件
+### 5.1 Environment Files
 
-unibest 支持多套环境配置，通过 `.env.*` 文件区分：
+Separate `.env.*` files hold per-environment configuration:
 
 ```
-.env.dev      # 开发环境
-.env.test     # 测试环境
-.env.uat      # 预发布环境
-.env.prod     # 生产环境
+.env.dev      # Development
+.env.test     # Testing
+.env.uat      # Pre-release
+.env.prod     # Production
 ```
 
 ```bash
-# .env.dev 示例
-VITE_APP_TITLE=应用名称
+# .env.dev
+VITE_APP_TITLE=Demo App
 VITE_BASE_URL=https://dev-api.example.com
-VITE_WX_APPID=wx_dev_appid
+VITE_WX_APPID=<development-appid>
 ```
 
-> **注意**：uni-app 中环境变量必须以 `VITE_` 开头才能在代码中访问。
+> **Note**: only variables prefixed with `VITE_` are exposed to client code. That prefix also means the value is compiled into the bundle and readable by anyone who inspects it — never place a secret in one.
 
-***
-
-### 5.2 在代码中使用
+### 5.2 Reading Values in Code
 
 ```typescript
-// 编译时读取（TypeScript 中）
+// Replaced at build time with the literal value
 const baseUrl = import.meta.env.VITE_BASE_URL
 ```
 
 ***
 
-## 六、运行与构建命令
+## VI. Running and Building
 
-### 6.1 常用命令
+### 6.1 Common Commands
 
 ```bash
-# 运行到微信小程序（开发环境）
-pnpm dev:mp
+# Development
+pnpm dev              # H5
+pnpm dev:mp           # WeChat mini program
+pnpm dev:app          # Native app
 
-# 运行到 H5（开发环境）
-pnpm dev
-
-# 运行到 App
-pnpm dev:app
-
-# 构建微信小程序（生产环境）
-pnpm build:mp:prod
-
-# 构建 H5（生产环境）
-pnpm build:prod
-
-# 构建 App（生产环境）
-pnpm build:app:prod
+# Production builds
+pnpm build:prod       # H5
+pnpm build:mp:prod    # WeChat mini program
+pnpm build:app:prod   # Native app
 ```
 
-***
+### 6.2 dev and build on Mini-Program Targets
 
-### 6.2 dev:mp 与 build:mp 的区别
+    pnpm dev:mp-weixin    →  command: build,  mode: development
+    pnpm build:mp-weixin  →  command: build,  mode: production
+    pnpm dev (H5)         →  command: serve,  mode: development
 
-```
-pnpm dev:mp-weixin  →  command: build, mode: development
-pnpm build:mp-weixin →  command: build, mode: production
-pnpm dev（H5）      →  command: serve, mode: development
-```
+Mini-program targets have no dev server, so Vite's `command` is `build` in both cases and only the `mode` differs. Configuration that needs to distinguish a development build from a production one must therefore branch on `mode`; branching on `command` silently takes the build path in development too.
 
-> 💡 小程序端无论 dev 还是 build，Vite 的 `command` 都是 `build`（没有 dev server），只有 H5 走 Vite dev server。因此针对小程序的特殊处理要用 `mode` 而非 `command` 来判断。
+### 6.3 Publishing a WeChat Mini Program
 
-***
+    ① pnpm build:mp:prod
+            ↓
+    ② Open dist/build/mp-weixin in WeChat DevTools
+            ↓
+    ③ Click Upload and enter a version number
+            ↓
+    ④ Submit for review in the WeChat MP console, then release
 
-### 6.3 发布流程（微信小程序）
-
-```
-① pnpm build:mp:prod
-        ↓
-② 用微信开发者工具打开 dist/build/mp-weixin 目录
-        ↓
-③ 点击「上传」，填写版本号
-        ↓
-④ 在微信公众平台提交审核 → 发布
-```
-
-也可通过 CI 脚本自动上传（依赖 `miniprogram-ci`）：
+Uploading can also run unattended in CI through `miniprogram-ci`:
 
 ```bash
 pnpm ci:mp:prod
@@ -373,63 +352,60 @@ pnpm ci:mp:prod
 
 ***
 
-## 七、组件自动引入
+## VII. Automatic Imports
 
-### 7.1 easycom 规范
+### 7.1 easycom
 
-`components/<组件名>/<组件名>.vue` 目录结构的组件，无需 import 和注册，直接在模板中使用。
+A component stored as `components/<name>/<name>.vue` is usable in any template with no import and no registration.
 
 ```
 src/components/
 └── demo-card/
-    └── demo-card.vue   ← 直接用 <demo-card /> 即可
+    └── demo-card.vue    ← available as <demo-card />
 ```
 
-第三方组件库（uview-plus、wot-design-uni）在 `pages.config.ts` 的 `easycom.custom` 中配置前缀映射，同样免注册使用。
-
-***
+Third-party libraries such as uview-plus and wot-design-uni are wired in through the `easycom.custom` prefix mapping in `pages.config.ts`, and behave the same way.
 
 ### 7.2 unplugin-auto-import
 
-Vue 3 的 `ref`、`computed`、`watch` 等 API，以及 `uni.*` API，通过 `unplugin-auto-import` 实现自动引入，无需手动 import：
+Vue APIs (`ref`, `computed`, `watch`) and the `uni.*` namespace are injected automatically, so no import statement is needed:
 
 ```typescript
-// ✅ 直接使用，无需 import { ref } from 'vue'
+// ✅ Works without import { ref, computed } from 'vue'
 const count = ref(0)
 const double = computed(() => count.value * 2)
 ```
 
+The plugin generates a declaration file that gives the editor and `tsc` visibility into these globals. That file is generated during the first dev or build run, so a freshly cloned checkout reports unresolved names in the editor until a build has run once.
+
 ***
 
-## 八、Vue 3 组合式 API 要点
+## VIII. Vue 3 Composition API
 
-### 8.1 `<script setup>` 语法
+### 8.1 `<script setup>`
 
-unibest 项目全面使用 `<script setup>`，比 Options API 更简洁，TypeScript 支持更好。
+Pages and components use `<script setup>` throughout, which removes the boilerplate of Options API and gives better type inference.
 
 ```vue
 <script setup lang="ts">
 import { useUserStore } from '@/store/user'
 
-// Props 定义
+// Props, typed by declaration
 const props = defineProps<{
   title: string
   count?: number
 }>()
 
-// Emits 定义
+// Emits, typed by declaration
 const emit = defineEmits<{
   change: [value: number]
 }>()
 
-// 响应式数据
 const visible = ref(false)
 const userStore = useUserStore()
 
-// 计算属性
-const displayTitle = computed(() => `${props.title}（${props.count ?? 0}）`)
+const displayTitle = computed(() => `${props.title} (${props.count ?? 0})`)
 
-// 方法
 function handleConfirm() {
   emit('change', 1)
   visible.value = false
@@ -437,11 +413,11 @@ function handleConfirm() {
 </script>
 ```
 
-***
+> **Note**: mini-program page lifecycle hooks have composition-API equivalents (`onLoad`, `onShow`, `onReachBottom`) exported by `@dcloudio/uni-app`, and these are what a `<script setup>` page uses in place of Options-API hooks.
 
-### 8.2 Composables（组合式函数）
+### 8.2 Composables
 
-把可复用的状态逻辑抽成 `use*` 函数，放在 `src/composables/` 或 `src/hooks/` 下：
+Reusable stateful logic is extracted into `use*` functions under `src/composables/` or `src/hooks/`:
 
 ```typescript
 // src/composables/use-loading.ts
@@ -454,6 +430,7 @@ export function useLoading() {
       return await fn()
     }
     finally {
+      // finally guarantees the flag resets even when fn throws
       loading.value = false
     }
   }

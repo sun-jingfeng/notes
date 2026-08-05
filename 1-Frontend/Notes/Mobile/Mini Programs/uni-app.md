@@ -1,60 +1,56 @@
 # uni-app
 
-## 一、概述
+## I. Overview
 
-### 1.1 什么是 uni-app
+### 1.1 What uni-app Is
 
-**uni-app** 是由 DCloud 推出的基于 Vue.js 的跨端开发框架，使用一套代码可同时编译发布到微信/支付宝/百度等各平台小程序、H5、以及 Android/iOS App。
+**uni-app** is DCloud's Vue-based cross-platform framework: one codebase compiles and publishes to WeChat, Alipay, Baidu, and other mini-program platforms, to H5, and to Android and iOS apps.
 
-**核心思想：** 一次开发，多端运行。
+**Core idea:** develop once, run on every target.
 
-| 特点               | 说明                                                 |
-| ------------------ | ---------------------------------------------------- |
-| **跨端能力**       | 支持微信、支付宝、百度、字节跳动等主流小程序及 H5/App |
-| **Vue 语法**       | 完全基于 Vue2/Vue3 语法，无额外学习成本              |
-| **条件编译**       | 通过特殊注释针对不同平台写差异化逻辑                 |
-| **丰富生态**       | 支持 uni-ui、uView 等组件库，插件市场资源丰富        |
+| Trait                       | Description                                                                 |
+| --------------------------- | --------------------------------------------------------------------------- |
+| **Cross-platform reach**    | Mainstream mini programs (WeChat, Alipay, Baidu, ByteDance) plus H5 and App  |
+| **Vue syntax**              | Built on Vue 2 / Vue 3 syntax, so no additional template language to learn   |
+| **Conditional compilation** | Platform-specific logic marked with comment directives                       |
+| **Ecosystem**               | Component libraries such as uni-ui and uView, plus a large plugin marketplace |
 
-***
+### 1.2 Compared With Native Mini Programs
 
-### 1.2 与原生小程序对比
-
-| 对比项         | 原生微信小程序          | uni-app                        |
-| -------------- | ----------------------- | ------------------------------ |
-| **语法**       | WXML / WXSS / JS        | Vue SFC（.vue 文件）           |
-| **跨端支持**   | 仅微信                  | 微信、支付宝、H5、App 等       |
-| **组件体系**   | 小程序原生组件          | Vue 组件 + 内置跨端组件        |
-| **工程化**     | 基础，依赖微信开发者工具 | HBuilderX / CLI，支持 npm      |
-| **学习成本**   | 需单独学习 WXML 语法    | 会 Vue 即可快速上手            |
+| Aspect                | Native WeChat mini program        | uni-app                                |
+| --------------------- | --------------------------------- | -------------------------------------- |
+| **Syntax**            | WXML / WXSS / JS                  | Vue single-file components (`.vue`)    |
+| **Platform coverage** | WeChat only                       | WeChat, Alipay, H5, App, and others    |
+| **Component model**   | Mini-program native components    | Vue components plus built-in cross-platform components |
+| **Tooling**           | Basic; tied to WeChat DevTools    | HBuilderX or CLI, with npm support     |
+| **Learning curve**    | WXML syntax must be learned separately | Vue knowledge transfers directly  |
 
 ***
 
-## 二、项目结构
+## II. Project Structure
 
-### 2.1 目录说明
+### 2.1 Directory Layout
 
 ```
 my-project/
-├── pages/              # 页面文件（每个目录为一个页面）
+├── pages/              # Page files (one directory per page)
 │   └── index/
 │       └── index.vue
-├── components/         # 公共组件
-├── static/             # 静态资源（图片、字体等，不参与编译）
-├── store/              # Vuex 状态管理（可选）
-├── utils/              # 工具函数
-├── App.vue             # 应用根组件（生命周期、全局样式）
-├── main.js             # 入口文件
-├── manifest.json       # 应用配置（AppID、权限、平台差异化配置）
-└── pages.json          # 页面路由与窗口配置（核心配置文件）
+├── components/         # Shared components
+├── static/             # Static assets (images, fonts) — not processed by the build
+├── store/              # State management (optional)
+├── utils/              # Utility functions
+├── App.vue             # Root component (app lifecycle, global styles)
+├── main.js             # Entry file
+├── manifest.json       # App configuration (AppID, permissions, per-platform settings)
+└── pages.json          # Route and window configuration (the central config file)
 ```
 
-> 💡 `static` 目录中的资源直接按原路径引用，`pages` 目录中的资源经过编译处理。
+> 💡 Assets in `static` are referenced by their original path and copied through untouched; assets elsewhere pass through the build pipeline and may be inlined or renamed.
 
-***
+### 2.2 pages.json
 
-### 2.2 pages.json 核心配置
-
-`pages.json` 是 uni-app 的路由与全局窗口配置文件，相当于微信小程序的 `app.json`。
+`pages.json` holds the route table and global window configuration — the uni-app equivalent of a mini program's `app.json`.
 
 ```json
 {
@@ -62,19 +58,19 @@ my-project/
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "首页"
+        "navigationBarTitleText": "Home"
       }
     },
     {
       "path": "pages/detail/detail",
       "style": {
-        "navigationBarTitleText": "详情"
+        "navigationBarTitleText": "Details"
       }
     }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
+    "navigationBarTitleText": "Demo App",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },
@@ -82,13 +78,13 @@ my-project/
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页",
+        "text": "Home",
         "iconPath": "static/tab-home.png",
         "selectedIconPath": "static/tab-home-active.png"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的",
+        "text": "Profile",
         "iconPath": "static/tab-profile.png",
         "selectedIconPath": "static/tab-profile-active.png"
       }
@@ -97,27 +93,27 @@ my-project/
 }
 ```
 
-| 配置项            | 说明                                 |
-| ----------------- | ------------------------------------ |
-| **pages**         | 页面路径列表，第一项为启动页         |
-| **globalStyle**   | 全局窗口表现（导航栏颜色、标题等）   |
-| **tabBar**        | 底部 Tab 栏配置，最少 2 项，最多 5 项 |
-| **style**（页面级）| 覆盖 globalStyle，仅对当前页生效   |
+| Option                | Description                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| **`pages`**           | Route list; the first entry is the launch page                    |
+| **`globalStyle`**     | Global window appearance — navigation bar colour, title, background |
+| **`tabBar`**          | Bottom tab bar; minimum 2 items, maximum 5                        |
+| **`style`** (page-level) | Overrides `globalStyle` for that page only                     |
 
 ***
 
-## 三、页面开发
+## III. Page Development
 
-### 3.1 页面结构
+### 3.1 Page Structure
 
-uni-app 页面是标准 Vue SFC 文件，模板标签使用小程序内置组件（`view`、`text`、`image` 等）而非 HTML 标签。
+A uni-app page is a standard Vue single-file component whose template uses mini-program built-in components (`view`, `text`, `image`) rather than HTML tags.
 
 ```vue
 <template>
   <view class="container">
     <image src="/static/logo.png" mode="aspectFit" />
     <text class="title">{{ title }}</text>
-    <button @click="handleClick">点击</button>
+    <button @click="handleClick">Confirm</button>
   </view>
 </template>
 
@@ -130,7 +126,7 @@ export default {
   },
   methods: {
     handleClick() {
-      uni.showToast({ title: "点击成功", icon: "success" });
+      uni.showToast({ title: "Saved", icon: "success" });
     },
   },
 };
@@ -147,83 +143,77 @@ export default {
 </style>
 ```
 
-> 💡 uni-app 使用 `rpx` 作为响应式单位，750rpx 等于屏幕宽度，与微信小程序一致。
+> 💡 `rpx` is the responsive unit: 750rpx always equals the screen width, matching WeChat mini-program behaviour.
 
-***
+### 3.2 Built-in Components
 
-### 3.2 常用内置组件
+| Component     | Description                                          | HTML equivalent |
+| ------------- | ---------------------------------------------------- | --------------- |
+| `view`        | Block-level container                                | `div`           |
+| `text`        | Text; only text nodes support selection and copying  | `span`          |
+| `image`       | Image, with lazy-loading support                     | `img`           |
+| `button`      | Button, with built-in open capabilities (authorisation, sharing) | `button` |
+| `input`       | Single-line input                                    | `input`         |
+| `textarea`    | Multi-line input                                     | `textarea`      |
+| `scroll-view` | Scrollable region, horizontal or vertical            | —               |
+| `swiper`      | Sliding view container (carousels)                   | —               |
+| `navigator`   | Navigation link                                      | `a`             |
 
-| 组件        | 说明                              | 对应 HTML 标签 |
-| ----------- | --------------------------------- | -------------- |
-| `view`      | 块级容器                          | `div`          |
-| `text`      | 文本（仅文本节点支持选中/复制）   | `span`         |
-| `image`     | 图片，支持懒加载                  | `img`          |
-| `button`    | 按钮，内置开放能力（授权、分享）  | `button`       |
-| `input`     | 单行输入框                        | `input`        |
-| `textarea`  | 多行输入框                        | `textarea`     |
-| `scroll-view` | 可滚动区域，支持横向/纵向      | —              |
-| `swiper`    | 滑块视图容器（轮播图）            | —              |
-| `navigator` | 页面跳转链接                      | `a`            |
+### 3.3 Page Lifecycle
 
-***
+A page supports both the Vue lifecycle and the mini-program page lifecycle, and the two coexist in the same component.
 
-### 3.3 页面生命周期
+**Vue lifecycle:**
 
-uni-app 页面同时支持 Vue 生命周期和小程序页面生命周期，两者可在同一页面中共存。
+| Hook                              | Fires when                                                    |
+| --------------------------------- | ------------------------------------------------------------- |
+| `beforeCreate`                    | The instance is initialising; data and events are not yet set  |
+| `created`                         | The instance exists; `data` and `methods` are accessible       |
+| `mounted`                         | The component is mounted and nodes can be queried              |
+| `beforeDestroy` / `beforeUnmount` | Before teardown — the place to clear timers and subscriptions  |
+| `destroyed` / `unmounted`         | The instance has been torn down                                |
 
-**Vue 生命周期**
+> **Note**: `beforeDestroy` and `destroyed` are the Vue 2 names; Vue 3 renames them to `beforeUnmount` and `unmounted`. Both are accepted in Vue 3 for compatibility, but new code should use the Vue 3 names.
 
-| 生命周期         | 触发时机                               |
-| ---------------- | -------------------------------------- |
-| `beforeCreate`   | 实例初始化，数据和事件尚未设置         |
-| `created`        | 实例创建完成，可访问 `data`、`methods` |
-| `mounted`        | 组件挂载到页面，可操作 DOM 节点        |
-| `beforeDestroy`  | 实例销毁前，适合清理定时器、取消订阅   |
-| `destroyed`      | 实例已销毁                             |
+**Mini-program page lifecycle:**
 
-**小程序页面生命周期**
+| Hook                | Fires when                                                          |
+| ------------------- | ------------------------------------------------------------------- |
+| `onLoad(options)`   | The page loads; `options` carries the route parameters — once only   |
+| `onShow`            | The page becomes visible, including on return from another page      |
+| `onReady`           | The first render completes — once only                               |
+| `onHide`            | The page is hidden by navigation to another page                     |
+| `onUnload`          | The page is destroyed (`redirectTo`, `navigateBack`)                 |
+| `onPullDownRefresh` | Pull-to-refresh, once enabled in `pages.json`                        |
+| `onReachBottom`     | The page scrolls to the bottom                                       |
+| `onShareAppMessage` | The user taps forward in the top-right menu                          |
 
-| 生命周期            | 触发时机                                 |
-| ------------------- | ---------------------------------------- |
-| `onLoad(options)`   | 页面加载，`options` 为路由参数，仅触发一次 |
-| `onShow`            | 页面显示（每次进入都触发，含从其他页返回） |
-| `onReady`           | 页面初次渲染完成，仅触发一次             |
-| `onHide`            | 页面隐藏（跳转到其他页面时）             |
-| `onUnload`          | 页面卸载（`redirectTo`、`navigateBack`） |
-| `onPullDownRefresh` | 用户下拉刷新（需在 pages.json 中开启）   |
-| `onReachBottom`     | 页面滚动到底部                           |
-| `onShareAppMessage` | 用户点击右上角转发                       |
+**Execution order:**
 
-**执行顺序：**
+`beforeCreate` → `created` → `onLoad` → `onShow` → `mounted` → `onReady`
 
-```
-beforeCreate → created → onLoad → onShow → mounted → onReady
-```
-
-**如何选用：**
-
-| 需求                       | 推荐使用              |
-| -------------------------- | --------------------- |
-| 接收路由参数、发起首屏请求 | `onLoad`              |
-| 页面每次显示时刷新数据     | `onShow`              |
-| 清理定时器、移除事件监听   | `onUnload` 或 `beforeDestroy` |
-| 下拉刷新                   | `onPullDownRefresh`   |
-| 上拉加载更多               | `onReachBottom`       |
-| 纯组件（非页面）内部逻辑   | Vue 生命周期          |
+| Requirement                              | Hook to use                       |
+| ---------------------------------------- | --------------------------------- |
+| Read route parameters, fetch initial data | `onLoad`                          |
+| Refresh data on every visit               | `onShow`                          |
+| Clear timers, remove listeners            | `onUnload` or `beforeUnmount`     |
+| Pull to refresh                           | `onPullDownRefresh`               |
+| Load more on scroll                       | `onReachBottom`                   |
+| Logic inside a plain component (not a page) | Vue lifecycle hooks             |
 
 ```javascript
 export default {
   onLoad(options) {
-    // 路由参数在此获取，created 中拿不到
+    // Route parameters are available here; created runs too early to read them
     this.fetchDetail(options.id);
   },
   onShow() {
-    // 每次进入页面都执行，适合刷新列表
+    // Runs on every entry — suited to refreshing a list
     this.refreshCount();
   },
   onPullDownRefresh() {
     this.loadData().then(() => {
-      uni.stopPullDownRefresh(); // 停止下拉动画
+      uni.stopPullDownRefresh();    // Stop the pull-down animation
     });
   },
   onReachBottom() {
@@ -237,72 +227,76 @@ export default {
 
 ***
 
-## 四、路由与页面跳转
+## IV. Routing and Navigation
 
-### 4.1 跳转 API
+### 4.1 Navigation APIs
 
-uni-app 使用 `uni.*` API 进行页面跳转，共 5 种方式。
+Navigation goes through `uni.*` APIs, in five forms.
 
-| API                      | 说明                                   |
-| ------------------------ | -------------------------------------- |
-| `uni.navigateTo`         | 保留当前页，跳转到新页（可返回）       |
-| `uni.redirectTo`         | 关闭当前页，跳转（不可返回）           |
-| `uni.reLaunch`           | 关闭所有页，跳转到目标页               |
-| `uni.switchTab`          | 跳转到 tabBar 页面（仅用于 Tab 页）    |
-| `uni.navigateBack`       | 返回上一页或多级页                     |
+| API                | Description                                                |
+| ------------------ | ---------------------------------------------------------- |
+| `uni.navigateTo`   | Keeps the current page and opens a new one; back works      |
+| `uni.redirectTo`   | Closes the current page and opens a new one; no way back    |
+| `uni.reLaunch`     | Closes every page and opens the target                      |
+| `uni.switchTab`    | Switches to a tabBar page — valid only for tab pages        |
+| `uni.navigateBack` | Returns one or more levels                                  |
 
 ```javascript
-// 跳转并传参
+// Navigate with parameters
 uni.navigateTo({
-  url: "/pages/detail/detail?id=123&type=goods",
+  url: "/pages/detail/detail?id=123&type=item",
 });
 
-// 接收参数（在目标页 onLoad 中）
+// Receive them in the target page
 onLoad(options) {
-  console.log(options.id);   // '123'
-  console.log(options.type); // 'goods'
+  console.log(options.id);     // '123'
+  console.log(options.type);   // 'item'
 }
 
-// 返回上一页
+// Return to the previous page
 uni.navigateBack({ delta: 1 });
 ```
 
+> **Note**: the page stack holds a limited number of levels (10 on most platforms), so a chain of `navigateTo` calls eventually fails silently. Use `redirectTo` for steps in a flow that should not be revisited.
+
+### 4.2 Communication Between Pages
+
+**URL parameters:**
+
+Values are appended to the navigation URL and read from `onLoad(options)`. Every value arrives as a string, so an object must be serialised with `JSON.stringify` before navigation and parsed on receipt. URL length limits make this unsuitable for large payloads.
+
 ***
 
-### 4.2 页面间通信
-
-**方式一：URL 参数**
-
-跳转时拼接到 URL，目标页通过 `onLoad(options)` 接收。值均为字符串类型，传递对象需先 `JSON.stringify`，接收后再 `JSON.parse`。
-
-**方式二：全局事件总线**
+**Global event bus:**
 
 ```javascript
-// 发送方（页面 A）
+// Sender
 uni.$emit("refresh", { id: 1 });
 
-// 接收方（页面 B）
+// Receiver
 uni.$on("refresh", (data) => {
   console.log(data.id);
 });
 
-// 页面卸载时移除监听，避免内存泄漏
+// Remove the listener on unload, otherwise it leaks and fires repeatedly
 onUnload() {
   uni.$off("refresh");
 }
 ```
 
-**方式三：Vuex / 全局状态**
+***
 
-适合多页面共享的状态（用户信息、购物车数量等），配置方式与 Vue 项目完全一致。
+**Shared store:**
+
+State needed across several pages — signed-in user, cart count, app settings — belongs in a store. Configuration matches a plain Vue project: Vuex for Vue 2 projects, Pinia for Vue 3, which is the current recommendation.
 
 ***
 
-## 五、网络请求
+## V. Network Requests
 
 ### 5.1 uni.request
 
-`uni.request` 是 uni-app 封装的网络请求 API，跨端统一，原生为回调风格。实际项目中通常二次封装为 Promise 形式（见 5.2）。
+`uni.request` is the unified cross-platform request API. Its native form is callback-based.
 
 ```javascript
 uni.request({
@@ -310,26 +304,24 @@ uni.request({
   method: "GET",
   data: { page: 1, size: 10 },
   header: {
-    Authorization: "Bearer token",
+    Authorization: "Bearer <token>",
   },
   success(res) {
-    // res.statusCode 为 HTTP 状态码，res.data 为响应体
+    // res.statusCode is the HTTP status; res.data is the parsed body
     console.log(res.data);
   },
   fail(err) {
-    // 网络错误、超时等（不含 HTTP 4xx/5xx，那些走 success）
+    // Network-layer failures only — no connection, timeout, DNS failure
     console.error(err);
   },
 });
 ```
 
-> **注意**：`fail` 只在网络层失败时触发（无网络、超时），HTTP 4xx / 5xx 状态码仍走 `success`，需在 `success` 中判断 `res.statusCode` 或业务 `code`。
+> **Note**: `fail` fires only when the request never completes. HTTP 4xx and 5xx responses still reach `success`, so `res.statusCode` or the business `code` must be checked there.
 
-***
+### 5.2 Wrapping the Request Layer
 
-### 5.2 封装请求工具
-
-实际项目中通常封装成 Promise 形式，统一处理 baseURL、token、错误。
+A promise wrapper centralises the base URL, the auth header, and error handling.
 
 ```javascript
 // utils/request.js
@@ -347,15 +339,16 @@ export function request(options) {
         ...options.header,
       },
       success(res) {
+        // Business-level success, not just HTTP success
         if (res.data.code === 200) {
           resolve(res.data);
         } else {
-          uni.showToast({ title: res.data.message || "请求失败", icon: "none" });
+          uni.showToast({ title: res.data.message || "Request failed", icon: "none" });
           reject(res.data);
         }
       },
       fail(err) {
-        uni.showToast({ title: "网络异常，请稍后重试", icon: "none" });
+        uni.showToast({ title: "Network error, please retry", icon: "none" });
         reject(err);
       },
     });
@@ -364,7 +357,6 @@ export function request(options) {
 ```
 
 ```javascript
-// 使用
 import { request } from "@/utils/request";
 
 async fetchList() {
@@ -375,46 +367,46 @@ async fetchList() {
 
 ***
 
-## 六、条件编译
+## VI. Conditional Compilation
 
-### 6.1 语法
+### 6.1 Syntax
 
-条件编译通过特殊注释实现，仅在指定平台编译对应代码，其他平台会忽略。
+Conditional compilation is expressed as comment directives. Code inside a block is compiled only for the listed platforms and is stripped from every other build.
 
 ```javascript
 // #ifdef MP-WEIXIN
-// 仅在微信小程序中生效
+// WeChat mini program only
 wx.login({ success() {} });
 // #endif
 
 // #ifdef H5
-// 仅在 H5 中生效
+// Browser only
 window.location.href = "/login";
 // #endif
 
 // #ifndef APP-PLUS
-// 除 App 外的所有平台生效
-console.log("非 App 平台");
+// Every platform except the native app
+console.log("Not running as a native app");
 // #endif
 ```
 
-模板中的条件编译：
+Templates:
 
 ```html
 <template>
   <view>
     <!-- #ifdef MP-WEIXIN -->
-    <button open-type="getUserInfo">微信授权</button>
+    <button open-type="getPhoneNumber">Continue with phone number</button>
     <!-- #endif -->
 
     <!-- #ifdef H5 -->
-    <button @click="h5Login">H5 登录</button>
+    <button @click="h5Login">Sign in</button>
     <!-- #endif -->
   </view>
 </template>
 ```
 
-样式中的条件编译：
+Styles:
 
 ```css
 /* #ifdef MP-WEIXIN */
@@ -424,130 +416,131 @@ console.log("非 App 平台");
 /* #endif */
 ```
 
-***
+### 6.2 Platform Identifiers
 
-### 6.2 常用平台标识
-
-| 标识           | 说明                    |
-| -------------- | ----------------------- |
-| `MP-WEIXIN`    | 微信小程序              |
-| `MP-ALIPAY`    | 支付宝小程序            |
-| `MP-BAIDU`     | 百度小程序              |
-| `H5`           | H5 / Web               |
-| `APP-PLUS`     | App（iOS + Android）    |
-| `APP-PLUS-NVUE`| App nvue 页面           |
-| `MP`           | 所有小程序平台          |
+| Identifier       | Platform                  |
+| ---------------- | ------------------------- |
+| `MP-WEIXIN`      | WeChat mini program       |
+| `MP-ALIPAY`      | Alipay mini program       |
+| `MP-BAIDU`       | Baidu mini program        |
+| `H5`             | H5 / web                  |
+| `APP-PLUS`       | Native app (iOS, Android) |
+| `APP-PLUS-NVUE`  | nvue pages within the app |
+| `MP`             | Every mini-program platform |
 
 ***
 
-## 七、常用 API
+## VII. Common APIs
 
-### 7.1 存储
+### 7.1 Storage
 
 ```javascript
-// 同步存储（常用）
+// Synchronous form — the common choice
 uni.setStorageSync("key", value);
 const value = uni.getStorageSync("key");
 uni.removeStorageSync("key");
 
-// 清空全部缓存
+// Clear everything
 uni.clearStorageSync();
 ```
 
-***
+> **Note**: mini-program storage is capped per origin (10 MB on WeChat) and is cleared when the user clears the mini program's data, so it suits caching and tokens rather than durable records.
 
-### 7.2 交互反馈
+### 7.2 Interaction Feedback
 
 ```javascript
-// 提示框
-uni.showToast({ title: "操作成功", icon: "success", duration: 2000 });
-uni.showToast({ title: "错误信息", icon: "none" });
+// Toast
+uni.showToast({ title: "Saved", icon: "success", duration: 2000 });
+uni.showToast({ title: "Something went wrong", icon: "none" });
 
-// 加载框
-uni.showLoading({ title: "加载中..." });
+// Loading indicator — every showLoading needs a matching hideLoading
+uni.showLoading({ title: "Loading..." });
 uni.hideLoading();
 
-// 模态弹窗
+// Modal dialog
 uni.showModal({
-  title: "提示",
-  content: "确认删除吗？",
+  title: "Confirm",
+  content: "Delete this item?",
   success(res) {
     if (res.confirm) {
-      // 用户点击确定
+      // Confirmed
     }
   },
 });
 
-// 操作菜单
+// Action sheet
 uni.showActionSheet({
-  itemList: ["选项一", "选项二", "选项三"],
+  itemList: ["Option one", "Option two", "Option three"],
   success(res) {
-    console.log("选中第", res.tapIndex, "项");
+    console.log("Selected index", res.tapIndex);
   },
 });
 ```
 
-***
+> 💡 `showToast` with the default `icon: "success"` truncates titles beyond a few characters. Longer messages need `icon: "none"`.
 
-### 7.3 媒体与文件
+### 7.3 Media and Files
 
 ```javascript
-// 选择图片
+// Choose images
 uni.chooseImage({
-  count: 3,             // 最多选 3 张
+  count: 3,                          // Maximum selection
   sizeType: ["compressed"],
   sourceType: ["album", "camera"],
   success(res) {
-    const paths = res.tempFilePaths; // 临时文件路径数组
+    const paths = res.tempFilePaths;    // Temporary paths, valid for this session only
   },
 });
 
-// 上传文件
+// Upload
 uni.uploadFile({
   url: "https://api.example.com/upload",
   filePath: tempFilePath,
   name: "file",
   success(res) {
+    // res.data is a raw string, not a parsed object
     const data = JSON.parse(res.data);
   },
 });
 
-// 预览图片
+// Preview full-screen
 uni.previewImage({
   urls: ["https://example.com/1.jpg", "https://example.com/2.jpg"],
   current: 0,
 });
 ```
 
-***
+> 💡 WeChat now steers new code towards `uni.chooseMedia`, which handles images and video in one call and exposes file size. `uni.chooseImage` remains the portable choice across platforms.
 
-### 7.4 位置
+### 7.4 Location
 
 ```javascript
 uni.getLocation({
-  type: "wgs84", // wgs84（标准）/ gcj02（国测局）
+  type: "wgs84",    // wgs84 (GPS standard) / gcj02 (required by Chinese map services)
   success(res) {
     const { latitude, longitude } = res;
   },
 });
 ```
 
+> **Note**: location APIs require the permission to be declared in `manifest.json` and, on WeChat, an approved purpose statement in the mini-program console. An undeclared call fails at runtime rather than prompting the user.
+
 ***
 
-## 八、自定义组件
+## VIII. Custom Components
 
-### 8.1 创建与使用
+### 8.1 Creating and Using Components
 
-uni-app 组件与 Vue 组件写法完全一致，放在 `components/` 目录下，满足 `components/<组件名>/<组件名>.vue` 的目录结构后，可以**免注册直接使用**（easycom 规范）。
+Components are written exactly like Vue components. A component placed under `components/` following the `components/<name>/<name>.vue` layout is available **without registration** — the easycom convention.
 
 ```
 components/
-└── my-card/
-    └── my-card.vue
+└── demo-card/
+    └── demo-card.vue
 ```
 
 ```vue
-<!-- components/my-card/my-card.vue -->
+<!-- components/demo-card/demo-card.vue -->
 <template>
   <view class="card">
     <text class="card-title">{{ title }}</text>
@@ -568,50 +561,44 @@ export default {
 ```
 
 ```vue
-<!-- 页面中直接使用，无需 import 和 components 注册 -->
+<!-- Used directly — no import, no components entry -->
 <template>
-  <my-card title="卡片标题">
-    <text>卡片内容</text>
-  </my-card>
+  <demo-card title="Card title">
+    <text>Card content</text>
+  </demo-card>
 </template>
 ```
 
-***
+### 8.2 Component Communication
 
-### 8.2 组件通信
-
-与 Vue 组件通信方式相同：
-
-| 场景         | 方式                           |
-| ------------ | ------------------------------ |
-| 父传子       | `props`                        |
-| 子传父       | `$emit` 自定义事件             |
-| 跨层级       | `provide / inject`（祖先向后代单向注入，Vue2/3 均支持） |
-| 全局共享状态 | Vuex / `uni.$emit` 事件总线    |
+| Scenario                 | Mechanism                                                        |
+| ------------------------ | ---------------------------------------------------------------- |
+| **Parent to child**      | `props`                                                           |
+| **Child to parent**      | `$emit` with a custom event                                       |
+| **Across several levels** | `provide` / `inject` — one-way injection from ancestor to descendant, supported in both Vue 2 and Vue 3 |
+| **Application-wide state** | A store (Pinia or Vuex), or the `uni.$emit` event bus           |
 
 ***
 
-## 九、样式说明
+## IX. Styling
 
-### 9.1 尺寸单位
+### 9.1 Size Units
 
-| 单位  | 说明                                          |
-| ----- | --------------------------------------------- |
-| `rpx` | 响应式像素，750rpx = 屏幕宽度（推荐使用）     |
-| `px`  | 固定像素，不随屏幕缩放                        |
-| `%`   | 相对于父元素百分比                            |
-| `vh/vw` | 相对于视口高/宽，H5 支持，小程序部分支持   |
+| Unit    | Description                                                        |
+| ------- | ------------------------------------------------------------------ |
+| `rpx`   | Responsive pixel; 750rpx equals the screen width (**recommended**)  |
+| `px`    | Fixed pixel; does not scale with screen width                       |
+| `%`     | Relative to the parent element                                      |
+| `vh/vw` | Relative to the viewport; full support on H5, partial on mini programs |
 
-***
+### 9.2 Global and Scoped Styles
 
-### 9.2 全局样式与局部样式
-
-- `App.vue` 中的 `<style>` 为全局样式（不加 `scoped`）
-- 页面和组件中加 `scoped` 限制样式作用域
-- 小程序不支持部分 CSS 选择器（如 `*`、标签选择器在部分场景受限），推荐使用类选择器
+- A `<style>` block in `App.vue` without `scoped` applies globally
+- `scoped` on a page or component confines its rules to that component
+- Mini programs restrict some selectors — the universal selector and tag selectors behave inconsistently, so class selectors are the reliable choice
 
 ```vue
-<!-- App.vue：全局公共样式 -->
+<!-- App.vue: global styles -->
 <style>
 page {
   background-color: #f5f5f5;
@@ -620,46 +607,45 @@ page {
 </style>
 ```
 
+> 💡 `page` is the mini-program equivalent of `body`, and is where a global background colour belongs. Styling `body` has no effect outside H5.
+
 ***
 
-## 十、发布与运行
+## X. Running and Publishing
 
-### 10.1 运行方式
+### 10.1 Running the Project
 
-**HBuilderX（推荐）**：直接点击「运行」选择目标平台，工具链内置，配置最少。
+**HBuilderX:** press Run and pick a target platform. The toolchain is bundled, so this path needs the least configuration.
 
-**CLI 方式**：
+**CLI (Vue 3 + Vite):**
 
 ```bash
-# 安装脚手架
-npm install -g @vue/cli
-vue create -p dcloudio/uni-preset-vue my-project
+# Scaffold from the official Vite preset
+npx degit dcloudio/uni-preset-vue#vite my-project
+cd my-project
+npm install
 
-# 运行到微信小程序
-npm run dev:mp-weixin
+# Development
+npm run dev:mp-weixin      # WeChat mini program
+npm run dev:h5             # H5
 
-# 运行到 H5
-npm run dev:h5
-
-# 构建生产包
+# Production builds
 npm run build:mp-weixin
 npm run build:h5
 ```
 
-***
+A mini-program build has no dev server: `dev:mp-weixin` writes an unminified bundle to `dist/dev/mp-weixin` and rebuilds on change, which is then loaded into the platform's own DevTools.
 
-### 10.2 发布流程（微信小程序）
+### 10.2 Publishing a WeChat Mini Program
 
-```
-① npm run build:mp-weixin
-        ↓
-② 用微信开发者工具打开 dist/build/mp-weixin 目录
-        ↓
-③ 点击「上传」，填写版本号和备注
-        ↓
-④ 在微信公众平台后台提交审核
-        ↓
-⑤ 审核通过后发布上线
-```
+    ① npm run build:mp-weixin
+            ↓
+    ② Open dist/build/mp-weixin in WeChat DevTools
+            ↓
+    ③ Click Upload, entering a version number and release notes
+            ↓
+    ④ Submit for review in the WeChat MP console
+            ↓
+    ⑤ Release once the review passes
 
-> **注意**：发布前确认 `manifest.json` 中已填写正确的微信小程序 AppID。
+> **Note**: confirm the correct AppID is set in `manifest.json` before building — an uploaded package is bound to the AppID compiled into it, and the request domains must already be allow-listed in the console or network calls fail in the production build.
