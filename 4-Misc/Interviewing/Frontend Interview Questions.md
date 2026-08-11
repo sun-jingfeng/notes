@@ -11,41 +11,8 @@
 
 ### 2. JavaScript
 
-1. Is there advanced JavaScript knowledge that most people lack and you have? Best explained through the situation in which you picked it up.
-2. State the output order of the snippet below and explain why.
-
-```javascript
-console.log("start")
-
-setTimeout(() => {
-  console.log("timeout")
-}, 0)
-
-new Promise(resolve => {
-  console.log("promise before")
-  resolve()
-  console.log("promise after")
-})
-  .then(() => {
-    console.log("promise 1")
-  })
-  .then(() => {
-    console.log("promise 2")
-  })
-
-function fn1() {
-  console.log("fn1 function")
-}
-
-async function fn() {
-  console.log("fn start")
-  await fn1()
-  console.log("fn end")
-}
-
-fn()
-console.log("end")
-```
+1. Explain your understanding of the event loop in JavaScript.
+2. Is there advanced JavaScript knowledge that most people lack and you have? Best explained through the situation in which you picked it up.
 
 ***
 
@@ -72,19 +39,8 @@ console.log("end")
 
 ## III. Performance Optimization
 
-### 1. Rendering Principles
-
 1. Describe the browser rendering pipeline and the optimizations that follow from it.
-
-***
-
-### 2. Specific Problems
-
-State the detection method and the solution for each, ideally tied to past project experience.
-
-1. First-screen load speed
-2. High-frequency interaction
-3. Jank and dropped frames
+2. Pick a project that involved performance optimization and walk through the problems encountered, the tools used to detect them, and the solutions.
 
 ***
 
@@ -94,7 +50,14 @@ State the detection method and the solution for each, ideally tied to past proje
 
 ***
 
-## V. Written Test
+## V. AI-Assisted Coding
+
+1. How do you ensure the quality of AI-generated code?
+2. How do you use AI tools day to day? What experience shows you use them better than others?
+
+***
+
+## VI. Written Test
 
 Given a nested object, implement `getKeysByLevel(obj)` that groups every key by its depth and returns a two-dimensional array. Keys keep their definition order within a level, and a property whose value is not an object contributes its key only, with no further traversal.
 
@@ -112,10 +75,3 @@ const obj = {
 getKeysByLevel(obj);
 // [['a', 'e'], ['b', 'd'], ['c']]
 ```
-
-***
-
-## VI. AI-Assisted Coding
-
-1. Which AI coding tools do you use?
-2. How do you use AI tools day to day? What experience shows you use them better than others?
