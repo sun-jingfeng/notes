@@ -5,7 +5,8 @@
 ### 1. CSS
 
 1. Explain `position` and `z-index`. (Must cover stacking context, and how to break out of a stacking context's limits.)
-2. Which page layout approaches do you use, and which scenario suits each? (Must include flex, and show that edge cases were considered and handled up front.)
+2. Which page layout approaches do you use, and which scenario suits each? (Must cover the individual properties the `flex` shorthand expands to.)
+3. Share edge cases that the design mockups did not cover but you anticipated, and how you handled them.
 
 ***
 
@@ -32,14 +33,14 @@
 
 ## II. Engineering Setup
 
-1. What base setup do you start a new project with, and what does it contain?
+1. What base setup do you start a new project with? (Must cover what a solid base setup needs to contain.)
 2. How do you approach business-development problems from an engineering angle?
 
 ***
 
 ## III. Performance Optimization
 
-1. Describe the browser rendering pipeline and the optimizations that follow from it.
+1. Explain your understanding of the browser rendering pipeline. (Must cover which optimizations target its performance bottlenecks.)
 2. Pick a project that involved performance optimization and walk through the problems encountered, the tools used to detect them, and the solutions.
 
 ***
@@ -53,7 +54,7 @@
 ## V. AI-Assisted Coding
 
 1. How do you ensure the quality of AI-generated code?
-2. How do you use AI tools day to day? What experience shows you use them better than others?
+2. What experience shows you are better than others at using AI to assist development?
 
 ***
 
