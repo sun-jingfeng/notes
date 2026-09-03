@@ -194,7 +194,7 @@ go test
 # Verbose output
 go test -v
 
-# Run tests in all subpackages
+# Run tests in the current directory and every subdirectory (./... is the package wildcard)
 go test ./...
 
 # With coverage

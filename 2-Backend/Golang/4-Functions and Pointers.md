@@ -71,7 +71,7 @@ func divide(a, b int) (result int, err error) {
 
 ### 1.4 Variadic Parameters
 
-A `...` before the parameter type marks a **variadic parameter**, treated as a slice inside the function—equivalent to Java's `Type... args`.
+A `...` before the parameter type marks a **variadic parameter**: the caller may pass any number of values of that type, and inside the function they arrive as a slice—equivalent to Java's `Type... args`.
 
 ```go
 // nums is a []int inside the function
@@ -84,12 +84,37 @@ func sum(nums ...int) int {
 }
 
 sum(1, 2, 3)            // 6
-sum()                   // 0, zero arguments allowed
+sum()                   // 0, zero arguments allowed; nums is nil
 
-// Expand a slice into variadic arguments (note the ...)
+// Spread an existing slice into the variadic parameter (note the trailing ...)
 nums := []int{1, 2, 3}
 sum(nums...)            // 6
+
+// A variadic parameter must be the last one
+func logf(level string, args ...any) {
+    fmt.Println(level, args)
+}
+logf("INFO", "started", 8080, true)     // INFO [started 8080 true]
 ```
+
+| Rule | Description |
+| ---- | ---- |
+| **Position** | Only the last parameter can be variadic; a function has at most one |
+| **Inside the function** | `nums` is a plain `[]int`; `len`, `range`, and indexing all work |
+| **Zero arguments** | Allowed; the slice is `nil` |
+| **Spread `s...`** | Passes an existing slice as the variadic argument; `s` must already be a slice of the exact element type |
+| **No mixing** | `sum(1, nums...)` is a compile error; spread the whole argument list or list values one by one |
+| **`...any`** | Accepts values of any type, the signature `fmt.Println` and `fmt.Printf` use |
+
+> **Note**: `sum(nums...)` does **not** copy the slice—the function receives the same backing array, so writing to `nums[i]` inside the function modifies the caller's slice. Listing values one by one (`sum(1, 2, 3)`) allocates a fresh slice instead.
+
+The same spelling appears in two other places with unrelated meanings (see the table below):
+
+| Syntax | Meaning | Example |
+| ---- | ---- | ---- |
+| `func f(args ...T)` / `f(s...)` | Variadic parameter / spread a slice into it | `append(dst, src...)` |
+| `[...]T{...}` | Array literal whose length is inferred from the element count | `[...]int{1, 2, 3}` is `[3]int` |
+| `./...` | Package path wildcard in the `go` tool: this directory and all subdirectories | `go test ./...` |
 
 ***
 

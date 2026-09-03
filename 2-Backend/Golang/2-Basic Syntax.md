@@ -185,7 +185,7 @@ const (
 
 // A method on the named type gives the enum readable output
 func (s Status) String() string {
-    return [...]string{"Pending", "Active", "Closed"}[s]
+    return [...]string{"Pending", "Active", "Closed"}[s]   // [...] = array literal, length inferred (3)
 }
 
 fmt.Println(Active)         // Active (fmt calls String() automatically)

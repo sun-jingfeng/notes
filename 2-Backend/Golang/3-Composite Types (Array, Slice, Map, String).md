@@ -12,8 +12,18 @@ var arr [3]int            // [0 0 0]
 nums := [3]int{10, 20, 30}
 
 // Let the number of initial values infer the length
-auto := [...]int{1, 2, 3, 4}   // length is 4
+auto := [...]int{1, 2, 3, 4}   // length is 4, type is [4]int
 ```
+
+The three literal forms differ only in what sits between the brackets, and the difference decides whether the result is an array or a slice:
+
+| Literal | Type | Meaning |
+| ---- | ---- | ---- |
+| `[3]int{1, 2, 3}` | `[3]int` (array) | Explicit length; a mismatch with the element count is a compile error |
+| `[...]int{1, 2, 3}` | `[3]int` (array) | Length inferred from the elements; still a fixed-length array |
+| `[]int{1, 2, 3}` | `[]int` (slice) | No length; a slice backed by a hidden array |
+
+> 💡 `[...]` is only valid in an array literal with initial values—`var a [...]int` does not compile, because there is nothing to count.
 
 | Trait | Description |
 | ---- | ---- |
