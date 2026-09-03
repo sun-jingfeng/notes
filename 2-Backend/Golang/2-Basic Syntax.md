@@ -128,7 +128,106 @@ const (
 | **String** | `string` | Immutable UTF-8 byte sequence |
 | **Character** | `byte` (= `uint8`) / `rune` (= `int32`) | `byte` for a byte, `rune` for a Unicode code point |
 
-### 3.2 Type Conversion
+### 3.2 Defining New Types with `type`
+
+**`type`** declares a **named type**: it binds a name to a type so that name can be used everywhere a type is expected. Structs, interfaces, function types, and enum-like integers are all introduced with this one keyword—it plays the role of Java's `class`, `interface`, and `enum` declarations combined, and it can also name a plain `int` or `string`.
+
+**Core idea:** a `type` declaration creates a new type identity; the type it is built on is the **underlying type** (the Go spec calls the result a *defined type*).
+
+There are two forms; the `=` decides whether a new type is created or an existing one merely gets another name:
+
+```go
+type UserID int64           // type definition: a NEW, distinct type whose underlying type is int64
+type MyList = []string      // type alias: another name for the SAME type
+```
+
+| Form | Syntax | Identity | Typical use |
+| ---- | ---- | ---- | ---- |
+| **Type definition** | `type Name T` | New type, distinct from `T` | Domain types, enums, attaching methods |
+| **Type alias** | `type Name = T` | Same type as `T`, interchangeable | Renaming during refactors, shorthand names |
+
+**Type definition:**
+
+```go
+type UserID int64
+type Celsius float64
+type Headers map[string][]string
+type Handler func(msg string) error
+
+var id UserID = 42
+// var raw int64 = id       // ❌ compile error: UserID and int64 are different types
+var raw int64 = int64(id)   // ✅ explicit conversion; the underlying types match
+
+// Grouped declaration
+type (
+    ID   int64
+    Name string
+)
+```
+
+| Reason to define a type | Description |
+| ---- | ---- |
+| **Type safety** | `UserID` and `OrderID` are both `int64` underneath, but the compiler refuses to mix them |
+| **Attach behavior** | Methods can be declared on any named type in the same package, not only on structs |
+| **Readable signatures** | `func Register(h Handler)` reads better than a long `func(...)` literal |
+| **Enumerations** | `type Status int` + `const` / `iota` is Go's enum idiom |
+
+The enum idiom combines a named integer type with `iota`; typing the first constant makes every following constant a `Status` rather than an untyped `int`:
+
+```go
+type Status int
+
+const (
+    Pending Status = iota   // 0, typed as Status
+    Active                  // 1
+    Closed                  // 2
+)
+
+// A method on the named type gives the enum readable output
+func (s Status) String() string {
+    return [...]string{"Pending", "Active", "Closed"}[s]
+}
+
+fmt.Println(Active)         // Active (fmt calls String() automatically)
+```
+
+**Type alias:**
+
+```go
+type any = interface{}      // the standard library's own alias (Go 1.18+)
+type byte = uint8           // byte and rune are aliases, not new types
+type rune = int32
+
+type Text = string
+var t Text = "go"
+var s string = t            // ✅ no conversion needed; Text and string are the same type
+```
+
+| Aspect | Type definition `type A T` | Type alias `type A = T` |
+| ---- | ---- | ---- |
+| **New type created?** | Yes | No, `A` is just another spelling of `T` |
+| **Assignable to `T` without conversion?** | No | Yes |
+| **Inherits `T`'s methods?** | No (only fields and operators carry over) | Yes (it *is* `T`) |
+| **Can declare new methods?** | Yes (in the same package) | Only if `T` is itself a named type of this package |
+| **When to use** | Almost always | Moving a type between packages without breaking callers |
+
+> **Note**: A type definition **does not inherit the methods** of its underlying type. `type MyDuration time.Duration` keeps the `+`/`<` operators and converts freely with `time.Duration`, but has no `Seconds()` method; declare what is needed or use struct embedding instead.
+
+The same keyword covers every kind of type declaration (see the table below):
+
+| Declaration | Example |
+| ---- | ---- |
+| **Named basic type** | `type UserID int64` |
+| **Struct** | `type User struct { Name string }` |
+| **Interface** | `type Shape interface { Area() float64 }` |
+| **Function type** | `type Handler func(msg string) error` |
+| **Slice / map / channel** | `type Headers map[string][]string` |
+| **Generic type** | `type Stack[T any] struct { items []T }` |
+| **Alias** | `type any = interface{}` |
+
+> 💡 Package-level `type` declarations are the norm; `type` also works inside a function body for a throwaway local type (e.g. a one-off struct for decoding JSON), but methods cannot be declared on a local type.
+
+### 3.3 Type Conversion
 
 Go has **no implicit type conversion**; different types must be converted explicitly. This is stricter than Java, which auto-promotes smaller types to larger ones.
 
@@ -147,7 +246,7 @@ var u uint = uint(f)         // ✅
 
 > 💡 Removing implicit conversion avoids precision loss and surprises—every conversion is visible.
 
-### 3.3 String and Composite Type Conversion
+### 3.4 String and Composite Type Conversion
 
 The conversion syntax `T(v)` is not limited to numeric types; it works between any two types the language defines as convertible. The most common non-numeric case is **string ↔ byte/rune slice**.
 

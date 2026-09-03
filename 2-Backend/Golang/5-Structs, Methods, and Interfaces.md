@@ -15,7 +15,7 @@ type User struct {
 
 | Concept | Description |
 | ---- | ---- |
-| `type` | Keyword for defining a new type |
+| `type` | Declares a new named type—here a struct; the same keyword declares interfaces, function types, and named basic types such as `type UserID int64` |
 | **Uppercase field** | Visible outside the package (exported), like `public` |
 | **Lowercase field** | Visible only inside the package, like `private` |
 
@@ -109,6 +109,51 @@ u.SayHello()                // Hi, I'm Tom
 | Method location | Defined inside the class | Defined outside the struct, bound via a receiver |
 | Call syntax | `obj.method()` | `obj.method()` |
 | this/self | Implicit `this` | Explicitly named receiver (e.g. `u`) |
+
+A receiver is not limited to structs: any **named type declared in the same package** can have methods, including types built on `int`, `string`, slices, maps, or functions. Methods cannot be declared on built-in types directly or on types from another package.
+
+```go
+// Named type over a basic type
+type Celsius float64
+
+func (c Celsius) ToFahrenheit() float64 {
+    return float64(c)*9/5 + 32
+}
+
+// Named type over a slice
+type IDs []int64
+
+func (ids IDs) Contains(target int64) bool {
+    for _, id := range ids {
+        if id == target {
+            return true
+        }
+    }
+    return false
+}
+
+// Named type over a function: turns a plain function into an interface implementer
+type HandlerFunc func(msg string) error
+
+func (f HandlerFunc) Handle(msg string) error {
+    return f(msg)          // the method just calls the function itself
+}
+
+temp := Celsius(100)
+fmt.Println(temp.ToFahrenheit())            // 212
+fmt.Println(IDs{1, 2, 3}.Contains(2))       // true
+```
+
+| Receiver base type | Allowed? | Note |
+| ---- | ---- | ---- |
+| Struct declared in this package | ✅ | The common case |
+| `type Celsius float64` in this package | ✅ | Named basic type |
+| `type IDs []int64` in this package | ✅ | Named slice / map / function type |
+| Built-in `int`, `string`, `[]int` | ❌ | Not named types of this package |
+| `time.Duration`, `sql.DB` | ❌ | Declared in another package; wrap or embed instead |
+| Pointer or interface type | ❌ | `type P *User` and interfaces cannot be receivers |
+
+> 💡 The function-type receiver pattern is how `net/http` lets a bare function satisfy the `http.Handler` interface via `http.HandlerFunc`.
 
 ### 2.2 Value Receiver vs Pointer Receiver
 
