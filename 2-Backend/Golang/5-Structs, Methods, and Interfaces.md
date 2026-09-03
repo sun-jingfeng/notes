@@ -185,6 +185,73 @@ fmt.Println(u.Name)         // B, modified
 
 > 💡 Rule of thumb: **if any method uses a pointer receiver, use a pointer receiver for all methods** for consistency. Use pointer receivers whenever you modify state or the struct is large.
 
+### 2.3 Receiver Choice for Read-Only Methods
+
+A method that never assigns to a field produces the **same result** with either receiver, so the choice is not about that method's logic. It is decided by the type as a whole (see the table below).
+
+| Factor | Value receiver `(s Server)` | Pointer receiver `(s *Server)` |
+| ---- | ---- | ---- |
+| **Copy cost** | Copies the entire struct on every call | Copies one pointer (8 bytes) |
+| **`sync` fields inside** | Copies the `sync.Mutex` / `sync.Pool` / `sync.WaitGroup`; `go vet` reports `copylocks` | Safe; the lock stays in place |
+| **Method set** | Method belongs to both `Server` and `*Server` | Method belongs to `*Server` only |
+| **Interface satisfaction** | Both `Server` and `*Server` satisfy an interface listing it | Only `*Server` does |
+| **Future edits** | A later assignment silently updates a throwaway copy | Mutation works as expected |
+
+**Copying `sync` types:**
+
+```go
+type Server struct {
+    mu    sync.Mutex
+    pool  sync.Pool
+    conns map[string]net.Conn
+}
+
+// ❌ go vet: "Count passes lock by value: Server contains sync.Mutex"
+func (s Server) Count() int {
+    return len(s.conns)   // reads fine, but the receiver copy duplicated the mutex and the pool
+}
+
+// ✅ pointer receiver: no copy, no vet warning
+func (s *Server) Count() int {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    return len(s.conns)
+}
+```
+
+A copied mutex is a separate lock, so locking the copy protects nothing; a copied `sync.Pool` or `sync.WaitGroup` has undefined behavior. Any struct with a `sync` field must use pointer receivers throughout.
+
+**Method sets and interfaces:**
+
+The **method set** of a value type `T` contains only its value-receiver methods; the method set of `*T` contains both kinds. This decides which of `T` and `*T` satisfies an interface.
+
+```go
+type Handler interface {
+    Handle()
+}
+
+type Server struct{}
+
+func (s *Server) Handle() {}     // pointer receiver
+
+var h Handler
+h = &Server{}                    // ✅ *Server has Handle in its method set
+// h = Server{}                  // ❌ compile error: Server does not implement Handler
+                                 //    (method Handle has pointer receiver)
+
+s := Server{}
+s.Handle()                       // ✅ still works: s is addressable, Go inserts (&s).Handle()
+```
+
+| Value stored | Method receivers on `T` | Satisfies `interface { M() }`? |
+| ---- | ---- | ---- |
+| `T{}` | `func (t T) M()` | ✅ |
+| `&T{}` | `func (t T) M()` | ✅ (`*T` includes `T`'s methods) |
+| `T{}` | `func (t *T) M()` | ❌ compile error |
+| `&T{}` | `func (t *T) M()` | ✅ |
+
+> **Note**: The direct call `s.Handle()` compiles because a variable is addressable, but assigning `Server{}` to an interface (or a map element, or a function return value) has no address to take, so the pointer-receiver method is unavailable there. Types with pointer receivers are used as `*T` everywhere in practice—`http.Handler` implementations, database handles, and framework engines all follow this pattern.
+
 ***
 
 ## III. Composition over Inheritance
