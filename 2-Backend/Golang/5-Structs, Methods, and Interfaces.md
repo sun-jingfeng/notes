@@ -70,13 +70,14 @@ type User struct {
 | ---- | ---- |
 | Syntax | Backquoted string of `key:"value"` pairs separated by **spaces** |
 | `key:"value"` | No space around `:`; value in double quotes — wrong format silently fails |
-| `omitempty` | Field is omitted when it is the zero value (`0`, `""`, `nil`, empty slice/map) |
+| `omitempty` | Field is omitted when it is the zero value (`0`, `""`, `nil`, empty slice/map). A **struct** is never empty, and an **interface** is empty only when nil — see the Reflection note, section VI.3 |
+| `omitzero` | Go 1.24+: omitted when it equals the type's zero value (honors `IsZero() bool`). Not a synonym for `omitempty` — see the Reflection note, section VI.4 |
 | `-` | Field is always skipped |
 | Unexported fields | Tags are useless on lowercase fields — reflection-based libraries cannot read them |
 
 Common keys: `json`, `xml`, `yaml`, `gorm`, `validate`, `form`, `db`.
 
-Reading tags yourself requires reflection (`reflect.StructField.Tag.Get("json")`) — see the Reflection note, section IV.
+Reading tags yourself requires reflection (`reflect.StructField.Tag.Get("json")`) — see the Reflection note, section IV. For who actually parses a `json:` tag at runtime (`encoding/json`, not the web framework), see that note's section VI.
 
 > 💡 A missing tag is not an error: `encoding/json` falls back to the exported field name. Run `go vet` to catch malformed tags (e.g. `json: "name"` with a space).
 

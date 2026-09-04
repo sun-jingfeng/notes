@@ -132,7 +132,121 @@ fmt.Println(out[0].String())                 // Hi, Tom
 
 ***
 
-## VI. When to Use (and Avoid) Reflection
+## VI. Case Study: How `encoding/json` Honors a Struct Tag
+
+Tags do nothing on their own. Following one from declaration to HTTP response shows which layer actually does the work — and it is usually not the layer you would guess.
+
+### 6.1 The Tag Is Inert Until Something Reads It
+
+The compiler stores the tag string in the type metadata and assigns it no meaning. `reflect` hands it back verbatim:
+
+```go
+type Body struct {
+    Code int    `json:"code"`
+    Msg  string `json:"msg"`
+    Data any    `json:"data,omitempty"`
+}
+
+f := reflect.TypeOf(Body{}).Field(2)
+fmt.Println(f.Name)                 // Data
+fmt.Println(f.Tag)                  // json:"data,omitempty"   ← whole raw string
+fmt.Println(f.Tag.Get("json"))      // data,omitempty          ← one key's value
+```
+
+`StructTag.Get` / `Lookup` knows only the `key:"value"` splitting convention. It does **not** know that `data` is a field name or that `omitempty` means anything — splitting that value on the comma and acting on the parts is `encoding/json`'s own logic.
+
+> 💡 This is why `json`, `gorm` and `validate` tags coexist on one field: no library owns the tag, each reads only its own key.
+
+### 6.2 Who Reads the Tag in a Web Handler
+
+Returning JSON through a framework makes it look like the framework controls the output format. It does not — Gin sets a Content-Type and delegates:
+
+`c.JSON` → `render.JSON.Render` → `WriteJSON` → `json.API.Marshal` → `encoding/json.Marshal` → `reflect`
+
+Gin v1.12's default codec (`codec/json/json.go`) is a passthrough:
+
+```go
+//go:build !jsoniter && !go_json && !(sonic && (linux || windows || darwin))
+
+const Package = "encoding/json"
+
+func (j jsonApi) Marshal(v any) ([]byte, error) {
+    return json.Marshal(v)      // the entire implementation
+}
+```
+
+| Layer | Responsibility | Reads the tag? |
+| ---- | ---- | ---- |
+| Gin | Content-Type, status code, writing bytes | No |
+| `encoding/json` | Field naming, `omitempty`, `-` | **Yes — parses the `json:` key** |
+| `reflect` | Enumerating fields, exposing `.Tag` | Splits `key:"value"`, nothing more |
+
+| Go | Java |
+| ---- | ---- |
+| `json:"code"` struct tag | `@JsonProperty("code")` annotation |
+| `encoding/json` | Jackson `ObjectMapper` |
+| Gin (`c.JSON`) | Spring MVC — also just delegates to Jackson |
+
+> 💡 The build tags above are why `sonic`, `go-json` and `json-iterator` appear as indirect deps of Gin: the codec is swappable at build time, and every alternative honors the same `json:` convention. That convention — not the framework — is the real contract.
+
+### 6.3 What `omitempty` Actually Considers Empty
+
+The check runs against the field's **static type**, not the value it happens to hold.
+
+| Static type | Omitted when |
+| ---- | ---- |
+| numbers | `0` |
+| string | `""` |
+| bool | `false` |
+| pointer / interface | `nil` |
+| slice / map / array | length 0 |
+| struct | **never** — a struct is never "empty" |
+
+The interface row is the trap. `Data any` is an interface, so only a nil interface is empty; what it holds is irrelevant:
+
+```go
+type E struct {
+    Data any `json:"data,omitempty"`
+}
+
+E{Data: nil}        // {}              ← dropped
+E{Data: 0}          // {"data":0}      ← kept
+E{Data: ""}         // {"data":""}     ← kept
+E{Data: []int{}}    // {"data":[]}     ← kept
+```
+
+Declared as `Data []Item` that empty slice would vanish; as `any` it survives. For an API envelope that is usually what you want — a handler with no results sends `"data":[]` instead of dropping the key and forcing the client to branch.
+
+### 6.4 `omitempty` vs. `omitzero` (Go 1.24+)
+
+`omitempty` predates any general notion of a zero value and cannot omit a zero struct. Go 1.24 added `omitzero`, which omits the type's zero value and honors an `IsZero() bool` method if the type has one:
+
+```go
+type T struct {
+    A time.Time `json:"a,omitempty"`    // a struct is never "empty"
+    B time.Time `json:"b,omitzero"`     // zero time → omitted
+}
+
+json.Marshal(T{})       // {"a":"0001-01-01T00:00:00Z"}
+```
+
+They are **not** interchangeable, and slices show the difference in the other direction:
+
+```go
+type S struct {
+    E []int `json:"e,omitempty"`
+    Z []int `json:"z,omitzero"`
+}
+
+json.Marshal(S{E: nil, Z: nil})            // {}            both drop nil
+json.Marshal(S{E: []int{}, Z: []int{}})    // {"z":[]}      omitzero keeps it
+```
+
+> ⚠️ `omitempty` asks "is this empty?" (length 0 counts); `omitzero` asks "is this the zero value?" (only `nil` counts for a slice). Use `omitzero` when the zero value genuinely means absent, `omitempty` when empty collections should disappear.
+
+***
+
+## VII. When to Use (and Avoid) Reflection
 
 | Use it | Avoid it |
 | ---- | ---- |
