@@ -55,6 +55,94 @@ type User struct {
 
 > 💡 Go has no Java-style "class-private" concept; visibility is bounded by the **package**. Lowercase identifiers are accessible from any file within the same package.
 
+### 1.3 Import Forms and the Blank Import
+
+An import can carry a prefix that changes how the package is referenced (see the table below):
+
+| Form | Syntax | Effect |
+| ---- | ---- | ---- |
+| **Plain** | `import "net/http"` | Referenced by its package name: `http.Get` |
+| **Aliased** | `import str "strings"` | Referenced by the alias; resolves name clashes such as two `errors` packages |
+| **Blank** | `import _ "github.com/go-sql-driver/mysql"` | Never referenced; imported only for its side effects |
+| **Dot** | `import . "math"` | Identifiers merge into the current file: `Sqrt(2)`; avoid outside tests |
+
+A **blank import** uses the blank identifier `_` as the alias. Two language rules make it necessary: **an unused import is a compile error**, and **importing a package runs its `init()` functions**. When a package's only job is to register itself somewhere, `_` keeps the import legal without a name to reference.
+
+```go
+import (
+    "database/sql"
+
+    _ "github.com/go-sql-driver/mysql"   // init() calls sql.Register("mysql", &MySQLDriver{})
+)
+
+// The driver is looked up by name in the registry filled by that init()
+db, err := sql.Open("mysql", "user:pass@tcp(127.0.0.1:3306)/demo")
+// Without the blank import: compiles, but sql.Open fails at runtime with
+// "sql: unknown driver "mysql" (forgotten import?)"
+```
+
+| Blank import | What its `init()` registers |
+| ---- | ---- |
+| `_ "github.com/go-sql-driver/mysql"` | The `mysql` driver with `database/sql` |
+| `_ "github.com/lib/pq"` | The `postgres` driver with `database/sql` |
+| `_ "image/png"` | The PNG decoder with the `image` package |
+| `_ "net/http/pprof"` | Profiling handlers on the default HTTP mux |
+| `_ "embed"` | Enables the `//go:embed` directive in that file |
+
+The blank identifier is the same `_` used elsewhere: `_, err := f()` discards a return value, and `var _ Handler = (*Server)(nil)` asserts at compile time that a type satisfies an interface. In every case it means "this must exist, but is never referenced."
+
+### 1.4 Package Initialization and init()
+
+**`init()`** is a special function that runs automatically when a package is initialized, before `main()` starts. Every import of a package, blank or named, triggers its initialization; there is no way to import a package and skip its `init()`.
+
+```go
+package registry
+
+import "fmt"
+
+var handlers = map[string]func(){}    // 1. package-level variables are initialized first
+
+func init() {                          // 2. then every init() in the package, in file order
+    handlers["ping"] = func() { fmt.Println("pong") }
+}
+
+func init() {                          // multiple init() per package (even per file) are allowed
+    fmt.Println("registry ready")
+}
+```
+
+    Initialize imported packages (recursively, dependencies first)
+        ↓
+    Initialize package-level variables (in dependency order)
+        ↓
+    Run every init() in the package (file order)
+        ↓
+    Repeat for the next package
+        ↓
+    main.main()
+
+| Rule | Description |
+| ---- | ---- |
+| **Runs once** | If ten packages import the same package, its `init()` still runs one time |
+| **Cannot be called** | `init` cannot be referenced or invoked; it takes no arguments and returns nothing |
+| **Multiple allowed** | A package may declare several `init()` across files; the compiler runs them in file order |
+| **Dependencies first** | A package's `init()` runs only after every package it imports has finished initializing |
+| **Runs even if unused** | The blank import works because the import itself triggers `init()`; `_` only silences the unused-import error |
+| **Test files** | An `init()` in a `_test.go` file runs only under `go test` |
+
+| Aspect | Java static initializer | Go `init()` |
+| ---- | ---- | ---- |
+| Trigger | First use of the class (lazy) | Program start, on import (eager) |
+| Scope | Per class | Per package |
+| Order | Class-loading order | Dependency order, then file order |
+
+**Recommended:**
+- Keep `init()` small: registering with a registry, filling a lookup table, validating a build-time invariant
+
+**Not recommended:**
+- Opening connections, reading config, or any work that can fail: a panic in `init()` crashes every binary that transitively imports the package, and the failure cannot be handled by the caller
+- Using `init()` where an explicit constructor (`New...`) would do; hidden side effects on import make behavior hard to trace
+
 ***
 
 ## II. go module Dependency Management
