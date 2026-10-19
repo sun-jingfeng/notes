@@ -109,8 +109,6 @@
       .work-summary-list {
         list-style: none;
         padding-left: 0;
-        columns: 2;
-        column-gap: 28px;
       }
       .work-summary-list li {
         position: relative;
@@ -133,6 +131,7 @@
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 2px;
+        padding-right: 12px;
         font-size: 13px;
         gap: 8px;
       }
@@ -167,15 +166,7 @@
         padding-top: 10px;
       }
       .project-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
         margin-bottom: 2px;
-        gap: 8px;
-      }
-      .project-title-desc {
-        flex: 1;
-        min-width: 0;
         font-size: 13.5px;
       }
       .project-name {
@@ -192,6 +183,7 @@
         color: #999;
       }
       .project-period {
+        margin-left: 8px;
         font-size: 11.5px;
         color: #888;
         white-space: nowrap;
@@ -281,6 +273,39 @@
         color: #3498db;
         font-weight: bold;
       }
+      @media print {
+        .section {
+          margin-bottom: 8px;
+        }
+        .skill-group {
+          margin-bottom: 5px;
+        }
+        .project {
+          margin-bottom: 7px;
+        }
+        .project + .project {
+          padding-top: 7px;
+        }
+        .project-tech {
+          margin-bottom: 3px;
+        }
+        .section-title,
+        .skill-group-title,
+        .project-header,
+        .project-tech,
+        .project-sub {
+          break-after: avoid;
+          break-inside: avoid;
+        }
+        .header,
+        .edu-row,
+        .work-item,
+        .skills-list li,
+        .project-list li,
+        .eval-list {
+          break-inside: avoid;
+        }
+      }
     </style>
   </head>
   <body>
@@ -289,8 +314,8 @@
       <div class="contact">
         <span><strong>Phone</strong> 195-2460-3214 (WeChat)</span>
         <span><strong>Email</strong> jlu_sunjingfeng@163.com</span>
-        <span><strong>Age</strong> 31</span>
-        <span><strong>Experience</strong> 5.6 Years</span>
+        <span><strong>Age</strong> 32</span>
+        <span><strong>Experience</strong> 4.5 Years</span>
         <span><strong>Location</strong> Beijing</span>
       </div>
       <div class="contact" style="margin-top: 5px">
@@ -306,6 +331,7 @@
         <span class="school">Jilin University (Project 985) · B.Eng. in Software Engineering</span>
         <span style="color: #666; font-size: 12px">2014-2020</span>
       </div>
+      <div style="color: #666; font-size: 12px">Full-time undergraduate program via national admissions; graduation and degree certificates, verifiable through CHSI.</div>
     </div>
 
     <div class="section">
@@ -313,10 +339,19 @@
       <div style="margin-bottom: 5px">
         <div class="work-item">
           <span class="work-inline">
+            <span class="company">Wanlian Yida Group</span>
+            <span class="work-role">Industrial Intelligence Applications Department 1 · Senior Front-End Engineer</span>
+          </span>
+          <span class="period">2026.05 – 2026.10</span>
+        </div>
+      </div>
+      <div style="margin-bottom: 5px">
+        <div class="work-item">
+          <span class="work-inline">
             <span class="company">Beijing Hongxiang Technology Co., Ltd.</span>
             <span class="work-role">Shared Development Center · Team Lead, R&amp;D Group 1</span>
           </span>
-          <span class="period">2023.02 – 2026.04</span>
+          <span class="period">2023.02 – 2025.12</span>
         </div>
       </div>
       <div>
@@ -325,22 +360,22 @@
             <span class="company">Beijing Bailian Intelligence Technology Co., Ltd.</span>
             <span class="work-role">Engineering Department · Front-End Engineer</span>
           </span>
-          <span class="period">2020.09 – 2022.12</span>
+          <span class="period">2021.12 – 2022.12</span>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Professional Summary</div>
+      <div class="section-title">Responsibilities</div>
       <ul class="work-summary-list">
         <li>
-          Led end-to-end delivery of mid- to large-scale projects, spanning solution design, development, deployment, and production rollout across front-end, back-end, and AI agent capabilities.
+          Served as project owner, leading mid- to large-scale projects through feature design, development, and deployment, with responsibility for delivering frontend, backend, and AI agent capabilities.
         </li>
         <li>
-          Improved reuse through component abstraction, layered architecture, and shared modules, while continuously optimizing front-end performance, API latency, and service stability.
+          Improved reuse across projects through component abstraction, layered architecture, and shared modules, while continuously optimizing frontend performance, API response times, and service reliability.
         </li>
         <li>
-          Drove technology selection, project bootstrapping, coding standards, microservice architecture, and deployment setup, while introducing AI-assisted development practices into the engineering workflow.
+          Led technology selection, established project foundations and coding standards, built microservice architecture and deployment environments, and promoted AI-assisted coding for development and troubleshooting.
         </li>
       </ul>
     </div>
@@ -374,9 +409,6 @@
           </li>
           <li>
             Hands-on experience with Vue 3, Vue 2, Vue Router, and Pinia/Vuex, with solid understanding of reactivity internals and compilation optimization.
-          </li>
-          <li>
-            Hands-on experience with React, React Router, and Redux/RTK, with solid understanding of Fiber, virtual DOM, and diffing principles.
           </li>
           <li>
             Comfortable with mainstream libraries including Element Plus, Ant Design, ECharts, and Leaflet, with the ability to ramp up quickly on unfamiliar frameworks.
@@ -415,9 +447,6 @@
           <li>
             Comfortable with Linux operations, server setup, routine maintenance, and API performance validation with JMeter.
           </li>
-          <li>
-            Working knowledge of Python, FastAPI, and Pydantic for service development and delivery.
-          </li>
         </ul>
       </div>
     </div>
@@ -427,24 +456,46 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Meteorological Radar Monitoring &amp; Early Warning System Series</span
-            ><span class="project-desc-inline"
-              >Originally delivered for Tianjin and later extended into multiple provincial editions and supporting management systems for Liaoning, Jiangsu, Shanxi, and Ningxia, with an added AI agent capability for weather warning message generation.</span
-            ></span
-          >
-          <span class="project-period">2025.05 – 2026.04</span>
+          <span class="project-name">Intelligent Message Matching App</span>
+          <span class="project-period">2026.05 – 2026.10</span>
+          <span class="project-desc-inline">A social messaging app for people living alone, designed to use AI to understand messages and connect them with real people willing to respond, making it easier to start conversations. Responsible for both design and development.</span>
+        </div>
+        <div class="project-sub">Design Contributions</div>
+        <ul class="project-list">
+          <li>
+            <strong>Matching cost optimization:</strong> Designed structured profiles for user interests and reply behavior, with one model call to analyze the initial message and extract matching weights. Designed SQL queries to filter candidates and calculate weighted rankings for initial matching and timeout reassignment, replacing model processing in the matching stage to reduce repeated calls and token usage. Defined reply rate and response time metrics to evaluate matching effectiveness.
+          </li>
+          <li>
+            Defined product positioning, user scenarios, and requirements in four documents covering the product overview, feature design, data model, and admin console, clarifying the boundaries between initial messages, replies, and ongoing conversations.
+          </li>
+          <li>
+            Designed the flow from sending and content checks through recipient matching to conversation creation after a reply. Specified timeout reassignment, extended wait times when users are reading or typing, timer pauses during reply validation, and AI fallback interactions.
+          </li>
+          <li>
+            Created UI mockups in Figma, established color, typography, and icon foundations, and designed reusable buttons, inputs, avatars, chat bubbles, conversation lists, and admin navigation along with their component states. Defined distinct visuals for human messages and AI messages.
+          </li>
+          <li>
+            Designed business rules and related data models for earning and spending points, blocking and unblocking, and user profiles. Planned admin features for matching records, topic review, user management, AI usage statistics, and parameter configuration.
+          </li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-name">Meteorological Radar Monitoring &amp; Early Warning System Series</span>
+          <span class="project-period">2025.02 – 2025.12</span>
+          <span class="project-desc-inline">Originally delivered for Tianjin and later extended into multiple provincial editions and supporting management systems for Liaoning, Jiangsu, Shanxi, and Ningxia, with an added AI agent capability for weather warning message generation.</span>
         </div>
 
         <div class="project-tech">
-          <strong>AI Agent Stack:</strong> Python, FastAPI, Pydantic, LangChain
+          <strong>AI Agent Stack:</strong> Python, FastAPI, Pydantic, LangChain, LangGraph
         </div>
         <ul class="project-list">
           <li>
             Built an AI agent for weather warning message generation as an independent Python microservice and integrated it into the existing Java service ecosystem.
           </li>
           <li>
-            Implemented weather warning message generation based on time, meteorological factors, and map-viewport latitude/longitude ranges, and completed end-to-end front-end and back-end integration.
+            Implemented weather warning message generation based on time, meteorological factors, and map-viewport latitude/longitude ranges, and completed front-end and back-end integration and on-page display.
           </li>
           <li>
             Assembled business context, queried raw domain data, filtered it by viewport range, and passed structured inputs to the model.
@@ -458,7 +509,7 @@
         </ul>
 
         <div class="project-tech">
-          <strong>Front-End Stack:</strong> React, Immer, React Router, Redux, Ant Design, TypeScript, Vite, React Compiler
+          <strong>Front-End Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
         </div>
         <ul class="project-list">
           <li>
@@ -508,7 +559,7 @@
             Processed meteorological data with thread pools and wrote the results to Redis cache to improve throughput and reduce database pressure.
           </li>
           <li>
-            Identified bottlenecks through JMeter load testing and combined Sentinel rate limiting with fallback strategies to preserve stability under high concurrency.
+            Used JMeter to locate bottlenecks and Sentinel for rate limiting, circuit breaking, and fallback to reduced-precision calculations with the same response format, maintaining stability under high concurrency.
           </li>
           <li>Used RabbitMQ for asynchronous radar data pre-processing and warning notification delivery to improve responsiveness.</li>
           <li>
@@ -519,13 +570,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Leisheng X Single-Station Display System Optimization</span
-            ><span class="project-desc-inline"
-              >Took over a live single-station product and focused on performance and codebase optimization.</span
-            ></span
-          >
-          <span class="project-period">2025.04</span>
+          <span class="project-name">Leisheng X Single-Station Display System Optimization</span>
+          <span class="project-period">2025.01</span>
+          <span class="project-desc-inline">Took over a live single-station product and focused on performance and codebase optimization.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, TypeScript, Vite
@@ -556,13 +603,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Huai'an Smart Meteorological Integrated Service Platform</span
-            ><span class="project-desc-inline"
-              >Led front-end delivery for map visualization, permission management, and theming capabilities.</span
-            ></span
-          >
-          <span class="project-period">2024.10 – 2025.03</span>
+          <span class="project-name">Huai'an Smart Meteorological Integrated Service Platform</span>
+          <span class="project-period">2024.08 – 2024.12</span>
+          <span class="project-desc-inline">Led front-end delivery for map visualization, permission management, and theming capabilities.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
@@ -589,13 +632,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Hefei Smart Agriculture Meteorological Data Platform</span
-            ><span class="project-desc-inline"
-              >Developed front-end modules for maps, charts, and data presentation features.</span
-            ></span
-          >
-          <span class="project-period">2024.04 – 2024.09</span>
+          <span class="project-name">Hefei Smart Agriculture Meteorological Data Platform</span>
+          <span class="project-period">2024.03 – 2024.07</span>
+          <span class="project-desc-inline">Developed front-end modules for maps, charts, and data presentation features.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
@@ -618,13 +657,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Vue 3 Component Library</span
-            ><span class="project-desc-inline"
-              >An internal component library created to accumulate reusable components and complex UI patterns and improve team productivity.</span
-            ></span
-          >
-          <span class="project-period">2024.03</span>
+          <span class="project-name">Vue 3 Component Library</span>
+          <span class="project-period">2024.02</span>
+          <span class="project-desc-inline">An internal component library created to accumulate reusable components and complex UI patterns and improve team productivity.</span>
         </div>
         <div class="project-tech"><strong>Tech Stack:</strong> VitePress</div>
         <ul class="project-list">
@@ -647,13 +682,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Intelligent Meteorological Integrated Platform</span
-            ><span class="project-desc-inline"
-              >Owned alerting and file management modules, along with shared component abstraction and data-driven development for multiple alert page types.</span
-            ></span
-          >
-          <span class="project-period">2023.11 – 2024.02</span>
+          <span class="project-name">Intelligent Meteorological Integrated Platform</span>
+          <span class="project-period">2023.11 – 2024.01</span>
+          <span class="project-desc-inline">Owned alerting and file management modules, along with shared component abstraction and data-driven development for multiple alert page types.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, TypeScript, Vite
@@ -671,13 +702,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">UHV Dense Corridor Meteorological Service Platform</span
-            ><span class="project-desc-inline"
-              >Owned map visualization, risk corridor rendering, marker presentation, and performance optimization.</span
-            ></span
-          >
+          <span class="project-name">UHV Dense Corridor Meteorological Service Platform</span>
           <span class="project-period">2023.02 – 2023.10</span>
+          <span class="project-desc-inline">Owned map visualization, risk corridor rendering, marker presentation, and performance optimization.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, Element Plus, Leaflet, Highcharts, TypeScript, Vite
@@ -697,13 +724,9 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Vue 3 Project Starter Framework</span
-            ><span class="project-desc-inline"
-              >During the department-wide technology migration from Vue 2 to Vue 3, Vuex to Pinia, JavaScript to TypeScript, and Webpack to Vite, I built the next-generation project foundation.</span
-            ></span
-          >
+          <span class="project-name">Vue 3 Project Starter Framework</span>
           <span class="project-period">2023.02</span>
+          <span class="project-desc-inline">During the department-wide technology migration from Vue 2 to Vue 3, Vuex to Pinia, JavaScript to TypeScript, and Webpack to Vite, I built the next-generation project foundation.</span>
         </div>
         <div class="project-tech">
           <strong>Tech Stack:</strong> Vue 3, Vue Router, Pinia, TypeScript, Vite
@@ -738,10 +761,10 @@
       <div class="section-title">Profile</div>
       <ul class="eval-list">
         <li>
-          Full-stack engineer with hands-on experience across Vue, React, and Java, combining AI agent delivery, system integration, and team leadership.
+          Full-stack engineer with hands-on experience across Vue and Java, combining AI agent delivery, system integration, and team leadership.
         </li>
         <li>
-          Familiar with engineering approaches that combine business systems with intelligent-agent capabilities, and able to apply AI agents and AI-assisted development in real production scenarios.
+          Familiar with engineering approaches for integrating AI agent capabilities into business systems, and able to apply AI agents and AI-assisted coding in practical development workflows.
         </li>
       </ul>
     </div>

@@ -110,8 +110,6 @@
       .work-summary-list {
         list-style: none;
         padding-left: 0;
-        columns: 2;
-        column-gap: 28px;
       }
       .work-summary-list li {
         position: relative;
@@ -134,6 +132,7 @@
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 2px;
+        padding-right: 12px;
         font-size: 13px;
         gap: 8px;
       }
@@ -168,15 +167,7 @@
         padding-top: 10px;
       }
       .project-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
         margin-bottom: 2px;
-        gap: 8px;
-      }
-      .project-title-desc {
-        flex: 1;
-        min-width: 0;
         font-size: 13.5px;
       }
       .project-name {
@@ -193,6 +184,7 @@
         color: #999;
       }
       .project-period {
+        margin-left: 8px;
         font-size: 11.5px;
         color: #888;
         white-space: nowrap;
@@ -282,6 +274,39 @@
         color: #3498db;
         font-weight: bold;
       }
+      @media print {
+        .section {
+          margin-bottom: 8px;
+        }
+        .skill-group {
+          margin-bottom: 5px;
+        }
+        .project {
+          margin-bottom: 7px;
+        }
+        .project + .project {
+          padding-top: 7px;
+        }
+        .project-tech {
+          margin-bottom: 3px;
+        }
+        .section-title,
+        .skill-group-title,
+        .project-header,
+        .project-tech,
+        .project-sub {
+          break-after: avoid;
+          break-inside: avoid;
+        }
+        .header,
+        .edu-row,
+        .work-item,
+        .skills-list li,
+        .project-list li,
+        .eval-list {
+          break-inside: avoid;
+        }
+      }
     </style>
   </head>
   <body>
@@ -291,8 +316,8 @@
       <div class="contact">
         <span><strong>手机</strong> 195-2460-3214（同微信）</span>
         <span><strong>邮箱</strong> jlu_sunjingfeng@163.com</span>
-        <span><strong>年龄</strong> 31</span>
-        <span><strong>工作时长</strong> 5.6 年</span>
+        <span><strong>年龄</strong> 32</span>
+        <span><strong>工作时长</strong> 4.5 年</span>
         <span><strong>地点</strong> 北京</span>
       </div>
       <div class="contact" style="margin-top: 5px">
@@ -319,10 +344,19 @@
       <div style="margin-bottom: 5px">
         <div class="work-item">
           <span class="work-inline">
+            <span class="company">万联易达集团</span>
+            <span class="work-role">产业智能应用一部 · 资深级前端工程师</span>
+          </span>
+          <span class="period">2026.05 – 2026.10</span>
+        </div>
+      </div>
+      <div style="margin-bottom: 5px">
+        <div class="work-item">
+          <span class="work-inline">
             <span class="company">北京弘象科技有限公司</span>
             <span class="work-role">共享开发中心 · 研发一组组长</span>
           </span>
-          <span class="period">2023.02 – 2026.04</span>
+          <span class="period">2023.02 – 2025.12</span>
         </div>
       </div>
       <div>
@@ -331,7 +365,7 @@
             <span class="company">北京百炼智能科技有限公司</span>
             <span class="work-role">技术部 · 前端工程师</span>
           </span>
-          <span class="period">2020.09 – 2022.12</span>
+          <span class="period">2021.12 – 2022.12</span>
         </div>
       </div>
     </div>
@@ -341,15 +375,13 @@
       <div class="section-title">工作内容</div>
       <ul class="work-summary-list">
         <li>
-          作为项目负责人兼研发组长，主导中大型项目从方案设计、开发到部署的全流程，负责前端、后端与
-          AI Agent 核心能力开发及落地
+          作为项目负责人，主导中大型项目功能设计、开发部署的全流程，负责前端、后端、智能体的落地
         </li>
         <li>
-          通过组件封装、分层架构设计与公共模块沉淀推进代码复用，持续优化前端性能、接口响应效率与服务稳定性
+          通过组件封装、分层架构设计、公共模块提取，推进跨项目复用，持续优化前端性能、接口响应效率、服务稳定性
         </li>
         <li>
-          负责技术选型，搭建项目基础框架、代码规范体系、微服务架构及部署环境，并推动
-          AI Coding 在研发流程中的落地
+          负责技术选型，搭建基础框架、制定开发规范，建设微服务架构、部署环境，推动 AI Coding 在开发、排错中的应用
         </li>
       </ul>
     </div>
@@ -359,23 +391,20 @@
       <div class="section-title">专业技能</div>
 
       <div class="skill-group">
-        <div class="skill-group-title">AI Agent 与 AI Coding</div>
+        <div class="skill-group-title">智能体、AI Coding</div>
         <ul class="skills-list">
           <li>
-            具备独立封装 AI Agent 服务，并在内网环境下与 Java
-            微服务集成落地的项目经验
+            具备独立封装智能体服务，并在内网环境下和 Java 微服务集成落地的项目经验
           </li>
           <li>
-            具备 LangChain 落地经验与私有化模型接入实践经验，了解 LangGraph
-            在复杂工作流中的适用场景
+            具备 LangChain 落地经验、私有化模型接入实践经验，了解 LangGraph 在复杂工作流中的适用场景
           </li>
           <li>
             AI Coding 工具（Cursor、Copilot、Claude Code
             等），可用于提升编码、排错效率
           </li>
           <li>
-            提示词设计与规则配置（Rules、Skills、MCP
-            等），可编写可复用提示与项目级 AI 规范
+            提示词设计、规则配置（Rules、Skills、MCP 等），可编写可复用提示、项目级 AI 规范
           </li>
         </ul>
       </div>
@@ -390,10 +419,6 @@
           <li>
             Vue3、Vue2 及其生态（Vue
             Router、Pinia/Vuex），理解响应式原理、编译优化机制
-          </li>
-          <li>
-            React 及其生态（React Router、Redux/RTK），理解 Fiber 架构、虚拟
-            DOM、Diff 算法等核心原理
           </li>
           <li>
             Element Plus、Ant Design、ECharts、Leaflet
@@ -422,7 +447,7 @@
         <ul class="skills-list">
           <li>Java，熟悉集合框架、Stream 流、IO、多线程、网络编程</li>
           <li>
-            Spring Boot、Maven，熟悉自动配置、AOP、基于 Spring Security 的 JWT 认证与接口级权限控制
+            Spring Boot、Maven，熟悉自动配置、AOP、基于 Spring Security 的 JWT 认证、接口级权限控制
           </li>
           <li>MySQL、MyBatis-Plus，熟悉索引优化、事务管理、动态 SQL</li>
           <li>Redis，包括常用数据结构及其在缓存、会话管理等场景的应用</li>
@@ -436,11 +461,7 @@
             的容器化部署经验
           </li>
           <li>
-            Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter
-            进行接口压测与性能验证
-          </li>
-          <li>
-            Python，了解 FastAPI、Pydantic，具备相关接口开发与服务落地经验
+            Linux 基本操作，能完成服务器环境搭建、日常运维，能使用 JMeter 进行接口压测、性能验证
           </li>
         </ul>
       </div>
@@ -450,20 +471,33 @@
     <div class="section">
       <div class="section-title">项目经验</div>
 
+      <!-- Message Matching App -->
+      <div class="project">
+        <div class="project-header">
+          <span class="project-name">智能消息匹配App</span>
+          <span class="project-period">2026.05 – 2026.10</span>
+          <span class="project-desc-inline">面向独居人群的消息社交软件，目标是通过 AI 理解消息并匹配有回应意愿的真实用户，降低和真人交流的门槛。负责设计和开发工作。</span>
+        </div>
+        <div class="project-sub">设计成果</div>
+        <ul class="project-list">
+          <li><strong>匹配成本优化设计</strong>：将用户兴趣、回复行为存为结构化画像，单次模型调用完成首条消息分析、权重提取；首次匹配及超时改派通过 SQL 查询完成候选筛选、加权排序，以数据查询替代匹配阶段的模型处理，减少重复调用、Token 消耗，并定义回复率、回复耗时等指标评估匹配效果</li>
+          <li>梳理产品定位、用户场景、功能需求，形成产品概述、功能设计、数据模型及运营后台四份文档，明确首条消息、回复、持续会话的业务边界</li>
+          <li>设计消息从发送、内容检查、匹配接收者到回复建立会话的完整流程，细化超时改派、用户阅读或输入时延长等待、回复校验期间暂停计时及 AI 兜底等交互规则</li>
+          <li>使用 Figma 制作 UI 设计稿，建立颜色、字体、图标等基础规范，设计按钮、输入框、头像、聊天气泡、会话列表及后台导航等可复用组件及其状态，区分真人消息与 AI 消息的视觉呈现</li>
+          <li>设计积分收支、拉黑、解除拉黑、用户画像等业务规则及关联数据模型；规划运营后台的匹配记录、主题审核、用户管理、AI 用量统计、参数调整功能</li>
+        </ul>
+      </div>
+
       <!-- Project 1 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">气象雷达监测预警系统系列</span
-            ><span class="project-desc-inline"
-              >基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统，并在此基础上建设气象预警文案生成智能体能力</span
-            ></span
-          >
-          <span class="project-period">2025.05 – 2026.04</span>
+          <span class="project-name">气象雷达监测预警系统系列</span>
+          <span class="project-period">2025.02 – 2025.12</span>
+          <span class="project-desc-inline">基础项目为天津气象雷达监测预警系统，后衍生出辽宁、江苏、山西、宁夏等多省版本及配套管理系统，并在此基础上建设气象预警文案生成智能体能力</span>
         </div>
 
         <div class="project-tech">
-          <strong>AI Agent 技术：</strong>Python、FastAPI、Pydantic、LangChain
+          <strong>智能体技术：</strong>Python、FastAPI、Pydantic、LangChain、LangGraph
         </div>
         <ul class="project-list">
           <li>
@@ -471,22 +505,21 @@
             业务服务体系
           </li>
           <li>
-            基于时间、气象要素、地图视窗经纬度范围，实现预警文案生成功能，完成前后端联调与页面展示
+            基于时间、气象要素、地图视窗经纬度范围，实现预警文案生成功能，完成前后端联调、页面展示
           </li>
           <li>
             完成业务上下文组装，查询原始业务数据，进行视窗范围过滤后交给模型处理
           </li>
           <li>
-            通过工具调用实现经纬度转地名等确定性信息获取，避免模型直接脑补地名，提升预警文案准确性与可解释性
+            通过工具调用实现经纬度转地名等确定性信息获取，避免模型直接脑补地名，提升预警文案准确性、可解释性
           </li>
           <li>
-            统一封装模型调用、工具调用、结果解析与接口入参出参结构，提升项目内智能体能力的可维护性与稳定性
+            统一封装模型调用、工具调用、结果解析、接口入参出参结构，提升项目内智能体能力的可维护性、稳定性
           </li>
         </ul>
 
         <div class="project-tech">
-          <strong>前端技术：</strong>React、Immer、React Router、Redux、Ant
-          Design、TypeScript、Vite、React Compiler
+          <strong>前端技术：</strong>Vue3、Vue Router、Pinia、Element Plus、Leaflet、Highcharts、TypeScript、Vite
         </div>
         <ul class="project-list">
           <li>
@@ -530,19 +563,17 @@
             构建微服务架构，各省复用核心能力、可扩展本省个性化需求
           </li>
           <li>
-            使用 Nacos 实现服务注册发现与公共配置管理，OpenFeign
-            实现服务间声明式调用
+            使用 Nacos 实现服务注册发现、公共配置管理，OpenFeign 实现服务间声明式调用
           </li>
           <li>
-            使用 Gateway 统一路由与鉴权，基于 Spring Security + JWT + RBAC 实现统一认证与接口级权限控制，支持父子项目单点登录
+            使用 Gateway 统一路由、鉴权，基于 Spring Security + JWT + RBAC 实现统一认证、接口级权限控制，支持父子项目单点登录
           </li>
           <li>
             使用线程池对气象数据进行多线程处理，并将处理结果写入 Redis
             缓存，提升数据处理效率、减轻数据库压力
           </li>
           <li>
-            使用 JMeter 压测定位瓶颈，结合 Sentinel
-            限流与熔断降级，以降精度计算、同格式返回作为备用方案，保障高并发下系统稳定性
+            使用 JMeter 压测定位瓶颈，结合 Sentinel 限流、熔断降级，以降精度计算、同格式返回作为备用方案，保障高并发下系统稳定性
           </li>
           <li>
             使用 RabbitMQ 异步处理雷达数据预解析、预警通知推送，提升系统响应速度
@@ -557,13 +588,9 @@
       <!-- Project 2 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">雷圣 X 单站产品显示系统优化</span
-            ><span class="project-desc-inline"
-              >接手已上线单站产品，专项解决性能与代码结构问题</span
-            ></span
-          >
-          <span class="project-period">2025.04</span>
+          <span class="project-name">雷圣 X 单站产品显示系统优化</span>
+          <span class="project-period">2025.01</span>
+          <span class="project-desc-inline">接手已上线单站产品，专项解决性能、代码结构问题</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
@@ -596,13 +623,9 @@
       <!-- Project 3 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">淮安智慧气象综合服务平台</span
-            ><span class="project-desc-inline"
-              >负责前端开发及地图可视化、权限体系、主题等能力建设</span
-            ></span
-          >
-          <span class="project-period">2024.10 – 2025.03</span>
+          <span class="project-name">淮安智慧气象综合服务平台</span>
+          <span class="project-period">2024.08 – 2024.12</span>
+          <span class="project-desc-inline">负责前端开发及地图可视化、权限体系、主题等能力建设</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
@@ -633,13 +656,9 @@
       <!-- Project 4 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">合肥智慧农业气象服务综合数据平台</span
-            ><span class="project-desc-inline"
-              >负责前端地图、图表与数据展示模块开发</span
-            ></span
-          >
-          <span class="project-period">2024.04 – 2024.09</span>
+          <span class="project-name">合肥智慧农业气象服务综合数据平台</span>
+          <span class="project-period">2024.03 – 2024.07</span>
+          <span class="project-desc-inline">负责前端地图、图表和数据展示模块开发</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
@@ -665,13 +684,9 @@
       <!-- Project 5 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Vue3 组件库</span
-            ><span class="project-desc-inline"
-              >内部组件库，沉淀可复用组件、复杂组件开发范式，提升部门整体开发效率</span
-            ></span
-          >
-          <span class="project-period">2024.03</span>
+          <span class="project-name">Vue3 组件库</span>
+          <span class="project-period">2024.02</span>
+          <span class="project-desc-inline">内部组件库，沉淀可复用组件、复杂组件开发范式，提升部门整体开发效率</span>
         </div>
         <div class="project-tech"><strong>主要技术：</strong>VitePress</div>
         <ul class="project-list">
@@ -696,13 +711,9 @@
       <!-- Project 6 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">智能气象综合平台</span
-            ><span class="project-desc-inline"
-              >负责告警与文件管理模块，以及通用组件封装与多类型告警页面的数据驱动开发</span
-            ></span
-          >
-          <span class="project-period">2023.11 – 2024.02</span>
+          <span class="project-name">智能气象综合平台</span>
+          <span class="project-period">2023.11 – 2024.01</span>
+          <span class="project-desc-inline">负责告警、文件管理模块，以及通用组件封装、多类型告警页面的数据驱动开发</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
@@ -722,13 +733,9 @@
       <!-- Project 7 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">特高压密集通道气象服务平台</span
-            ><span class="project-desc-inline"
-              >负责地图可视化、风险线路与标记点展示及性能优化</span
-            ></span
-          >
+          <span class="project-name">特高压密集通道气象服务平台</span>
           <span class="project-period">2023.02 – 2023.10</span>
+          <span class="project-desc-inline">负责地图可视化、风险线路与标记点展示及性能优化</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、Element
@@ -751,13 +758,9 @@
       <!-- Project 8 -->
       <div class="project">
         <div class="project-header">
-          <span class="project-title-desc"
-            ><span class="project-name">Vue3 项目基础框架</span
-            ><span class="project-desc-inline"
-              >部门技术转型（Vue2→Vue3、Vuex→Pinia、JavaScript→TypeScript、Webpack→Vite），负责搭建新一代项目基础框架</span
-            ></span
-          >
+          <span class="project-name">Vue3 项目基础框架</span>
           <span class="project-period">2023.02</span>
+          <span class="project-desc-inline">部门技术转型（Vue2→Vue3、Vuex→Pinia、JavaScript→TypeScript、Webpack→Vite），负责搭建新一代项目基础框架</span>
         </div>
         <div class="project-tech">
           <strong>主要技术：</strong>Vue3、Vue Router、Pinia、TypeScript、Vite
@@ -798,12 +801,10 @@
       <div class="section-title">自我评价</div>
       <ul class="eval-list">
         <li>
-          具备 Vue + React + Java 全栈开发经验，兼具 AI Agent
-          功能落地、系统集成与团队管理经验
+          具备 Vue + Java 全栈开发经验，兼具智能体功能落地、系统集成、团队管理经验
         </li>
         <li>
-          熟悉业务系统与智能体能力结合的工程化方案，能够将 AI Agent 与 AI Coding
-          能力应用于实际研发场景
+          熟悉将智能体能力集成到业务系统的工程化方案，能够将智能体、AI Coding 能力应用于实际研发场景
         </li>
       </ul>
     </div>
