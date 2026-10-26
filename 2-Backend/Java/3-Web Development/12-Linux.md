@@ -1,687 +1,687 @@
-## 一、Linux 概述
+## I. Linux Overview
 
-### 1.1 什么是 Linux
+### 1.1 What Is Linux?
 
-Linux 是一种开源的、类 Unix 的操作系统内核，由 Linus Torvalds 于 1991 年首次发布。通常所说的 "Linux" 指的是基于 Linux 内核的各种操作系统发行版。
+Linux is an open-source, Unix-like operating system kernel first released by Linus Torvalds in 1991. In everyday usage, "Linux" refers to the various operating system distributions based on the Linux kernel.
 
-### 1.2 Linux 与其他系统的区别
+### 1.2 Linux vs. Other Systems
 
-| 特性     | Linux                | Windows          | macOS            |
+| Feature | Linux | Windows | macOS |
 | -------- | -------------------- | ---------------- | ---------------- |
-| 开源     | 是（GPL 协议）       | 否               | 部分开源         |
-| 费用     | 免费                 | 付费             | 随硬件           |
-| 主要用途 | 服务器、开发、嵌入式 | 桌面、办公、游戏 | 桌面、开发、设计 |
-| 命令行   | 核心操作方式         | 辅助             | 核心之一         |
-| 软件安装 | 包管理器             | 安装程序         | App Store / brew |
+| Open source | Yes (GPL license) | No | Partially |
+| Cost | Free | Paid | Bundled with hardware |
+| Main uses | Servers, development, embedded systems | Desktop, office work, gaming | Desktop, development, design |
+| Command line | Core way of operating | Supplementary | One of the core interfaces |
+| Software installation | Package manager | Installers | App Store / brew |
 
-### 1.3 常见 Linux 发行版
+### 1.3 Common Linux Distributions
 
-| 发行版                   | 特点                     | 适用场景               |
+| Distribution | Characteristics | Use cases |
 | ------------------------ | ------------------------ | ---------------------- |
-| **Ubuntu**               | 易用、社区活跃、文档丰富 | 入门学习、开发、服务器 |
-| **CentOS / Rocky Linux** | 稳定、企业级、长期支持   | 生产服务器             |
-| **Debian**               | 稳定、纯净、历史悠久     | 服务器、基础镜像       |
-| **Alpine**               | 极轻量（约 5MB）         | Docker 容器基础镜像    |
-| **Arch Linux**           | 滚动更新、高度可定制     | 高级用户、学习         |
+| **Ubuntu** | Easy to use, active community, extensive documentation | Beginners, development, servers |
+| **CentOS / Rocky Linux** | Stable, enterprise-grade, long-term support | Production servers |
+| **Debian** | Stable, clean, long history | Servers, base images |
+| **Alpine** | Extremely lightweight (about 5MB) | Docker container base images |
+| **Arch Linux** | Rolling releases, highly customizable | Advanced users, learning |
 
-### 1.4 Linux 目录结构
+### 1.4 Linux Directory Structure
 
-Linux 采用树状目录结构，所有内容都从根目录 `/` 开始：
+Linux uses a tree-like directory structure, with everything starting at the root directory `/`:
 
 ```
 /
-├── bin         # 基本命令（ls、cp、mv 等）
-├── boot        # 启动相关文件（内核、引导程序）
-├── dev         # 设备文件（硬盘、终端等）
-├── etc         # 系统配置文件
-├── home        # 普通用户家目录（如 /home/用户名）
-├── lib         # 共享库文件
-├── opt         # 第三方软件安装目录
-├── root        # root 用户的家目录
-├── srv         # 本机提供的服务数据（如 /srv/mysql、/srv/nginx）
-├── tmp         # 临时文件
-├── usr         # 用户程序和数据
-│   ├── bin     # 用户命令
-│   ├── lib     # 库文件
-│   └── local   # 本地安装的软件
-└── var         # 可变数据（日志、缓存、数据库等）
-    └── log     # 系统日志
+├── bin         # Basic commands (ls, cp, mv, etc.)
+├── boot        # Boot files (kernel, bootloader)
+├── dev         # Device files (disks, terminals, etc.)
+├── etc         # System configuration files
+├── home        # Regular users' home directories (e.g. /home/username)
+├── lib         # Shared libraries
+├── opt         # Third-party software installation directory
+├── root        # Home directory of the root user
+├── srv         # Data for services provided by this machine (e.g. /srv/mysql, /srv/nginx)
+├── tmp         # Temporary files
+├── usr         # User programs and data
+│   ├── bin     # User commands
+│   ├── lib     # Libraries
+│   └── local   # Locally installed software
+└── var         # Variable data (logs, caches, databases, etc.)
+    └── log     # System logs
 ```
 
-常见但上表未列出的目录：`/proc`（进程与系统信息，虚拟文件系统）、`/run`（运行时数据）、`/mnt`（临时挂载点）、`/media`（可移动介质挂载）。不同发行版可能略有差异。
+Other common directories include `/proc` (process and system information; a virtual filesystem), `/run` (runtime data), `/mnt` (temporary mount points), and `/media` (removable media mounts). Distributions may differ slightly.
 
-### 1.5 远程连接 Linux
+### 1.5 Connecting to Linux Remotely
 
-在实际工作中，Linux 服务器通常没有图形界面，需要通过 **SSH** 远程连接：
+In practice, Linux servers usually have no graphical interface and are accessed remotely through **SSH**:
 
 ```bash
-# 基本语法
-ssh 用户名@服务器IP
+# Basic syntax
+ssh username@serverIP
 
-# 指定端口（默认 22）
-ssh -p 2222 用户名@服务器IP
+# Specify a port (default: 22)
+ssh -p 2222 username@serverIP
 
-# 使用密钥登录
-ssh -i ~/.ssh/id_rsa 用户名@服务器IP
+# Log in with a key
+ssh -i ~/.ssh/id_rsa username@serverIP
 ```
 
-常用 SSH 客户端：
-- **Mac/Linux**：系统自带终端、iTerm2
-- **Windows**：PuTTY、Windows Terminal、MobaXterm
-- **跨平台图形化**：Royal TSX、Termius、FinalShell
+Common SSH clients:
+- **Mac/Linux:** Built-in terminal, iTerm2
+- **Windows**: PuTTY, Windows Terminal, MobaXterm
+- **Cross-platform graphical clients:** Royal TSX, Termius, FinalShell
 
 ***
 
-## 二、Linux 常用命令
+## II. Common Linux Commands
 
-### 2.1 命令格式
+### 2.1 Command Format
 
-**Linux 命令的通用格式：**
+**General Linux command format:**
 
 ```bash
 command [-options] [parameter]
 ```
 
-**格式说明：**
+**Format explanation:**
 
-| 组成部分        | 说明                         | 是否必需 |
+| Component | Description | Required? |
 | --------------- | ---------------------------- | -------- |
-| **command**     | 命令名                       | 必需     |
-| **[-options]**  | 选项，用来控制命令的行为     | 可选     |
-| **[parameter]** | 参数，可以是零个、一个或多个 | 可选     |
+| **command** | Command name | Required |
+| **[-options]** | Options controlling command behavior | Optional |
+| **[parameter]** | Zero, one, or more arguments | Optional |
 
-**示例：**
+**Examples:**
 
 ```bash
-# 1. 只有命令
+# 1. Command only
 ls
 
-# 2. 命令 + 选项
-ls -l           # -l 是选项，表示以详细列表格式显示
+# 2. Command + option
+ls -l           # -l is an option requesting a detailed listing
 
-# 3. 命令 + 参数
-ls /home        # /home 是参数，指定要查看的目录
+# 3. Command + argument
+ls /home        # /home is an argument specifying the directory to inspect
 
-# 4. 命令 + 选项 + 参数
-ls -l /home     # -l 是选项，/home 是参数
+# 4. Command + option + argument
+ls -l /home     # -l is an option; /home is an argument
 
-# 5. 多个选项
-ls -l -a        # 或写成 ls -la
-# -l：详细列表
-# -a：显示隐藏文件
+# 5. Multiple options
+ls -l -a        # Can also be written as ls -la
+# -l: detailed listing
+# -a: show hidden files
 
-# 6. 多个参数
-cp file1.txt file2.txt  # file1.txt 和 file2.txt 都是参数
+# 6. Multiple arguments
+cp file1.txt file2.txt  # Both file1.txt and file2.txt are arguments
 ```
 
-**注意事项：**
+**Notes:**
 
-- 选项前通常有 `-`（短选项）或 `--`（长选项），如 `-l`、`--help`
-- 多个短选项可以合并：`-l -a` 等价于 `-la`
-- 命令、选项、参数之间用空格分隔
-- Linux 命令区分大小写：`ls` 和 `LS` 是不同的命令
+- Options usually start with `-` (short options) or `--` (long options), such as `-l` and `--help`
+- Multiple short options can be combined: `-l -a` is equivalent to `-la`
+- Separate commands, options, and arguments with spaces
+- Linux commands are case-sensitive: `ls` and `LS` are different commands
 
 ***
 
-### 2.2 目录和文件操作
+### 2.2 Directory and File Operations
 
-#### 2.2.1 目录切换
-
-```bash
-cd /home/user      # 切换到指定目录
-cd ..              # 返回上一级目录
-cd ~               # 返回当前用户家目录
-cd -               # 返回上一次所在目录
-pwd                # 显示当前目录的绝对路径
-```
-
-#### 2.2.2 查看目录内容
+#### 2.2.1 Changing Directories
 
 ```bash
-ls                 # 列出当前目录内容
-ls -l              # 详细列表（权限、大小、时间等）
-ls -la             # 包含隐藏文件（以 . 开头的文件）
-ls -lh             # 人类可读的文件大小（KB、MB、GB）
-ls -lt             # 按修改时间排序（最新在前）
+cd /home/user      # Change to the specified directory
+cd ..              # Go to the parent directory
+cd ~               # Go to the current user's home directory
+cd -               # Return to the previous directory
+pwd                # Show the current directory's absolute path
 ```
 
-输出示例解读：
+#### 2.2.2 Listing Directory Contents
+
+```bash
+ls                 # List the current directory's contents
+ls -l              # Detailed listing (permissions, size, time, etc.)
+ls -la             # Include hidden files (names starting with .)
+ls -lh             # Human-readable file sizes (KB, MB, GB)
+ls -lt             # Sort by modification time (newest first)
+```
+
+Example output explained:
 
 ```
 -rw-r--r--  1 user group  4096 Jan 29 10:00 file.txt
-│└──┬───┘  │  │    │      │         │        └── 文件名
-│   │      │  │    │      │         └── 修改时间
-│   │      │  │    │      └── 文件大小（字节）
-│   │      │  │    └── 所属组
-│   │      │  └── 所有者
-│   │      └── 硬链接数
-│   └── 权限（r读 w写 x执行，分别对应：所有者/组/其他）
-└── 文件类型（- 普通文件，d 目录，l 链接）
+│└──┬───┘  │  │    │      │         │        └── Filename
+│   │      │  │    │      │         └── Modification time
+│   │      │  │    │      └── File size (bytes)
+│   │      │  │    └── Group
+│   │      │  └── Owner
+│   │      └── Hard link count
+│   └── Permissions (r: read, w: write, x: execute; owner/group/others)
+└── File type (-: regular file, d: directory, l: link)
 ```
 
-#### 2.2.3 创建目录和文件
+#### 2.2.3 Creating Directories and Files
 
 ```bash
-mkdir dirname           # 创建目录
-mkdir -p a/b/c          # 递归创建多级目录
-touch file.txt          # 创建空文件（或更新时间戳）
+mkdir dirname           # Create a directory
+mkdir -p a/b/c          # Create nested directories recursively
+touch file.txt          # Create an empty file (or update its timestamps)
 ```
 
-#### 2.2.4 复制、移动、删除
+#### 2.2.4 Copying, Moving, and Deleting
 
 ```bash
-# 复制
-cp file1 file2          # 复制文件
-cp -r dir1 dir2         # 递归复制目录
+# Copy
+cp file1 file2          # Copy a file
+cp -r dir1 dir2         # Copy a directory recursively
 
-# 移动/重命名
-mv file1 file2          # 重命名文件
-mv file1 /path/to/      # 移动文件到指定目录
+# Move/rename
+mv file1 file2          # Rename a file
+mv file1 /path/to/      # Move a file to the specified directory
 
-# 删除
-rm file.txt             # 删除文件
-rm -r dirname           # 递归删除目录
-rm -rf dirname          # 强制递归删除（慎用！）
+# Delete
+rm file.txt             # Delete a file
+rm -r dirname           # Delete a directory recursively
+rm -rf dirname          # Force recursive deletion (use with care!)
 
-# 软链接（常用，如指向当前版本目录）
-ln -s /path/to/target linkname    # 创建软链接
-ls -l linkname                    # 可看到指向目标
+# Symbolic links (commonly used, e.g. to point to the current version directory)
+ln -s /path/to/target linkname    # Create a symbolic link
+ls -l linkname                    # Show its target
 ```
 
-> **警告**：`rm -rf /` 会删除整个系统，永远不要执行！
+> **Warning:** `rm -rf /` deletes the entire system. Never run it!
 
-### 2.3 文件内容查看
+### 2.3 Viewing File Contents
 
 ```bash
-cat file.txt            # 显示文件全部内容
-head -n 20 file.txt     # 显示前 20 行
-tail -n 20 file.txt     # 显示后 20 行
-tail -f file.txt        # 实时跟踪文件末尾（常用于看日志）
-less file.txt           # 分页查看（按 q 退出）
-more file.txt           # 分页查看（只能向下翻）
+cat file.txt            # Display the entire file
+head -n 20 file.txt     # Display the first 20 lines
+tail -n 20 file.txt     # Display the last 20 lines
+tail -f file.txt        # Follow the end of the file in real time (commonly used for logs)
+less file.txt           # View page by page (press q to quit)
+more file.txt           # View page by page (forward only)
 ```
 
-### 2.4 文件编辑
+### 2.4 Editing Files
 
-#### 2.4.1 vi/vim 编辑器
+#### 2.4.1 vi/vim Editor
 
-vim 是 Linux 最常用的文本编辑器，有三种模式：
+vim is Linux's most commonly used text editor, with three modes:
 
-| 模式         | 说明                               | 进入方式                         |
+| Mode | Description | How to enter |
 | ------------ | ---------------------------------- | -------------------------------- |
-| **命令模式** | 默认模式，可移动光标、删除、复制等 | 按 `Esc`                         |
-| **插入模式** | 编辑文本                           | 按 `i`（光标前）或 `a`（光标后） |
-| **底行模式** | 保存、退出、搜索等                 | 在命令模式下按 `:`               |
+| **Normal mode** | Default mode: move the cursor, delete, copy, etc. | Press `Esc` |
+| **Insert mode** | Edit text | Press `i` (before cursor) or `a` (after cursor) |
+| **Command-line mode** | Save, quit, search, etc. | Press `:` in normal mode |
 
-常用操作：
-
-```bash
-vim file.txt            # 打开文件
-
-# 命令模式
-i                       # 进入插入模式（光标前）
-a                       # 进入插入模式（光标后）
-o                       # 在下一行插入
-dd                      # 删除当前行
-yy                      # 复制当前行
-p                       # 粘贴
-u                       # 撤销
-gg                      # 跳到文件开头
-G                       # 跳到文件末尾
-/keyword                # 搜索（按 n 下一个，N 上一个）
-
-# 底行模式（先按 Esc，再按 :）
-:w                      # 保存
-:q                      # 退出
-:wq                     # 保存并退出
-:q!                     # 强制退出（不保存）
-:set nu                 # 显示行号
-```
-
-#### 2.4.2 nano 编辑器
-
-比 vim 更简单的编辑器，适合新手：
+Common operations:
 
 ```bash
-nano file.txt           # 打开文件
+vim file.txt            # Open a file
 
-# 常用快捷键（^ 表示 Ctrl）
-^O                      # 保存
-^X                      # 退出
-^K                      # 剪切当前行
-^U                      # 粘贴
-^W                      # 搜索
+# Normal mode
+i                       # Enter insert mode (before cursor)
+a                       # Enter insert mode (after cursor)
+o                       # Insert on the next line
+dd                      # Delete the current line
+yy                      # Copy the current line
+p                       # Paste
+u                       # Undo
+gg                      # Jump to the beginning of the file
+G                       # Jump to the end of the file
+/keyword                # Search (n: next, N: previous)
+
+# Command-line mode (press Esc, then :)
+:w                      # Save
+:q                      # Quit
+:wq                     # Save and quit
+:q!                     # Force quit (without saving)
+:set nu                 # Show line numbers
 ```
 
-### 2.5 文件查找
+#### 2.4.2 nano Editor
+
+A simpler editor than vim, suitable for beginners:
 
 ```bash
-# find：按条件查找文件
-find /path -name "*.log"           # 按名称查找
-find /path -type f -size +10M      # 查找大于 10MB 的文件
-find /path -mtime -7               # 查找 7 天内修改的文件
+nano file.txt           # Open a file
 
-# grep：在文件内容中搜索
-grep "keyword" file.txt            # 搜索关键字
-grep -r "keyword" /path            # 递归搜索目录
-grep -i "keyword" file.txt         # 忽略大小写
-grep -n "keyword" file.txt         # 显示行号
-grep -v "keyword" file.txt         # 显示不包含关键字的行
-
-# which：查找命令位置
-which java                         # 显示 java 命令的路径
+# Common shortcuts (^ means Ctrl)
+^O                      # Save
+^X                      # Quit
+^K                      # Cut the current line
+^U                      # Paste
+^W                      # Search
 ```
 
-### 2.6 权限管理
+### 2.5 Finding Files
 
-#### 2.6.1 权限说明
+```bash
+# find: locate files by conditions
+find /path -name "*.log"           # Find by name
+find /path -type f -size +10M      # Find files larger than 10MB
+find /path -mtime -7               # Find files modified in the last 7 days
 
-Linux 文件权限分为三组：**所有者（u）**、**所属组（g）**、**其他用户（o）**，每组有三种权限：
+# grep: search file contents
+grep "keyword" file.txt            # Search for a keyword
+grep -r "keyword" /path            # Search a directory recursively
+grep -i "keyword" file.txt         # Ignore case
+grep -n "keyword" file.txt         # Show line numbers
+grep -v "keyword" file.txt         # Show lines without the keyword
 
-| 权限 | 字母 | 数字 | 对文件的含义 | 对目录的含义  |
+# which: locate a command
+which java                         # Show the path of the java command
+```
+
+### 2.6 Permission Management
+
+#### 2.6.1 Understanding Permissions
+
+Linux file permissions have three groups: **owner (u)**, **group (g)**, and **others (o)**. Each group has three permission types:
+
+| Permission | Letter | Number | Meaning for files | Meaning for directories |
 | ---- | ---- | ---- | ------------ | ------------- |
-| 读   | r    | 4    | 查看内容     | 列出目录内容  |
-| 写   | w    | 2    | 修改内容     | 创建/删除文件 |
-| 执行 | x    | 1    | 运行程序     | 进入目录      |
+| Read | r | 4 | View contents | List directory contents |
+| Write | w | 2 | Modify contents | Create/delete files |
+| Execute | x | 1 | Run a program | Enter the directory |
 
-#### 2.6.2 修改权限
-
-```bash
-# chmod：修改权限
-chmod 755 file.sh       # 所有者 rwx，组和其他 r-x
-chmod u+x file.sh       # 给所有者添加执行权限
-chmod go-w file.txt     # 去掉组和其他的写权限
-chmod -R 755 dirname    # 递归修改目录权限
-
-# chown：修改所有者
-chown user file.txt              # 修改所有者
-chown user:group file.txt        # 同时修改所有者和组
-chown -R user:group dirname      # 递归修改
-```
-
-#### 2.6.3 用户与组（简要）
+#### 2.6.2 Changing Permissions
 
 ```bash
-whoami                  # 当前用户名
-id                      # 当前用户 uid、gid、所属组
-id 用户名               # 指定用户信息
-groups                  # 当前用户所属组
+# chmod: change permissions
+chmod 755 file.sh       # Owner: rwx; group and others: r-x
+chmod u+x file.sh       # Add execute permission for the owner
+chmod go-w file.txt     # Remove write permission for group and others
+chmod -R 755 dirname    # Change directory permissions recursively
 
-# 将用户加入组（需 root，常用于加入 docker 组以无 sudo 运行 Docker）
-sudo usermod -aG 组名 用户名
-# 修改后需重新登录或执行 newgrp 组名 才能生效
+# chown: change ownership
+chown user file.txt              # Change the owner
+chown user:group file.txt        # Change both owner and group
+chown -R user:group dirname      # Change recursively
 ```
 
-常见权限组合：
+#### 2.6.3 Users and Groups (Brief Overview)
 
-| 数字 | 权限      | 常用场景                   |
+```bash
+whoami                  # Current username
+id                      # Current user's UID, GID, and groups
+id username             # Information about a specified user
+groups                  # Current user's groups
+
+# Add a user to a group (requires root; often used for the docker group to run Docker without sudo)
+sudo usermod -aG groupname username
+# Log in again or run newgrp groupname for the change to take effect
+```
+
+Common permission combinations:
+
+| Number | Permissions | Common use cases |
 | ---- | --------- | -------------------------- |
-| 755  | rwxr-xr-x | 可执行文件、目录           |
-| 644  | rw-r--r-- | 普通文件                   |
-| 600  | rw------- | 私密文件（如密钥）         |
-| 777  | rwxrwxrwx | 所有人可读写执行（不推荐） |
+| 755 | rwxr-xr-x | Executables, directories |
+| 644 | rw-r--r-- | Regular files |
+| 600 | rw------- | Private files (such as keys) |
+| 777 | rwxrwxrwx | Everyone can read, write, and execute (not recommended) |
 
-### 2.7 进程管理
+### 2.7 Process Management
 
 ```bash
-# 查看进程
-ps -ef                  # 查看所有进程
-ps -ef | grep java      # 查找 Java 进程
-ps aux                  # 另一种格式查看进程
-top                     # 实时查看进程（按 q 退出）
-htop                    # 更友好的 top（需安装）
+# View processes
+ps -ef                  # Show all processes
+ps -ef | grep java      # Find Java processes
+ps aux                  # Show processes in another format
+top                     # View processes in real time (q to quit)
+htop                    # A friendlier top (requires installation)
 
-# 结束进程
-kill PID                # 正常结束进程
-kill -9 PID             # 强制结束进程
+# Terminate processes
+kill PID                # Terminate a process normally
+kill -9 PID             # Force-terminate a process
 
-# 后台运行
-nohup command &         # 后台运行，退出终端后仍继续
+# Run in the background
+nohup command &         # Run in the background and continue after the terminal exits
 nohup java -jar app.jar > log.txt 2>&1 &
 ```
 
-### 2.8 网络相关
+### 2.8 Networking
 
 ```bash
-# 查看网络信息
-ip addr                 # 查看 IP 地址（新命令）
-ifconfig                # 查看 IP 地址（旧命令）
-hostname -I             # 只显示 IP
+# View network information
+ip addr                 # Show IP addresses (new command)
+ifconfig                # Show IP addresses (older command)
+hostname -I             # Show only IP addresses
 
-# 网络连通性
-ping www.baidu.com      # 测试网络连通
-curl http://localhost   # 发送 HTTP 请求
-wget http://url/file    # 下载文件
+# Network connectivity
+ping www.baidu.com      # Test network connectivity
+curl http://localhost   # Send an HTTP request
+wget http://url/file    # Download a file
 
-# 端口和连接
-netstat -tlnp           # 查看监听的端口
-ss -tlnp                # 更快的端口查看命令
-lsof -i :8080           # 查看占用 8080 端口的进程
+# Ports and connections
+netstat -tlnp           # Show listening ports
+ss -tlnp                # Faster command for inspecting ports
+lsof -i :8080           # Show processes using port 8080
 ```
 
-### 2.9 系统信息
+### 2.9 System Information
 
 ```bash
-# 系统信息
-uname -a                # 系统内核信息
-cat /etc/os-release     # 发行版信息
-hostname                # 主机名
-uptime                  # 运行时间和负载
+# System information
+uname -a                # Kernel information
+cat /etc/os-release     # Distribution information
+hostname                # Hostname
+uptime                  # Uptime and load
 
-# 资源使用
-free -h                 # 内存使用情况
-df -h                   # 磁盘使用情况
-du -sh /path            # 目录大小
+# Resource usage
+free -h                 # Memory usage
+df -h                   # Disk usage
+du -sh /path            # Directory size
 ```
 
-### 2.10 压缩和解压
+### 2.10 Archiving and Compression
 
 ```bash
-# tar（打包/解包，常配合 gzip）
-tar -cvf archive.tar files/      # 打包
-tar -xvf archive.tar             # 解包
-tar -czvf archive.tar.gz files/  # 打包并压缩
-tar -xzvf archive.tar.gz         # 解压
+# tar (archive/extract, often combined with gzip)
+tar -cvf archive.tar files/      # Create an archive
+tar -xvf archive.tar             # Extract an archive
+tar -czvf archive.tar.gz files/  # Archive and compress
+tar -xzvf archive.tar.gz         # Extract a compressed archive
 
 # zip/unzip
-zip -r archive.zip files/        # 压缩
-unzip archive.zip                # 解压
-unzip archive.zip -d /path/      # 解压到指定目录
+zip -r archive.zip files/        # Compress
+unzip archive.zip                # Extract
+unzip archive.zip -d /path/      # Extract to a specified directory
 ```
 
-参数说明：
-- `-c`：创建（create）
-- `-x`：解压（extract）
-- `-v`：显示过程（verbose）
-- `-f`：指定文件名（file）
-- `-z`：使用 gzip 压缩
+Option meanings:
+- `-c`: Create
+- `-x`: Extract
+- `-v`: Show progress (verbose)
+- `-f`: Specify the filename
+- `-z`: Use gzip compression
 
-### 2.11 其他常用命令
+### 2.11 Other Common Commands
 
 ```bash
-# 管道和重定向
-command1 | command2     # 管道：前一个命令的输出作为后一个的输入
-command > file          # 重定向：标准输出到文件（覆盖）
-command >> file         # 追加到文件
-command 2>&1            # 2 标准错误、1 标准输出；2>&1 表示错误也重定向到标准输出（常与 > file 合用）
+# Pipes and redirection
+command1 | command2     # Pipe: pass the first command's output to the second command's input
+command > file          # Redirect standard output to a file (overwrite)
+command >> file         # Append to a file
+command 2>&1            # 2: stderr, 1: stdout; 2>&1 redirects errors to stdout (often combined with > file)
 
-# 示例
-ps -ef | grep java      # 查找 Java 进程
-cat file | wc -l        # 统计行数
-echo "hello" > a.txt    # 写入文件
+# Examples
+ps -ef | grep java      # Find Java processes
+cat file | wc -l        # Count lines
+echo "hello" > a.txt    # Write to a file
 
-# 其他
-clear                   # 清屏
-history                 # 查看历史命令
-!!                      # 执行上一条命令
-sudo command            # 以管理员身份执行
+# Other commands
+clear                   # Clear the screen
+history                 # Show command history
+!!                      # Run the previous command
+sudo command            # Run as administrator
 ```
 
 ***
 
-## 三、Linux 软件安装
+## III. Installing Software on Linux
 
-### 3.1 包管理器
+### 3.1 Package Managers
 
-不同发行版使用不同的包管理器：
+Different distributions use different package managers:
 
-| 发行版        | 包管理器  | 包格式       |
+| Distribution | Package manager | Package format |
 | ------------- | --------- | ------------ |
 | Ubuntu/Debian | apt       | .deb         |
 | CentOS/RHEL   | yum / dnf | .rpm         |
 | Alpine        | apk       | .apk         |
 | Arch          | pacman    | .pkg.tar.zst |
 
-### 3.2 apt（Ubuntu/Debian）
+### 3.2 apt (Ubuntu/Debian)
 
 ```bash
-# 更新软件源
+# Update package indexes
 sudo apt update
 
-# 升级已安装的软件
+# Upgrade installed software
 sudo apt upgrade
 
-# 安装软件
+# Install software
 sudo apt install nginx
 
-# 卸载软件
-sudo apt remove nginx           # 保留配置
-sudo apt purge nginx            # 删除配置
-sudo apt autoremove             # 清理不再需要的依赖包
+# Uninstall software
+sudo apt remove nginx           # Keep configuration files
+sudo apt purge nginx            # Remove configuration files
+sudo apt autoremove             # Remove dependencies no longer needed
 
-# 搜索软件
+# Search for software
 apt search keyword
 
-# 查看已安装
+# List installed packages
 apt list --installed
 
-# 查看软件包信息
+# View package information
 apt show nginx
 ```
 
-**安装前清理旧版本的场景**：
+**When to remove old versions before installation:**
 
-当从第三方源安装软件时（如 Docker CE、Node.js），通常需要先卸载系统源中的旧版本，避免冲突：
+When installing software from a third-party repository (such as Docker CE or Node.js), first remove old versions from the system repository to avoid conflicts:
 
 ```bash
-# 示例：安装 Docker CE 前清理旧版
+# Example: remove older versions before installing Docker CE
 sudo apt remove docker docker-engine docker.io containerd runc
 sudo apt autoremove
 ```
 
-### 3.3 yum/dnf（CentOS/RHEL）
+### 3.3 yum/dnf (CentOS/RHEL)
 
 ```bash
-# 安装软件
+# Install software
 sudo yum install nginx
-sudo dnf install nginx          # CentOS 8+ 用 dnf
+sudo dnf install nginx          # Use dnf on CentOS 8+
 
-# 更新软件
+# Update software
 sudo yum update
 
-# 卸载软件
+# Uninstall software
 sudo yum remove nginx
-sudo yum autoremove             # 清理不再需要的依赖包
+sudo yum autoremove             # Remove dependencies no longer needed
 
-# 搜索软件
+# Search for software
 yum search keyword
 
-# 查看已安装
+# List installed packages
 yum list installed
 
-# 查看软件包信息
+# View package information
 yum info nginx
 ```
 
-**安装前清理旧版本的场景**：
+**When to remove old versions before installation:**
 
 ```bash
-# 示例：安装 Docker CE 前清理旧版
+# Example: remove older versions before installing Docker CE
 sudo yum remove docker docker-client docker-common docker-engine
 ```
 
-### 3.4 手动安装（二进制包）
+### 3.4 Manual Installation (Binary Packages)
 
-有些软件没有在包管理器中，需要手动安装：
+Some software is unavailable through the package manager and must be installed manually:
 
 ```bash
-# 1. 下载
+# 1. Download
 wget https://example.com/software.tar.gz
 
-# 2. 解压
+# 2. Extract
 tar -xzvf software.tar.gz
 
-# 3. 移动到合适位置
+# 3. Move to a suitable location
 sudo mv software /opt/
 
-# 4. 配置环境变量（可选）
+# 4. Configure environment variables (optional)
 echo 'export PATH=$PATH:/opt/software/bin' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### 3.5 安装 JDK
+### 3.5 Installing the JDK
 
-#### 方式一：包管理器安装（推荐）
+#### Approach 1: Package Manager (Recommended)
 
 ```bash
 # Ubuntu
 sudo apt update
 sudo apt install openjdk-17-jdk
 
-# 验证
+# Verify
 java -version
 ```
 
-#### 方式二：手动安装
+#### Approach 2: Manual Installation
 
 ```bash
-# 1. 下载 JDK（从 Oracle 或 Adoptium）
+# 1. Download the JDK (from Oracle or Adoptium)
 wget https://example.com/jdk-17_linux-x64.tar.gz
 
-# 2. 解压到 /opt
+# 2. Extract to /opt
 sudo tar -xzvf jdk-17_linux-x64.tar.gz -C /opt
 
-# 3. 配置环境变量
+# 3. Configure environment variables
 sudo nano /etc/profile.d/java.sh
 
-# 添加以下内容：
+# Add the following:
 export JAVA_HOME=/opt/jdk-17
 export PATH=$PATH:$JAVA_HOME/bin
 
-# 4. 生效
+# 4. Apply the changes
 source /etc/profile.d/java.sh
 
-# 5. 验证
+# 5. Verify
 java -version
 ```
 
-### 3.6 安装 MySQL
+### 3.6 Installing MySQL
 
 ```bash
 # Ubuntu
 sudo apt update
 sudo apt install mysql-server
 
-# 启动服务
+# Start the service
 sudo systemctl start mysql
-sudo systemctl enable mysql     # 开机自启
+sudo systemctl enable mysql     # Enable startup at boot
 
-# 安全配置
+# Security configuration
 sudo mysql_secure_installation
 
-# 登录
+# Log in
 sudo mysql -u root -p
 ```
 
-### 3.7 安装 Nginx
+### 3.7 Installing Nginx
 
 ```bash
 # Ubuntu
 sudo apt update
 sudo apt install nginx
 
-# 启动
+# Start
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
-# 验证（访问 http://服务器IP）
+# Verify (visit http://serverIP)
 curl http://localhost
 ```
 
-### 3.8 systemctl 服务管理
+### 3.8 Managing Services with systemctl
 
 ```bash
-# 服务管理
-sudo systemctl start nginx      # 启动
-sudo systemctl stop nginx       # 停止
-sudo systemctl restart nginx    # 重启
-sudo systemctl reload nginx     # 重新加载配置
-sudo systemctl status nginx     # 查看状态
+# Service management
+sudo systemctl start nginx      # Start
+sudo systemctl stop nginx       # Stop
+sudo systemctl restart nginx    # Restart
+sudo systemctl reload nginx     # Reload configuration
+sudo systemctl status nginx     # View status
 
-# 开机自启
-sudo systemctl enable nginx     # 开启
-sudo systemctl disable nginx    # 关闭
+# Startup at boot
+sudo systemctl enable nginx     # Enable
+sudo systemctl disable nginx    # Disable
 
-# 查看服务列表
+# List services
 systemctl list-units --type=service
 ```
 
 ***
 
-## 四、项目部署
+## IV. Project Deployment
 
-### 4.1 部署流程概述
+### 4.1 Deployment Process Overview
 
-典型的 Java 项目部署流程：
+A typical Java project deployment process:
 
-1. **准备环境**：安装 JDK、数据库、中间件等
-2. **上传项目**：将 jar/war 包上传到服务器（宿主机目录建议用 `/srv/应用名`；若用 Docker 部署，宿主机挂载路径也建议 `/srv/服务名`）
-3. **配置项目**：修改配置文件（数据库连接、端口等）
-4. **启动项目**：运行 jar 或部署到 Tomcat
-5. **配置反向代理**：用 Nginx 代理，开放 80/443 端口
-6. **查看日志**：监控运行状态
+1. **Prepare the environment:** Install the JDK, database, middleware, etc.
+2. **Upload the project:** Upload the jar/war to the server (use `/srv/appName` on the host; for Docker deployments, `/srv/serviceName` is also recommended for host mount paths)
+3. **Configure the project:** Update configuration files (database connections, ports, etc.)
+4. **Start the project:** Run the jar or deploy to Tomcat
+5. **Configure a reverse proxy:** Use Nginx as the proxy and open ports 80/443
+6. **Inspect logs:** Monitor runtime status
 
-### 4.2 上传文件到服务器
+### 4.2 Uploading Files to the Server
 
 ```bash
-# scp：通过 SSH 传文件
+# scp: transfer files over SSH
 scp local_file user@server:/remote/path
-scp -r local_dir user@server:/remote/path     # 目录
+scp -r local_dir user@server:/remote/path     # Directory
 
-# 示例（放用户家目录）
-scp target/app.jar 用户名@服务器IP:/home/用户名/
+# Example: place the file in the user's home directory
+scp target/app.jar username@serverIP:/home/username/
 
-# 示例（放 /srv/app 等目录时，需先在服务器上 sudo mkdir -p /srv/app 并 chown 给运行用户）
-scp target/app.jar 用户名@服务器IP:/srv/app/
+# Example: for /srv/app, first run sudo mkdir -p /srv/app on the server and chown it to the runtime user
+scp target/app.jar username@serverIP:/srv/app/
 
-# 从服务器下载
+# Download from the server
 scp user@server:/remote/file local_path
 ```
 
-也可以用 SFTP 客户端（Royal TSX、FileZilla 等）图形化上传。生产环境常用 `/srv/应用名` 或 `/opt` 存放应用，需 root 创建目录后 `chown 运行用户:组 /srv/应用名`，以便该用户写日志、改配置。
+You can also upload graphically using SFTP clients such as Royal TSX or FileZilla. Production environments commonly keep applications in `/srv/appName` or `/opt`. Create the directory as root, then run `chown runtimeUser:group /srv/appName` so the application user can write logs and update configuration.
 
-### 4.3 部署 Spring Boot 项目
+### 4.3 Deploying a Spring Boot Project
 
-#### 4.3.1 直接运行 jar
+#### 4.3.1 Run the jar Directly
 
-若项目放在 `/srv/app` 等需 root 创建的目录，建议 `sudo chown 运行用户:组 /srv/app`，以便该用户写日志、建临时文件。
+If the project resides in a directory requiring root to create, such as `/srv/app`, use `sudo chown runtimeUser:group /srv/app` so the application user can write logs and create temporary files.
 
 ```bash
-# 前台运行（关闭终端会停止）
+# Run in the foreground (stops when the terminal closes)
 java -jar app.jar
 
-# 后台运行（推荐重定向到日志，便于排查）
+# Run in the background (redirect to a log for troubleshooting)
 nohup java -jar app.jar > app.log 2>&1 &
 
-# 指定配置
+# Specify configuration
 nohup java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &
 
-# 指定端口
+# Specify a port
 nohup java -jar app.jar --server.port=8080 > app.log 2>&1 &
 ```
 
-#### 4.3.2 使用脚本管理
+#### 4.3.2 Manage with Scripts
 
-创建启动脚本 `start.sh`：
+Create the startup script `start.sh`:
 
 ```bash
 #!/bin/bash
 APP_NAME=app.jar
 LOG_FILE=app.log
 
-# 检查是否已运行
+# Check whether the application is already running
 PID=$(ps -ef | grep $APP_NAME | grep -v grep | awk '{print $2}')
 if [ -n "$PID" ]; then
-    echo "应用已运行，PID: $PID"
+    echo "Application is already running, PID: $PID"
     exit 1
 fi
 
-# 启动
+# Start
 nohup java -jar $APP_NAME > $LOG_FILE 2>&1 &
-echo "应用已启动，PID: $!"
+echo "Application started, PID: $!"
 ```
 
-创建停止脚本 `stop.sh`：
+Create the shutdown script `stop.sh`:
 
 ```bash
 #!/bin/bash
@@ -689,37 +689,37 @@ APP_NAME=app.jar
 
 PID=$(ps -ef | grep $APP_NAME | grep -v grep | awk '{print $2}')
 if [ -z "$PID" ]; then
-    echo "应用未运行"
+    echo "Application is not running"
     exit 0
 fi
 
 kill $PID
-echo "应用已停止，PID: $PID"
+echo "Application stopped, PID: $PID"
 ```
 
-赋予执行权限：
+Grant execute permission:
 
 ```bash
 chmod +x start.sh stop.sh
 ```
 
-### 4.4 配置 Nginx 反向代理
+### 4.4 Configuring an Nginx Reverse Proxy
 
-编辑 Nginx 配置：
+Edit the Nginx configuration:
 
 ```bash
 sudo nano /etc/nginx/sites-available/default
 ```
 
-配置示例：
+Example configuration:
 
 ```nginx
 server {
     listen 80;
-    server_name example.com;    # 域名或 IP
+    server_name example.com;    # Domain name or IP
 
     location / {
-        proxy_pass http://127.0.0.1:8080;    # 后端地址
+        proxy_pass http://127.0.0.1:8080;    # Backend address
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -727,40 +727,40 @@ server {
 }
 ```
 
-重新加载 Nginx：
+Reload Nginx:
 
 ```bash
-sudo nginx -t               # 检查配置语法
-sudo systemctl reload nginx # 重新加载
+sudo nginx -t               # Check configuration syntax
+sudo systemctl reload nginx # Reload
 ```
 
-### 4.5 查看日志
+### 4.5 Viewing Logs
 
 ```bash
-# 查看日志文件
+# View log files
 cat app.log
-tail -n 100 app.log         # 最后 100 行
-tail -f app.log             # 实时跟踪（常用）
+tail -n 100 app.log         # Last 100 lines
+tail -f app.log             # Follow in real time (common)
 
-# 搜索关键字
+# Search for keywords
 grep "ERROR" app.log
-grep -n "Exception" app.log  # 显示行号
+grep -n "Exception" app.log  # Show line numbers
 
-# 系统日志
+# System logs
 sudo tail -f /var/log/syslog
-sudo journalctl -u nginx -f  # 查看 nginx 服务日志
+sudo journalctl -u nginx -f  # View nginx service logs
 ```
 
-### 4.6 防火墙配置
+### 4.6 Firewall Configuration
 
 ```bash
 # Ubuntu (ufw)
-sudo ufw status             # 查看状态
-sudo ufw allow 80           # 开放 80 端口
-sudo ufw allow 443          # 开放 443 端口
-sudo ufw allow 22           # 开放 SSH（建议先开放 22 再 enable，避免锁死）
-sudo ufw enable             # 启用防火墙
-sudo ufw reload             # 规则修改后若未自动生效可执行
+sudo ufw status             # View status
+sudo ufw allow 80           # Open port 80
+sudo ufw allow 443          # Open port 443
+sudo ufw allow 22           # Allow SSH (open port 22 before enable to avoid locking yourself out)
+sudo ufw enable             # Enable the firewall
+sudo ufw reload             # Run if changed rules do not take effect automatically
 
 # CentOS (firewalld)
 sudo firewall-cmd --list-all
@@ -768,33 +768,33 @@ sudo firewall-cmd --add-port=80/tcp --permanent
 sudo firewall-cmd --reload
 ```
 
-### 4.7 常见问题排查
+### 4.7 Troubleshooting
 
-| 问题         | 排查命令                                   |
+| Problem | Diagnostic command |
 | ------------ | ------------------------------------------ |
-| 应用没启动   | `ps -ef \| grep java`                      |
-| 端口被占用   | `lsof -i :8080` 或 `ss -tlnp \| grep 8080` |
-| 无法访问     | `curl http://localhost:8080`，检查防火墙   |
-| 内存不足     | `free -h`，看 available                    |
-| 磁盘满了     | `df -h`，看 Use%                           |
-| 查看错误日志 | `tail -f app.log`，搜索 ERROR/Exception    |
+| Application did not start | `ps -ef \| grep java` |
+| Port already in use | `lsof -i :8080` or `ss -tlnp \| grep 8080` |
+| Cannot access the application | `curl http://localhost:8080`; check the firewall |
+| Insufficient memory | `free -h`; check available |
+| Disk is full | `df -h`; check Use% |
+| Inspect error logs | `tail -f app.log`; search for ERROR/Exception |
 
 ***
 
-## 五、常用命令速查表
+## V. Common Command Reference
 
-| 类别     | 命令                          | 说明                       |
+| Category | Commands | Description |
 | -------- | ----------------------------- | -------------------------- |
-| **目录** | `cd`、`pwd`、`ls`、`mkdir`    | 切换、查看、创建目录       |
-| **文件** | `cp`、`mv`、`rm`、`touch`、`ln -s` | 复制、移动、删除、创建、软链接 |
-| **查看** | `cat`、`head`、`tail`、`less` | 查看文件内容               |
-| **编辑** | `vim`、`nano`                 | 编辑文件                   |
-| **查找** | `find`、`grep`、`which`       | 查找文件/内容              |
-| **权限** | `chmod`、`chown`              | 修改权限/所有者            |
-| **用户** | `whoami`、`id`、`groups`、`usermod -aG` | 当前用户、所属组、将用户加入组 |
-| **进程** | `ps`、`top`、`kill`、`nohup`  | 查看/结束进程、后台运行    |
-| **网络** | `ip addr`、`ping`、`curl`、`ss`、`scp` | 网络信息/测试/端口/传文件  |
-| **系统** | `free`、`df`、`uname`         | 内存/磁盘/系统信息         |
-| **压缩** | `tar`、`zip`、`unzip`         | 打包/压缩/解压             |
-| **服务** | `systemctl`                   | 服务管理                   |
-| **软件** | `apt`、`yum`                  | 包管理                     |
+| **Directories** | `cd`, `pwd`, `ls`, `mkdir` | Change, inspect, and create directories |
+| **Files** | `cp`, `mv`, `rm`, `touch`, `ln -s` | Copy, move, delete, create, and link files |
+| **Viewing** | `cat`, `head`, `tail`, `less` | View file contents |
+| **Editing** | `vim`, `nano` | Edit files |
+| **Searching** | `find`, `grep`, `which` | Find files/content |
+| **Permissions** | `chmod`, `chown` | Change permissions/ownership |
+| **Users** | `whoami`, `id`, `groups`, `usermod -aG` | Current user, group memberships, add users to groups |
+| **Processes** | `ps`, `top`, `kill`, `nohup` | View/terminate processes, run in background |
+| **Network** | `ip addr`, `ping`, `curl`, `ss`, `scp` | Network information, testing, ports, file transfer |
+| **System** | `free`, `df`, `uname` | Memory, disk, and system information |
+| **Compression** | `tar`, `zip`, `unzip` | Archive, compress, and extract |
+| **Services** | `systemctl` | Service management |
+| **Software** | `apt`, `yum` | Package management |

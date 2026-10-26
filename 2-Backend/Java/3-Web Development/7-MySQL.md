@@ -1,31 +1,31 @@
-## 一、MySQL 概述
+## 1. MySQL Overview
 
-### 1.1 什么是 MySQL
+### 1.1 What Is MySQL?
 
-MySQL 是目前最流行的开源**关系型数据库管理系统（RDBMS）**，具有以下特点：
+MySQL is a widely used open-source **relational database management system (RDBMS)** with these characteristics:
 
-*   **开源免费**：社区版免费使用
-*   **性能优秀**：查询速度快，适合高并发
-*   **跨平台**：支持 Windows、Linux、macOS
-*   **生态丰富**：与 Java、Python、PHP 等语言完美配合
+*   **Open-source community edition:** Available without a license fee.
+*   **Performance:** Supports efficient queries and concurrent workloads.
+*   **Cross-platform:** Runs on Windows, Linux, and macOS.
+*   **Broad ecosystem:** Integrates with Java, Python, PHP, and other languages.
 
-### 1.2 安装
+### 1.2 Installation
 
-#### Windows 安装
+#### Windows
 
-**方式一：官网下载安装包（推荐）**
+**Option 1: Official installer (recommended)**
 
-1.  访问官网：<https://dev.mysql.com/downloads/mysql/>
-2.  下载 MySQL Installer
-3.  选择 **Developer Default** 或 **Server only**
-4.  配置 root 密码
-5.  安装完成后自动注册为 Windows 服务
+1.  Visit <https://dev.mysql.com/downloads/mysql/>
+2.  Download MySQL Installer
+3.  Select **Developer Default** or **Server only**
+4.  Set the root password
+5.  The installer registers a Windows service
 
 ***
 
-**方式二：解压版安装**
+**Option 2: Install from an archive**
 
-`my.ini` 基本配置：
+Basic `my.ini` configuration:
 
 ```ini
 [mysqld]
@@ -40,21 +40,21 @@ default-character-set=utf8mb4
 ```
 
 ```bash
-# 初始化数据库
+# Initialize the database
 mysqld --initialize-insecure --user=mysql
 
-# 注册 Windows 服务
+# Register the Windows service
 mysqld --install MySQL
 
-# 启动服务
+# Start the service
 net start MySQL
 
-# 登录并修改密码
+# Log in and change the password
 mysql -u root -p
-ALTER USER 'root'@'localhost' IDENTIFIED BY '你的新密码';
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'your-new-password';
 ```
 
-#### macOS / Linux 安装
+#### macOS / Linux
 
 ```bash
 # macOS (Homebrew)
@@ -67,312 +67,312 @@ sudo apt install mysql-server
 sudo systemctl start mysql
 sudo systemctl enable mysql
 
-# 安全配置
+# Security configuration
 mysql_secure_installation
 ```
 
-#### 常用服务命令
+#### Common Service Commands
 
-| 操作   | Windows           | Linux/macOS                    |
+| Action | Windows | Linux with systemd |
 | ---- | ----------------- | ------------------------------ |
-| 启动   | `net start mysql` | `sudo systemctl start mysql`   |
-| 停止   | `net stop mysql`  | `sudo systemctl stop mysql`    |
-| 重启   | 先停止再启动            | `sudo systemctl restart mysql` |
-| 查看状态 | `sc query mysql`  | `sudo systemctl status mysql`  |
+| Start | `net start mysql` | `sudo systemctl start mysql` |
+| Stop | `net stop mysql` | `sudo systemctl stop mysql` |
+| Restart | Stop, then start | `sudo systemctl restart mysql` |
+| Status | `sc query mysql` | `sudo systemctl status mysql` |
 
-#### 登录 MySQL
+#### Connecting to MySQL
 
 ```bash
-# 本地登录
+# Connect locally
 mysql -u root -p
 
-# 指定主机和端口
+# Specify a host and port
 mysql -h 127.0.0.1 -P 3306 -u root -p
 ```
 
-### 1.3 图形化工具
+### 1.3 Graphical Tools
 
-| 工具                  | 特点               | 价格       |
+| Tool | Characteristics | Pricing |
 | ------------------- | ---------------- | -------- |
-| **Navicat**         | 功能强大，界面美观        | 付费       |
-| **DataGrip**        | JetBrains 出品，专业级 | 付费（学生免费） |
-| **DBeaver**         | 开源免费，支持多种数据库     | 免费       |
-| **MySQL Workbench** | 官方工具             | 免费       |
+| **Navicat** | Extensive features and a graphical interface | Paid |
+| **DataGrip** | JetBrains database IDE | Paid; educational licenses available |
+| **DBeaver** | Open-source community edition; supports many databases | Free community edition |
+| **MySQL Workbench** | Official MySQL tool | Free |
 
-**推荐**：学习用 DBeaver，工作用 Navicat / DataGrip
+**Suggested choices:** DBeaver for learning; Navicat or DataGrip for professional use.
 
-### 1.4 数据模型
+### 1.4 Data Model
 
-    ┌─────────────────────────────────────────────────────┐
-    │                   MySQL 服务器                       │
-    │  ┌─────────────────┐  ┌─────────────────┐          │
-    │  │   数据库 db1     │  │   数据库 db2     │   ...   │
-    │  │  ┌───────────┐  │  │  ┌───────────┐  │          │
-    │  │  │   表 t1   │  │  │  │   表 t1   │  │          │
-    │  │  ├───────────┤  │  │  ├───────────┤  │          │
-    │  │  │   表 t2   │  │  │  │   表 t2   │  │          │
-    │  │  └───────────┘  │  │  └───────────┘  │          │
-    │  └─────────────────┘  └─────────────────┘          │
-    └─────────────────────────────────────────────────────┘
+    ┌─────────────────────────────────────────────────┐
+    │ MySQL server                                    │
+    │ ┌─────────────────┐  ┌─────────────────┐        │
+    │ │ Database db1    │  │ Database db2    │  ...   │
+    │ │ ┌───────────┐   │  │ ┌───────────┐   │        │
+    │ │ │ Table t1  │   │  │ │ Table t1  │   │        │
+    │ │ ├───────────┤   │  │ ├───────────┤   │        │
+    │ │ │ Table t2  │   │  │ │ Table t2  │   │        │
+    │ │ └───────────┘   │  │ └───────────┘   │        │
+    │ └─────────────────┘  └─────────────────┘        │
+    └─────────────────────────────────────────────────┘
 
-| 概念                  | 说明       | 类比        |
+| Concept | Meaning | Analogy |
 | ------------------- | -------- | --------- |
-| **数据库（Database）**   | 存储数据的仓库  | 文件夹       |
-| **表（Table）**        | 数据的集合    | Excel 文件  |
-| **行（Row）**          | 一条记录     | Excel 的一行 |
-| **列（Column）**       | 字段，数据的属性 | Excel 的一列 |
-| **主键（Primary Key）** | 唯一标识一条记录 | 身份证号      |
-| **外键（Foreign Key）** | 关联其他表    | 部门ID      |
+| **Database** | A container for related data | Folder |
+| **Table** | A structured collection of records | Spreadsheet |
+| **Row** | One record | Spreadsheet row |
+| **Column** | A field or attribute | Spreadsheet column |
+| **Primary key** | Uniquely identifies a record | Identification number |
+| **Foreign key** | References another table | Department ID |
 
-### 1.5 SQL 语句分类
+### 1.5 SQL Statement Categories
 
-| 分类      | 全称                         | 说明     | 关键字                  |
+| Category | Full name | Purpose | Keywords |
 | ------- | -------------------------- | ------ | -------------------- |
-| **DDL** | Data Definition Language   | 数据定义语言 | CREATE、ALTER、DROP    |
-| **DML** | Data Manipulation Language | 数据操作语言 | INSERT、UPDATE、DELETE |
-| **DQL** | Data Query Language        | 数据查询语言 | SELECT               |
-| **DCL** | Data Control Language      | 数据控制语言 | GRANT、REVOKE         |
+| **DDL** | Data Definition Language | Define structures | CREATE, ALTER, DROP |
+| **DML** | Data Manipulation Language | Modify data | INSERT, UPDATE, DELETE |
+| **DQL** | Data Query Language | Query data | SELECT |
+| **DCL** | Data Control Language | Control access | GRANT, REVOKE |
 
 ***
 
-## 二、DDL - 数据定义语言
+## 2. DDL — Data Definition Language
 
-### 2.1 数据库操作
+### 2.1 Database Operations
 
 ```sql
--- 查询
-SHOW DATABASES;              -- 查看所有数据库
-SELECT DATABASE();           -- 查看当前数据库
+-- Inspect
+SHOW DATABASES;              -- List databases
+SELECT DATABASE();           -- Show the current database
 
--- 创建
-CREATE DATABASE 数据库名;
-CREATE DATABASE IF NOT EXISTS 数据库名;
-CREATE DATABASE 数据库名 DEFAULT CHARSET utf8mb4;
+-- Create
+CREATE DATABASE database_name;
+CREATE DATABASE IF NOT EXISTS database_name;
+CREATE DATABASE database_name DEFAULT CHARSET utf8mb4;
 
--- 使用
-USE 数据库名;
+-- Select
+USE database_name;
 
--- 删除
-DROP DATABASE 数据库名;
-DROP DATABASE IF EXISTS 数据库名;
+-- Drop
+DROP DATABASE database_name;
+DROP DATABASE IF EXISTS database_name;
 ```
 
-### 2.2 表结构 - 创建
+### 2.2 Creating Tables
 
-#### 数据类型
+#### Data Types
 
-**数值类型：**
+**Numeric types:**
 
-| 类型           | 大小      | 有符号范围           | 无符号范围（UNSIGNED） | 用途        |
+| Type | Storage | Signed range | Unsigned range | Typical use |
 | ------------ | ------- | --------------- | --------------- | --------- |
-| TINYINT      | 1 byte  | -128 \~ 127     | 0 \~ 255        | 小整数（如年龄）  |
-| INT          | 4 bytes | -21亿 \~ 21亿     | 0 \~ 42亿        | 标准整数（如ID） |
-| BIGINT       | 8 bytes | -922亿亿 \~ 922亿亿 | 0 \~ 1844亿亿     | 大整数（如订单号） |
-| DECIMAL(M,D) | 变长      | 取决于M和D          | 取决于M和D          | 精确小数（如金额） |
+| TINYINT | 1 byte | -128 to 127 | 0 to 255 | Small integers such as age |
+| INT | 4 bytes | -2^31 to 2^31-1 | 0 to 2^32-1 | Standard integers such as IDs |
+| BIGINT | 8 bytes | -2^63 to 2^63-1 | 0 to 2^64-1 | Large integers such as order IDs |
+| DECIMAL(M,D) | Depends on precision/scale | Depends on M and D | Depends on M and D | Exact decimals such as monetary values |
 
-> **UNSIGNED 说明**：无符号，表示只能存储 **0 和正数**，不能存储负数。好处是正数范围翻倍。
+> **UNSIGNED:** Stores zero and positive values only. For integer types, removing negative values doubles the available nonnegative range.
 
-**字符串类型：**
+**String types:**
 
-| 类型         | 大小         | 说明             |
+| Type | Size/limit | Description |
 | ---------- | ---------- | -------------- |
-| CHAR(N)    | 0-255 字符   | **定长**字符串，性能好  |
-| VARCHAR(N) | 0-65535 字符 | **变长**字符串，节省空间 |
-| TEXT       | 0-65535 字符 | 长文本            |
+| CHAR(N) | Up to 255 characters | **Fixed-length** string |
+| VARCHAR(N) | Character capacity depends on encoding and the 65,535-byte row-size limit | **Variable-length** string |
+| TEXT | Up to 65,535 bytes | Longer text |
 
-> **CHAR vs VARCHAR**：固定长度用 CHAR（如手机号），可变长度用 VARCHAR（如姓名）
+> **CHAR vs VARCHAR:** Use CHAR for fixed-length values such as a fixed-format phone number, and VARCHAR for variable-length values such as names.
 
-**日期时间类型：**
+**Date/time types:**
 
-| 类型        | 格式                    | 说明       |
+| Type | Typical format | Description |
 | --------- | --------------------- | -------- |
-| DATE      | YYYY-MM-DD            | 日期       |
-| DATETIME  | YYYY-MM-DD HH\:MM\:SS | 日期时间     |
-| TIMESTAMP | YYYY-MM-DD HH\:MM\:SS | 时间戳，自动更新 |
+| DATE | YYYY-MM-DD | Date |
+| DATETIME | YYYY-MM-DD HH\:MM\:SS | Date and time |
+| TIMESTAMP | YYYY-MM-DD HH\:MM\:SS | Timestamp; automatic initialization/update can be configured |
 
-#### 约束
+#### Constraints and Column Attributes
 
-| 约束  | 关键字             | 说明                        |
+| Attribute | Keyword | Meaning |
 | --- | --------------- | ------------------------- |
-| 主键  | PRIMARY KEY     | 唯一且非空                     |
-| 非空  | NOT NULL        | 不能为 NULL                  |
-| 唯一  | UNIQUE          | 值唯一                       |
-| 默认  | DEFAULT         | 默认值                       |
-| 外键  | FOREIGN KEY     | 关联其他表                     |
-| 自增  | AUTO\_INCREMENT | 自动递增                      |
-| 无符号 | UNSIGNED        | 只能存储 0 和正数，不能为负数（仅用于数值类型） |
+| Primary key | PRIMARY KEY | Unique and non-null |
+| Not null | NOT NULL | Reject NULL |
+| Unique | UNIQUE | Enforce uniqueness |
+| Default | DEFAULT | Default value |
+| Foreign key | FOREIGN KEY | Reference another table |
+| Auto-increment | AUTO_INCREMENT | Generate increasing values |
+| Unsigned | UNSIGNED | Allow only nonnegative numeric values |
 
-> **UNSIGNED 使用场景**：年龄、数量、价格等**不可能为负数**的字段。使用 UNSIGNED 可以：
+> **UNSIGNED use cases:** Values such as age, quantity, or prices that are designed to be nonnegative. Benefits include:
 >
-> 1.  **扩大正数范围**（如 TINYINT 从 127 扩大到 255）
-> 2.  **语义更明确**（明确表示该字段不接受负数）
-> 3.  **防止误操作**（插入负数会报错）
+> 1. **A larger nonnegative integer range**, such as TINYINT increasing from a maximum of 127 to 255.
+> 2. **Clearer intent:** The column is not intended to accept negative values.
+> 3. **Range validation:** Out-of-range inserts are rejected in strict SQL mode.
 
-#### 创建表示例
+#### Example Table Definition
 
 ```sql
 CREATE TABLE employee (
-    id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT COMMENT '员工ID',
-    emp_no VARCHAR(10) NOT NULL UNIQUE COMMENT '工号',
-    name VARCHAR(50) NOT NULL COMMENT '姓名',
-    gender CHAR(1) DEFAULT '男' COMMENT '性别',
-    age TINYINT UNSIGNED COMMENT '年龄（0-255，不能为负）',
-    phone CHAR(11) COMMENT '手机号',
-    salary DECIMAL(10, 2) UNSIGNED COMMENT '薪资（不能为负）',
-    dept_id INT UNSIGNED COMMENT '部门ID',
-    hire_date DATE COMMENT '入职日期',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-) COMMENT '员工表';
+    id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT COMMENT 'Employee ID',
+    emp_no VARCHAR(10) NOT NULL UNIQUE COMMENT 'Employee number',
+    name VARCHAR(50) NOT NULL COMMENT 'Name',
+    gender CHAR(1) DEFAULT '男' COMMENT 'Gender',
+    age TINYINT UNSIGNED COMMENT 'Age, 0-255; nonnegative',
+    phone CHAR(11) COMMENT 'Phone number',
+    salary DECIMAL(10, 2) UNSIGNED COMMENT 'Salary; nonnegative',
+    dept_id INT UNSIGNED COMMENT 'Department ID',
+    hire_date DATE COMMENT 'Hire date',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time'
+) COMMENT 'Employees';
 ```
 
 ```sql
--- UNSIGNED 效果演示
+-- Demonstrate UNSIGNED (strict SQL mode)
 CREATE TABLE test_unsigned (
-    age TINYINT UNSIGNED  -- 范围：0 ~ 255
+    age TINYINT UNSIGNED  -- Range: 0-255
 );
 
-INSERT INTO test_unsigned VALUES (25);   -- ✓ 成功
-INSERT INTO test_unsigned VALUES (255);  -- ✓ 成功
-INSERT INTO test_unsigned VALUES (-1);   -- ✗ 报错：Out of range
-INSERT INTO test_unsigned VALUES (256);  -- ✗ 报错：Out of range
+INSERT INTO test_unsigned VALUES (25);   -- ✓ Accepted
+INSERT INTO test_unsigned VALUES (255);  -- ✓ Accepted
+INSERT INTO test_unsigned VALUES (-1);   -- ✗ Out of range
+INSERT INTO test_unsigned VALUES (256);  -- ✗ Out of range
 ```
 
-### 2.3 表结构 - 查询、修改、删除
+### 2.3 Inspecting, Altering, and Dropping Tables
 
-#### 查询
+#### Inspect
 
 ```sql
-SHOW TABLES;              -- 查看所有表
-DESC 表名;                 -- 查看表结构
-SHOW CREATE TABLE 表名;    -- 查看建表语句
+SHOW TABLES;              -- List tables
+DESC table_name;          -- Describe columns
+SHOW CREATE TABLE table_name;    -- Show the table definition
 ```
 
-#### 修改
+#### Alter
 
 ```sql
--- 修改表名
-ALTER TABLE 旧表名 RENAME TO 新表名;
+-- Rename a table
+ALTER TABLE old_table_name RENAME TO new_table_name;
 
--- 添加字段
-ALTER TABLE 表名 ADD 字段名 数据类型 [约束];
+-- Add a column
+ALTER TABLE table_name ADD column_name data_type [constraints];
 
--- 修改字段类型
-ALTER TABLE 表名 MODIFY 字段名 新数据类型;
+-- Change a column type
+ALTER TABLE table_name MODIFY column_name new_data_type;
 
--- 修改字段名和类型
-ALTER TABLE 表名 CHANGE 旧字段名 新字段名 数据类型;
+-- Rename a column and change its type
+ALTER TABLE table_name CHANGE old_column_name new_column_name data_type;
 
--- 删除字段
-ALTER TABLE 表名 DROP 字段名;
+-- Drop a column
+ALTER TABLE table_name DROP column_name;
 ```
 
-#### 删除
+#### Drop or Empty
 
 ```sql
-DROP TABLE 表名;              -- 删除表
-DROP TABLE IF EXISTS 表名;    -- 删除表（如果存在）
-TRUNCATE TABLE 表名;          -- 清空表（保留结构，自增归零）
+DROP TABLE table_name;              -- Drop the table
+DROP TABLE IF EXISTS table_name;    -- Drop it if it exists
+TRUNCATE TABLE table_name;          -- Remove rows, retain structure, reset auto-increment
 ```
 
 ***
 
-## 三、DML - 数据操作语言
+## 3. DML — Data Manipulation Language
 
-### 3.1 INSERT - 插入
+### 3.1 INSERT
 
 ```sql
--- 指定字段插入
-INSERT INTO 表名 (字段1, 字段2) VALUES (值1, 值2);
+-- Insert selected columns
+INSERT INTO table_name (column1, column2) VALUES (value1, value2);
 
--- 全字段插入
-INSERT INTO 表名 VALUES (值1, 值2, ...);
+-- Insert all columns
+INSERT INTO table_name VALUES (value1, value2, ...);
 
--- 批量插入
-INSERT INTO 表名 (字段1, 字段2) VALUES 
-    (值1, 值2),
-    (值1, 值2);
+-- Insert multiple rows
+INSERT INTO table_name (column1, column2) VALUES
+    (value1, value2),
+    (value1, value2);
 ```
 
-### 3.2 UPDATE - 修改
+### 3.2 UPDATE
 
 ```sql
-UPDATE 表名 SET 字段1 = 值1, 字段2 = 值2 WHERE 条件;
+UPDATE table_name SET column1 = value1, column2 = value2 WHERE condition;
 
--- 示例
+-- Example
 UPDATE employee SET salary = 10000 WHERE name = '张三';
 UPDATE employee SET salary = salary + 1000 WHERE dept_id = 1;
 ```
 
-> ⚠️ 没有 WHERE 条件会修改**所有记录**！
+> ⚠️ Without WHERE, the statement updates **every row**.
 
-### 3.3 DELETE - 删除
+### 3.3 DELETE
 
 ```sql
-DELETE FROM 表名 WHERE 条件;
+DELETE FROM table_name WHERE condition;
 
--- 示例
+-- Example
 DELETE FROM employee WHERE id = 5;
 ```
 
-> ⚠️ 没有 WHERE 条件会删除**所有数据**！
+> ⚠️ Without WHERE, the statement deletes **every row**.
 
-**DELETE vs TRUNCATE：**
+**DELETE vs TRUNCATE:**
 
 |      | DELETE | TRUNCATE |
 | ---- | ------ | -------- |
-| 类型   | DML    | DDL      |
-| 可加条件 | ✓      | ✗        |
-| 可回滚  | ✓      | ✗        |
-| 自增重置 | ✗      | ✓        |
-| 速度   | 慢      | 快        |
+| Category | DML | DDL |
+| WHERE condition allowed | ✓ | ✗ |
+| Rollback available | ✓ | ✗ |
+| Resets auto-increment | ✗ | ✓ |
+| Typical speed | Slower | Faster |
 
 ***
 
-## 四、DQL - 数据查询语言（重点）
+## 4. DQL — Querying Data
 
-### 完整语法
-
-```sql
-SELECT [DISTINCT] 字段列表 [AS 别名]
-FROM 表名
-[WHERE 条件]
-[GROUP BY 分组字段]
-[HAVING 分组后条件]
-[ORDER BY 排序字段 ASC|DESC]
-[LIMIT 起始索引, 记录数];
-```
-
-**执行顺序**：FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
-
-### 4.1 基本查询
+### Overall Syntax
 
 ```sql
-SELECT * FROM employee;                            -- 查询所有
-SELECT name, age, salary FROM employee;            -- 指定字段
-SELECT name AS '姓名', salary '薪资' FROM employee;  -- 别名（AS 可省略）
-SELECT DISTINCT dept_id FROM employee;             -- 去重
+SELECT [DISTINCT] column_list [AS alias]
+FROM table_name
+[WHERE condition]
+[GROUP BY grouping_columns]
+[HAVING group_condition]
+[ORDER BY sort_columns ASC|DESC]
+[LIMIT offset, row_count];
 ```
 
-### 4.2 条件查询（WHERE）
+**Logical processing order:** FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
 
-**比较运算符：**
+### 4.1 Basic Queries
 
-| 运算符                  | 说明      |
+```sql
+SELECT * FROM employee;                            -- All columns
+SELECT name, age, salary FROM employee;            -- Selected columns
+SELECT name AS 'Name', salary 'Salary' FROM employee;  -- Aliases; AS is optional
+SELECT DISTINCT dept_id FROM employee;             -- Remove duplicates
+```
+
+### 4.2 Filtering with WHERE
+
+**Comparison operators:**
+
+| Operator | Meaning |
 | -------------------- | ------- |
-| `=`, `<>`, `!=`      | 等于、不等于  |
-| `>`, `>=`, `<`, `<=` | 大小比较    |
-| `BETWEEN...AND...`   | 范围（含边界） |
-| `IN(...)`            | 在列表内    |
-| `LIKE`               | 模糊匹配    |
-| `IS NULL`            | 为空      |
+| `=`, `<>`, `!=` | Equal / not equal |
+| `>`, `>=`, `<`, `<=` | Greater/less comparisons |
+| BETWEEN...AND... | Inclusive range |
+| IN(...) | Membership in a list |
+| LIKE | Pattern matching |
+| IS NULL | Null test |
 
-**LIKE 通配符**：`%` 匹配任意个字符，`_` 匹配单个字符
+**LIKE wildcards:** % matches any number of characters; _ matches one character.
 
-**逻辑运算符**：`AND`, `OR`, `NOT`
+**Logical operators:** AND, OR, NOT
 
 ```sql
--- 条件查询示例
+-- Filtering examples
 SELECT * FROM employee WHERE age BETWEEN 25 AND 35;
 SELECT * FROM employee WHERE dept_id IN (1, 2, 3);
 SELECT * FROM employee WHERE name LIKE '张%';
@@ -380,76 +380,76 @@ SELECT * FROM employee WHERE email IS NULL;
 SELECT * FROM employee WHERE age >= 25 AND salary >= 10000;
 ```
 
-### 4.3 聚合函数
+### 4.3 Aggregate Functions
 
-| 函数        | 说明   |
+| Function | Purpose |
 | --------- | ---- |
-| COUNT(\*) | 统计行数 |
-| SUM(字段)   | 求和   |
-| AVG(字段)   | 平均值  |
-| MAX(字段)   | 最大值  |
-| MIN(字段)   | 最小值  |
+| COUNT(*) | Count rows |
+| SUM(column) | Sum |
+| AVG(column) | Average |
+| MAX(column) | Maximum |
+| MIN(column) | Minimum |
 
 ```sql
 SELECT COUNT(*) FROM employee;
 SELECT AVG(salary), MAX(salary), MIN(salary) FROM employee;
 ```
 
-### 4.4 分组查询（GROUP BY）
+### 4.4 Grouping with GROUP BY
 
 ```sql
-SELECT 字段 FROM 表名 GROUP BY 分组字段 [HAVING 条件];
+SELECT columns FROM table_name GROUP BY grouping_columns [HAVING condition];
 ```
 
-**WHERE vs HAVING：**
+**WHERE vs HAVING:**
 
-| 对比      | WHERE | HAVING |
+| Aspect | WHERE | HAVING |
 | ------- | ----- | ------ |
-| 执行时机    | 分组前   | 分组后    |
-| 能否用聚合函数 | ✗     | ✓      |
+| Logical timing | Before grouping | After grouping |
+| Aggregate functions in the condition | ✗ | ✓ |
 
 ```sql
--- 按部门统计人数和平均薪资
-SELECT dept_id, COUNT(*), AVG(salary) 
-FROM employee 
+-- Employee count and average salary per department
+SELECT dept_id, COUNT(*), AVG(salary)
+FROM employee
 GROUP BY dept_id;
 
--- 分组后筛选人数>5的部门
-SELECT dept_id, COUNT(*) AS num 
-FROM employee 
-GROUP BY dept_id 
+-- Retain departments with more than five employees
+SELECT dept_id, COUNT(*) AS num
+FROM employee
+GROUP BY dept_id
 HAVING num > 5;
 ```
 
-### 4.5 排序查询（ORDER BY）
+### 4.5 Sorting with ORDER BY
 
 ```sql
-SELECT * FROM employee ORDER BY salary DESC;           -- 降序
-SELECT * FROM employee ORDER BY salary DESC, age ASC;  -- 多字段
+SELECT * FROM employee ORDER BY salary DESC;           -- Descending order
+SELECT * FROM employee ORDER BY salary DESC, age ASC;  -- Multiple sort keys
 ```
 
-### 4.6 分页查询（LIMIT）
+### 4.6 Pagination with LIMIT
 
 ```sql
-SELECT * FROM 表名 LIMIT 起始索引, 查询记录数;
+SELECT * FROM table_name LIMIT offset, row_count;
 ```
 
-**公式**：起始索引 = (页码 - 1) × 每页记录数
+**Formula:** offset = (page number - 1) × page size
 
 ```sql
-SELECT * FROM employee LIMIT 10;       -- 第1页，每页10条
-SELECT * FROM employee LIMIT 10, 10;   -- 第2页
-SELECT * FROM employee LIMIT 20, 10;   -- 第3页
+SELECT * FROM employee LIMIT 10;       -- Page 1, ten rows per page
+SELECT * FROM employee LIMIT 10, 10;   -- Page 2
+SELECT * FROM employee LIMIT 20, 10;   -- Page 3
 ```
 
-> **注意**：`LIMIT offset, size` 适合基础分页语法学习，但在大数据量场景下，`offset` 很大时会出现**深分页**性能问题。本质上是数据库需要先扫描并跳过前面大量记录，再返回当前页少量数据，因此越往后翻页通常越慢。
+> **Note:** LIMIT offset, size is useful for basic pagination, but a large offset causes **deep-pagination performance problems**: the database must scan and skip many rows before returning a small page, so later pages generally take longer.
 
-### DQL 综合练习
+### Combined Query Exercise
 
 ```sql
--- 查询年龄25-35的男员工，按部门分组，
--- 统计人数和平均薪资，只显示人数>=3的部门，
--- 按平均薪资降序，取前5条
+-- Select male employees aged 25-35 and group by department.
+-- Count employees and calculate average salary; retain groups of at least three.
+-- Sort by average salary descending and return the first five groups.
 
 SELECT dept_id, COUNT(*) AS num, AVG(salary) AS avg_sal
 FROM employee
@@ -462,163 +462,163 @@ LIMIT 5;
 
 ***
 
-## 五、索引
+## 5. Indexes
 
-### 5.1 索引概念
+### 5.1 What Is an Index?
 
-**索引（Index）** 是帮助 MySQL **高效检索数据**的数据结构，可类比书的目录：不查目录就要翻整本书，有了目录可以先定位章节再翻页。
+An **index** is a data structure for **efficient retrieval**. Like a book's table of contents, it lets the database locate relevant data instead of inspecting every row.
 
-| 对比       | 无索引           | 有索引（以 B+ 树为例）   |
+| Aspect | Without an index | With a B+ tree index |
 | ---------- | ---------------- | ------------------------- |
-| **查找方式** | 全表扫描（逐行比对） | 按索引结构定位再到数据行   |
-| **时间复杂度** | O(n)             | O(log n) 量级（树高决定）  |
-| **适用场景** | 小表、低频查询     | 大表、WHERE/ORDER BY/JOIN |
+| **Lookup** | Scan the table and compare rows | Navigate the index to the matching entries |
+| **Typical complexity** | O(n) | Approximately O(log n), depending on tree height |
+| **Useful for** | Small tables or infrequent queries | Larger tables and WHERE/ORDER BY/JOIN operations |
 
-> 💡 InnoDB 引擎默认使用 **B+ 树** 存储索引，叶子节点存数据或主键，支持范围查询和排序。
+> 💡 InnoDB normally uses **B+ tree indexes**. Leaf entries contain row data or primary-key values, supporting range scans and ordered access.
 
-### 5.2 索引类型
+### 5.2 Index Types
 
-| 类型           | 关键字/说明        | 特点                     |
+| Type | Syntax/definition | Characteristics |
 | -------------- | ------------------ | ------------------------ |
-| **主键索引**   | PRIMARY KEY        | 唯一、非空，表只能有一个   |
-| **唯一索引**   | UNIQUE             | 值唯一，可多列，可 NULL   |
-| **普通索引**   | INDEX / KEY        | 无唯一约束，最常用       |
-| **全文索引**   | FULLTEXT           | 用于全文检索（MySQL 5.6+） |
-| **组合索引**   | 多列组成一个索引    | 遵循最左前缀匹配         |
+| **Primary key** | PRIMARY KEY | Unique, non-null; one primary key per table |
+| **Unique index** | UNIQUE | Enforces uniqueness, supports multiple columns and nullable values |
+| **Non-unique index** | INDEX / KEY | No uniqueness requirement; commonly used |
+| **Full-text index** | FULLTEXT | Full-text search, including InnoDB support in MySQL 5.6+ |
+| **Composite index** | Multiple indexed columns | Supports leftmost-prefix lookup |
 
-### 5.3 创建、查看与删除索引
+### 5.3 Creating, Inspecting, and Dropping Indexes
 
-#### 创建
+#### Create
 
 ```sql
--- 建表时创建
+-- Define indexes when creating the table
 CREATE TABLE user (
-    id INT PRIMARY KEY AUTO_INCREMENT,           -- 主键索引
-    phone VARCHAR(11) UNIQUE,                    -- 唯一索引
+    id INT PRIMARY KEY AUTO_INCREMENT,           -- Primary key
+    phone VARCHAR(11) UNIQUE,                    -- Unique index
     name VARCHAR(50),
-    INDEX idx_name (name),                        -- 普通索引
+    INDEX idx_name (name),                        -- Non-unique index
     UNIQUE KEY uk_phone (phone)
 );
 
--- 建表后添加
-ALTER TABLE 表名 ADD INDEX 索引名 (字段名);
-ALTER TABLE 表名 ADD UNIQUE INDEX 索引名 (字段名);
+-- Add indexes after table creation
+ALTER TABLE table_name ADD INDEX index_name (column_name);
+ALTER TABLE table_name ADD UNIQUE INDEX index_name (column_name);
 
--- 组合索引（多列）
-ALTER TABLE 表名 ADD INDEX idx_ab (a, b, c);
+-- Composite index
+ALTER TABLE table_name ADD INDEX idx_ab (a, b, c);
 ```
 
-#### 查看
+#### Inspect
 
 ```sql
-SHOW INDEX FROM 表名;
+SHOW INDEX FROM table_name;
 ```
 
-#### 删除
+#### Drop
 
 ```sql
-ALTER TABLE 表名 DROP INDEX 索引名;
--- 主键索引
-ALTER TABLE 表名 DROP PRIMARY KEY;
+ALTER TABLE table_name DROP INDEX index_name;
+-- Primary key
+ALTER TABLE table_name DROP PRIMARY KEY;
 ```
 
-### 5.4 组合索引与最左前缀
+### 5.4 Composite Indexes and the Leftmost Prefix
 
-**组合索引** 按列顺序从左到右匹配，只有**从左开始连续**使用列才会用到索引。设计索引或写条件时，尽量**等值在左、范围在右**：等值条件（`=`）用到的列放前面，范围条件（`>`、`<`、`BETWEEN`、`LIKE 'x%'`）用到的列放后面，否则范围列之后的索引列通常无法再参与索引查找。
+A **composite index** is ordered by its columns from left to right. Ordinary index lookups use a **contiguous leftmost prefix**. A useful design rule is **equality columns first, range columns later**: put equality predicates (`=`) before range predicates such as `>`, `<`, `BETWEEN`, and `LIKE 'x%'`. Columns after a range predicate generally cannot further narrow the same lookup range, although they may still help with filtering or covering queries.
 
-若建立 `INDEX idx_abc (a, b, c)`：
+For `INDEX idx_abc (a, b, c)`:
 
-| 条件示例           | 是否走索引 | 说明         |
+| Predicate | Standard lookup prefix usable? | Explanation |
 | ------------------ | ---------- | ------------ |
-| `WHERE a = 1`      | ✓          | 用到 a       |
-| `WHERE a = 1 AND b = 2` | ✓ | 用到 a、b    |
-| `WHERE a = 1 AND b = 2 AND c = 3` | ✓ | 用到 a、b、c |
-| `WHERE a = 1 AND b > 2` | ✓ | 用到 a、b（b 为范围，c 之后无法再走索引） |
-| `WHERE a > 1 AND b = 2` | 部分     | 只用 a；b 在范围列右侧，无法用于索引查找 |
-| `WHERE b = 2`      | ✗          | 未从 a 开始  |
-| `WHERE a = 1 AND c = 3` | 部分     | 只用 a，c 不走索引 |
+| WHERE a = 1 | ✓ | a |
+| WHERE a = 1 AND b = 2 | ✓ | a, b |
+| WHERE a = 1 AND b = 2 AND c = 3 | ✓ | a, b, c |
+| WHERE a = 1 AND b > 2 | ✓ | Equality on a, then range on b |
+| WHERE a > 1 AND b = 2 | Partly | a defines the range; b may be checked as an additional filter |
+| WHERE b = 2 | No ordinary leftmost-prefix lookup | Leading a is absent; other scan strategies may still apply |
+| WHERE a = 1 AND c = 3 | Partly | a supplies the prefix; c may be checked as a filter |
 
-### 5.5 索引失效常见场景
+### 5.5 Cases That Can Prevent Efficient Index Lookup
 
-| 场景               | 说明                         |
+| Scenario | Explanation |
 | ------------------ | ---------------------------- |
-| **对索引列运算/函数** | `WHERE YEAR(create_time)=2024`、`WHERE id + 1 = 10` 等导致无法用索引 |
-| **隐式类型转换**   | 字符串列与数字比较，如 `WHERE phone = 13800138000`（phone 为 VARCHAR） |
-| **前导模糊匹配**   | `WHERE name LIKE '%张'` 或 `LIKE '%张%'` 无法用索引；`LIKE '张%'` 可以 |
-| **OR 一侧无索引**  | `WHERE a = 1 OR b = 2`，若 b 无索引，可能全表扫描 |
-| **不等于/NOT**     | `<>`、`!=`、`NOT IN`、`NOT LIKE` 有时优化器选择全表扫描 |
+| **Function/expression on an indexed column** | YEAR(create_time)=2024 or id + 1 = 10 usually cannot use an ordinary index directly for that expression |
+| **Implicit type conversion** | Comparing a VARCHAR phone column with a number, such as phone = 13800138000 |
+| **Leading wildcard** | LIKE '%张' or LIKE '%张%' cannot use an ordinary prefix range lookup; LIKE '张%' can |
+| **An OR branch lacks an index** | WHERE a = 1 OR b = 2 may trigger a table scan when b is unindexed |
+| **Inequality/NOT predicates** | The optimizer sometimes prefers a table scan for <>, !=, NOT IN, or NOT LIKE |
 
-> 💡 是否走索引以 `EXPLAIN` 结果为准，重点看 **type**（ref、range 优于 ALL）、**key**（是否用到索引）。
+> 💡 Use EXPLAIN to see the actual plan. Inspect type (such as ref/range versus ALL) and key (the selected index).
 
-### 5.6 索引与排序优化
+### 5.6 Indexes and Sorting
 
-**索引不仅能优化过滤，还可能优化排序。** 当 `WHERE` 条件和 `ORDER BY` 顺序能够较好匹配索引顺序时，MySQL 可以直接按索引顺序取数，减少额外排序开销。
+**Indexes can improve sorting as well as filtering.** When WHERE predicates and ORDER BY align with index order, MySQL can retrieve rows in order and avoid a separate sort.
 
-| 场景 | 是否容易利用索引排序 | 说明 |
+| Scenario | Index ordering useful? | Explanation |
 | ---- | -------------------- | ---- |
-| `WHERE status = 1 ORDER BY create_time`，索引为 `(status, create_time)` | ✓ | 前导列 `status` 被等值固定后，后面的 `create_time` 可继续按索引顺序排序 |
-| `ORDER BY a, b`，索引为 `(a, b)` | ✓ | 排序字段顺序与索引顺序一致 |
-| `ORDER BY b`，索引为 `(a, b)` | ✗ | 没有从最左列开始，通常无法直接利用索引排序 |
-| `WHERE a > 1 ORDER BY b`，索引为 `(a, b)` | 通常较差 | `a` 已是范围条件，`b` 往往无法继续充分用于索引排序 |
+| WHERE status = 1 ORDER BY create_time, index (status, create_time) | ✓ | Equality fixes status, allowing ordered access by create_time |
+| ORDER BY a, b, index (a, b) | ✓ | Sort keys follow index order |
+| ORDER BY b, index (a, b) | Usually no | The leading column is not fixed |
+| WHERE a > 1 ORDER BY b, index (a, b) | Usually limited | The range on a prevents a globally ordered scan by b alone |
 
-**示例：**
+**Example:**
 
 ```sql
--- 已建立组合索引
+-- Composite index already defined
 ALTER TABLE order_info ADD INDEX idx_status_time_id (status, create_time, id);
 
--- 过滤和排序都较容易利用索引
+-- Filtering and ordering can both benefit from the index
 SELECT id, status, create_time
 FROM order_info
 WHERE status = 1
 ORDER BY create_time, id;
 ```
 
-若查询条件和排序条件无法按索引顺序命中，MySQL 可能需要额外执行排序操作，常见表现是执行计划中出现 `Using filesort`。
+When the index cannot supply the required order, MySQL performs an additional sort, commonly shown as Using filesort in EXPLAIN.
 
-> **注意**：索引能改善排序成本，但不代表所有分页都能因此变快。深分页慢的核心问题，通常仍然是需要跳过大量记录，而不是只看排序本身。
+> **Note:** Better sorting does not eliminate deep-pagination costs. Skipping a large offset can still be expensive.
 
-### 5.7 索引的优缺点
+### 5.7 Benefits and Costs of Indexes
 
-| 优点             | 缺点                     |
+| Benefit | Cost |
 | ---------------- | ------------------------ |
-| 加快 **WHERE、ORDER BY、GROUP BY** 的查询 | 占用磁盘与内存           |
-| 提高 **JOIN** 效率 | **INSERT/UPDATE/DELETE** 需维护索引，略慢 |
-| 唯一索引保证数据唯一 | 过多索引增加优化器选择成本 |
+| Faster WHERE, ORDER BY, and GROUP BY operations | Disk and memory usage |
+| More efficient JOINs | INSERT/UPDATE/DELETE must maintain indexes |
+| Unique indexes enforce uniqueness | Too many indexes increase optimizer choices and maintenance |
 
-**建议**：查询多、数据量大的表建索引；写多读少的表或小表可少建、不建；避免在重复率极高的列（如性别）上单独建普通索引。
+**Guidance:** Index larger, frequently queried tables according to their queries. Small or write-heavy tables may need fewer indexes. Avoid isolated low-selectivity indexes, such as a gender-only index, without a demonstrated benefit.
 
 ***
 
-## 六、多表设计
+## 6. Designing Related Tables
 
-### 6.1 表关系
+### 6.1 Relationships
 
-| 关系      | 说明      | 实现方式      |
+| Relationship | Example | Implementation |
 | ------- | ------- | --------- |
-| **一对多** | 部门-员工   | 在"多"方加外键  |
-| **多对多** | 学生-课程   | 中间表+两个外键  |
-| **一对一** | 用户-用户详情 | 外键+UNIQUE |
+| **One-to-many** | Department–employee | Foreign key on the many side |
+| **Many-to-many** | Student–course | Junction table with two foreign keys |
+| **One-to-one** | User–user details | Foreign key plus UNIQUE |
 
-### 6.2 外键约束
+### 6.2 Foreign Key Constraints
 
-#### 物理外键 vs 逻辑外键
+#### Database-Enforced vs Application-Enforced Relationships
 
-| 对比    | 物理外键                           | 逻辑外键               |
+| Aspect | Database foreign key | Application-enforced relationship |
 | ----- | ------------------------------ | ------------------ |
-| 定义    | 使用 `FOREIGN KEY` 约束，由**数据库**维护 | 不使用约束，由**程序代码**维护  |
-| 数据一致性 | 数据库自动保证                        | 需要代码保证             |
-| 性能    | 较低（每次增删改都要检查约束）                | 较高                 |
-| 分库分表  | 困难（跨库无法建外键）                    | 容易                 |
-| 灵活性   | 低                              | 高                  |
-| 使用场景  | 小型项目、对数据一致性要求极高                | **互联网项目、大型系统（推荐）** |
+| Definition | A FOREIGN KEY constraint maintained by the **database** | A reference field whose integrity is maintained by **application code** |
+| Referential integrity | Enforced by the database | Must be enforced by the application |
+| Cost | Constraint checks add work to writes | Avoids database foreign-key checks |
+| Sharding | Difficult across independently deployed database servers | Can be managed in application logic |
+| Flexibility | More constrained | More flexible |
+| Typical use | Smaller projects or strict database-enforced integrity | Large distributed systems with application-managed integrity |
 
-#### 物理外键（数据库层面）
+#### Database Foreign Keys
 
-通过 `FOREIGN KEY` 关键字创建，数据库会自动检查约束：
+Declare a FOREIGN KEY so the database checks referential integrity:
 
 ```sql
--- 建表时创建
+-- Declare during table creation
 CREATE TABLE employee (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50),
@@ -626,99 +626,99 @@ CREATE TABLE employee (
     CONSTRAINT fk_emp_dept FOREIGN KEY (dept_id) REFERENCES department(id)
 );
 
--- 建表后添加
-ALTER TABLE employee 
+-- Add after table creation
+ALTER TABLE employee
 ADD CONSTRAINT fk_emp_dept FOREIGN KEY (dept_id) REFERENCES department(id);
 
--- 删除外键
+-- Drop a foreign key
 ALTER TABLE employee DROP FOREIGN KEY fk_emp_dept;
 ```
 
-**级联操作**（当父表数据变化时，子表自动处理）：
+**Referential actions** control what happens to referencing rows when a parent row changes:
 
-| 行为        | 说明                   |
+| Action | Behavior |
 | --------- | -------------------- |
-| CASCADE   | 父表删除/更新，子表跟着删除/更新    |
-| SET NULL  | 父表删除/更新，子表外键设为 NULL  |
-| RESTRICT  | 有子记录时，禁止删除/更新父记录（默认） |
-| NO ACTION | 同 RESTRICT           |
+| CASCADE | Propagate parent deletion/key updates to child rows |
+| SET NULL | Set referencing columns to NULL |
+| RESTRICT | Reject the parent change while referencing rows exist (default) |
+| NO ACTION | Equivalent to RESTRICT for InnoDB |
 
 ```sql
-ALTER TABLE employee 
-ADD CONSTRAINT fk_emp_dept 
+ALTER TABLE employee
+ADD CONSTRAINT fk_emp_dept
 FOREIGN KEY (dept_id) REFERENCES department(id)
 ON UPDATE CASCADE ON DELETE SET NULL;
 ```
 
-#### 逻辑外键（代码层面） 推荐
+#### Application-Enforced Relationships
 
-不使用数据库外键约束，**只在表中保留关联字段**，通过程序代码维护数据一致性：
+Keep a **reference column without a database foreign-key constraint**, and maintain integrity in application code:
 
 ```sql
--- 部门表
+-- Departments
 CREATE TABLE department (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL
 );
 
--- 员工表（没有 FOREIGN KEY，只有普通字段 dept_id）
+-- Employees: dept_id is an ordinary column without a FOREIGN KEY constraint
 CREATE TABLE employee (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
-    dept_id INT COMMENT '部门ID，逻辑关联 department.id'
-    -- 注意：这里没有 FOREIGN KEY 约束！
+    dept_id INT COMMENT 'Department ID; application-level reference to department.id'
+    -- No FOREIGN KEY constraint is defined here.
 );
 ```
 
-**数据一致性由代码保证**（以 Java 为例）：
+**Application-level integrity check**, illustrated in Java:
 
 ```java
-// 删除部门前，先检查是否有员工
+// Check for employees before deleting a department
 public void deleteDept(Integer deptId) {
-    // 1. 检查该部门下是否有员工
+    // 1. Check whether this department has employees
     int count = employeeMapper.countByDeptId(deptId);
     if (count > 0) {
-        throw new RuntimeException("该部门下有员工，无法删除");
+        throw new RuntimeException("Cannot delete a department that still has employees");
     }
-    // 2. 删除部门
+    // 2. Delete the department
     deptMapper.deleteById(deptId);
 }
 ```
 
-#### 为什么大厂更推荐逻辑外键？
+#### Why Do Some Large Systems Prefer Application-Enforced Relationships?
 
-1.  **性能更好**：没有外键检查的开销
-2.  **方便分库分表**：物理外键无法跨库
-3.  **更灵活**：便于数据迁移、数据清洗
-4.  **解耦**：数据库只负责存储，业务逻辑由代码控制
+1. **Avoid constraint-checking overhead.**
+2. **Support sharding:** Database foreign keys cannot span independent database servers.
+3. **Flexibility:** Data migration and cleanup are easier to coordinate.
+4. **Decoupling:** Applications own relationship logic while the database stores data.
 
-> 💡 **阿里巴巴 Java 开发手册规定**：
-> 【强制】不得使用外键与级联，一切外键概念必须在应用层解决。
+> 💡 **Alibaba Java Development Manual guidance:**
+> [Mandatory in that guide] Avoid foreign-key constraints and cascading actions; enforce relationship rules in the application layer.
 
-#### 如何选择？
+#### Choosing an Approach
 
-| 场景              | 建议        |
+| Scenario | Suggested approach |
 | --------------- | --------- |
-| 学习阶段、小项目        | 可以用物理外键   |
-| 企业项目、互联网项目      | **用逻辑外键** |
-| 对数据一致性要求极高的金融系统 | 可考虑物理外键   |
+| Learning or small projects | Database foreign keys are an option |
+| Large distributed applications | Consider application-managed relationships |
+| Systems requiring strict database-enforced integrity | Consider database foreign keys |
 
-### 6.3 多对多示例
+### 6.3 Many-to-Many Example
 
 ```sql
--- 学生表
+-- Students
 CREATE TABLE student (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL
 );
 
--- 课程表
+-- Courses
 CREATE TABLE course (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL
 );
 
--- 中间表
+-- Junction table
 CREATE TABLE student_course (
     id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
@@ -731,48 +731,48 @@ CREATE TABLE student_course (
 
 ***
 
-## 七、多表查询
+## 7. Queries Across Multiple Tables
 
-### 7.1 多表查询概述
+### 7.1 Overview
 
-当查询的数据来自多张表时，需要使用多表查询。
+Use multi-table queries when the required data comes from more than one table.
 
-**笛卡尔积（Cartesian Product）**：两张表所有记录的全排列组合。
+A **Cartesian product** contains every possible pair of rows from the two tables.
 
 ```sql
--- 直接查询两张表，会产生笛卡尔积（通常是错误的）
+-- Listing two tables without a join condition produces a Cartesian product
 SELECT * FROM employee, department;
--- 如果 employee 有 10 条，department 有 5 条
--- 结果会有 10 × 5 = 50 条（大部分是无效数据）
+-- If employee has 10 rows and department has 5,
+-- the result has 10 × 5 = 50 rows, usually including unwanted combinations.
 ```
 
-> ⚠️ 多表查询的核心是**消除笛卡尔积**，通过连接条件只保留有意义的数据组合。
+> ⚠️ Join conditions restrict the Cartesian combinations to the relationships required by the query.
 
-### 7.2 表别名
+### 7.2 Table Aliases
 
-多表查询时，**建议给表起别名**，好处：
+**Use table aliases** in multi-table queries to:
 
-1.  **简化书写**：用短别名代替长表名
-2.  **避免歧义**：多表有相同字段名时，通过别名区分
-3.  **自连接必须**：表自己连接自己时，必须用别名区分
+1. **Reduce repetition:** Replace long table names with short aliases.
+2. **Avoid ambiguity:** Qualify columns with the same name in different tables.
+3. **Support self-joins:** Distinguish multiple references to the same table.
 
 ```sql
--- 语法：表名 [AS] 别名（AS 可省略）
+-- Syntax: table_name [AS] alias; AS is optional
 SELECT e.name, d.name
 FROM employee AS e, department AS d;
 
--- AS 可以省略
+-- AS may be omitted
 SELECT e.name, d.name
 FROM employee e, department d;
 ```
 
-> ⚠️ **注意**：一旦给表起了别名，就**只能使用别名**，不能再用原表名。
+> ⚠️ Once a table reference has an alias, use that alias when qualifying its columns in the query.
 
-### 7.3 连接方式总览
+### 7.3 Join Types at a Glance
 
-假设有两张表：
+Consider these two tables (the Chinese names below are sample data):
 
-    employee（员工表）           department（部门表）
+    employee                     department
     +----+------+---------+      +----+--------+
     | id | name | dept_id |      | id | name   |
     +----+------+---------+      +----+--------+
@@ -781,131 +781,131 @@ FROM employee e, department d;
     | 3  | 王五 | NULL    |      | 3  | 财务部 |
     +----+------+---------+      +----+--------+
             ↑                           ↑
-        王五没有部门               财务部没有员工
+        Wang Wu (王五) has no department; Finance (财务部) has no employees
 
-**各种连接方式对比：**
+**Comparison:**
 
-| 连接方式     | 说明                           | 结果                     |
+| Join | Meaning | Result |
 | -------- | ---------------------------- | ---------------------- |
-| **内连接**  | 两表的**交集**，只返回匹配的行            | 张三-研发部、李四-市场部          |
-| **左外连接** | **左表全部** + 交集                | 张三-研发部、李四-市场部、王五-NULL  |
-| **右外连接** | **右表全部** + 交集                | 张三-研发部、李四-市场部、NULL-财务部 |
-| **全外连接** | 两表**并集**（MySQL 不支持，可用 UNION） | 全部数据                   |
+| **INNER JOIN** | Only matching row pairs | 张三–研发部, 李四–市场部 |
+| **LEFT JOIN** | Matching pairs plus unmatched left rows | 张三–研发部, 李四–市场部, 王五–NULL |
+| **RIGHT JOIN** | Matching pairs plus unmatched right rows | 张三–研发部, 李四–市场部, NULL–财务部 |
+| **FULL OUTER JOIN** | Matching pairs and unmatched rows from both sides; no native MySQL FULL JOIN | All listed employees and departments |
 
-**图示理解：**
+**Illustration:**
 
-        ┌───────────────────────────────────────┐
-        │           LEFT JOIN（左外连接）         │
-        │  ┌─────────┐                          │
-        │  │ ████████│███████┐                  │
-        │  │ ████████│███████│                  │
-        │  │  LEFT   │ INNER │  RIGHT           │
-        │  │ ████████│███████│                  │
-        │  │ ████████│███████┘                  │
-        │  └─────────┘                          │
-        │  █ = 返回的数据                         │
-        └───────────────────────────────────────┘
+        ┌─────────────────────────────┐
+        │                 LEFT JOIN   │
+        │  ┌─────────┐                │
+        │  │ ████████│███████┐        │
+        │  │ ████████│███████│        │
+        │  │  LEFT   │ INNER │  RIGHT │
+        │  │ ████████│███████│        │
+        │  │ ████████│███████┘        │
+        │  └─────────┘                │
+        │  █ = Included rows          │
+        └─────────────────────────────┘
 
-        内连接 INNER JOIN：只取中间交集部分
-        左外连接 LEFT JOIN：左边全部 + 中间交集
-        右外连接 RIGHT JOIN：右边全部 + 中间交集
+        INNER JOIN: matching rows
+        LEFT JOIN: all left rows, with any matching right rows
+        RIGHT JOIN: all right rows, with any matching left rows
 
-### 7.4 ON 与 WHERE 的区别
+### 7.4 ON vs WHERE
 
-多表查询时，**ON 和 WHERE 要分工明确**：
+Distinguish **join conditions** from **result filtering**:
 
-| 关键字       | 用途        | 说明               |
+| Clause | Purpose | Explanation |
 | --------- | --------- | ---------------- |
-| **ON**    | 放**关联条件** | 指定两表如何连接（如主外键关系） |
-| **WHERE** | 放**过滤条件** | 筛选最终需要的数据        |
+| **ON** | Join condition | Determines which row pairs match |
+| **WHERE** | Result filter | Restricts the rows retained by the query |
 
 ```sql
--- ✓ 正确写法：ON 放关联条件，WHERE 放过滤条件
+-- Relationship in ON; final filtering in WHERE
 SELECT e.name, d.name AS dept_name
 FROM employee e
-LEFT JOIN department d ON e.dept_id = d.id   -- 关联条件
-WHERE e.age > 25;                             -- 过滤条件
+LEFT JOIN department d ON e.dept_id = d.id   -- Relationship condition
+WHERE e.age > 25;                             -- Filter
 
--- ✗ 不推荐：把过滤条件放到 ON 里（内连接结果相同，但外连接结果会不同！）
+-- Moving a filter into ON changes outer-join results, even when the inner-join results would match.
 SELECT e.name, d.name AS dept_name
 FROM employee e
 LEFT JOIN department d ON e.dept_id = d.id AND e.age > 25;
 ```
 
-> 💡 **记忆口诀**：ON 管连接，WHERE 管筛选。
+> 💡 ON determines matching; WHERE filters the result. Choose their placement according to the required outer-join behavior.
 
-### 7.5 内连接（INNER JOIN）
+### 7.5 INNER JOIN
 
-**作用**：返回两表中**满足连接条件**的记录（交集）。
+**Purpose:** Return row pairs that satisfy the join condition.
 
-**特点**：
+**Characteristics:**
 
-*   只返回匹配的行，不匹配的行不显示
-*   没有部门的员工不显示，没有员工的部门也不显示
+*   Unmatched rows are omitted.
+*   Employees without departments and departments without employees are omitted.
 
 ```sql
--- 显式内连接（推荐，语义清晰）
--- INNER 可以省略，直接写 JOIN
+-- Explicit inner join (recommended for clarity)
+-- INNER is optional: JOIN has the same meaning here
 SELECT e.name, d.name AS dept_name
 FROM employee e
 INNER JOIN department d ON e.dept_id = d.id;
 
--- INNER 省略写法（效果完全相同）
+-- Equivalent form without INNER
 SELECT e.name, d.name AS dept_name
 FROM employee e
 JOIN department d ON e.dept_id = d.id;
 
--- 隐式内连接（WHERE 方式，较老的写法）
+-- Implicit inner join using WHERE (older style)
 SELECT e.name, d.name AS dept_name
 FROM employee e, department d
 WHERE e.dept_id = d.id;
 ```
 
-**结果**：
+**Result:**
 
     +------+-----------+
     | name | dept_name |
     +------+-----------+
-    | 张三 | 研发部     |
-    | 李四 | 市场部     |
+    | 张三 | 研发部    |
+    | 李四 | 市场部    |
     +------+-----------+
-    -- 王五（无部门）和财务部（无员工）都不显示
+    -- Wang Wu (王五), who has no department, and Finance (财务部), which has no employees, are omitted.
 
-### 7.6 外连接（OUTER JOIN）
+### 7.6 OUTER JOIN
 
-#### 左外连接（LEFT JOIN）
+#### LEFT JOIN
 
-**作用**：返回**左表所有记录** + 右表匹配的记录。右表没有匹配的显示 NULL。
+**Purpose:** Keep every left-hand row, adding matching right-hand data. Missing right-hand values are NULL.
 
-**特点**：保证左表数据完整性，常用于"查询所有员工及其部门（包括没有部门的员工）"
+**Typical use:** List all employees and their departments, including employees without a department.
 
 ```sql
--- OUTER 可以省略
+-- OUTER is optional
 SELECT e.name, d.name AS dept_name
 FROM employee e
 LEFT JOIN department d ON e.dept_id = d.id;
 
--- 完整写法（不常用）
+-- Explicit OUTER form (less common)
 SELECT e.name, d.name AS dept_name
 FROM employee e
 LEFT OUTER JOIN department d ON e.dept_id = d.id;
 ```
 
-**结果**：
+**Result:**
 
     +------+-----------+
     | name | dept_name |
     +------+-----------+
-    | 张三 | 研发部     |
-    | 李四 | 市场部     |
-    | 王五 | NULL      |  ← 左表的王五保留，右表无匹配显示 NULL
+    | 张三 | 研发部    |
+    | 李四 | 市场部    |
+    | 王五 | NULL      |  ← Keep this employee; no matching department
     +------+-----------+
 
-#### 右外连接（RIGHT JOIN）
+#### RIGHT JOIN
 
-**作用**：返回**右表所有记录** + 左表匹配的记录。左表没有匹配的显示 NULL。
+**Purpose:** Keep every right-hand row, adding matching left-hand data. Missing left-hand values are NULL.
 
-**特点**：保证右表数据完整性，常用于"查询所有部门及其员工（包括没有员工的部门）"
+**Typical use:** List all departments and their employees, including departments without employees.
 
 ```sql
 SELECT e.name, d.name AS dept_name
@@ -913,433 +913,433 @@ FROM employee e
 RIGHT JOIN department d ON e.dept_id = d.id;
 ```
 
-**结果**：
+**Result:**
 
     +------+-----------+
     | name | dept_name |
     +------+-----------+
-    | 张三 | 研发部     |
-    | 李四 | 市场部     |
-    | NULL | 财务部     |  ← 右表的财务部保留，左表无匹配显示 NULL
+    | 张三 | 研发部    |
+    | 李四 | 市场部    |
+    | NULL | 财务部    |  ← Keep this department; no matching employee
     +------+-----------+
 
-> 💡 **实际开发中**：LEFT JOIN 用得更多，因为习惯把"主表"放左边。RIGHT JOIN 都可以改写成 LEFT JOIN。
+> 💡 LEFT JOIN is more common because the main table is usually written on the left. A RIGHT JOIN can be rewritten by swapping table order and using LEFT JOIN.
 
-### 7.7 自连接
+### 7.7 Self-Joins
 
-**作用**：表自己与自己连接，用于查询**有层级关系**的数据（如员工-领导、分类-子分类）。
+A **self-join** joins a table to itself, useful for hierarchies such as employee–manager or category–subcategory relationships.
 
-**必须给表取别名**，否则无法区分。
+Use separate aliases to distinguish the references to the same table.
 
 ```sql
--- 员工表（包含领导ID）
+-- Employee table, including manager_id
 -- +----+------+------------+
 -- | id | name | manager_id |
 -- +----+------+------------+
--- | 1  | 老板 | NULL       |
+-- | 1  | 老板 | NULL       |  -- The boss
 -- | 2  | 张三 | 1          |
 -- | 3  | 李四 | 1          |
 -- | 4  | 王五 | 2          |
 -- +----+------+------------+
 
--- 查询员工及其领导姓名
-SELECT e.name AS '员工', m.name AS '领导'
+-- Query employee and manager names
+SELECT e.name AS 'Employee', m.name AS 'Manager'
 FROM employee e
 LEFT JOIN employee m ON e.manager_id = m.id;
 ```
 
-**结果**：
+**Result:**
 
-    +------+------+
-    | 员工 | 领导 |
-    +------+------+
-    | 老板 | NULL |  ← 老板没有领导
-    | 张三 | 老板 |
-    | 李四 | 老板 |
-    | 王五 | 张三 |
-    +------+------+
+    +----------+---------+
+    | Employee | Manager |
+    +----------+---------+
+    | 老板     | NULL    |  ← The boss has no manager
+    | 张三     | 老板    |
+    | 李四     | 老板    |
+    | 王五     | 张三    |
+    +----------+---------+
 
-### 7.8 联合查询（UNION）
+### 7.8 Combining Results with UNION
 
-**作用**：将多个查询结果**纵向合并**（上下拼接）。
+UNION combines query results **vertically**, appending rows from one result to another.
 
 ```sql
-SELECT 字段列表 FROM 表1
+SELECT column_list FROM table1
 UNION [ALL]
-SELECT 字段列表 FROM 表2;
+SELECT column_list FROM table2;
 ```
 
-| 关键字       | 说明              |
+| Keyword | Behavior |
 | --------- | --------------- |
-| UNION     | 合并并**去重**       |
-| UNION ALL | 合并**不去重**（性能更好） |
+| UNION | Combine results and remove duplicate rows |
+| UNION ALL | Combine results without deduplication; usually less work |
 
-> ⚠️ 要求：多个查询的**字段数量和类型必须一致**
+> ⚠️ The queries must return the same number of columns with compatible types.
 
 ```sql
--- 查询薪资 > 10000 或 年龄 > 40 的员工（用 UNION 代替 OR）
+-- Employees with salary > 10000 or age > 40, using UNION instead of OR
 SELECT * FROM employee WHERE salary > 10000
 UNION
 SELECT * FROM employee WHERE age > 40;
 
--- 模拟全外连接（MySQL 不支持 FULL JOIN）
+-- Emulate a full outer join (MySQL has no native FULL JOIN)
 SELECT e.name, d.name FROM employee e LEFT JOIN department d ON e.dept_id = d.id
 UNION
 SELECT e.name, d.name FROM employee e RIGHT JOIN department d ON e.dept_id = d.id;
 ```
 
-### 7.9 子查询
+### 7.9 Subqueries
 
-子查询是嵌套在其他 SQL 语句中的 SELECT 语句，也叫**嵌套查询**。
+A **subquery** is a SELECT nested inside another SQL statement.
 
-#### 按返回结果分类
+#### Categories by Result Shape
 
-| 类型    | 返回结果 | 常用操作符                        |
+| Type | Result | Common operators/use |
 | ----- | ---- | ---------------------------- |
-| 标量子查询 | 单个值  | `=`, `>`, `<`, `>=`, `<=`    |
-| 列子查询  | 一列多行 | `IN`, `NOT IN`, `ANY`, `ALL` |
-| 行子查询  | 一行多列 | `=`, `IN`                    |
-| 表子查询  | 多行多列 | `IN`, 作为临时表                  |
+| Scalar | One value | =, >, <, >=, <= |
+| Column | One column, multiple rows | IN, NOT IN, ANY, ALL |
+| Row | One row, multiple columns | =, IN |
+| Table | Multiple rows and columns | IN or a derived table |
 
-#### 标量子查询
+#### Scalar Subquery
 
-返回单个值，可用于 WHERE、SELECT、HAVING 中。
+Returns one value, usable in WHERE, SELECT, or HAVING.
 
 ```sql
--- 查询"研发部"的所有员工
-SELECT * FROM employee 
+-- Employees in the R&D department ('研发部')
+SELECT * FROM employee
 WHERE dept_id = (SELECT id FROM department WHERE name = '研发部');
 ```
 
-#### 列子查询
+#### Column Subquery
 
-返回一列数据，常配合 IN、ANY、ALL 使用。
+Returns one column, commonly used with IN, ANY, or ALL.
 
 ```sql
--- 查询"研发部"和"市场部"的所有员工
-SELECT * FROM employee 
+-- Employees in R&D ('研发部') or Marketing ('市场部')
+SELECT * FROM employee
 WHERE dept_id IN (SELECT id FROM department WHERE name IN ('研发部', '市场部'));
 
--- 比研发部所有人工资都高（ALL：比所有都大）
-SELECT * FROM employee 
+-- Earns more than every R&D employee (ALL)
+SELECT * FROM employee
 WHERE salary > ALL (SELECT salary FROM employee WHERE dept_id = 1);
 
--- 比研发部任意一人工资高（ANY：比其中一个大即可）
-SELECT * FROM employee 
+-- Earns more than at least one R&D employee (ANY)
+SELECT * FROM employee
 WHERE salary > ANY (SELECT salary FROM employee WHERE dept_id = 1);
 ```
 
-#### 行子查询
+#### Row Subquery
 
-返回一行数据，用于同时匹配多个字段。
+Returns one row for comparing several column values together.
 
 ```sql
--- 查询与"张三"薪资和部门都相同的员工
-SELECT * FROM employee 
+-- Employees with the same salary and department as Zhang San ('张三')
+SELECT * FROM employee
 WHERE (salary, dept_id) = (SELECT salary, dept_id FROM employee WHERE name = '张三');
 ```
 
-#### 表子查询
+#### Table Subquery
 
-返回多行多列，作为临时表使用。
+Returns rows and columns that can be used as a derived table.
 
 ```sql
--- 查询入职日期是"2023-01-01"之后的员工，及其部门信息
+-- Employees hired after 2023-01-01 and their department details
 SELECT e.*, d.name AS dept_name
 FROM (SELECT * FROM employee WHERE hire_date > '2023-01-01') e
 LEFT JOIN department d ON e.dept_id = d.id;
 ```
 
-### 7.10 多表查询总结
+### 7.10 Multi-Table Query Reference
 
-| 场景            | 选择                 |
+| Requirement | Approach |
 | ------------- | ------------------ |
-| 只要匹配的数据       | INNER JOIN（或 JOIN） |
-| 保留左表全部数据      | LEFT JOIN          |
-| 保留右表全部数据      | RIGHT JOIN         |
-| 表自己关联自己（层级关系） | 自连接                |
-| 合并多个查询结果      | UNION / UNION ALL  |
-| 条件中需要另一个查询的结果 | 子查询                |
+| Matching rows only | INNER JOIN / JOIN |
+| Retain every left-hand row | LEFT JOIN |
+| Retain every right-hand row | RIGHT JOIN |
+| Relate rows in one table, such as a hierarchy | Self-join |
+| Combine query results | UNION / UNION ALL |
+| Use another query's result in a condition | Subquery |
 
 ***
 
-## 八、事务
+## 8. Transactions
 
-### 8.1 事务概念
+### 8.1 Concept
 
-**事务（Transaction）** 是一组操作的集合，**要么同时成功，要么同时失败**。
+A **transaction** groups operations into a unit that either commits or rolls back together.
 
-### 8.2 事务操作
+### 8.2 Transaction Commands
 
 ```sql
--- 开启事务
+-- Begin a transaction
 START TRANSACTION;
--- 或 BEGIN;
+-- Or BEGIN;
 
--- 提交事务
+-- Commit
 COMMIT;
 
--- 回滚事务
+-- Roll back
 ROLLBACK;
 ```
 
-事务内执行多条更新（如转账），提交或回滚保证原子性：
+For operations such as a transfer, commit or rollback provides atomicity across several updates:
 
 ```sql
 START TRANSACTION;
 UPDATE account SET balance = balance - 1000 WHERE name = '张三';
 UPDATE account SET balance = balance + 1000 WHERE name = '李四';
-COMMIT;   -- 成功则提交
--- ROLLBACK;  -- 失败则回滚
+COMMIT;   -- Commit on success
+-- ROLLBACK;  -- Roll back on failure
 ```
 
-### 8.3 ACID 特性
+### 8.3 ACID Properties
 
-| 特性      | 说明           |
+| Property | Meaning |
 | ------- | ------------ |
-| **原子性** | 不可分割，全成功或全失败 |
-| **一致性** | 事务前后数据一致     |
-| **隔离性** | 多事务并发时互不干扰   |
-| **持久性** | 提交后永久保存      |
+| **Atomicity** | All changes commit or roll back together |
+| **Consistency** | Preserve valid database state |
+| **Isolation** | Control the interaction of concurrent transactions |
+| **Durability** | Committed changes persist |
 
-### 8.4 并发事务问题
+### 8.4 Concurrency Anomalies
 
-并发事务问题的本质，是多个事务同时访问同一批数据时，**读取结果是否稳定、是否可能读到中间状态**。
+Concurrency anomalies concern **whether repeated reads are stable and whether intermediate, uncommitted state becomes visible** when transactions access the same data.
 
-| 问题          | 说明                       | 典型现象                         |
+| Anomaly | Meaning | Example |
 | ------------- | -------------------------- | -------------------------------- |
-| **脏读**      | 读到其他事务**未提交**的数据 | 事务 A 回滚后，事务 B 之前读到的数据失效 |
-| **不可重复读** | 同一事务内多次读取**同一行**结果不同 | 第一次读和第二次读的字段值不一致       |
-| **幻读**      | 同一事务内多次按条件查询，结果集条数不同 | 第一次查 10 条，第二次查变成 11 条     |
+| **Dirty read** | Reads another transaction's uncommitted data | A rolls back, invalidating what B previously read |
+| **Nonrepeatable read** | Re-reading the same row in one transaction yields a different value | A field changes between the first and second read |
+| **Phantom read** | Repeating a predicate query yields a different matching set | Ten matching rows become eleven |
 
-**三者区别：**
+**Distinction:**
 
-- **脏读** 关注“是否读到了未提交的数据”。
-- **不可重复读** 关注“同一行数据的值是否变化”。
-- **幻读** 关注“符合条件的记录集合是否变化”。
+- **Dirty read:** Was the observed data committed?
+- **Nonrepeatable read:** Did the value in the same row change?
+- **Phantom read:** Did the set of matching rows change?
 
-#### 1. 脏读示例
+#### 1. Dirty Read Example
 
 ```sql
--- 事务 A
+-- Transaction A
 START TRANSACTION;
 UPDATE account SET balance = 500 WHERE id = 1;
 
--- 事务 B（此时读到了 500）
+-- Transaction B (assume the isolation level allows it to see 500 here)
 SELECT balance FROM account WHERE id = 1;
 
--- 事务 A 回滚
+-- Transaction A rolls back
 ROLLBACK;
 ```
 
-如果事务 B 在事务 A 提交前就读到了余额 `500`，这就是**脏读**。
+If B reads the balance 500 before A commits, that is a **dirty read**.
 
-#### 2. 不可重复读示例
+#### 2. Nonrepeatable Read Example
 
 ```sql
--- 事务 A
+-- Transaction A
 START TRANSACTION;
-SELECT balance FROM account WHERE id = 1;  -- 第一次读取：1000
+SELECT balance FROM account WHERE id = 1;  -- First read: 1000
 
--- 事务 B
+-- Transaction B
 UPDATE account SET balance = 800 WHERE id = 1;
 COMMIT;
 
--- 事务 A
-SELECT balance FROM account WHERE id = 1;  -- 第二次读取：800
+-- Transaction A
+SELECT balance FROM account WHERE id = 1;  -- Second read: 800
 ```
 
-事务 A 在同一事务内两次读取同一行，结果不一致，这就是**不可重复读**。
+Two reads of the same row within transaction A return different values: a **nonrepeatable read**.
 
-#### 3. 幻读示例
+#### 3. Phantom Read Example
 
 ```sql
--- 事务 A
+-- Transaction A
 START TRANSACTION;
-SELECT COUNT(*) FROM orders WHERE amount > 100;  -- 第一次查询：10
+SELECT COUNT(*) FROM orders WHERE amount > 100;  -- First query: 10
 
--- 事务 B
+-- Transaction B
 INSERT INTO orders(id, amount) VALUES (101, 200);
 COMMIT;
 
--- 事务 A
-SELECT COUNT(*) FROM orders WHERE amount > 100;  -- 第二次查询：11
+-- Transaction A
+SELECT COUNT(*) FROM orders WHERE amount > 100;  -- Second query: 11
 ```
 
-事务 A 两次按相同条件查询，结果集条数发生变化，这就是**幻读**。
+The same predicate returns a different matching set in transaction A: a **phantom read**.
 
-### 8.5 事务隔离级别
+### 8.5 Isolation Levels
 
-**事务隔离级别（Isolation Level）** 用来控制事务之间的数据可见性。隔离级别越高，一致性通常越强，但并发能力通常越低。
+An **isolation level** controls visibility between transactions. Stronger isolation generally provides stronger guarantees but can increase coordination costs.
 
-| 隔离级别                | 脏读 | 不可重复读 | 幻读 | 核心特点 |
+| Isolation level | Dirty reads | Nonrepeatable reads | Phantoms allowed by the standard | Main characteristic |
 | ----------------------- | :--: | :--------: | :--: | -------- |
-| Read Uncommitted        |  ✓   |     ✓      |  ✓   | 几乎不做隔离，并发高，但问题最多 |
-| Read Committed          |  ✗   |     ✓      |  ✓   | 只能读已提交数据，很多数据库默认使用 |
-| **Repeatable Read**     |  ✗   |     ✗      |  ✓   | 同一事务内多次读取同一行结果一致 |
-| Serializable            |  ✗   |     ✗      |  ✗   | 最严格，事务接近串行执行 |
+| Read Uncommitted | ✓ | ✓ | ✓ | Weakest isolation; permits the most anomalies |
+| Read Committed | ✗ | ✓ | ✓ | Reads committed data; a common database default |
+| **Repeatable Read** | ✗ | ✗ | ✓ | Repeated reads of a row remain consistent |
+| Serializable | ✗ | ✗ | ✗ | Strongest isolation; results equivalent to serial execution |
 
-> MySQL 默认：**Repeatable Read**
+> MySQL InnoDB defaults to **Repeatable Read**.
 
-#### 1. 四种隔离级别的理解
+#### 1. Understanding the Four Levels
 
-| 隔离级别 | 理解方式 | 适用特点 |
+| Level | Interpretation | Typical characteristics |
 | -------- | -------- | -------- |
-| **读未提交** | 连别人还没提交的数据都可以读到 | 性能优先，几乎不在业务系统中使用 |
-| **读已提交** | 只能读到别人已经提交的数据 | 能解决脏读，Oracle 等数据库默认级别 |
-| **可重复读** | 同一事务里多次读取同一行结果保持一致 | MySQL InnoDB 默认级别，兼顾一致性与并发 |
-| **串行化** | 给并发事务排队执行 | 一致性最强，但吞吐量最低 |
+| **Read Uncommitted** | Can see another transaction's uncommitted data | Rarely appropriate for ordinary business operations |
+| **Read Committed** | Sees only committed changes | Prevents dirty reads; the default in databases such as Oracle |
+| **Repeatable Read** | Repeated row reads within a transaction remain consistent | InnoDB's default, balancing read consistency and concurrency |
+| **Serializable** | Enforces serializable transaction outcomes | Strongest guarantees, often with more contention |
 
-#### 2. MySQL 为什么默认是 Repeatable Read
+#### 2. Why InnoDB Uses Repeatable Read by Default
 
-MySQL InnoDB 默认选择 **Repeatable Read**，核心考虑是：
+Useful properties of InnoDB's **Repeatable Read** include:
 
-- 比 `Read Committed` 更强，能避免同一事务内读取同一行数据前后不一致。
-- 比 `Serializable` 更轻量，不会把大量并发事务都强制串行化。
-- 配合 **MVCC** 可以让普通查询获得较好的并发性能。
-- 配合 **间隙锁（Gap Lock）**、**Next-Key Lock**，在加锁读场景下进一步控制幻读问题。
+- Stronger repeat-read consistency than Read Committed.
+- Less restrictive ordinary reads than Serializable.
+- **MVCC** allows efficient concurrent nonlocking reads.
+- **Gap locks** and **next-key locks** control phantoms in relevant locking-read scenarios.
 
-#### 3. 查看与设置隔离级别
+#### 3. Inspecting and Setting Isolation
 
 ```sql
--- 查看隔离级别
+-- Inspect isolation
 SELECT @@TRANSACTION_ISOLATION;
 
--- 设置隔离级别
+-- Set isolation
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 ```
 
-#### 4. 常见面试追问点
+#### 4. Common Interview Follow-Ups
 
-| 问题 | 结论 |
+| Question | Answer |
 | ---- | ---- |
-| **隔离级别越高越好吗** | 不是。隔离级别越高，一致性越强，但锁冲突和性能开销通常也越大。 |
-| **MySQL 默认隔离级别是什么** | InnoDB 默认是 `Repeatable Read`。 |
-| **Repeatable Read 是否完全没有幻读** | 从标准定义看仍需关注幻读；在 InnoDB 中会结合 MVCC 和锁机制处理不同场景。 |
+| **Is stronger isolation always better?** | No. Stronger guarantees can increase contention and overhead. |
+| **What is MySQL's default?** | InnoDB defaults to Repeatable Read. |
+| **Does Repeatable Read eliminate every phantom scenario?** | The standard allows phantoms; InnoDB uses MVCC and locking differently for different operations. |
 
-### 8.6 MVCC 与锁的关系
+### 8.6 MVCC and Locking
 
-**MVCC（Multi-Version Concurrency Control，多版本并发控制）** 是 InnoDB 用来提升并发读性能的重要机制。它通过保存数据的多个版本，让读操作在很多场景下不必直接加锁。
+**MVCC (Multi-Version Concurrency Control)** improves InnoDB's concurrent read performance by retaining versions of data so many reads need not acquire row locks.
 
-#### 1. MVCC 解决什么问题
+#### 1. What MVCC Addresses
 
-MVCC 主要解决的是：
+MVCC helps ensure that:
 
-- 普通读不想被写阻塞。
-- 写操作也不希望长时间阻塞普通读。
-- 在 `Read Committed`、`Repeatable Read` 下，需要让事务读到符合隔离级别要求的数据版本。
+- Ordinary reads need not wait for writers in many cases.
+- Writes need not block ordinary reads for long periods.
+- Read Committed and Repeatable Read transactions see versions appropriate to their isolation level.
 
-#### 2. 快照读与当前读
+#### 2. Snapshot Reads and Current Reads
 
-| 读取方式 | 说明 | 常见语句 |
+| Read type | Behavior | Examples |
 | -------- | ---- | -------- |
-| **快照读** | 读取数据的历史版本，通常不加锁 | 普通 `SELECT` |
-| **当前读** | 读取最新版本，并对目标记录加锁 | `SELECT ... FOR UPDATE`、`UPDATE`、`DELETE` |
+| **Snapshot read** | Reads a visible version, usually without row locks | Ordinary SELECT |
+| **Current/locking read** | Accesses current records and acquires locks | SELECT ... FOR UPDATE, UPDATE, DELETE |
 
-#### 3. Read Committed 与 Repeatable Read 的差异
+#### 3. Read Committed vs Repeatable Read
 
-| 隔离级别 | 快照生成时机 | 结果特征 |
+| Isolation | Snapshot timing | Consequence |
 | -------- | ------------ | -------- |
-| **Read Committed** | 每次 `SELECT` 都可能读取最新已提交版本 | 同一事务内前后两次查询结果可能不同 |
-| **Repeatable Read** | 事务开始后首次一致性读会确定快照 | 同一事务内多次普通查询结果更稳定 |
+| **Read Committed** | Each consistent SELECT can see newly committed data | Successive queries in a transaction can differ |
+| **Repeatable Read** | The first consistent read normally establishes the snapshot | Repeated ordinary reads are more stable |
 
-#### 4. 幻读为什么还会提到锁
+#### 4. Why Phantom Prevention Also Involves Locks
 
-MVCC 更擅长解决**普通查询**的可见性问题，但当事务执行的是**当前读**时，仅靠 MVCC 不够，还需要锁来限制其他事务插入符合条件的新记录。
+MVCC mainly controls visibility for **ordinary reads**. For **current/locking reads**, locks are needed to restrict concurrent inserts into relevant ranges.
 
-InnoDB 常见锁机制：
+Common InnoDB locks:
 
-| 锁 | 作用 |
+| Lock | Purpose |
 | --- | --- |
-| **记录锁（Record Lock）** | 锁住某一行记录 |
-| **间隙锁（Gap Lock）** | 锁住某个范围之间的空隙，防止插入新记录 |
-| **Next-Key Lock** | 记录锁 + 间隙锁，既锁记录又锁区间 |
+| **Record lock** | Locks an index record |
+| **Gap lock** | Prevents insertion into a gap between indexed values |
+| **Next-key lock** | Combines a record lock with a gap lock |
 
-因此，关于幻读可以记成一句话：
+A useful distinction is:
 
-- **普通查询** 主要依靠 MVCC 保证一致性读。
-- **加锁查询 / 更新 / 删除** 主要依靠间隙锁、Next-Key Lock 控制并发插入。
+- **Ordinary consistent queries:** Primarily rely on MVCC for visibility.
+- **Locking reads, updates, and deletes:** Can use gap/next-key locking to control concurrent inserts, depending on isolation and access paths.
 
 ***
 
-## 九、SQL 优化与性能
+## 9. SQL Optimization and Performance
 
-接口或查询变慢时，通常从**索引、N+1、慢查询**三方面排查：索引决定单条 SQL 是否走索引；N+1 导致请求次数暴增；慢查询日志用于定位具体慢的 SQL。
+When requests or queries slow down, inspect **indexes, N+1 queries, and slow-query logs**. Indexes affect individual statements, N+1 multiplies database round trips, and logs identify slow SQL.
 
-### 9.1 N+1 问题
+### 9.1 The N+1 Problem
 
-**N+1 问题** 指：先执行 1 次查询得到 N 条主表记录，再对每条记录各查 1 次关联数据，总共执行 **1 + N 次** SQL。多由 ORM 的**懒加载**在循环里触发关联查询引起。
+The **N+1 problem** occurs when one query loads N parent records and each record triggers another query for related data, producing **1 + N SQL statements**. ORM lazy-loading inside a loop is a common cause.
 
-| 对比       | 正常做法           | N+1 问题              |
+| Aspect | Efficient approach | N+1 pattern |
 | ---------- | ------------------ | --------------------- |
-| **查询次数** | 1 条或少量 SQL     | 1 + N 条（N 为主表行数） |
-| **典型场景** | JOIN / 预加载一次查出 | 循环内逐条查关联表       |
-| **后果**   | 网络与 DB 压力小   | 请求数暴增，接口变慢     |
+| **Query count** | One or a small fixed number | 1 + N, where N is the parent row count |
+| **Typical pattern** | JOIN or eager/batch loading | Query related data once per parent inside a loop |
+| **Impact** | Fewer round trips | More requests and slower endpoints |
 
-**示例（错误写法）：**
+**Problematic example:**
 
 ```sql
--- 1 次：查用户列表
+-- One query: load users
 SELECT * FROM user WHERE dept_id = 1;
--- 假设返回 100 条
+-- Assume it returns 100 rows
 
--- N 次：循环里每个 user 再查订单（应用层循环 100 次，每次一条 SQL）
-SELECT * FROM order WHERE user_id = ?;  -- 执行 100 次
--- 总计 1 + 100 = 101 次 SQL
+-- N queries: load orders for each user, once per loop iteration
+SELECT * FROM order WHERE user_id = ?;  -- Executed 100 times
+-- Total: 1 + 100 = 101 statements
 ```
 
-**解决思路：**
+**Approaches to reducing N+1:**
 
-| 方式         | 说明                                       |
+| Approach | Explanation |
 | ------------ | ------------------------------------------ |
-| **JOIN 一次查** | 多表用 JOIN 或子查询在一次 SQL 中查出主表+关联 |
-| **预加载（Eager）** | JPA 用 `@EntityGraph`、`JOIN FETCH`；MyBatis 用关联查询或批量 IN |
-| **批量 IN 查** | 先查主表得 id 列表，再 `WHERE id IN (...)` 一次查关联 |
+| **JOIN** | Fetch parent and related data together |
+| **Eager fetching** | JPA @EntityGraph or JOIN FETCH; MyBatis joined or batched queries |
+| **Batch IN query** | Load parent IDs, then fetch related rows in a batch |
 
-目标是把 **1+N 次** 降为 **1 次或常数次**。
+The goal is to reduce **1+N queries to one or a small fixed number**.
 
-### 9.2 慢查询
+### 9.2 Slow Queries
 
-**慢查询** 指执行时间超过设定阈值的 SQL。MySQL 通过**慢查询日志**记录这些 SQL，用于定位性能瓶颈并优化（加索引、改写法、减扫描量等）。
+A **slow query** exceeds a configured execution-time threshold. MySQL's **slow-query log** helps locate bottlenecks for index changes, SQL rewrites, or reduced scanning.
 
-| 概念           | 说明                                   |
+| Concept | Explanation |
 | -------------- | -------------------------------------- |
-| **慢查询日志** | 记录执行时间超过 `long_query_time` 的 SQL |
-| **阈值**       | 默认 10 秒，可改为 1 秒、2 秒等           |
-| **典型原因**   | 缺索引、全表扫描、大结果集、锁等待、复杂 JOIN/子查询 |
+| **Slow-query log** | Records statements exceeding long_query_time |
+| **Threshold** | Defaults to 10 seconds; can be lowered to 1 or 2 seconds |
+| **Common causes** | Missing indexes, table scans, large results, locking, or complex joins/subqueries |
 
-**开启与查看：**
+**Enable and inspect:**
 
 ```sql
--- 查看是否开启及阈值（秒）
+-- Inspect whether logging is enabled and the threshold in seconds
 SHOW VARIABLES LIKE 'slow_query_log';
 SHOW VARIABLES LIKE 'long_query_time';
 
--- 开启慢查询日志并设置阈值为 2 秒（会话级，重启失效）
+-- Enable logging and set a two-second global default; restart resets nonpersistent settings
 SET GLOBAL slow_query_log = 'ON';
 SET GLOBAL long_query_time = 2;
 ```
 
 ```bash
-# 日志路径（Linux 常见）
+# Common Linux log location
 # /var/lib/mysql/<hostname>-slow.log
-# 或在 my.cnf 中配置 slow_query_log_file
+# Or configure slow_query_log_file in my.cnf
 ```
 
-**优化流程：** 开慢查询日志 → 压测或线上观察 → 分析日志找到慢 SQL → 用 `EXPLAIN` 看执行计划 → 加索引、改写 SQL、避免大事务或锁竞争。是否走索引以 `EXPLAIN` 的 **type**（ref、range 优于 ALL）、**key**（是否用到索引）为准。
+**Workflow:** Enable logging → observe or load-test → identify slow statements → inspect EXPLAIN → adjust indexes/SQL and reduce large transactions or lock contention. Check the actual access type and chosen key rather than assuming an index is used.
 
-### 9.3 分页优化与深分页问题
+### 9.3 Pagination and Deep Offsets
 
-**深分页** 指使用 `LIMIT offset, size` 查询靠后页码时，`offset` 很大，数据库需要先扫描并跳过前面大量记录，最后才返回当前页少量数据。
+**Deep pagination** uses LIMIT offset, size with a large offset, requiring many rows to be scanned and skipped before a small page is returned.
 
-| 查询方式 | 示例 | 特点 |
+| Query style | Example | Characteristics |
 | -------- | ---- | ---- |
-| **普通分页** | `LIMIT 0, 20` | 前几页通常开销较小 |
-| **深分页** | `LIMIT 100000, 20` | 需要跳过大量记录，越往后越慢 |
+| **Shallow pagination** | LIMIT 0, 20 | Early pages are usually inexpensive |
+| **Deep pagination** | LIMIT 100000, 20 | Many rows must be skipped |
 
-#### 1. 深分页为什么慢
+#### 1. Why Deep Pagination Is Slow
 
-以如下 SQL 为例：
+Consider:
 
 ```sql
 SELECT *
@@ -1349,41 +1349,41 @@ ORDER BY id
 LIMIT 100000, 20;
 ```
 
-它并不是“直接拿第 100001 到第 100020 条”，而更接近下面这个过程：
+Rather than directly locating rows 100001–100020, the work is roughly:
 
-    根据 WHERE 条件筛选数据
+    Filter rows using WHERE
         ↓
-    按 ORDER BY 字段排序
+    Produce the ORDER BY order
         ↓
-    跳过前 100000 条记录
+    Skip the first 100000 rows
         ↓
-    返回最后 20 条
+    Return the next 20 rows
 
-因此深分页慢的核心原因通常有三类：
+Three common sources of cost are:
 
-| 原因 | 说明 |
+| Cause | Explanation |
 | ---- | ---- |
-| **跳过大量数据** | 即使最终只返回很少数据，也要先扫描前面很多记录 |
-| **排序成本高** | 如果 `ORDER BY` 没有较好利用索引，还要做额外排序 |
-| **回表成本** | 通过二级索引拿到大量主键后，再回主键索引取完整数据，会增加随机 IO |
+| **Large offsets** | Many rows are processed even though few are returned |
+| **Sorting** | ORDER BY may require a separate sort when index order is unsuitable |
+| **Row lookups** | Secondary-index entries may require additional clustered-index reads to obtain complete rows, increasing random I/O |
 
-#### 2. 索引在分页中的作用边界
+#### 2. What Indexes Can and Cannot Fix
 
-合理索引可以改善分页查询，但不能彻底消除深分页问题。
+A suitable index improves pagination but does not remove all deep-offset costs.
 
-| 能做的事 | 不能完全解决的事 |
+| Indexes can help with | They do not eliminate |
 | -------- | ---------------- |
-| **加速条件过滤** | 不能让大 `offset` 直接消失 |
-| **帮助排序** | 不能避免前面大量记录被跳过 |
-| **通过覆盖索引减少回表** | 不能让任意跳到很靠后的页完全无成本 |
+| **Filtering** | The large offset itself |
+| **Ordering** | Skipping many preceding rows |
+| **Covering the query** | The cost of arbitrary jumps to distant pages |
 
-例如建立组合索引：
+For example, create this composite index:
 
 ```sql
 ALTER TABLE order_info ADD INDEX idx_supplier_id_id (supplier_id, id);
 ```
 
-则如下 SQL 会比无索引时更容易优化：
+The following query can then be optimized more effectively:
 
 ```sql
 SELECT id
@@ -1393,28 +1393,28 @@ ORDER BY id
 LIMIT 100000, 20;
 ```
 
-但即便如此，数据库仍可能需要先定位并跳过前面大量符合条件的记录。
+Even so, the database may still need to scan and skip many matching entries.
 
-#### 3. 游标分页（Seek 分页）
+#### 3. Cursor/Seek Pagination
 
-**游标分页** 不再依赖“第几页 + offset”，而是基于上一页最后一条记录的位置继续往后查，因此更适合大数据量下的连续翻页。
+**Seek pagination** continues from the previous page's last sort key instead of using a page number and offset. It works well for sequential navigation over large datasets.
 
-| 对比项 | `offset` 分页 | 游标分页 |
+| Aspect | Offset pagination | Seek pagination |
 | ------ | ------------- | -------- |
-| **定位方式** | 跳过前 N 条再取数据 | 从上次最后一条记录继续往后取 |
-| **深页性能** | 页码越大越慢 | 连续翻页时更稳定 |
-| **是否适合直接跳页** | ✓ | ✗，不适合直接跳到任意页 |
-| **适用场景** | 后台表格、小数据量 | 列表流、消息流、大数据量连续翻页 |
+| **Positioning** | Skip N rows, then read | Continue after the last seen sort key |
+| **Deep-page performance** | Typically worsens with larger offsets | More stable for sequential navigation |
+| **Jump to an arbitrary page** | Supported | Not naturally supported |
+| **Typical use** | Administrative tables and smaller results | Feeds, messages, and large sequential result sets |
 
 ```sql
--- 普通分页
+-- Offset pagination
 SELECT *
 FROM order_info
 WHERE supplier_id = 1001
 ORDER BY id
 LIMIT 100000, 20;
 
--- 游标分页
+-- Seek pagination
 SELECT *
 FROM order_info
 WHERE supplier_id = 1001
@@ -1423,7 +1423,7 @@ ORDER BY id
 LIMIT 20;
 ```
 
-若排序字段可能重复，通常要配合唯一字段一起排序，保证顺序稳定：
+If the sort field is not unique, add a unique tie-breaker to keep ordering stable:
 
 ```sql
 SELECT *
@@ -1435,48 +1435,48 @@ ORDER BY create_time, id
 LIMIT 20;
 ```
 
-#### 4. 页面查询优化
+#### 4. Interactive Pagination Optimizations
 
-页面分页强调交互体验和查询响应速度，常见优化方式如下：
+Interactive pages prioritize response time and usability. Common approaches include:
 
-| 方案 | 说明 |
+| Approach | Explanation |
 | ---- | ---- |
-| **优先使用游标分页** | 适合“下一页”“加载更多”这类连续翻页场景 |
-| **建立合适的组合索引** | 让 `WHERE + ORDER BY` 尽量一起命中索引 |
-| **限制最大翻页深度** | 限制只允许查看前若干页，避免极深页码拖垮数据库 |
-| **先查主键再回表** | 先分页拿主键集合，再按主键回表查完整列，减少深分页成本 |
-| **缩小查询范围** | 引导用户加筛选条件，避免无边界大结果集分页 |
+| **Prefer seek pagination** | Suitable for Next page and Load more interactions |
+| **Design a composite index** | Align WHERE filtering with ORDER BY where possible |
+| **Limit maximum page depth** | Prevent extremely deep offsets from overloading the database |
+| **Fetch IDs first, then full rows** | Page through a covering index before loading complete records |
+| **Narrow the result set** | Encourage filters instead of unbounded pagination |
 
-**先查主键再回表示例：**
+**Fetch IDs first, then complete rows:**
 
 ```sql
--- 第一步：利用覆盖索引先查当前页主键
+-- Step 1: use a covering index to obtain the page's primary keys
 SELECT id
 FROM order_info
 WHERE supplier_id = 1001
 ORDER BY id
 LIMIT 100000, 20;
 
--- 第二步：再按主键取完整数据
+-- Step 2: fetch complete rows by primary key
 SELECT *
 FROM order_info
 WHERE id IN (......);
 ```
 
-#### 5. 导出查询优化
+#### 5. Export Query Optimizations
 
-导出场景的目标通常不是“展示第几页”，而是**稳定、可控地批量取数**，因此不应继续套用传统页码分页思路。
+Exports aim for **predictable, bounded batch processing**, not displaying a particular page number. Design them around batches rather than deep offsets.
 
-| 方案 | 说明 |
+| Approach | Explanation |
 | ---- | ---- |
-| **按主键范围分批查询** | 每次查一批，记录本批最后一个主键，继续向后拉取 |
-| **按时间窗口分批查询** | 适合时间维度明显的数据，如按天、按月导出 |
-| **异步导出任务化** | 用户提交任务后后台慢慢导出，前台只查状态 |
-| **边查边写文件** | 避免一次性把全部数据加载进内存 |
-| **控制批量大小** | 例如每批 1000、2000、5000，根据数据库与 JVM 压力调整 |
+| **Batch by primary-key range** | Remember the last key and continue from it |
+| **Batch by time window** | Useful for daily or monthly exports |
+| **Asynchronous export jobs** | Run exports in the background while the UI polls status |
+| **Write as data is fetched** | Avoid loading the full result into memory |
+| **Control batch size** | Try 1000, 2000, or 5000 rows and adjust for database/JVM pressure |
 
 ```sql
--- 每次导出一批数据
+-- Export one batch at a time
 SELECT *
 FROM order_info
 WHERE supplier_id = 1001
@@ -1485,134 +1485,133 @@ ORDER BY id
 LIMIT 1000;
 ```
 
-每查完一批，就记录本批最后一个 `id` 作为下一批的起点。
+After each batch, record its final id as the next batch's starting point.
 
 ***
 
-## 十、读写分离与分库分表
+## 10. Read/Write Splitting and Sharding
 
-### 10.1 读写分离
+### 10.1 Read/Write Splitting
 
-**读写分离**是数据库扩展的第一步，核心思路：**主库负责写，从库负责读**，通过主从复制（binlog）保持数据同步。
+**Read/write splitting** routes writes to a primary and reads to replicas, using replication based on the binary log to synchronize data.
 
 ```
-写请求 → 主库（Master）
-              ↓ 主从复制（binlog）
-读请求 → 从库（Slave 1、Slave 2 ...）
+Writes → Primary (Master)
+              ↓ Replication (binlog)
+Reads  → Replicas (Slave 1, Slave 2, ...)
 ```
 
-| 优点 | 注意事项 |
+| Benefit | Caveat |
 | ---- | -------- |
-| 读请求分散到从库，降低主库压力 | 主从同步有延迟，读从库可能读到旧数据 |
-| 从库可水平扩展，适合读多写少场景 | 写请求仍受单主库限制 |
-| 改造成本相对较低 | 强一致性场景需强制走主库 |
+| Distributes read traffic and reduces primary load | Replication lag can expose stale data |
+| Replicas scale read-heavy workloads | Writes remain limited by the primary |
+| Relatively modest application changes | Reads requiring immediate consistency may need the primary |
 
-> 💡 **主从延迟**：写完立即读（如下单后立即查询订单）需强制走主库，避免读到从库未同步的旧数据。ShardingSphere、MyCat 等中间件均支持此类路由规则。
+> 💡 **Replication lag:** A read immediately after a write, such as checking a newly created order, may need primary routing to avoid stale replica results. Middleware such as ShardingSphere and MyCat provides routing mechanisms.
 
-### 10.2 为什么需要分库分表
+### 10.2 Why Shard Databases and Tables?
 
-读写分离解决了读压力，但单库写压力、单表行数增长问题仍然存在。当单表行数达到千万甚至亿级时，会出现：
+Read replicas address read load, but write load and growing table sizes can still create bottlenecks. At scales such as tens or hundreds of millions of rows, tables can face:
 
-- B+ 树层高增加，查询需要更多磁盘 IO
-- 写入时索引维护成本高，锁竞争加剧
-- 单库磁盘、CPU、连接数等硬件资源达到瓶颈
-- 备份与恢复耗时长
+- Greater B+ tree height and additional I/O
+- More index-maintenance work and lock contention
+- Disk, CPU, or connection limits on one server
+- Long backup and recovery times
 
-> **注意**：分库分表显著增加系统复杂度，不应过早引入。应先做好索引优化、慢查询治理、读写分离，这些手段无法满足需求时再考虑分库分表。
+> **Note:** Sharding adds substantial complexity. First improve indexing, slow queries, and read/write routing; consider sharding when those measures are insufficient.
 
-### 10.3 拆分维度
+### 10.3 Partitioning Dimensions
 
-分库分表从**列（结构）**和**行（数据）**两个维度各有两种方式：
+Splitting can be organized by **columns/business structure** or by **rows/data**:
 
-| 维度 | 方式 | 说明 | 解决的问题 |
+| Dimension | Approach | Description | Goal |
 | ---- | ---- | ---- | ---------- |
-| **列（结构）** | **垂直分表** | 将宽表按列拆成多张表（热字段一张，冷字段另一张） | 减少单行大小，降低 IO 压力，冷热分离 |
-| **列（结构）** | **垂直分库** | 将不同业务的表拆到不同数据库（订单库、用户库、商品库） | 业务解耦，降低单库压力 |
-| **行（数据）** | **水平分表** | 将同一张表的行按规则拆到多张结构相同的表（同库） | 降低单表行数，缓解查询和写入压力 |
-| **行（数据）** | **水平分库** | 将同一张表的行按规则分散到多个库（不同机器） | 突破单机存储和性能上限 |
+| **Columns/structure** | **Vertical table split** | Split a wide table into frequently and infrequently accessed columns | Smaller hot rows and lower I/O |
+| **Business structure** | **Vertical database split** | Place domains such as orders, users, and products in separate databases | Decouple domains and distribute load |
+| **Rows** | **Horizontal table split** | Distribute rows among identically structured tables in one database | Reduce each table's size |
+| **Rows** | **Horizontal database split** | Distribute rows among databases on different machines | Exceed a single machine's capacity |
 
-实际场景中，水平分表与水平分库通常一起使用，常见说法"分库分表"多指**水平分库 + 水平分表**。
+Horizontal table and database sharding are often combined; “database/table sharding” commonly refers to that combination.
 
-**垂直分表示意：**
+**Vertical table split:**
 
 ```
-原始 order 表（宽表）
-+----+---------+--------+--------+--------------------+
-| id | user_id | amount | status | remark（大字段）    |
-+----+---------+--------+--------+--------------------+
+Original order table (wide)
++----+---------+--------+--------+----------------------+
+| id | user_id | amount | status | remark (large field) |
++----+---------+--------+--------+----------------------+
 
-                        ↓ 垂直分表
+                        ↓ Vertical split
 
-order（主表，高频访问）        order_detail（扩展表，低频）
+order (frequently accessed)     order_detail (less frequently accessed)
 +----+---------+--------+        +----------+--------------------+
 | id | user_id | amount |        | order_id | remark             |
 +----+---------+--------+        +----------+--------------------+
 ```
 
-**水平分表示意（order 表按 user_id % 4 分片）：**
+**Horizontal split: distribute order rows by user_id % 4:**
 
 ```
 order_0              order_1              order_2              order_3
 user_id % 4 = 0      user_id % 4 = 1      user_id % 4 = 2      user_id % 4 = 3
 ```
 
-### 10.4 水平分片策略
+### 10.4 Horizontal Sharding Strategies
 
-水平拆分的核心是选择**分片键（Sharding Key）**和**分片规则**。分片键应选择查询时必带的字段，且区分度足够高（如用户 ID、订单 ID），不要选经常变更的字段。
+Choose a **sharding key** and **routing rule**. Prefer a selective, stable key commonly included in queries, such as user ID or order ID; avoid frequently changing fields.
 
-| 策略 | 说明 | 优点 | 缺点 |
+| Strategy | Rule | Benefit | Cost |
 | ---- | ---- | ---- | ---- |
-| **取模分片** | `hash(分片键) % 分片数` | 数据分布均匀，实现简单 | 扩容时需要迁移大量数据 |
-| **范围分片** | 按分片键区间划分（id 0-999万→分片0，1000万-1999万→分片1） | 扩容方便，无需迁移历史数据 | 可能数据倾斜（热点集中在某分片） |
-| **一致性哈希** | 哈希环方式分片 | 扩容时迁移量少 | 实现相对复杂 |
+| **Modulo/hash sharding** | hash(sharding_key) % shard_count | Simple and generally even distribution | Resizing can require substantial migration |
+| **Range sharding** | Divide key ranges, such as 0-9,999,999 and 10,000,000-19,999,999 | New ranges can be added without moving old data | Hot ranges can cause skew |
+| **Consistent hashing** | Place shards and keys on a hash ring | Moves less data when capacity changes | More complex implementation |
 
-### 10.5 分库分表带来的挑战
+### 10.5 Challenges Introduced by Sharding
 
-| 挑战 | 说明 | 常见解决思路 |
+| Challenge | Explanation | Common approach |
 | ---- | ---- | ------------ |
-| **分布式唯一 ID** | `AUTO_INCREMENT` 在多分片间会冲突 | 雪花算法（Snowflake）、数据库号段模式 |
-| **跨分片查询** | `ORDER BY`、`GROUP BY`、聚合、JOIN 涉及多分片时需在中间层合并 | 分片键缩小范围；全局查询走 Elasticsearch |
-| **分布式事务** | 跨库操作无法使用本地事务 | Seata（AT/TCC 模式）、消息最终一致性 |
-| **跨分片分页** | 深分页需从多个分片各取数据再合并排序 | 游标分页、限制翻页深度、ES 存储 |
-| **数据扩容迁移** | 扩容时重新分片，存量数据迁移复杂 | 双写方案、蓝绿迁移 |
-| **SQL 限制** | 不带分片键的 JOIN、子查询等无法高效执行 | 业务设计上减少跨分片 JOIN |
+| **Globally unique IDs** | Independent AUTO_INCREMENT sequences can collide | Snowflake or allocated ID ranges |
+| **Cross-shard queries** | Sorting, grouping, aggregation, and joins may require result merging | Route by shard key; consider Elasticsearch for global queries |
+| **Distributed transactions** | One local transaction cannot coordinate independent databases | Seata AT/TCC or message-driven eventual consistency |
+| **Cross-shard pagination** | Fetching, merging, and sorting distant pages is expensive | Seek pagination, bounded depth, or Elasticsearch storage |
+| **Resharding/migration** | Existing data must be moved when routing changes | Coordinated dual writes or blue/green migration |
+| **SQL limitations** | Joins/subqueries without routing keys can be inefficient | Reduce cross-shard joins through domain design |
 
-> **分布式唯一 ID**：不能再使用数据库自增主键。**雪花算法（Snowflake）**是业界最常用方案，生成的 ID 由 `时间戳 + 机器ID + 序列号` 组成，全局唯一且趋势递增（对 B+ 树插入友好）。
+> **Globally unique IDs:** Plain independent auto-increment sequences are insufficient. **Snowflake** is a common approach combining timestamp, machine ID, and a sequence number to generate globally unique, roughly increasing IDs, which are favorable for B+ tree inserts.
 
-### 10.6 分库分表中间件
+### 10.6 Sharding Middleware
 
-中间件负责**拦截 SQL → 解析路由 → 分发到对应分片 → 合并结果**，让业务代码基本无感知。
+Middleware performs **SQL interception → parsing/routing → shard execution → result merging**, reducing the routing logic required in application code.
 
-| 中间件 | 类型 | 特点 |
+| Middleware | Deployment | Characteristics |
 | ------ | ---- | ---- |
-| **ShardingSphere（Apache）** | 客户端 / 代理双模式 | 功能全面，社区活跃，国内主流选择；支持读写分离、分库分表、数据加密 |
-| **MyCat** | 代理模式 | 老牌中间件，配置复杂，社区活跃度较低 |
+| **Apache ShardingSphere** | Client library or proxy | Read/write splitting, sharding, encryption, and a broad feature set |
+| **MyCat** | Proxy | Established middleware with relatively complex configuration |
 
-ShardingSphere 两种接入方式：
+Two ShardingSphere integration styles:
 
-| 接入方式 | 说明 | 适用场景 |
+| Style | Description | Typical use |
 | -------- | ---- | -------- |
-| **ShardingSphere-JDBC** | 客户端模式，以 jar 包引入，无需额外部署 | Java 项目首选 |
-| **ShardingSphere-Proxy** | 代理模式，作为独立服务部署，语言无关 | 多语言、多服务共享 |
+| **ShardingSphere-JDBC** | Java library; no separate proxy deployment | Java applications |
+| **ShardingSphere-Proxy** | Standalone, language-independent service | Multiple languages/services sharing a proxy |
 
-#### 6. 什么时候不能只靠加索引
+#### 6. When Indexes Alone Are Not Enough
 
-以下情况即使建了索引，也不能简单认为分页问题已经解决：
+An index does not by itself solve pagination problems in these cases:
 
-| 场景 | 原因 |
+| Scenario | Reason |
 | ---- | ---- |
-| **必须直接跳到很靠后的页** | 大 `offset` 的跳过成本依然存在 |
-| **筛选范围过大** | 命中索引后仍可能返回大量候选记录 |
-| **排序字段不稳定或不匹配索引** | 仍可能触发额外排序 |
-| **查询列很多** | 回表开销可能明显 |
+| **Jumping to a distant page** | Large offsets still require skipped entries |
+| **Broad filters** | Many candidate rows may remain even with an index |
+| **Unstable or incompatible sort order** | An additional sort may be needed |
+| **Many selected columns** | Full-row lookups can remain expensive |
 
-因此分页优化的思路通常不是“只加索引”，而是：
+Pagination design therefore combines:
 
-    索引设计
+    Index design
         +
-    排序优化
+    Sort optimization
         +
-    分页方案选择
+    Pagination strategy
         +
-    页面与导出分场景设计
-
+    Separate designs for interactive pages and exports

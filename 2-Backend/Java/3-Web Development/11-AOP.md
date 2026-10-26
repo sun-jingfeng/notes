@@ -1,107 +1,107 @@
-## 一、AOP 概述
+## I. AOP Overview
 
-### 1.1 什么是 AOP
+### 1.1 What Is AOP?
 
-**AOP（Aspect Oriented Programming）** 面向切面编程，是一种编程范式，用于将横切关注点（如日志、事务、权限）从业务逻辑中分离出来。
+**AOP (Aspect-Oriented Programming)** is a programming paradigm that separates cross-cutting concerns (such as logging, transactions, and permissions) from business logic.
 
-**核心思想：** 在不修改原有代码的情况下，对功能进行增强。
+**Core idea:** Enhance functionality without changing the original code.
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                        传统方式（代码侵入）                    │
+    │                        Traditional approach (intrusive code) │
     │                                                             │
     │  public void transfer() {                                   │
-    │      log.info("开始转账");           // 日志                 │
-    │      checkPermission();              // 权限校验             │
-    │      beginTransaction();             // 开启事务             │
+    │      log.info("Start transfer");     // Logging              │
+    │      checkPermission();              // Permission check     │
+    │      beginTransaction();             // Begin transaction    │
     │                                                             │
-    │      // 核心业务逻辑                                         │
+    │      // Core business logic                                  │
     │      accountDao.decrease(from, money);                      │
     │      accountDao.increase(to, money);                        │
     │                                                             │
-    │      commitTransaction();            // 提交事务             │
-    │      log.info("转账完成");           // 日志                 │
+    │      commitTransaction();            // Commit transaction   │
+    │      log.info("Transfer complete");  // Logging              │
     │  }                                                          │
     ├─────────────────────────────────────────────────────────────┤
-    │                        AOP 方式（解耦）                       │
+    │                        AOP approach (decoupled)              │
     │                                                             │
     │  public void transfer() {                                   │
-    │      // 只关注核心业务逻辑                                    │
+    │      // Focus only on core business logic                     │
     │      accountDao.decrease(from, money);                      │
     │      accountDao.increase(to, money);                        │
     │  }                                                          │
     │                                                             │
-    │  // 日志、权限、事务等通过切面统一处理                         │
+    │  // Aspects handle logging, permissions, transactions, etc.   │
     └─────────────────────────────────────────────────────────────┘
 
 ***
 
-### 1.2 核心概念
+### 1.2 Core Concepts
 
-| 概念                  | 说明                                           | 示例                            |
+| Concept | Description | Example |
 | --------------------- | ---------------------------------------------- | ------------------------------- |
-| **切面（Aspect）**    | 封装横切关注点的类，包含通知和切入点           | 日志切面、事务切面              |
-| **连接点（JoinPoint）** | 程序执行过程中可以插入切面的点                 | 方法调用、方法执行              |
-| **切入点（Pointcut）** | 定义哪些连接点会被切面增强                     | `execution(* com.example.service.*.*(..))` |
-| **通知（Advice）**    | 切面在特定连接点执行的动作                     | 前置通知、后置通知、环绕通知    |
-| **目标对象（Target）** | 被切面增强的对象                               | UserService                     |
-| **代理（Proxy）**     | AOP 创建的代理对象，用于实现切面逻辑           | JDK 动态代理、CGLIB 代理        |
-| **织入（Weaving）**   | 将切面应用到目标对象、创建代理对象的过程       | Spring AOP 在运行时织入；AspectJ 额外支持编译时、加载时织入 |
+| **Aspect** | Class encapsulating a cross-cutting concern, containing advice and pointcuts | Logging aspect, transaction aspect |
+| **Join point** | Point in program execution where an aspect can be applied | Method call, method execution |
+| **Pointcut** | Defines which join points an aspect advises | `execution(* com.example.service.*.*(..))` |
+| **Advice** | Action performed by an aspect at a particular join point | Before, after, around advice |
+| **Target** | Object advised by an aspect | UserService |
+| **Proxy** | Proxy object created by AOP to implement aspect logic | JDK dynamic proxy, CGLIB proxy |
+| **Weaving** | Applying aspects to target objects and creating proxies | Spring AOP weaves at runtime; AspectJ additionally supports compile-time and load-time weaving |
 
-**概念关系图：**
+**Concept relationships:**
 
-    切面（Aspect）= 切入点（Pointcut）+ 通知（Advice）
-    
+    Aspect = Pointcut + Advice
+
     ┌──────────────────────────────────────────────────────────────┐
     │  @Aspect                                                     │
     │  public class LogAspect {                                    │
     │                                                              │
-    │      @Pointcut("execution(* com.example.service.*.*(..))")   │  ← 切入点
+    │      @Pointcut("execution(* com.example.service.*.*(..))")   │  ← Pointcut
     │      public void servicePointcut() {}                        │
     │                                                              │
-    │      @Before("servicePointcut()")                            │  ← 通知
+    │      @Before("servicePointcut()")                            │  ← Advice
     │      public void before() {                                  │
-    │          log.info("方法执行前");                              │
+    │          log.info("Before method execution");                │
     │      }                                                       │
     │  }                                                           │
     └──────────────────────────────────────────────────────────────┘
 
 ***
 
-### 1.3 AOP 的应用场景
+### 1.3 AOP Use Cases
 
-| 场景         | 说明                               |
+| Scenario | Description |
 | ------------ | ---------------------------------- |
-| **日志记录** | 记录方法调用、参数、返回值、耗时   |
-| **事务管理** | 统一管理数据库事务                 |
-| **权限校验** | 检查用户是否有权限执行某操作       |
-| **性能监控** | 统计方法执行时间                   |
-| **异常处理** | 统一处理异常，记录异常信息         |
-| **缓存处理** | 方法结果缓存                       |
-| **参数校验** | 统一校验方法参数                   |
+| **Logging** | Record method calls, arguments, return values, and duration |
+| **Transaction management** | Manage database transactions centrally |
+| **Permission checks** | Check whether users may perform an operation |
+| **Performance monitoring** | Measure method execution time |
+| **Exception handling** | Handle exceptions centrally and record their details |
+| **Caching** | Cache method results |
+| **Parameter validation** | Validate method arguments centrally |
 
 ***
 
-### 1.4 Spring AOP 与 AspectJ
+### 1.4 Spring AOP and AspectJ
 
-Spring AOP 和 AspectJ 都是 AOP 框架，但定位不同：
+Spring AOP and AspectJ are both AOP frameworks, but serve different needs:
 
-| 维度 | Spring AOP | AspectJ |
+| Dimension | Spring AOP | AspectJ |
 |------|-----------|--------|
-| **实现方式** | 运行时代理（JDK / CGLIB） | 编译时 / 加载时字节码织入 |
-| **支持的连接点** | 仅方法执行 | 方法、字段访问、构造器调用等 |
-| **依赖** | 随 Spring 容器，无额外依赖 | 需要 AspectJ 编译器或 Java Agent |
-| **适用场景** | 绝大多数业务场景 | 需拦截非 public 方法、字段访问等高级场景 |
-| **复杂度** | 低 | 高 |
+| **Implementation** | Runtime proxies (JDK / CGLIB) | Compile-time / load-time bytecode weaving |
+| **Supported join points** | Method execution only | Methods, field access, constructor calls, etc. |
+| **Dependencies** | Uses the Spring container; no extra dependencies | Requires the AspectJ compiler or a Java agent |
+| **Use cases** | Most business scenarios | Advanced scenarios such as intercepting private methods or field access |
+| **Complexity** | Low | High |
 
-Spring AOP 内置了对 AspectJ 注解（`@Aspect`、`@Pointcut`、`@Around` 等）的**语法支持**，但底层仍是运行时代理，而非 AspectJ 的静态织入。因此 Spring AOP 有代理机制的固有限制（只支持公有方法、同类调用不生效等），AspectJ 编译时织入没有这些限制。
+Spring AOP provides **syntax support** for AspectJ annotations (`@Aspect`, `@Pointcut`, `@Around`, etc.), but still uses runtime proxies rather than AspectJ's static weaving. Spring AOP therefore has inherent proxy limitations (method visibility restrictions, self-invocation bypassing advice, etc.); AspectJ compile-time weaving does not have these proxy limitations.
 
-> 💡 日常 Spring Boot 项目直接用 Spring AOP 即可；只有需要拦截非 public 方法或字段访问等场景，才值得引入 AspectJ。
+> 💡 Spring AOP is sufficient for everyday Spring Boot projects. AspectJ is worth introducing only for scenarios such as intercepting private methods or field access that proxies cannot handle.
 
 ***
 
-## 二、Spring AOP 基础
+## II. Spring AOP Basics
 
-### 2.1 添加依赖
+### 2.1 Add the Dependency
 
 ```xml
 <dependency>
@@ -110,28 +110,28 @@ Spring AOP 内置了对 AspectJ 注解（`@Aspect`、`@Pointcut`、`@Around` 等
 </dependency>
 ```
 
-> 💡 Spring Boot 会自动启用 AOP，无需额外配置。
+> 💡 Spring Boot enables AOP automatically; no extra configuration is needed.
 
 ***
 
-### 2.2 核心注解
+### 2.2 Core Annotations
 
-| 注解              | 作用位置 | 说明                                           |
+| Annotation | Target | Description |
 | ----------------- | -------- | ---------------------------------------------- |
-| `@Aspect`         | 类       | 声明当前类是一个切面类                         |
-| `@Pointcut`       | 方法     | 定义切入点，指定哪些方法会被增强               |
-| `@Before`         | 方法     | 前置通知，在目标方法执行前执行                 |
-| `@After`          | 方法     | 后置通知，在目标方法执行后执行（无论是否异常） |
-| `@AfterReturning` | 方法     | 返回后通知，在目标方法正常返回后执行           |
-| `@AfterThrowing`  | 方法     | 异常后通知，在目标方法抛出异常后执行           |
-| `@Around`         | 方法     | 环绕通知，包围目标方法，可完全控制执行流程     |
+| `@Aspect` | Class | Declare the class as an aspect |
+| `@Pointcut` | Method | Define a pointcut specifying which methods are advised |
+| `@Before` | Method | Before advice: runs before the target method |
+| `@After` | Method | After advice: runs after the target method, whether or not it throws |
+| `@AfterReturning` | Method | After-returning advice: runs after the target method returns normally |
+| `@AfterThrowing` | Method | After-throwing advice: runs after the target method throws an exception |
+| `@Around` | Method | Around advice: wraps the target method and can fully control execution |
 
-**注解详解：**
+**Annotations in detail:**
 
 **@Aspect**
 ```java
-@Aspect      // 声明这是一个切面类
-@Component   // 必须配合 @Component，让 Spring 管理
+@Aspect      // Declare this class as an aspect
+@Component   // Combine with @Component so Spring manages it
 public class LogAspect {
     // ...
 }
@@ -139,76 +139,76 @@ public class LogAspect {
 
 **@Pointcut**
 ```java
-// 定义切入点：匹配 service 包下所有类的所有方法
+// Define a pointcut: match all methods of all classes in the service package
 @Pointcut("execution(* com.example.service.*.*(..))")
-public void servicePointcut() {}  // 方法名即为切入点名称，方法体为空
+public void servicePointcut() {}  // The method name names the pointcut; its body is empty
 
-// 在通知中引用切入点
+// Reference the pointcut from advice
 @Before("servicePointcut()")
 public void before() { }
 ```
 
 **@Before / @After / @Around**
 ```java
-@Before("servicePointcut()")           // 引用已定义的切入点
+@Before("servicePointcut()")           // Reference a defined pointcut
 public void before() { }
 
-@After("execution(* com.example..*.*(..))")  // 也可以直接写表达式
+@After("execution(* com.example..*.*(..))")  // Or write an expression directly
 public void after() { }
 
 @Around("servicePointcut()")
 public Object around(ProceedingJoinPoint pjp) throws Throwable {
-    // 前置逻辑
-    Object result = pjp.proceed();  // 执行目标方法（⚠️ 必须调用，否则目标方法不会执行）
-    // 后置逻辑
+    // Before logic
+    Object result = pjp.proceed();  // Execute the target method (⚠️ required for the target method to run)
+    // After logic
     return result;
 }
 ```
 
 **@AfterReturning / @AfterThrowing**
 ```java
-// returning 指定接收返回值的参数名
+// returning specifies the parameter that receives the return value
 @AfterReturning(pointcut = "servicePointcut()", returning = "result")
 public void afterReturning(Object result) {
-    log.info("返回值：{}", result);
+    log.info("Return value: {}", result);
 }
 
-// throwing 指定接收异常的参数名
+// throwing specifies the parameter that receives the exception
 @AfterThrowing(pointcut = "servicePointcut()", throwing = "ex")
 public void afterThrowing(Exception ex) {
-    log.error("异常：{}", ex.getMessage());
+    log.error("Exception: {}", ex.getMessage());
 }
 ```
 
-#### 注解属性参考
+#### Annotation Attribute Reference
 
-各通知注解的完整属性列表：
+Complete attribute lists for advice annotations:
 
-| 注解              | 属性                  | 类型   | 必填 | 说明                                                       |
+| Annotation | Attribute | Type | Required | Description |
 | ----------------- | --------------------- | ------ | ---- | ---------------------------------------------------------- |
-| `@Aspect`         | —                     | —      | —    | 无属性                                                     |
-| `@Pointcut`       | `value`               | String | 是   | 切入点表达式（默认属性，可省略属性名）                     |
-| `@Pointcut`       | `argNames`            | String | 否   | 参数名列表，逗号分隔，用于参数绑定（见 2.4）               |
-| `@Before`         | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
-| `@Before`         | `argNames`            | String | 否   | 同上                                                       |
-| `@After`          | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
-| `@After`          | `argNames`            | String | 否   | 同上                                                       |
-| `@AfterReturning` | `value` / `pointcut`  | String | 是   | 切入点表达式（两者互为别名，二选一；有其他属性时用 `pointcut`） |
-| `@AfterReturning` | `returning`           | String | 否   | 通知方法中接收返回值的参数名，类型须兼容目标方法返回类型   |
-| `@AfterReturning` | `argNames`            | String | 否   | 同上                                                       |
-| `@AfterThrowing`  | `value` / `pointcut`  | String | 是   | 切入点表达式（两者互为别名，二选一；有其他属性时用 `pointcut`） |
-| `@AfterThrowing`  | `throwing`            | String | 否   | 通知方法中接收异常的参数名，类型须兼容目标方法抛出的异常   |
-| `@AfterThrowing`  | `argNames`            | String | 否   | 同上                                                       |
-| `@Around`         | `value`               | String | 是   | 切入点表达式或已定义的切入点方法引用                       |
-| `@Around`         | `argNames`            | String | 否   | 同上                                                       |
+| `@Aspect` | — | — | — | No attributes |
+| `@Pointcut` | `value` | String | Yes | Pointcut expression (default attribute; its name can be omitted) |
+| `@Pointcut` | `argNames` | String | No | Comma-separated parameter names for argument binding (see 2.4) |
+| `@Before` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
+| `@Before` | `argNames` | String | No | Same as above |
+| `@After` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
+| `@After` | `argNames` | String | No | Same as above |
+| `@AfterReturning` | `value` / `pointcut` | String | Yes | Pointcut expression (aliases; choose one; use `pointcut` when specifying other attributes) |
+| `@AfterReturning` | `returning` | String | No | Advice parameter receiving the return value; its type must be compatible with the target method's return type |
+| `@AfterReturning` | `argNames` | String | No | Same as above |
+| `@AfterThrowing` | `value` / `pointcut` | String | Yes | Pointcut expression (aliases; choose one; use `pointcut` when specifying other attributes) |
+| `@AfterThrowing` | `throwing` | String | No | Advice parameter receiving the exception; its type must be compatible with the exception thrown by the target method |
+| `@AfterThrowing` | `argNames` | String | No | Same as above |
+| `@Around` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
+| `@Around` | `argNames` | String | No | Same as above |
 
-> 💡 `value` 是各通知注解的默认属性，单独使用时可省略属性名：`@Before("pointcut()")` 等价于 `@Before(value = "pointcut()")`。
+> 💡 `value` is the default attribute of advice annotations, so its name can be omitted when used alone: `@Before("pointcut()")` is equivalent to `@Before(value = "pointcut()")`.
 >
-> 💡 `argNames` 在编译保留了参数名信息（`-parameters` 标志或 `-g` 调试符号）时可自动推断，通常无需手动指定；仅在编译优化移除了参数名的环境下才需要显式声明，格式为逗号分隔的参数名字符串：`argNames = "joinPoint,userId"`。
+> 💡 `argNames` can be inferred when compilation preserves parameter names (the `-parameters` flag or `-g` debug symbols), so it normally need not be specified manually. Explicitly declare it only when compiler optimization has removed parameter names, using a comma-separated string such as `argNames = "joinPoint,userId"`.
 
 ***
 
-### 2.3 基本使用示例
+### 2.3 Basic Usage Example
 
 ```java
 package com.example.aspect;
@@ -226,62 +226,62 @@ import java.util.Arrays;
 @Component
 public class LogAspect {
 
-    // ==================== 定义切入点 ====================
-    
+    // ==================== Define the pointcut ====================
+
     @Pointcut("execution(* com.example.service.*.*(..))")
     public void servicePointcut() {}
 
-    // ==================== 前置通知 ====================
-    
+    // ==================== Before advice ====================
+
     @Before("servicePointcut()")
     public void before(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        log.info("【前置通知】方法：{}，参数：{}", methodName, Arrays.toString(args));
+        log.info("[Before advice] Method: {}, arguments: {}", methodName, Arrays.toString(args));
     }
 
-    // ==================== 后置通知 ====================
-    
+    // ==================== After advice ====================
+
     @After("servicePointcut()")
     public void after(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
-        log.info("【后置通知】方法：{} 执行完毕", methodName);
+        log.info("[After advice] Method: {} finished", methodName);
     }
 
-    // ==================== 返回后通知 ====================
-    
+    // ==================== After-returning advice ====================
+
     @AfterReturning(pointcut = "servicePointcut()", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Object result) {
         String methodName = joinPoint.getSignature().getName();
-        log.info("【返回后通知】方法：{}，返回值：{}", methodName, result);
+        log.info("[After-returning advice] Method: {}, return value: {}", methodName, result);
     }
 
-    // ==================== 异常后通知 ====================
-    
+    // ==================== After-throwing advice ====================
+
     @AfterThrowing(pointcut = "servicePointcut()", throwing = "ex")
     public void afterThrowing(JoinPoint joinPoint, Exception ex) {
         String methodName = joinPoint.getSignature().getName();
-        log.error("【异常后通知】方法：{}，异常：{}", methodName, ex.getMessage());
+        log.error("[After-throwing advice] Method: {}, exception: {}", methodName, ex.getMessage());
     }
 
-    // ==================== 环绕通知 ====================
-    
+    // ==================== Around advice ====================
+
     @Around("servicePointcut()")
     public Object around(ProceedingJoinPoint pjp) throws Throwable {
         String methodName = pjp.getSignature().getName();
-        
-        log.info("【环绕通知-前】方法：{} 开始执行", methodName);
+
+        log.info("[Around advice - before] Method: {} starting", methodName);
         long startTime = System.currentTimeMillis();
-        
+
         try {
-            Object result = pjp.proceed();  // 执行目标方法
-            
+            Object result = pjp.proceed();  // Execute the target method
+
             long endTime = System.currentTimeMillis();
-            log.info("【环绕通知-后】方法：{} 执行完成，耗时：{}ms", methodName, endTime - startTime);
-            
+            log.info("[Around advice - after] Method: {} completed, duration: {}ms", methodName, endTime - startTime);
+
             return result;
         } catch (Throwable e) {
-            log.error("【环绕通知-异常】方法：{} 执行异常", methodName);
+            log.error("[Around advice - exception] Method: {} threw an exception", methodName);
             throw e;
         }
     }
@@ -290,392 +290,392 @@ public class LogAspect {
 
 ***
 
-### 2.4 JoinPoint 详解
+### 2.4 JoinPoint in Detail
 
-#### 什么是 JoinPoint
+#### What Is JoinPoint?
 
-`JoinPoint`（连接点）是 AOP 中的核心概念，代表程序执行过程中的一个点，比如方法的调用或异常的抛出。在 Spring AOP 中，**JoinPoint 始终代表一个方法的执行**。
+`JoinPoint` is a core AOP concept representing a point in program execution, such as a method call or an exception being thrown. In Spring AOP, **a JoinPoint always represents a method execution**.
 
-通过 JoinPoint 对象，可以获取到当前被增强方法的各种信息（方法名、参数、目标对象等）。
+A JoinPoint object provides information about the method being advised, including its name, arguments, and target object.
 
 #### JoinPoint vs ProceedingJoinPoint
 
-| 类型                  | 适用通知                                           | 特有能力               |
+| Type | Applicable advice | Distinct capabilities |
 | --------------------- | -------------------------------------------------- | ---------------------- |
-| `JoinPoint`           | @Before、@After、@AfterReturning、@AfterThrowing   | 获取方法信息           |
-| `ProceedingJoinPoint` | **@Around（仅此）**                                | 继承 JoinPoint + 控制目标方法执行 |
+| `JoinPoint` | @Before, @After, @AfterReturning, @AfterThrowing | Access method information |
+| `ProceedingJoinPoint` | **@Around only** | Extends JoinPoint and controls target method execution |
 
-> 💡 `ProceedingJoinPoint` 是 `JoinPoint` 的子接口，新增了 `proceed()` 方法用于执行目标方法。
+> 💡 `ProceedingJoinPoint` extends `JoinPoint` and adds `proceed()` to execute the target method.
 
-#### 通知方法的参数注入规则
+#### Argument Injection Rules for Advice Methods
 
-Spring AOP 对通知方法的参数注入有固定约定，分三类：
+Spring AOP follows fixed conventions for injecting advice arguments, in three categories:
 
-| 参数类型 | 说明 | 约束 |
+| Parameter type | Description | Constraints |
 | -------- | ---- | ---- |
-| `JoinPoint` / `ProceedingJoinPoint` | AspectJ 固定约定，由框架自动注入，携带被拦截方法的运行时信息（方法名、参数、目标对象等）；**不是业务参数** | 必须是**第一个参数**；不参与切入点匹配 |
-| 切入点绑定参数（注解实例、目标方法参数等） | 通过 pointcut 表达式中的名称与参数名匹配绑定，类型须与实际值兼容 | 参数名须与表达式标识符一致；类型同时参与**静态切入点过滤** |
-| `returning` / `throwing` 绑定参数 | 由 `@AfterReturning(returning=)` / `@AfterThrowing(throwing=)` 绑定返回值或异常 | 名称须与注解属性值一致；类型参与**运行时动态过滤** |
+| `JoinPoint` / `ProceedingJoinPoint` | Fixed AspectJ convention: injected by the framework with runtime information about the intercepted method (name, arguments, target object, etc.); **not a business argument** | Must be the **first parameter**; does not participate in pointcut matching |
+| Pointcut-bound parameters (annotation instances, target method arguments, etc.) | Bound by matching names in the pointcut expression to parameter names; types must be compatible with actual values | Names must match expression identifiers; types also participate in **static pointcut filtering** |
+| `returning` / `throwing` parameters | Bind return values or exceptions through `@AfterReturning(returning=)` / `@AfterThrowing(throwing=)` | Names must match annotation attribute values; types participate in **runtime dynamic filtering** |
 
 ```java
-// @Before / @After：JoinPoint 作为第一个参数（可选）
+// @Before / @After: optional JoinPoint as the first parameter
 @Before("pointcut()")
 public void before(JoinPoint joinPoint) { }
 
-// @AfterReturning：可额外接收返回值
+// @AfterReturning: can additionally receive the return value
 @AfterReturning(pointcut = "pointcut()", returning = "result")
 public void afterReturning(JoinPoint joinPoint, Object result) { }
 
-// @AfterThrowing：可额外接收异常
+// @AfterThrowing: can additionally receive the exception
 @AfterThrowing(pointcut = "pointcut()", throwing = "ex")
 public void afterThrowing(JoinPoint joinPoint, Throwable ex) { }
 
-// @Around：必须使用 ProceedingJoinPoint，且必须调用 proceed()
+// @Around: use ProceedingJoinPoint and call proceed()
 @Around("pointcut()")
 public Object around(ProceedingJoinPoint pjp) throws Throwable {
-    return pjp.proceed();  // 必须调用，否则目标方法不会执行
+    return pjp.proceed();  // Required for the target method to run
 }
 ```
 
-#### 切入点表达式参数绑定
+#### Argument Binding in Pointcut Expressions
 
-通知方法除接收 JoinPoint 外，还可以通过切入点表达式直接绑定目标方法的参数值、注解实例、目标对象等。绑定规则：表达式中的名称必须与通知方法参数名一致，类型须与实际值兼容。
+Besides receiving JoinPoint, advice methods can bind target method argument values, annotation instances, target objects, etc. directly through pointcut expressions. The names in the expression must match advice parameter names, and types must be compatible with the actual values.
 
 ```java
-// 绑定目标方法参数（args()）：匹配第一个参数为 Long 类型的方法，并绑定其值
+// Bind target method arguments with args(): match methods whose first argument is Long and bind its value
 @Before("execution(* com.example.service.*.*(..)) && args(userId,..)")
 public void before(Long userId) {
-    log.info("userId：{}", userId);
+    log.info("userId: {}", userId);
 }
 
-// 同时使用 JoinPoint：JoinPoint 必须位于第一个参数位置
+// When also using JoinPoint, it must be the first parameter
 @Before("execution(* com.example.service.*.*(..)) && args(id,..)")
 public void before(JoinPoint joinPoint, Long id) {
-    log.info("方法：{}，id：{}", joinPoint.getSignature().getName(), id);
+    log.info("Method: {}, id: {}", joinPoint.getSignature().getName(), id);
 }
 
-// 绑定注解实例（@annotation()）：名称与参数名一致，Spring 自动注入注解对象
+// Bind an annotation instance with @annotation(): matching parameter names let Spring inject the annotation object
 @Around("@annotation(operationLog)")
 public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
-    String module = operationLog.module();  // 直接读取注解属性，无需反射
+    String module = operationLog.module();  // Read annotation attributes directly, without reflection
     return pjp.proceed();
 }
 
-// 绑定目标对象（target()）：绑定被代理的原始对象（非代理对象）
+// Bind the target object with target(): the original proxied object, not the proxy
 @Before("target(service)")
 public void before(UserService service) { }
 
-// 绑定代理对象（this()）：绑定 Spring 代理对象
+// Bind the proxy object with this(): the Spring proxy
 @Before("this(proxy)")
 public void before(UserService proxy) { }
 ```
 
-> 💡 参数绑定同时起到类型过滤的作用：`args(Long,..)` 只匹配第一个参数能转型为 `Long` 的调用；`target(UserService)` 只匹配目标对象是 `UserService` 类型的方法。
+> 💡 Argument binding also filters by type: `args(Long,..)` matches only calls whose first argument can be cast to `Long`; `target(UserService)` matches only methods whose target is a `UserService`.
 
-#### 参数绑定的过滤阶段
+#### Filtering Stages for Argument Binding
 
-通知方法的参数绑定涉及两个阶段的过滤，均可阻止通知执行，但时机不同：
+Advice argument binding involves two filtering stages. Both can prevent advice from running, but at different times:
 
-| 绑定方式 | 过滤阶段 | 类型不匹配的结果 |
+| Binding mechanism | Filtering stage | Result of a type mismatch |
 | -------- | -------- | ---------------- |
-| `pointcut`/`value` 中的表达式（如 `@annotation(x)`、`args(y)`） | **启动时静态匹配**，随代理对象创建一次性确定 | 目标方法**完全不被拦截**，代理对象不介入 |
-| `returning = "x"` 绑定参数的类型 | **运行时动态过滤**，每次方法调用时判断 | 目标方法**已被拦截**，但此次通知跳过执行 |
-| `throwing = "x"` 绑定参数的类型 | **运行时动态过滤**，每次方法调用时判断 | 同上 |
+| Expression in `pointcut`/`value` (such as `@annotation(x)` or `args(y)`) | **Static matching at startup**, determined when the proxy is created | The target method is **not intercepted at all**; the proxy does not intervene |
+| Type of the parameter bound by `returning = "x"` | **Dynamic filtering at runtime**, checked on each method call | The target method **has been intercepted**, but this advice is skipped |
+| Type of the parameter bound by `throwing = "x"` | **Dynamic filtering at runtime**, checked on each method call | Same as above |
 
 ```
-目标方法被调用
+Target method is called
       │
       ▼
 ┌─────────────────────────────┐
-│  pointcut 静态匹配（启动时） │  ← 不满足 → 完全不拦截
+│  Static pointcut matching (startup) │  ← No match → No interception
 └─────────────┬───────────────┘
-              │ 满足，目标方法执行
+              │ Match: target method executes
               ├──────────────────────────────────┐
-              ▼ 正常返回                          ▼ 抛出异常
+              ▼ Returns normally                       ▼ Throws an exception
 ┌─────────────────────────┐        ┌─────────────────────────┐
-│  returning 参数类型检查  │        │  throwing 参数类型检查   │
-│  （运行时）              │        │  （运行时）              │
+│  returning parameter type check │        │  throwing parameter type check │
+│  (Runtime)                     │        │  (Runtime)                     │
 └────────────┬────────────┘        └────────────┬────────────┘
-             │ 不满足 → 通知跳过                │ 不满足 → 通知跳过
-             ▼ 满足                             ▼ 满足
-     doAfterReturning 执行             doAfterThrowing 执行
+             │ No match → Skip advice               │ No match → Skip advice
+             ▼ Match                                 ▼ Match
+     Execute doAfterReturning                 Execute doAfterThrowing
 ```
 
-`returning`/`throwing` 的参数类型写 `Object`/`Throwable` 是最宽类型，接受所有值，不做过滤——这是最常见的写法。若写具体类型，则只有实际值匹配时通知才执行：
+Using `Object`/`Throwable` for `returning`/`throwing` parameters accepts the broadest range of values without filtering; this is the most common approach. With a specific type, the advice runs only when the actual value matches:
 
 ```java
-// 只有返回值实际类型是 String 时，此通知才执行
+// This advice runs only when the actual return value is a String
 @AfterReturning(pointcut = "@annotation(controllerLog)", returning = "result")
 public void afterReturning(Log controllerLog, String result) { ... }
 
-// 只有抛出的异常是 BusinessException（或其子类）时，此通知才执行
+// This advice runs only for BusinessException (or a subclass)
 @AfterThrowing(pointcut = "@annotation(controllerLog)", throwing = "e")
 public void afterThrowing(Log controllerLog, BusinessException e) { ... }
 ```
 
-> 💡 能在 `pointcut` 表达式中解决的条件优先写在那里（启动时一次确定，代价最低），避免每次方法调用都走运行时类型判断。
+> 💡 Prefer expressing conditions in the `pointcut` expression when possible (determined once at startup, at the lowest cost), avoiding runtime type checks on every method call.
 
-#### JoinPoint 常用方法
+#### Common JoinPoint Methods
 
-| 方法                                    | 返回类型   | 说明                         |
+| Method | Return type | Description |
 | --------------------------------------- | ---------- | ---------------------------- |
-| `getSignature()`                        | Signature  | 获取方法签名对象             |
-| `getSignature().getName()`              | String     | 获取方法名                   |
-| `getSignature().getDeclaringType()`     | Class<?>   | 获取声明该方法的类           |
-| `getSignature().getDeclaringTypeName()` | String     | 获取声明该方法的类名         |
-| `getArgs()`                             | Object[]   | 获取方法参数数组             |
-| `getTarget()`                           | Object     | 获取目标对象（被代理的原始对象）|
-| `getThis()`                             | Object     | 获取代理对象                 |
+| `getSignature()` | Signature | Get the method signature object |
+| `getSignature().getName()` | String | Get the method name |
+| `getSignature().getDeclaringType()` | `Class<?>` | Get the class declaring the method |
+| `getSignature().getDeclaringTypeName()` | String | Get the name of the class declaring the method |
+| `getArgs()` | Object[] | Get the method argument array |
+| `getTarget()` | Object | Get the target (original proxied object) |
+| `getThis()` | Object | Get the proxy object |
 
-#### ProceedingJoinPoint 特有方法
+#### Methods Specific to ProceedingJoinPoint
 
-| 方法              | 返回类型 | 说明                                 |
+| Method | Return type | Description |
 | ----------------- | -------- | ------------------------------------ |
-| `proceed()`       | Object   | 执行目标方法，返回目标方法的返回值   |
-| `proceed(args)`   | Object   | 使用新参数执行目标方法（可修改参数） |
+| `proceed()` | Object | Execute the target method and return its result |
+| `proceed(args)` | Object | Execute the target method with new arguments (arguments can be modified) |
 
-#### 使用示例
+#### Usage Example
 
 ```java
 @Around("@annotation(operationLog)")
 public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
-    // 获取方法信息
+    // Get method information
     MethodSignature signature = (MethodSignature) pjp.getSignature();
-    String className = signature.getDeclaringTypeName();  // 类名
-    String methodName = signature.getName();              // 方法名
-    Class<?> returnType = signature.getReturnType();      // 返回类型
-    String[] paramNames = signature.getParameterNames();  // 参数名数组
-    Class<?>[] paramTypes = signature.getParameterTypes();// 参数类型数组
-    
-    // 获取实际参数值
+    String className = signature.getDeclaringTypeName();  // Class name
+    String methodName = signature.getName();              // Method name
+    Class<?> returnType = signature.getReturnType();      // Return type
+    String[] paramNames = signature.getParameterNames();  // Parameter name array
+    Class<?>[] paramTypes = signature.getParameterTypes();// Parameter type array
+
+    // Get actual argument values
     Object[] args = pjp.getArgs();
-    
-    // 获取目标对象和代理对象
-    Object target = pjp.getTarget();  // 原始对象
-    Object proxy = pjp.getThis();     // 代理对象
-    
-    // 执行目标方法
+
+    // Get the target and proxy objects
+    Object target = pjp.getTarget();  // Original object
+    Object proxy = pjp.getThis();     // Proxy object
+
+    // Execute the target method
     Object result = pjp.proceed();
-    
-    // 使用修改后的参数执行（可选）
+
+    // Execute with modified arguments (optional)
     // Object result = pjp.proceed(new Object[]{"newArg1", "newArg2"});
-    
+
     return result;
 }
 ```
 
-> 💡 **MethodSignature**：`getSignature()` 返回的是 `Signature` 接口，可强转为 `MethodSignature` 获取更多方法相关信息（参数名、参数类型、返回类型等）。
+> 💡 **MethodSignature:** `getSignature()` returns the `Signature` interface. Cast it to `MethodSignature` to obtain more method information (parameter names, parameter types, return type, etc.).
 
 ***
 
-## 三、切入点表达式
+## III. Pointcut Expressions
 
-### 3.1 execution 表达式（最常用）
+### 3.1 execution Expressions (Most Common)
 
-**语法：**
+**Syntax:**
 
 ```
-execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) throws 异常?)
+execution(accessModifier? returnType packageName.className.?methodName(parameters) throws exception?)
 ```
 
-> 其中带 `?` 的表示可以省略的部分：
-> - **访问修饰符**：可省略（如 `public`、`protected`）
-> - **包名.类名.**：可省略
-> - **throws 异常**：可省略（注意是方法上声明抛出的异常，不是实际抛出的异常）
+> Parts marked with `?` are optional:
+> - **Access modifier:** Optional (such as `public` or `protected`)
+> - **packageName.className.:** Optional
+> - **throws exception:** Optional (the exception declared on the method, not the exception actually thrown)
 
-**通配符：**
+**Wildcards:**
 
-| 符号   | 说明                                     |
+| Symbol | Description |
 | ------ | ---------------------------------------- |
-| `*`    | 匹配任意单个元素（一层）                 |
-| `..`   | 匹配任意多个元素（多层包、任意参数）     |
-| `+`    | 匹配指定类及其子类                       |
+| `*` | Match any single element (one level) |
+| `..` | Match any number of elements (multiple package levels, any arguments) |
+| `+` | Match the specified class and its subclasses |
 
-**常用示例：**
+**Common examples:**
 
 ```java
-// 匹配 com.example.service 包下所有类的所有方法
+// Match all methods of all classes in the com.example.service package
 @Pointcut("execution(* com.example.service.*.*(..))")
 
-// 匹配 com.example 包及其子包下所有类的所有方法
+// Match all methods of all classes in com.example and its subpackages
 @Pointcut("execution(* com.example..*.*(..))")
 
-// 匹配所有 public 方法
+// Match all public methods
 @Pointcut("execution(public * *(..))")
 
-// 匹配返回值为 String 的方法
+// Match methods returning String
 @Pointcut("execution(String *(..))")
 
-// 匹配方法名以 get 开头的方法
+// Match methods whose names start with get
 @Pointcut("execution(* get*(..))")
 
-// 匹配 UserService 类的所有方法
+// Match all methods of UserService
 @Pointcut("execution(* com.example.service.UserService.*(..))")
 
-// 匹配只有一个 Long 参数的方法
+// Match methods with exactly one Long parameter
 @Pointcut("execution(* *(Long))")
 
-// 匹配第一个参数为 Long 的方法
+// Match methods whose first parameter is Long
 @Pointcut("execution(* *(Long, ..))")
 ```
 
 ***
 
-### 3.2 @annotation 表达式
+### 3.2 @annotation Expressions
 
-匹配带有指定注解的方法：
+Match methods bearing a specified annotation:
 
 ```java
-// 匹配带有 @Transactional 注解的方法
+// Match methods annotated with @Transactional
 @Pointcut("@annotation(org.springframework.transaction.annotation.Transactional)")
 
-// 匹配带有自定义注解的方法
+// Match methods bearing a custom annotation
 @Pointcut("@annotation(com.example.annotation.Log)")
 ```
 
-**参数绑定简写（常用）：**
+**Argument-binding shorthand (common):**
 
-当通知方法的参数名称与 `@annotation()` 中的名称一致时，Spring 会自动将注解实例注入，无需手动通过反射获取注解属性：
+When an advice parameter name matches the name in `@annotation()`, Spring injects the annotation instance automatically, without manually retrieving its attributes through reflection:
 
 ```java
-// 表达式中的 "operationLog" 与方法参数名一致，Spring 自动注入注解对象
+// "operationLog" in the expression matches the parameter name; Spring injects the annotation object
 @Around("@annotation(operationLog)")
 public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
-    String module = operationLog.module();      // 直接读取注解属性
+    String module = operationLog.module();      // Read annotation attributes directly
     String operation = operationLog.operation();
     return pjp.proceed();
 }
 ```
 
-> 💡 这是实战中最常用的写法（见第五章实战案例），比先获取 `MethodSignature` 再反射读注解更简洁。
+> 💡 This is the most common approach in practice (see the examples in Chapter V), and is simpler than obtaining `MethodSignature` and reading the annotation through reflection.
 
 ***
 
-### 3.3 @within 表达式
+### 3.3 @within Expressions
 
-匹配带有指定注解的**类**中的所有方法：
+Match all methods in **classes** bearing a specified annotation:
 
 ```java
-// 匹配所有 @Service 注解类中的方法
+// Match methods in all classes annotated with @Service
 @Pointcut("@within(org.springframework.stereotype.Service)")
 
-// 匹配所有标注了自定义 @Module 注解的类中的方法
+// Match methods in all classes bearing the custom @Module annotation
 @Pointcut("@within(com.example.annotation.Module)")
 ```
 
-**`@within` vs `@annotation`：**
+**`@within` vs `@annotation`:**
 
-| 表达式 | 注解加在哪 | 匹配哪些方法 |
+| Expression | Annotation location | Methods matched |
 | ------ | ---------- | ------------ |
-| `@annotation(X)` | **方法**上 | 直接标注了 X 的方法 |
-| `@within(X)` | **类**上 | 类被 X 标注时，该类的**所有方法** |
+| `@annotation(X)` | **Method** | Methods directly annotated with X |
+| `@within(X)` | **Class** | **All methods** of a class annotated with X |
 
 ```java
-// @annotation：只有 methodA 被增强（注解在方法上）
+// @annotation: only methodA is advised (annotation on the method)
 public class MyService {
     @Log
-    public void methodA() { }   // ✅ 被增强
-    public void methodB() { }   // ❌ 不被增强
+    public void methodA() { }   // ✅ Advised
+    public void methodB() { }   // ❌ Not advised
 }
 
-// @within：MyService 的所有方法都被增强（注解在类上）
+// @within: all MyService methods are advised (annotation on the class)
 @Log
 public class MyService {
-    public void methodA() { }   // ✅ 被增强
-    public void methodB() { }   // ✅ 被增强
+    public void methodA() { }   // ✅ Advised
+    public void methodB() { }   // ✅ Advised
 }
 ```
 
 ***
 
-### 3.4 组合表达式
+### 3.4 Combining Expressions
 
-使用 `&&`、`||`、`!` 组合多个切入点：
+Combine pointcuts with `&&`, `||`, and `!`:
 
 ```java
-// 匹配 service 包下的方法，但排除 get 开头的方法
+// Match methods in the service package except those starting with get
 @Pointcut("execution(* com.example.service.*.*(..)) && !execution(* get*(..))")
 
-// 匹配 service 或 controller 包下的方法
+// Match methods in the service or controller package
 @Pointcut("execution(* com.example.service.*.*(..)) || execution(* com.example.controller.*.*(..))")
 ```
 
 ***
 
-### 3.5 within 与 bean 表达式
+### 3.5 within and bean Expressions
 
-**within**：按类型或包名匹配所有方法，不关心方法签名，比 `execution` 更简洁：
+**within:** Match all methods by type or package without considering method signatures; simpler than `execution`:
 
 ```java
-// 匹配 service 包下所有类的所有方法
+// Match all methods of all classes in the service package
 @Pointcut("within(com.example.service.*)")
 
-// 匹配 service 包及子包下所有类的所有方法
+// Match all methods of all classes in the service package and subpackages
 @Pointcut("within(com.example.service..*)")
 
-// 匹配 UserService 类的所有方法
+// Match all methods of UserService
 @Pointcut("within(com.example.service.UserService)")
 ```
 
-> 💡 `within` 按**静态声明类型**匹配。使用 JDK 动态代理时（目标类实现了接口），代理对象类型与目标类型不同，`within(TargetClass)` 可能不生效——应改用 `target(TargetClass)`。Spring Boot 默认 CGLIB 代理，通常无此问题。
+> 💡 `within` matches the **statically declared type**. With JDK dynamic proxies (the target class implements an interface), the proxy type differs from the target type, so `within(TargetClass)` may not work; use `target(TargetClass)` instead. Spring Boot defaults to CGLIB proxies, where this is generally not an issue.
 
-**bean**：按 Spring Bean 名称匹配，Spring AOP 独有（AspectJ 不支持）：
+**bean:** Match by Spring bean name; specific to Spring AOP (not supported by AspectJ):
 
 ```java
-// 精确匹配
+// Exact match
 @Pointcut("bean(userService)")
 
-// 通配符：所有名称以 Service 结尾的 Bean
+// Wildcard: all beans whose names end with Service
 @Pointcut("bean(*Service)")
 ```
 
-**`within` vs `execution` 选型：**
+**Choosing between `within` and `execution`:**
 
-| 场景 | 推荐表达式 |
+| Scenario | Recommended expression |
 | ---- | ---------- |
-| 拦截某包/子包下所有方法 | `within(com.example.service..)` |
-| 按返回类型、参数签名精细过滤 | `execution(...)` |
-| 按 Bean 名称拦截（Spring 环境） | `bean(*Service)` |
+| Intercept all methods in a package/subpackages | `within(com.example.service..)` |
+| Filter precisely by return type and parameter signature | `execution(...)` |
+| Intercept by bean name (Spring environment) | `bean(*Service)` |
 
 ***
 
-## 四、通知执行顺序
+## IV. Advice Execution Order
 
-### 4.1 单切面内的执行顺序
+### 4.1 Execution Order within One Aspect
 
-| 通知类型         | 执行时机                       |
+| Advice type | Execution timing |
 | ---------------- | ------------------------------ |
-| `@Around`（前）  | 最先执行                       |
-| `@Before`        | 目标方法执行前                 |
-| **目标方法**     | 实际业务逻辑                   |
-| `@AfterReturning`| 目标方法正常返回后             |
-| `@AfterThrowing` | 目标方法抛出异常后             |
-| `@After`         | 目标方法执行后（无论是否异常） |
-| `@Around`（后）  | 最后执行                       |
+| `@Around` (before) | Runs first |
+| `@Before` | Before the target method |
+| **Target method** | Actual business logic |
+| `@AfterReturning` | After the target method returns normally |
+| `@AfterThrowing` | After the target method throws an exception |
+| `@After` | After the target method, whether or not it throws |
+| `@Around` (after) | Runs last |
 
-**执行流程图：**
+**Execution flow:**
 
-    正常情况：@Around前 → @Before → 目标方法 → @AfterReturning → @After → @Around后
-    异常情况：@Around前 → @Before → 目标方法（异常）→ @AfterThrowing → @After
+    Normal: @Around before → @Before → Target method → @AfterReturning → @After → @Around after
+    Exception: @Around before → @Before → Target method (throws) → @AfterThrowing → @After
 
-> 💡 **注意：** 以上顺序适用于 **Spring 5.2.7+** 版本。旧版本中 `@After` 会在 `@AfterReturning`/`@AfterThrowing` 之前执行。
+> 💡 **Note:** This order applies to **Spring 5.2.7+**. In older versions, `@After` runs before `@AfterReturning`/`@AfterThrowing`.
 
 ***
 
-### 4.2 多切面的执行顺序（@Order）
+### 4.2 Execution Order across Aspects (@Order)
 
-使用 `@Order` 注解控制多个切面的执行顺序，数字越小优先级越高：
+Use `@Order` to control execution order across aspects; lower numbers have higher priority:
 
 ```java
 @Aspect
 @Component
-@Order(1)  // 数字越小，优先级越高
+@Order(1)  // Lower numbers mean higher priority
 public class FirstAspect {
     @Around("execution(* com.example.service.*.*(..))")
     public Object around(ProceedingJoinPoint pjp) throws Throwable {
-        log.info("FirstAspect 前");
+        log.info("FirstAspect before");
         Object result = pjp.proceed();
-        log.info("FirstAspect 后");
+        log.info("FirstAspect after");
         return result;
     }
 }
@@ -686,41 +686,41 @@ public class FirstAspect {
 public class SecondAspect {
     @Around("execution(* com.example.service.*.*(..))")
     public Object around(ProceedingJoinPoint pjp) throws Throwable {
-        log.info("SecondAspect 前");
+        log.info("SecondAspect before");
         Object result = pjp.proceed();
-        log.info("SecondAspect 后");
+        log.info("SecondAspect after");
         return result;
     }
 }
 ```
 
-**执行顺序（洋葱模型）：**
+**Execution order (onion model):**
 
-    FirstAspect 前
-        SecondAspect 前
-            目标方法
-        SecondAspect 后
-    FirstAspect 后
+    FirstAspect before
+        SecondAspect before
+            Target method
+        SecondAspect after
+    FirstAspect after
 
 ***
 
-### 4.3 实际应用中的顺序建议
+### 4.3 Suggested Ordering in Practice
 
-| 顺序 | 切面类型     | 说明                         |
+| Order | Aspect type | Description |
 | ---- | ------------ | ---------------------------- |
-| 1    | 日志切面     | 最先进入，最后退出，记录完整 |
-| 2    | 权限切面     | 无权限时尽早拦截             |
-| 3    | 缓存切面     | 有缓存直接返回               |
-| 4    | 事务切面     | 包裹业务逻辑                 |
-| 5    | 业务切面     | 最接近目标方法               |
+| 1 | Logging | Enter first and exit last to capture the whole operation |
+| 2 | Permission | Reject unauthorized requests early |
+| 3 | Cache | Return immediately on a cache hit |
+| 4 | Transaction | Wrap the business logic |
+| 5 | Business | Closest to the target method |
 
 ***
 
-## 五、实战案例
+## V. Practical Examples
 
-### 5.1 操作日志记录
+### 5.1 Operation Logging
 
-**自定义注解：**
+**Custom annotation:**
 
 ```java
 package com.example.annotation;
@@ -733,19 +733,19 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OperationLog {
-    
-    /** 操作模块 */
+
+    /** Operation module */
     String module() default "";
-    
-    /** 操作类型 */
+
+    /** Operation type */
     String operation() default "";
-    
-    /** 操作描述 */
+
+    /** Operation description */
     String description() default "";
 }
 ```
 
-**日志切面：**
+**Logging aspect:**
 
 ```java
 package com.example.aspect;
@@ -780,12 +780,12 @@ public class OperationLogAspect {
     @Around("@annotation(operationLog)")
     public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws Throwable {
         long startTime = System.currentTimeMillis();
-        
-        // 获取请求信息
+
+        // Get request information
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes != null ? attributes.getRequest() : null;
-        
-        // 构建日志对象
+
+        // Build the log object
         SysLog sysLog = new SysLog();
         sysLog.setModule(operationLog.module());
         sysLog.setOperation(operationLog.operation());
@@ -795,7 +795,7 @@ public class OperationLogAspect {
         sysLog.setMethod(pjp.getSignature().getDeclaringTypeName() + "." + pjp.getSignature().getName());
         sysLog.setParams(objectMapper.writeValueAsString(pjp.getArgs()));
         sysLog.setCreateTime(LocalDateTime.now());
-        
+
         if (request != null) {
             sysLog.setIp(getClientIp(request));
             sysLog.setUrl(request.getRequestURI());
@@ -805,18 +805,18 @@ public class OperationLogAspect {
         Object result = null;
         try {
             result = pjp.proceed();
-            sysLog.setStatus(1);  // 成功
+            sysLog.setStatus(1);  // Success
             sysLog.setResult(objectMapper.writeValueAsString(result));
         } catch (Throwable e) {
-            sysLog.setStatus(0);  // 失败
+            sysLog.setStatus(0);  // Failure
             sysLog.setErrorMsg(e.getMessage());
             throw e;
         } finally {
             sysLog.setCostTime(System.currentTimeMillis() - startTime);
-            // 异步保存日志
+            // Save the log asynchronously
             sysLogService.saveAsync(sysLog);
         }
-        
+
         return result;
     }
 
@@ -828,7 +828,7 @@ public class OperationLogAspect {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        // 多级代理时取第一个
+        // Use the first address when multiple proxy levels are involved
         if (ip != null && ip.contains(",")) {
             ip = ip.split(",")[0].trim();
         }
@@ -837,7 +837,7 @@ public class OperationLogAspect {
 }
 ```
 
-**使用示例：**
+**Usage example:**
 
 ```java
 @RestController
@@ -848,21 +848,21 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    @OperationLog(module = "用户管理", operation = "新增", description = "新增用户")
+    @OperationLog(module = "User management", operation = "Create", description = "Create a user")
     public Result<Void> add(@RequestBody @Valid UserDTO dto) {
         userService.add(dto);
         return Result.success();
     }
 
     @PutMapping("/{id}")
-    @OperationLog(module = "用户管理", operation = "修改", description = "修改用户信息")
+    @OperationLog(module = "User management", operation = "Update", description = "Update user information")
     public Result<Void> update(@PathVariable Long id, @RequestBody @Valid UserDTO dto) {
         userService.update(id, dto);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    @OperationLog(module = "用户管理", operation = "删除", description = "删除用户")
+    @OperationLog(module = "User management", operation = "Delete", description = "Delete a user")
     public Result<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return Result.success();
@@ -872,7 +872,7 @@ public class UserController {
 
 ***
 
-### 5.2 方法执行耗时统计
+### 5.2 Measuring Method Execution Time
 
 ```java
 package com.example.aspect;
@@ -889,7 +889,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PerformanceAspect {
 
-    /** 慢方法阈值（毫秒） */
+    /** Slow-method threshold (milliseconds) */
     private static final long SLOW_METHOD_THRESHOLD = 1000;
 
     @Pointcut("execution(* com.example.service..*.*(..))")
@@ -899,16 +899,16 @@ public class PerformanceAspect {
     public Object around(ProceedingJoinPoint pjp) throws Throwable {
         String methodName = pjp.getSignature().getDeclaringTypeName() + "." + pjp.getSignature().getName();
         long startTime = System.currentTimeMillis();
-        
+
         try {
             return pjp.proceed();
         } finally {
             long costTime = System.currentTimeMillis() - startTime;
-            
+
             if (costTime > SLOW_METHOD_THRESHOLD) {
-                log.warn("【慢方法警告】{} 执行耗时：{}ms", methodName, costTime);
+                log.warn("[Slow method warning] {} took {}ms", methodName, costTime);
             } else {
-                log.debug("【方法耗时】{} 执行耗时：{}ms", methodName, costTime);
+                log.debug("[Method duration] {} took {}ms", methodName, costTime);
             }
         }
     }
@@ -917,9 +917,9 @@ public class PerformanceAspect {
 
 ***
 
-### 5.3 接口幂等性校验
+### 5.3 Endpoint Idempotency Checks
 
-**自定义注解：**
+**Custom annotation:**
 
 ```java
 package com.example.annotation;
@@ -932,19 +932,19 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Idempotent {
-    
-    /** 幂等Key的前缀 */
+
+    /** Idempotency key prefix */
     String prefix() default "idempotent";
-    
-    /** 过期时间（秒） */
+
+    /** Expiration time (seconds) */
     int expireSeconds() default 5;
-    
-    /** 提示信息 */
-    String message() default "请勿重复提交";
+
+    /** Message */
+    String message() default "Please do not submit repeatedly";
 }
 ```
 
-**幂等切面：**
+**Idempotency aspect:**
 
 ```java
 package com.example.aspect;
@@ -971,7 +971,7 @@ public class IdempotentAspect {
 
     @Around("@annotation(idempotent)")
     public Object around(ProceedingJoinPoint pjp, Idempotent idempotent) throws Throwable {
-        // 构建幂等Key：前缀 + 用户ID + 类名 + 方法名
+        // Build the idempotency key: prefix + user ID + class name + method name
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         String key = String.format("%s:%s:%s:%s",
                 idempotent.prefix(),
@@ -980,7 +980,7 @@ public class IdempotentAspect {
                 signature.getName()
         );
 
-        // 尝试设置Key（不存在才设置成功）
+        // Try setting the key (succeeds only if it does not exist)
         Boolean success = redisTemplate.opsForValue()
                 .setIfAbsent(key, "1", idempotent.expireSeconds(), TimeUnit.SECONDS);
 
@@ -991,7 +991,7 @@ public class IdempotentAspect {
         try {
             return pjp.proceed();
         } catch (Throwable e) {
-            // 异常时删除Key，允许重试
+            // Delete the key on an exception to allow retries
             redisTemplate.delete(key);
             throw e;
         }
@@ -999,11 +999,11 @@ public class IdempotentAspect {
 }
 ```
 
-**使用示例：**
+**Usage example:**
 
 ```java
 @PostMapping("/orders")
-@Idempotent(prefix = "order:create", expireSeconds = 10, message = "订单正在处理中，请勿重复提交")
+@Idempotent(prefix = "order:create", expireSeconds = 10, message = "Order is being processed; please do not submit again")
 public Result<Long> createOrder(@RequestBody @Valid OrderDTO dto) {
     return Result.success(orderService.create(dto));
 }
@@ -1011,9 +1011,9 @@ public Result<Long> createOrder(@RequestBody @Valid OrderDTO dto) {
 
 ***
 
-### 5.4 数据权限控制
+### 5.4 Data Access Control
 
-**自定义注解：**
+**Custom annotation:**
 
 ```java
 package com.example.annotation;
@@ -1026,16 +1026,16 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DataScope {
-    
-    /** 部门表别名 */
+
+    /** Department table alias */
     String deptAlias() default "d";
-    
-    /** 用户表别名 */
+
+    /** User table alias */
     String userAlias() default "u";
 }
 ```
 
-**数据权限切面（配合 MyBatis 使用）：**
+**Data permission aspect (used with MyBatis):**
 
 ```java
 package com.example.aspect;
@@ -1061,151 +1061,151 @@ public class DataScopeAspect {
     public void before(JoinPoint joinPoint, DataScope dataScope) {
         Long userId = UserContext.getUserId();
         SysUser user = userService.getById(userId);
-        
-        // 根据用户角色构建数据权限SQL
+
+        // Build data permission SQL based on the user's role
         StringBuilder sqlBuilder = new StringBuilder();
-        
+
         switch (user.getDataScope()) {
-            case 1:  // 全部数据权限
+            case 1:  // Access to all data
                 break;
-            case 2:  // 本部门数据权限
-                sqlBuilder.append(String.format(" AND %s.dept_id = %d", 
+            case 2:  // Access to the user's department
+                sqlBuilder.append(String.format(" AND %s.dept_id = %d",
                         dataScope.deptAlias(), user.getDeptId()));
                 break;
-            case 3:  // 本部门及以下数据权限
-                sqlBuilder.append(String.format(" AND %s.dept_id IN (SELECT id FROM sys_dept WHERE id = %d OR FIND_IN_SET(%d, ancestors))", 
+            case 3:  // Access to the user's department and subordinate departments
+                sqlBuilder.append(String.format(" AND %s.dept_id IN (SELECT id FROM sys_dept WHERE id = %d OR FIND_IN_SET(%d, ancestors))",
                         dataScope.deptAlias(), user.getDeptId(), user.getDeptId()));
                 break;
-            case 4:  // 仅本人数据权限
-                sqlBuilder.append(String.format(" AND %s.user_id = %d", 
+            case 4:  // Access only to the user's own data
+                sqlBuilder.append(String.format(" AND %s.user_id = %d",
                         dataScope.userAlias(), userId));
                 break;
             default:
                 break;
         }
-        
-        // 将SQL片段存入ThreadLocal，在Mapper中拼接
+
+        // Store the SQL fragment in ThreadLocal for concatenation in the Mapper
         DataScopeContext.set(sqlBuilder.toString());
     }
 }
 ```
 
-> ⚠️ 示例中 `deptId`/`userId` 均来自服务端已验证的数据库字段，无直接注入风险。实际使用时 `deptAlias`/`userAlias` 应来自编译期注解常量，禁止将运行时的外部输入直接拼接到 SQL 片段，否则需做严格白名单校验。
+> ⚠️ In this example, `deptId`/`userId` are verified database fields obtained on the server, so there is no direct injection risk. In practice, `deptAlias`/`userAlias` should come from compile-time annotation constants. Never concatenate external runtime input directly into SQL fragments without strict allowlist validation.
 
 ***
 
-## 六、AOP 底层原理与注意事项
+## VI. AOP Internals and Caveats
 
-### 6.1 代理方式
+### 6.1 Proxy Mechanisms
 
-Spring AOP 使用两种代理方式：
+Spring AOP uses two proxy mechanisms:
 
-| 代理方式         | 底层机制                   | 限制                                     |
+| Proxy mechanism | Underlying implementation | Limitations |
 | ---------------- | -------------------------- | ---------------------------------------- |
-| **JDK 动态代理** | 反射，基于接口生成代理类   | 目标类必须实现接口                       |
-| **CGLIB 代理**   | 字节码，基于继承生成子类   | 目标类和被代理方法不能是 `final`         |
+| **JDK dynamic proxy** | Reflection; generates a proxy class from interfaces | The target class must implement an interface |
+| **CGLIB proxy** | Bytecode; generates a subclass through inheritance | The target class and proxied methods must not be `final` |
 
-**代理选择策略：**
+**Proxy selection:**
 
-| 场景 | Spring Framework 默认 | Spring Boot 2.x+ 默认 |
+| Scenario | Spring Framework default | Spring Boot 2.x+ default |
 |------|----------------------|----------------------|
-| 目标类实现了接口 | JDK 动态代理 | CGLIB |
-| 目标类未实现接口 | CGLIB | CGLIB |
+| Target class implements an interface | JDK dynamic proxy | CGLIB |
+| Target class has no interface | CGLIB | CGLIB |
 
-Spring Boot 2.x 将 `spring.aop.proxy-target-class` 默认设为 `true`，统一使用 CGLIB，减少因「有接口用 JDK 代理 / 无接口用 CGLIB」导致的行为差异。如需显式切换：
+Spring Boot 2.x defaults `spring.aop.proxy-target-class` to `true`, consistently using CGLIB to reduce behavioral differences between JDK proxies for classes with interfaces and CGLIB for classes without them. To switch explicitly:
 
 ```yaml
-# 优先使用 JDK 动态代理；目标类没有合适接口时仍使用 CGLIB
+# Prefer JDK dynamic proxies; still use CGLIB if the target class has no suitable interface
 spring:
   aop:
     proxy-target-class: false
 ```
 
-#### JDK 动态代理原理
+#### How JDK Dynamic Proxies Work
 
-核心是 `java.lang.reflect.Proxy` + `InvocationHandler`。Spring 在运行时生成一个实现了目标接口的代理类，所有方法调用都会转发到 `InvocationHandler.invoke()`，在这里织入切面逻辑后再通过反射调用目标方法。
+The core is `java.lang.reflect.Proxy` + `InvocationHandler`. At runtime, Spring generates a proxy class implementing the target interface. Method calls are forwarded to `InvocationHandler.invoke()`, which applies aspect logic and then invokes the target method through reflection.
 
 ```
-调用方 → 代理对象（实现相同接口）
+Caller → Proxy object (implements the same interface)
             ↓
         InvocationHandler.invoke()
-            ↓   前置逻辑（切面）
-        反射调用目标方法
-            ↓   后置逻辑（切面）
-        返回结果
+            ↓   Before logic (aspect)
+        Invoke the target method through reflection
+            ↓   After logic (aspect)
+        Return the result
 ```
 
 ```java
-// Spring 内部等价逻辑（简化示意）
+// Equivalent internal Spring logic (simplified illustration)
 Proxy.newProxyInstance(
     target.getClass().getClassLoader(),
     target.getClass().getInterfaces(),
     (proxy, method, args) -> {
-        // 前置切面逻辑
-        Object result = method.invoke(target, args);  // 反射调用目标方法
-        // 后置切面逻辑
+        // Before aspect logic
+        Object result = method.invoke(target, args);  // Invoke the target method through reflection
+        // After aspect logic
         return result;
     }
 );
 ```
 
-#### CGLIB 代理原理
+#### How CGLIB Proxies Work
 
-CGLIB（Code Generation Library）在运行时通过 ASM 直接操作字节码，生成目标类的子类，子类中重写所有非 `final` 方法，在重写方法中插入切面逻辑，再调用 `super.xxx()` 执行原始方法。
+CGLIB (Code Generation Library) manipulates bytecode directly through ASM at runtime to generate a subclass of the target class. The subclass overrides non-`final` methods, inserts aspect logic into those overrides, and calls `super.xxx()` to execute the original method.
 
 ```
-调用方 → 代理子类（继承目标类）
+Caller → Proxy subclass (extends the target class)
             ↓
-        重写的方法（MethodInterceptor.intercept()）
-            ↓   前置逻辑（切面）
-        super.method()  // 调用目标类原始方法
-            ↓   后置逻辑（切面）
-        返回结果
+        Overridden method (MethodInterceptor.intercept())
+            ↓   Before logic (aspect)
+        super.method()  // Call the target class's original method
+            ↓   After logic (aspect)
+        Return the result
 ```
 
-> 💡 CGLIB 是字节码级别的子类调用（`super.method()`），JDK 代理是反射调用（`method.invoke()`）。CGLIB 的调用开销略低于 JDK 代理，但两者均在微秒量级，对业务影响可忽略不计。
+> 💡 CGLIB uses bytecode-level subclass calls (`super.method()`), while JDK proxies use reflection (`method.invoke()`). CGLIB has slightly lower call overhead, but both are on the microsecond scale and have negligible impact on business operations.
 
-#### Spring AOP 的适用范围限制
+#### Spring AOP Scope Limitations
 
-Spring AOP 基于代理实现，有以下固有限制：
+Spring AOP is proxy-based and has these inherent limitations:
 
-| 限制                     | 说明                                                                |
+| Limitation | Description |
 | ------------------------ | ------------------------------------------------------------------- |
-| **受代理方式与方法可见性限制** | JDK 代理拦截接口中的 public 方法；CGLIB 还可拦截可覆盖的 protected/包可见方法，不能增强 private/final 方法 |
-| **只能增强 Spring Bean** | 通过 `new` 手动创建的对象不受 Spring 管理，切面不生效               |
-| **只支持方法级连接点**   | 不能拦截字段访问、构造器调用（需 AspectJ 编译时织入才能实现）       |
-| **同类方法调用不生效**   | `this.method()` 绕过代理直接调用原始对象，切面不触发               |
+| **Restricted by proxy mechanism and method visibility** | JDK proxies intercept public interface methods; CGLIB can also intercept overridable protected/package-visible methods, but cannot advise private/final methods |
+| **Only Spring beans can be advised** | Objects created manually with `new` are not managed by Spring, so aspects do not apply |
+| **Only method-level join points** | Cannot intercept field access or constructor calls (requires AspectJ compile-time weaving) |
+| **Self-invocation bypasses advice** | `this.method()` calls the original object directly, bypassing the proxy and the aspect |
 
 ***
 
-### 6.2 代理对象的创建时机
+### 6.2 When Proxies Are Created
 
-代理对象在 Bean 生命周期的 `BeanPostProcessor.postProcessAfterInitialization()` 阶段创建，由 `AbstractAutoProxyCreator` 负责扫描切面并包装目标 Bean。
+Proxy objects are created during the `BeanPostProcessor.postProcessAfterInitialization()` stage of the bean lifecycle. `AbstractAutoProxyCreator` scans aspects and wraps target beans.
 
 ```
-Bean 实例化 → 属性注入 → 初始化（@PostConstruct）→ BeanPostProcessor → 创建代理对象（AOP）
+Bean instantiation → Property injection → Initialization (@PostConstruct) → BeanPostProcessor → Create proxy (AOP)
 ```
 
-> 💡 代理对象创建发生在应用启动阶段，每个被增强的 Bean 只创建一次代理，与请求并发量无关，不会影响运行期性能。
+> 💡 Proxies are created during application startup, once per advised bean, independently of request concurrency, so their creation does not affect runtime performance.
 
 ***
 
-### 6.3 同类方法调用不生效（重要）
+### 6.3 Self-Invocation Bypasses Advice (Important)
 
-> ⚠️ **这是 AOP 最常见的坑！**
+> ⚠️ **This is the most common AOP pitfall!**
 
-**问题：** 在同一个类中，一个方法直接调用另一个方法时，被调用方法的切面不会生效。
+**Problem:** When one method directly calls another method in the same class, the called method's aspect does not run.
 
 ```java
 @Service
 public class UserService {
-    
+
     @Transactional
     public void methodA() {
-        // 直接调用，不会触发 methodB 的切面
-        this.methodB();  // ❌ 不走代理
+        // Direct invocation does not trigger methodB's aspect
+        this.methodB();  // ❌ Bypasses the proxy
     }
-    
+
     @Transactional
     public void methodB() {
         // ...
@@ -1213,21 +1213,21 @@ public class UserService {
 }
 ```
 
-**原因：** `this.methodB()` 是通过当前对象调用，而不是通过代理对象调用，所以切面无法拦截。
+**Cause:** `this.methodB()` invokes the current object rather than its proxy, so the aspect cannot intercept it.
 
-**解决方案一：注入自身代理对象**
+**Solution 1: Inject the Bean's Own Proxy**
 
 ```java
 @Service
 public class UserService {
-    
+
     @Autowired
-    private UserService self;  // 注入代理对象
-    
+    private UserService self;  // Inject the proxy object
+
     public void methodA() {
-        self.methodB();  // ✅ 通过代理调用
+        self.methodB();  // ✅ Call through the proxy
     }
-    
+
     @Transactional
     public void methodB() {
         // ...
@@ -1235,20 +1235,20 @@ public class UserService {
 }
 ```
 
-**解决方案二：使用 AopContext**
+**Solution 2: Use AopContext**
 
 ```java
-// 启动类添加
+// Add to the application class
 @EnableAspectJAutoProxy(exposeProxy = true)
 
-// 使用
+// Usage
 @Service
 public class UserService {
-    
+
     public void methodA() {
-        ((UserService) AopContext.currentProxy()).methodB();  // ✅ 通过代理调用
+        ((UserService) AopContext.currentProxy()).methodB();  // ✅ Call through the proxy
     }
-    
+
     @Transactional
     public void methodB() {
         // ...
@@ -1256,7 +1256,7 @@ public class UserService {
 }
 ```
 
-**解决方案三：将被调用方法提取到独立 Bean（推荐）**
+**Solution 3: Extract the Called Method into a Separate Bean (Recommended)**
 
 ```java
 @Service
@@ -1275,43 +1275,43 @@ public class UserService {
     private final UserOperationService userOperationService;
 
     public void methodA() {
-        userOperationService.methodB();  // ✅ 跨 Bean 调用，天然走代理
+        userOperationService.methodB();  // ✅ Cross-bean calls naturally go through the proxy
     }
 }
 ```
 
-> 💡 方案三符合单一职责原则，同时规避了方案一的循环依赖风险和方案二的强转代码气味，是生产代码中的首选做法。
+> 💡 Solution 3 follows the single-responsibility principle while avoiding circular-dependency risks in solution 1 and the cast-related code smell in solution 2, making it the preferred approach for production code.
 
 ***
 
-### 6.4 性能开销
+### 6.4 Performance Overhead
 
-#### 开销来源
+#### Sources of Overhead
 
-| 阶段         | 类型             | 量级       | 说明                                                   |
+| Phase | Type | Scale | Description |
 | ------------ | ---------------- | ---------- | ------------------------------------------------------ |
-| **启动阶段** | 代理对象创建     | 一次性     | 随 Bean 初始化完成，与请求并发无关，可忽略             |
-| **调用阶段** | 代理调用额外开销 | 微秒级     | CGLIB 字节码子类调用；JDK 代理走反射，略慢于 CGLIB     |
-| **调用阶段** | 切面逻辑本身     | 取决于内容 | 同步 IO（写数据库、写文件）才是真正的性能瓶颈          |
+| **Startup** | Proxy object creation | One-time | Happens during bean initialization, independent of request concurrency; negligible |
+| **Invocation** | Additional proxy-call overhead | Microseconds | CGLIB uses bytecode subclass calls; JDK proxies use reflection and are slightly slower |
+| **Invocation** | Aspect logic itself | Depends on the logic | Synchronous I/O (database/file writes) is the real performance bottleneck |
 
-#### 实际影响判断
+#### Assessing the Actual Impact
 
-代理机制本身的额外延迟在微秒量级，对毫秒级的 HTTP 接口可以忽略不计。切面是否影响性能，核心在于**切面逻辑的内容**：
+The proxy mechanism adds microseconds of latency, negligible for HTTP endpoints operating on millisecond timescales. Whether an aspect affects performance primarily depends on **what its logic does**:
 
-- 切面只做**内存操作**（提取参数、序列化字符串）：无需关注性能
-- 切面内有**同步 IO**（写数据库日志、写文件）：IO 本身是瓶颈，与 AOP 机制本身无关
+- **In-memory operations only** (extracting arguments, serializing strings): performance is generally not a concern
+- **Synchronous I/O** (writing database logs or files): the I/O is the bottleneck, independently of the AOP mechanism
 
-#### 切面 IO 异步化
+#### Making Aspect I/O Asynchronous
 
-同步写日志会阻塞主调用链，推荐通过 `@Async` 将切面中的 IO 操作异步化：
+Synchronous logging blocks the main call chain. Use `@Async` to make aspect I/O asynchronous:
 
 ```java
-// 启动类启用异步支持
+// Enable asynchronous execution on the application class
 @SpringBootApplication
 @EnableAsync
 public class Application { }
 
-// 日志服务异步写入，主线程不阻塞
+// The log service writes asynchronously without blocking the main thread
 @Service
 public class SysLogService {
 
@@ -1322,42 +1322,42 @@ public class SysLogService {
 }
 ```
 
-> 💡 `@Async` 同样基于 Spring 代理实现，在同类内直接调用不生效；且异步方法抛出的异常不会传播到调用方，需在方法内自行捕获处理。
+> 💡 `@Async` also relies on Spring proxies, so direct self-invocation has no effect. Exceptions from asynchronous methods do not propagate to the caller and must be caught and handled within the method.
 
 ***
 
-## 附录：AOP 速查表
+## Appendix: AOP Quick Reference
 
-### 核心注解
+### Core Annotations
 
-| 注解              | 说明                               |
+| Annotation | Description |
 | ----------------- | ---------------------------------- |
-| `@Aspect`         | 声明切面类                         |
-| `@Pointcut`       | 定义切入点                         |
-| `@Before`         | 前置通知                           |
-| `@After`          | 后置通知（无论是否异常）           |
-| `@AfterReturning` | 返回后通知（正常返回）             |
-| `@AfterThrowing`  | 异常后通知（抛出异常）             |
-| `@Around`         | 环绕通知                           |
-| `@Order`          | 指定切面执行顺序（数字越小越优先） |
+| `@Aspect` | Declare an aspect class |
+| `@Pointcut` | Define a pointcut |
+| `@Before` | Before advice |
+| `@After` | After advice (whether or not an exception occurs) |
+| `@AfterReturning` | After-returning advice (normal return) |
+| `@AfterThrowing` | After-throwing advice (exception thrown) |
+| `@Around` | Around advice |
+| `@Order` | Set aspect execution order (lower numbers run first) |
 
-### 切入点表达式
+### Pointcut Expressions
 
-| 表达式类型      | 说明                         | 示例                                   |
+| Expression type | Description | Example |
 | --------------- | ---------------------------- | -------------------------------------- |
-| `execution`     | 匹配方法执行                 | `execution(* com.example..*.*(..))`    |
-| `@annotation`   | 匹配带有指定注解的方法       | `@annotation(com.example.Log)`         |
-| `@within`       | 匹配带有指定注解的类         | `@within(org.springframework.stereotype.Service)` |
-| `within`        | 匹配指定类/包内的方法        | `within(com.example.service.*)`        |
-| `bean`          | 匹配指定 Bean 名称           | `bean(userService)`                    |
-| `this`          | 匹配代理对象是指定类型       | `this(com.example.service.UserService)` |
-| `target`        | 匹配目标对象是指定类型       | `target(com.example.service.UserService)` |
-| `args`          | 匹配方法参数类型             | `args(Long, String)`                   |
+| `execution` | Match method execution | `execution(* com.example..*.*(..))` |
+| `@annotation` | Match methods bearing a specified annotation | `@annotation(com.example.Log)` |
+| `@within` | Match classes bearing a specified annotation | `@within(org.springframework.stereotype.Service)` |
+| `within` | Match methods in a specified class/package | `within(com.example.service.*)` |
+| `bean` | Match a specified bean name | `bean(userService)` |
+| `this` | Match proxies of a specified type | `this(com.example.service.UserService)` |
+| `target` | Match target objects of a specified type | `target(com.example.service.UserService)` |
+| `args` | Match method argument types | `args(Long, String)` |
 
-### execution 通配符
+### execution Wildcards
 
-| 符号   | 说明                                     |
+| Symbol | Description |
 | ------ | ---------------------------------------- |
-| `*`    | 匹配任意单个元素（一层）                 |
-| `..`   | 匹配任意多个元素（多层包、任意参数）     |
-| `+`    | 匹配指定类及其子类                       |
+| `*` | Match any single element (one level) |
+| `..` | Match any number of elements (multiple package levels, any arguments) |
+| `+` | Match the specified class and its subclasses |
