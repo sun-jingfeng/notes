@@ -1,4 +1,4 @@
-## 1. Layered Architecture and Development Conventions
+## I. Layered Architecture and Development Conventions
 
 ### 1.1 Three-Layer Architecture
 
@@ -148,14 +148,14 @@ public class UserVO {
 
 ***
 
-## 2. Centralized Exception Handling
+## II. Centralized Exception Handling
 
 ### 2.1 Core Annotations
 
 | Annotation | Purpose |
 | ----------------------- | ------------------------------------------------------- |
-| @RestControllerAdvice | Global Controller advice with response-body handling |
-| @ExceptionHandler | Selects the exception types handled by a method |
+| `@RestControllerAdvice` | Global Controller advice with response-body handling (`@ControllerAdvice` + `@ResponseBody`) |
+| `@ExceptionHandler` | Selects the exception types handled by a method |
 
 ```java
 // Apply to all Controllers
@@ -260,16 +260,16 @@ public class GlobalExceptionHandler {
 }
 ```
 
-> 💡 **HTTP status codes:** These examples return HTTP 200 and distinguish outcomes using the code field. To return an appropriate HTTP error status, use mechanisms such as @ResponseStatus(HttpStatus.BAD_REQUEST).
+> 💡 **HTTP status codes:** These examples return HTTP 200 and distinguish outcomes using the code field. To return an appropriate HTTP error status, use mechanisms such as `@ResponseStatus(HttpStatus.BAD_REQUEST)`.
 
 ***
 
 ### 2.4 Exception Handler Matching
 
-Within a handler set, Spring selects @ExceptionHandler methods using specificity:
+Within a handler set, Spring selects `@ExceptionHandler` methods using specificity:
 
 1. **Exact match first:** Prefer a handler matching the exception type directly.
-2. **Subtype before supertype:** BusinessException is more specific than RuntimeException, which is more specific than Exception.
+2. **Subtype before supertype:** `BusinessException` is more specific than `RuntimeException`, which is more specific than `Exception`.
 
     Throw BusinessException
     ↓
@@ -309,7 +309,7 @@ public class UserServiceImpl implements UserService {
 
 ***
 
-## 3. Filters and Interceptors
+## III. Filters and Interceptors
 
 ### 3.1 Comparison
 
@@ -317,12 +317,12 @@ public class UserServiceImpl implements UserService {
 | ------------ | --------------------------------- | ------------------------ |
 | **API** | Servlet | Spring MVC |
 | **Request timing** | Before DispatcherServlet | Inside DispatcherServlet processing |
-| **Dependency injection** | Depends on how the filter instance is created/registered (see below) | Available for Spring-managed interceptors |
+| **Dependency injection** | Depends on how the filter instance is created/registered | Available for Spring-managed interceptors |
 | **Path exclusions** | Usually handled in code | excludePathPatterns supported |
 
 > **Filter dependency injection:**
-> - A filter instance created only by the servlet container is not automatically a Spring bean, so plain @Autowired injection is unavailable.
-> - Registering a Spring-managed @Component filter through FilterRegistrationBean supports @Autowired injection.
+> - A filter instance created only by the servlet container is not automatically a Spring bean, so plain `@Autowired` injection is unavailable.
+> - Registering a Spring-managed `@Component` filter through `FilterRegistrationBean` supports `@Autowired` injection.
 
 ***
 
@@ -358,9 +358,9 @@ public class UserServiceImpl implements UserService {
 
 | Method | Timing | Frequency |
 | ---------- | ------------------- | -------- |
-| init | Filter initialization during server startup | Once |
-| doFilter | Each matching request | Many times |
-| destroy | Filter destruction during server shutdown | Once |
+| `init` | Filter initialization during server startup | Once |
+| `doFilter` | Each matching request | Many times |
+| `destroy` | Filter destruction during server shutdown | Once |
 
 ```java
 public class DemoFilter implements Filter {
@@ -399,7 +399,7 @@ public class DemoFilter implements Filter { }
 public class Application { }
 ```
 
-> ⚠️ @WebFilter does not provide an explicit ordering attribute. Do not rely on discovery/class-name ordering for multiple filters; use explicit registration instead.
+> ⚠️ `@WebFilter` does not provide an explicit ordering attribute. Do not rely on discovery/class-name ordering for multiple filters; use explicit registration instead.
 
 #### Option 2: FilterRegistrationBean (Recommended)
 
@@ -442,9 +442,9 @@ public class FilterConfig {
 
 | Method | Timing | Behavior |
 | ----------------- | ----------------------------- | ---------------------------- |
-| preHandle | Before the Controller | Returning false stops handler execution |
-| postHandle | After the handler, before view rendering | Not invoked when handler execution throws; less useful for REST responses |
-| afterCompletion | After request completion | Cleanup callback, including exception paths, for interceptors whose preHandle returned true |
+| `preHandle` | Before the Controller | Returning false stops handler execution |
+| `postHandle` | After the handler, before view rendering | Not invoked when handler execution throws; less useful for REST responses |
+| `afterCompletion` | After request completion | Cleanup callback, including exception paths, for interceptors whose preHandle returned true |
 
 ```java
 @Component
@@ -602,9 +602,9 @@ public CorsFilter corsFilter() {
 
 | Mechanism | Scope | Processing location | Typical use |
 | ------------------ | ------- | ------ | ------------------ |
-| @CrossOrigin | Class/method | Handler-level MVC configuration | Special settings for selected endpoints |
-| WebMvcConfigurer | Global MVC mappings | Global MVC configuration combined with handler settings | General MVC configuration |
-| CorsFilter | Global filter mappings | Servlet filter chain, before MVC | Handle CORS early |
+| `@CrossOrigin` | Class/method | Handler-level MVC configuration | Special settings for selected endpoints |
+| `WebMvcConfigurer` | Global MVC mappings | Global MVC configuration combined with handler settings | General MVC configuration |
+| `CorsFilter` | Global filter mappings | Servlet filter chain, before MVC | Handle CORS early |
 
 #### Things to Watch For
 
@@ -625,7 +625,7 @@ if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
 | Scenario | Suggested mechanism | Reason |
 | --------------- | ----------- | ----------------------------------------- |
-| Authentication/authorization | Security filter chain | Apply security before MVC; Spring Security provides dedicated support |
+| Authentication/authorization | Interceptor | Can inject services and throw exceptions to the global exception handler; with Spring Security, use its security filter chain instead |
 | CORS | Filter | Can run before MVC interceptors |
 | Request/response logging | Either | Filters operate lower down; interceptors can inspect the handler |
 | Character encoding | Filter | General servlet-level handling |
@@ -635,7 +635,7 @@ if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
 ***
 
-## 4. Transaction Management
+## IV. Transaction Management
 
 ### 4.1 ACID Properties
 
@@ -662,13 +662,13 @@ public void createOrder(OrderDTO dto) {
 
 | Attribute | Purpose |
 | ------------- | -------------- |
-| rollbackFor | Exception types that trigger rollback |
-| propagation | Transaction propagation behavior |
-| isolation | Isolation level, such as READ_COMMITTED or REPEATABLE_READ |
-| readOnly | Read-only transaction hint |
-| timeout | Timeout in seconds |
+| `rollbackFor` | Exception types that trigger rollback |
+| `propagation` | Transaction propagation behavior |
+| `isolation` | Isolation level, such as `READ_COMMITTED` or `REPEATABLE_READ` |
+| `readOnly` | Read-only transaction hint |
+| `timeout` | Timeout in seconds |
 
-> **Note:** @Transactional(isolation = ...) declares an isolation requirement; the database implements it. MySQL InnoDB defaults to Repeatable Read.
+> **Note:** `@Transactional(isolation = ...)` declares an isolation requirement; the database implements it. MySQL InnoDB defaults to `Repeatable Read`.
 
 ***
 
@@ -676,10 +676,10 @@ public void createOrder(OrderDTO dto) {
 
 | Propagation | Behavior |
 | ------------------ | -------------------------- |
-| REQUIRED (default) | Join the current transaction or start one |
-| REQUIRES_NEW | Start an independent transaction |
-| SUPPORTS | Join an existing transaction, otherwise run without one |
-| NOT_SUPPORTED | Run without a transaction |
+| `REQUIRED` (default) | Join the current transaction or start one |
+| `REQUIRES_NEW` | Start an independent transaction |
+| `SUPPORTS` | Join an existing transaction, otherwise run without one |
+| `NOT_SUPPORTED` | Run without a transaction |
 
 ```java
 // REQUIRES_NEW: independent transaction, unaffected by rollback of the outer transaction
@@ -698,7 +698,7 @@ public void saveLog(String content) { }
 | Exception caught internally | Exception does not escape to the transaction interceptor | Rethrow when rollback is required |
 | Checked exception | Default rollback rules cover RuntimeException and Error | Configure rollbackFor |
 
-> **Version note:** Since Spring 6, class-based proxies also support @Transactional on protected and package-visible methods by default. Non-public does not automatically mean non-transactional.
+> **Version note:** Since Spring 6, class-based proxies also support `@Transactional` on protected and package-visible methods by default. Non-public does not automatically mean non-transactional.
 
 ```java
 // ❌ Self-invocation bypasses transaction advice
@@ -752,7 +752,7 @@ public void create(OrderDTO dto) {
 
 ***
 
-## 5. File Uploads and Downloads
+## V. File Uploads and Downloads
 
 ### 5.1 Basic Configuration
 
@@ -912,9 +912,9 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 | Check | Technique |
 | ------ | ------------------------------ |
-| Nonempty | file.isEmpty() |
-| Size | Compare file.getSize() with the limit |
-| Extension | Allowlist extensions such as .jpg and .png |
+| Nonempty | `file.isEmpty()` |
+| Size | Compare `file.getSize()` with the limit |
+| Extension | Allowlist extensions such as `.jpg` and `.png` |
 | File signature | Inspect magic bytes to identify the actual format |
 
 ***
@@ -923,12 +923,12 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 | Method | Purpose |
 | ----------------------- | ---------------- |
-| isEmpty() | Check whether the upload is empty |
-| getOriginalFilename() | Original filename |
-| getContentType() | Reported MIME type |
-| getSize() | Size in bytes |
-| getInputStream() | Open an input stream |
-| transferTo(File) | Save to the target location |
+| `isEmpty()` | Check whether the upload is empty |
+| `getOriginalFilename()` | Original filename |
+| `getContentType()` | Reported MIME type |
+| `getSize()` | Size in bytes |
+| `getInputStream()` | Open an input stream |
+| `transferTo(File)` | Save to the target location |
 
 ***
 
@@ -938,54 +938,54 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 | Annotation | Purpose |
 | ----------------------- | -------------- |
-| @RestControllerAdvice | Global Controller exception handling |
-| @ExceptionHandler | Exception-handler method |
+| `@RestControllerAdvice` | Global Controller exception handling |
+| `@ExceptionHandler` | Exception-handler method |
 
 ### Transactions
 
 | Annotation/attribute | Purpose |
 | ---------------- | ------------ |
-| @Transactional | Declare transactional behavior |
-| rollbackFor | Rollback exception rules |
-| propagation | Propagation behavior |
-| readOnly | Read-only transaction hint |
-| timeout | Transaction timeout |
+| `@Transactional` | Declare transactional behavior |
+| `rollbackFor` | Rollback exception rules |
+| `propagation` | Propagation behavior |
+| `readOnly` | Read-only transaction hint |
+| `timeout` | Transaction timeout |
 
 ### Filters and Interceptors
 
 | Annotation/class | Purpose |
 | ------------------------ | --------------------- |
-| @WebFilter | Declare a servlet filter |
-| @ServletComponentScan | Enable servlet component scanning |
-| FilterRegistrationBean | Explicit filter registration |
-| @CrossOrigin | CORS configuration |
+| `@WebFilter` | Declare a servlet filter |
+| `@ServletComponentScan` | Enable servlet component scanning |
+| `FilterRegistrationBean` | Explicit filter registration |
+| `@CrossOrigin` | CORS configuration |
 
 ### Validation
 
 | Annotation | Purpose |
 | ----------------------- | --------------------- |
-| @Valid / @Validated | Trigger validation |
-| @NotNull | Reject null |
-| @NotBlank | Reject blank strings |
-| @NotEmpty | Reject null or empty collections/arrays |
-| @Size(min, max) | Size/length range |
-| @Min / @Max | Numeric bounds |
-| @Pattern | Regular-expression constraint |
-| @Email | Email format |
+| `@Valid` / `@Validated` | Trigger validation |
+| `@NotNull` | Reject null |
+| `@NotBlank` | Reject blank strings |
+| `@NotEmpty` | Reject null or empty collections/arrays |
+| `@Size(min, max)` | Size/length range |
+| `@Min` / `@Max` | Numeric bounds |
+| `@Pattern` | Regular-expression constraint |
+| `@Email` | Email format |
 
 ### Serialization
 
 | Annotation | Purpose |
 | --------------- | ---------------- |
-| @JsonFormat | Date/time formatting |
-| @JsonIgnore | Exclude a property from serialization |
-| @JsonProperty | Specify the JSON property name |
+| `@JsonFormat` | Date/time formatting |
+| `@JsonIgnore` | Exclude a property from serialization |
+| `@JsonProperty` | Specify the JSON property name |
 
 ### Lombok
 
 | Annotation | Purpose |
 | -------------------------- | ---------------------- |
 | `@Data`                    | getter/setter/toString |
-| @Slf4j | Generate an SLF4J logger |
-| @RequiredArgsConstructor | Constructor for required fields, including uninitialized final fields |
-| @Builder | Builder API |
+| `@Slf4j` | Generate an SLF4J logger |
+| `@RequiredArgsConstructor` | Constructor for required fields, including uninitialized final fields |
+| `@Builder` | Builder API |

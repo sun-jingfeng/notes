@@ -55,7 +55,7 @@ Object promotion process:
 - JDK 7 and earlier: **PermGen**, located within heap memory with a fixed upper bound; loading too many classes can cause `OOM: PermGen space`.
 - JDK 8+: **Metaspace**, moved to native memory, with no fixed default limit beyond physical-memory constraints; `OOM: Metaspace` is less common.
 
-The runtime constant pool belongs to the JVM specification's **method area** and is the runtime representation of each class or interface's constant pool. It differs from the string intern pool used by `String.intern()`. Changes in string storage must not be generalized as “the entire runtime constant pool moved to the heap.”
+The runtime constant pool belongs to the JVM specification's **method area** and is the runtime representation of each class or interface's constant pool. It differs from the string intern pool used by `String.intern()`. Changes in string storage must not be generalized as "the entire runtime constant pool moved to the heap."
 
 ***
 
@@ -154,7 +154,7 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 
 ***
 
-#### CMS（Concurrent Mark Sweep）
+#### CMS (Concurrent Mark Sweep)
 
 - Marks and sweeps concurrently with application threads; pauses occur only during the brief initial-mark and remark phases.
 - Uses mark-sweep and **does not compact memory**; fragmentation accumulates over time and may trigger Full GC.
@@ -164,7 +164,7 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 
 ***
 
-#### G1（Garbage First）
+#### G1 (Garbage First)
 
 - Divides the heap into equally sized **regions**, without fixed Eden/old-generation boundaries.
 - Prioritizes regions with the most garbage (Garbage First), reclaiming as much as possible within the pause target.

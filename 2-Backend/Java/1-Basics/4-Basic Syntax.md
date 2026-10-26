@@ -221,7 +221,7 @@ false  // Boolean false
 ### 5. Keyword Categories at a Glance
 
     ┌────────────────────────────────────────────────────────────┐
-    │                     Java Keyword Categories                │
+    │                  Java Keyword Categories                   │
     ├────────────────────────────────────────────────────────────┤
     │ Data types: byte short int long float double char boolean  │
     ├────────────────────────────────────────────────────────────┤
@@ -236,7 +236,7 @@ false  // Boolean false
     │ Methods: void return                                       │
     ├────────────────────────────────────────────────────────────┤
     │ Control flow: if else switch case default                  │
-    │          for while do break continue                       │
+    │               for while do break continue                  │
     ├────────────────────────────────────────────────────────────┤
     │ Exceptions: try catch finally throw throws                 │
     ├────────────────────────────────────────────────────────────┤

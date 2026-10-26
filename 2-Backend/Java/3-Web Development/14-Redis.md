@@ -233,7 +233,7 @@ HINCRBY user:1001 age 1
 
 ### 3.3 List
 
-An ordered string list allowing duplicates, backed by a doubly linked list (or ziplist). Insertion/removal at either end supports **queues** (LPUSH + BRPOP), **stacks** (LPUSH + LPOP), timelines, etc. Blocking commands BLPOP/BRPOP are common for simple message queues. Indexed access (LINDEX) is O(n), so use it cautiously on large lists.
+An ordered string list allowing duplicates, backed by a quicklist (a linked list of compact listpack nodes; ziplist before Redis 7.0). Insertion/removal at either end supports **queues** (LPUSH + BRPOP), **stacks** (LPUSH + LPOP), timelines, etc. Blocking commands BLPOP/BRPOP are common for simple message queues. Indexed access (LINDEX) is O(n), so use it cautiously on large lists.
 
 ```bash
 # Insert on the left (head)
@@ -971,8 +971,8 @@ public class RedisUtils {
 
 ### 5.4 Usage Examples
 
-- **Caching:** Use **Cache-Aside**: on reads, check the cache, query the database on a miss, and populate the cache; on writes, update the database before deleting (or updating) the cache to avoid persistently stale data.\
-- **Distributed locks:** Redis `SET key value NX EX seconds` atomically sets an expiring key only if it does not exist, preventing deadlocks. On release, check the value before DEL to avoid deleting another owner's lock.\
+- **Caching:** Use **Cache-Aside**: on reads, check the cache, query the database on a miss, and populate the cache; on writes, update the database before deleting (or updating) the cache to avoid persistently stale data.
+- **Distributed locks:** Redis `SET key value NX EX seconds` atomically sets an expiring key only if it does not exist, preventing deadlocks. On release, check the value before DEL to avoid deleting another owner's lock.
 - **Rate limiting:** This example uses a **fixed-window counter** (increment a key within a time window and reject requests above the limit). Sliding windows or token buckets provide smoother behavior and can also use Redis.
 
 #### Caching User Information
@@ -1019,7 +1019,7 @@ public class UserService {
 
 #### Simple Distributed Lock
 
-> This is an inline example. See Chapter VII for a complete distributed-lock implementation, including UUID ownership checks, atomic Lua unlocking, and Redisson for production.
+> This is a minimal inline example. A complete distributed lock also needs a unique owner value (such as a UUID), atomic Lua-based unlocking, and, in production, usually Redisson.
 
 ```java
 @Service
@@ -1344,7 +1344,7 @@ Distributed locks provide **mutual exclusion across processes/instances**. Java'
 - `EX 30`: Set a 30-second expiration in the same operation. If the owner crashes, the lock expires automatically so other threads can acquire it.
 - Both options take effect atomically in one command, avoiding a partially completed state where the key is written but the client crashes before setting expiration.
 
-**Release** requires checking ownership by value, then DEL. A race exists between these steps: the lock may expire and be acquired by someone else before DEL, which would delete their lock. A **Lua script** must combine both steps into one atomic operation (see 5.6).
+**Release** requires checking ownership by value, then DEL. A race exists between these steps: the lock may expire and be acquired by someone else before DEL, which would delete their lock. A **Lua script** must combine both steps into one atomic operation.
 
 ```
 Acquire: SET lock:key <uniqueUUID> NX EX 30 → Write only if absent and set expiration atomically
@@ -1666,7 +1666,7 @@ Request arrives → Hot key is expired → Contend for mutex → One thread quer
 
 **Example: Mutex-protected rebuilding**
 
-Reuse `DistributedLockService` from 7.3 with unique lock values and Lua compare-and-delete, preventing an expired lock holder from deleting another request's lock.
+Reuse the SETNX-based `DistributedLockService` with unique lock values and Lua compare-and-delete, preventing an expired lock holder from deleting another request's lock.
 
 ```java
 @Autowired
@@ -1973,11 +1973,11 @@ rename-command KEYS ""
 
 | Data type | Common commands |
 | ---------- | ------------------------------------------------ |
-| String     | SET、GET、INCR、DECR、SETNX、SETEX、MSET、MGET   |
-| Hash       | HSET、HGET、HMGET、HGETALL、HDEL、HINCRBY        |
-| List       | LPUSH、RPUSH、LPOP、RPOP、LRANGE、LLEN、BLPOP    |
-| Set        | SADD、SMEMBERS、SISMEMBER、SREM、SINTER、SUNION  |
-| Sorted Set | ZADD、ZSCORE、ZRANK、ZRANGE、ZREVRANGE、ZINCRBY  |
+| String     | SET, GET, INCR, DECR, SETNX, SETEX, MSET, MGET   |
+| Hash       | HSET, HGET, HMGET, HGETALL, HDEL, HINCRBY        |
+| List       | LPUSH, RPUSH, LPOP, RPOP, LRANGE, LLEN, BLPOP    |
+| Set        | SADD, SMEMBERS, SISMEMBER, SREM, SINTER, SUNION  |
+| Sorted Set | ZADD, ZSCORE, ZRANK, ZRANGE, ZREVRANGE, ZINCRBY  |
 
 ### 9.2 General Commands
 

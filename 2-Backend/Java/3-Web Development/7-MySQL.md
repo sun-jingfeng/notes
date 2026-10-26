@@ -1,4 +1,4 @@
-## 1. MySQL Overview
+## I. MySQL Overview
 
 ### 1.1 What Is MySQL?
 
@@ -135,7 +135,7 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 
 ***
 
-## 2. DDL — Data Definition Language
+## II. DDL — Data Definition Language
 
 ### 2.1 Database Operations
 
@@ -277,7 +277,7 @@ TRUNCATE TABLE table_name;          -- Remove rows, retain structure, reset auto
 
 ***
 
-## 3. DML — Data Manipulation Language
+## III. DML — Data Manipulation Language
 
 ### 3.1 INSERT
 
@@ -329,7 +329,7 @@ DELETE FROM employee WHERE id = 5;
 
 ***
 
-## 4. DQL — Querying Data
+## IV. DQL — Querying Data
 
 ### Overall Syntax
 
@@ -362,14 +362,14 @@ SELECT DISTINCT dept_id FROM employee;             -- Remove duplicates
 | -------------------- | ------- |
 | `=`, `<>`, `!=` | Equal / not equal |
 | `>`, `>=`, `<`, `<=` | Greater/less comparisons |
-| BETWEEN...AND... | Inclusive range |
-| IN(...) | Membership in a list |
-| LIKE | Pattern matching |
-| IS NULL | Null test |
+| `BETWEEN...AND...` | Inclusive range |
+| `IN(...)` | Membership in a list |
+| `LIKE` | Pattern matching |
+| `IS NULL` | Null test |
 
-**LIKE wildcards:** % matches any number of characters; _ matches one character.
+**`LIKE` wildcards:** `%` matches any number of characters; `_` matches one character.
 
-**Logical operators:** AND, OR, NOT
+**Logical operators:** `AND`, `OR`, `NOT`
 
 ```sql
 -- Filtering examples
@@ -442,7 +442,7 @@ SELECT * FROM employee LIMIT 10, 10;   -- Page 2
 SELECT * FROM employee LIMIT 20, 10;   -- Page 3
 ```
 
-> **Note:** LIMIT offset, size is useful for basic pagination, but a large offset causes **deep-pagination performance problems**: the database must scan and skip many rows before returning a small page, so later pages generally take longer.
+> **Note:** `LIMIT offset, size` is useful for basic pagination, but a large `offset` causes **deep-pagination performance problems**: the database must scan and skip many rows before returning a small page, so later pages generally take longer.
 
 ### Combined Query Exercise
 
@@ -462,7 +462,7 @@ LIMIT 5;
 
 ***
 
-## 5. Indexes
+## V. Indexes
 
 ### 5.1 What Is an Index?
 
@@ -530,36 +530,36 @@ For `INDEX idx_abc (a, b, c)`:
 
 | Predicate | Standard lookup prefix usable? | Explanation |
 | ------------------ | ---------- | ------------ |
-| WHERE a = 1 | ✓ | a |
-| WHERE a = 1 AND b = 2 | ✓ | a, b |
-| WHERE a = 1 AND b = 2 AND c = 3 | ✓ | a, b, c |
-| WHERE a = 1 AND b > 2 | ✓ | Equality on a, then range on b |
-| WHERE a > 1 AND b = 2 | Partly | a defines the range; b may be checked as an additional filter |
-| WHERE b = 2 | No ordinary leftmost-prefix lookup | Leading a is absent; other scan strategies may still apply |
-| WHERE a = 1 AND c = 3 | Partly | a supplies the prefix; c may be checked as a filter |
+| `WHERE a = 1` | ✓ | a |
+| `WHERE a = 1 AND b = 2` | ✓ | a, b |
+| `WHERE a = 1 AND b = 2 AND c = 3` | ✓ | a, b, c |
+| `WHERE a = 1 AND b > 2` | ✓ | Equality on a, then range on b |
+| `WHERE a > 1 AND b = 2` | Partly | a defines the range; b may be checked as an additional filter |
+| `WHERE b = 2` | No ordinary leftmost-prefix lookup | Leading a is absent; other scan strategies may still apply |
+| `WHERE a = 1 AND c = 3` | Partly | a supplies the prefix; c may be checked as a filter |
 
 ### 5.5 Cases That Can Prevent Efficient Index Lookup
 
 | Scenario | Explanation |
 | ------------------ | ---------------------------- |
-| **Function/expression on an indexed column** | YEAR(create_time)=2024 or id + 1 = 10 usually cannot use an ordinary index directly for that expression |
-| **Implicit type conversion** | Comparing a VARCHAR phone column with a number, such as phone = 13800138000 |
-| **Leading wildcard** | LIKE '%张' or LIKE '%张%' cannot use an ordinary prefix range lookup; LIKE '张%' can |
-| **An OR branch lacks an index** | WHERE a = 1 OR b = 2 may trigger a table scan when b is unindexed |
-| **Inequality/NOT predicates** | The optimizer sometimes prefers a table scan for <>, !=, NOT IN, or NOT LIKE |
+| **Function/expression on an indexed column** | `WHERE YEAR(create_time) = 2024` or `WHERE id + 1 = 10` usually cannot use an ordinary index directly for that expression |
+| **Implicit type conversion** | Comparing a `VARCHAR` phone column with a number, such as `WHERE phone = 13800138000` |
+| **Leading wildcard** | `WHERE name LIKE '%张'` or `LIKE '%张%'` cannot use an ordinary prefix range lookup; `LIKE '张%'` can |
+| **An OR branch lacks an index** | `WHERE a = 1 OR b = 2` may trigger a table scan when b is unindexed |
+| **Inequality/NOT predicates** | The optimizer sometimes prefers a table scan for `<>`, `!=`, `NOT IN`, or `NOT LIKE` |
 
-> 💡 Use EXPLAIN to see the actual plan. Inspect type (such as ref/range versus ALL) and key (the selected index).
+> 💡 Use `EXPLAIN` to see the actual plan. Inspect type (such as ref/range versus ALL) and key (the selected index).
 
 ### 5.6 Indexes and Sorting
 
-**Indexes can improve sorting as well as filtering.** When WHERE predicates and ORDER BY align with index order, MySQL can retrieve rows in order and avoid a separate sort.
+**Indexes can improve sorting as well as filtering.** When `WHERE` predicates and `ORDER BY` align with index order, MySQL can retrieve rows in order and avoid a separate sort.
 
 | Scenario | Index ordering useful? | Explanation |
 | ---- | -------------------- | ---- |
-| WHERE status = 1 ORDER BY create_time, index (status, create_time) | ✓ | Equality fixes status, allowing ordered access by create_time |
-| ORDER BY a, b, index (a, b) | ✓ | Sort keys follow index order |
-| ORDER BY b, index (a, b) | Usually no | The leading column is not fixed |
-| WHERE a > 1 ORDER BY b, index (a, b) | Usually limited | The range on a prevents a globally ordered scan by b alone |
+| `WHERE status = 1 ORDER BY create_time`, index `(status, create_time)` | ✓ | Equality fixes `status`, allowing ordered access by `create_time` |
+| `ORDER BY a, b`, index `(a, b)` | ✓ | Sort keys follow index order |
+| `ORDER BY b`, index `(a, b)` | Usually no | The leading column is not fixed |
+| `WHERE a > 1 ORDER BY b`, index `(a, b)` | Usually limited | The range on a prevents a globally ordered scan by b alone |
 
 **Example:**
 
@@ -574,7 +574,7 @@ WHERE status = 1
 ORDER BY create_time, id;
 ```
 
-When the index cannot supply the required order, MySQL performs an additional sort, commonly shown as Using filesort in EXPLAIN.
+When the index cannot supply the required order, MySQL performs an additional sort, commonly shown as `Using filesort` in EXPLAIN.
 
 > **Note:** Better sorting does not eliminate deep-pagination costs. Skipping a large offset can still be expensive.
 
@@ -590,7 +590,7 @@ When the index cannot supply the required order, MySQL performs an additional so
 
 ***
 
-## 6. Designing Related Tables
+## VI. Designing Related Tables
 
 ### 6.1 Relationships
 
@@ -606,7 +606,7 @@ When the index cannot supply the required order, MySQL performs an additional so
 
 | Aspect | Database foreign key | Application-enforced relationship |
 | ----- | ------------------------------ | ------------------ |
-| Definition | A FOREIGN KEY constraint maintained by the **database** | A reference field whose integrity is maintained by **application code** |
+| Definition | A `FOREIGN KEY` constraint maintained by the **database** | A reference field whose integrity is maintained by **application code** |
 | Referential integrity | Enforced by the database | Must be enforced by the application |
 | Cost | Constraint checks add work to writes | Avoids database foreign-key checks |
 | Sharding | Difficult across independently deployed database servers | Can be managed in application logic |
@@ -615,7 +615,7 @@ When the index cannot supply the required order, MySQL performs an additional so
 
 #### Database Foreign Keys
 
-Declare a FOREIGN KEY so the database checks referential integrity:
+Declare a `FOREIGN KEY` so the database checks referential integrity:
 
 ```sql
 -- Declare during table creation
@@ -640,8 +640,8 @@ ALTER TABLE employee DROP FOREIGN KEY fk_emp_dept;
 | --------- | -------------------- |
 | CASCADE | Propagate parent deletion/key updates to child rows |
 | SET NULL | Set referencing columns to NULL |
-| RESTRICT | Reject the parent change while referencing rows exist (default) |
-| NO ACTION | Equivalent to RESTRICT for InnoDB |
+| RESTRICT | Reject the parent change while referencing rows exist |
+| NO ACTION | Equivalent to RESTRICT for InnoDB (default when ON DELETE/ON UPDATE is omitted) |
 
 ```sql
 ALTER TABLE employee
@@ -731,7 +731,7 @@ CREATE TABLE student_course (
 
 ***
 
-## 7. Queries Across Multiple Tables
+## VII. Queries Across Multiple Tables
 
 ### 7.1 Overview
 
@@ -794,17 +794,14 @@ Consider these two tables (the Chinese names below are sample data):
 
 **Illustration:**
 
-        ┌─────────────────────────────┐
-        │                 LEFT JOIN   │
-        │  ┌─────────┐                │
-        │  │ ████████│███████┐        │
-        │  │ ████████│███████│        │
-        │  │  LEFT   │ INNER │  RIGHT │
-        │  │ ████████│███████│        │
-        │  │ ████████│███████┘        │
-        │  └─────────┘                │
-        │  █ = Included rows          │
-        └─────────────────────────────┘
+        LEFT JOIN result (█ = included rows)
+        ┌────────────┬────────┬────────────┐
+        │████████████│████████│            │
+        │ Left only  │  Both  │ Right only │
+        │████████████│████████│            │
+        └────────────┴────────┴────────────┘
+        └──── left table ─────┘
+                     └──── right table ────┘
 
         INNER JOIN: matching rows
         LEFT JOIN: all left rows, with any matching right rows
@@ -996,10 +993,10 @@ A **subquery** is a SELECT nested inside another SQL statement.
 
 | Type | Result | Common operators/use |
 | ----- | ---- | ---------------------------- |
-| Scalar | One value | =, >, <, >=, <= |
-| Column | One column, multiple rows | IN, NOT IN, ANY, ALL |
-| Row | One row, multiple columns | =, IN |
-| Table | Multiple rows and columns | IN or a derived table |
+| Scalar | One value | `=`, `>`, `<`, `>=`, `<=` |
+| Column | One column, multiple rows | `IN`, `NOT IN`, `ANY`, `ALL` |
+| Row | One row, multiple columns | `=`, `IN` |
+| Table | Multiple rows and columns | `IN` or a derived table |
 
 #### Scalar Subquery
 
@@ -1063,7 +1060,7 @@ LEFT JOIN department d ON e.dept_id = d.id;
 
 ***
 
-## 8. Transactions
+## VIII. Transactions
 
 ### 8.1 Concept
 
@@ -1132,7 +1129,7 @@ SELECT balance FROM account WHERE id = 1;
 ROLLBACK;
 ```
 
-If B reads the balance 500 before A commits, that is a **dirty read**.
+If B reads the balance `500` before A commits, that is a **dirty read**.
 
 #### 2. Nonrepeatable Read Example
 
@@ -1194,8 +1191,8 @@ An **isolation level** controls visibility between transactions. Stronger isolat
 
 Useful properties of InnoDB's **Repeatable Read** include:
 
-- Stronger repeat-read consistency than Read Committed.
-- Less restrictive ordinary reads than Serializable.
+- Stronger repeat-read consistency than `Read Committed`.
+- Less restrictive ordinary reads than `Serializable`.
 - **MVCC** allows efficient concurrent nonlocking reads.
 - **Gap locks** and **next-key locks** control phantoms in relevant locking-read scenarios.
 
@@ -1214,7 +1211,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 | Question | Answer |
 | ---- | ---- |
 | **Is stronger isolation always better?** | No. Stronger guarantees can increase contention and overhead. |
-| **What is MySQL's default?** | InnoDB defaults to Repeatable Read. |
+| **What is MySQL's default?** | InnoDB defaults to `Repeatable Read`. |
 | **Does Repeatable Read eliminate every phantom scenario?** | The standard allows phantoms; InnoDB uses MVCC and locking differently for different operations. |
 
 ### 8.6 MVCC and Locking
@@ -1227,20 +1224,20 @@ MVCC helps ensure that:
 
 - Ordinary reads need not wait for writers in many cases.
 - Writes need not block ordinary reads for long periods.
-- Read Committed and Repeatable Read transactions see versions appropriate to their isolation level.
+- `Read Committed` and `Repeatable Read` transactions see versions appropriate to their isolation level.
 
 #### 2. Snapshot Reads and Current Reads
 
 | Read type | Behavior | Examples |
 | -------- | ---- | -------- |
-| **Snapshot read** | Reads a visible version, usually without row locks | Ordinary SELECT |
-| **Current/locking read** | Accesses current records and acquires locks | SELECT ... FOR UPDATE, UPDATE, DELETE |
+| **Snapshot read** | Reads a visible version, usually without row locks | Ordinary `SELECT` |
+| **Current/locking read** | Accesses current records and acquires locks | `SELECT ... FOR UPDATE`, `UPDATE`, `DELETE` |
 
 #### 3. Read Committed vs Repeatable Read
 
 | Isolation | Snapshot timing | Consequence |
 | -------- | ------------ | -------- |
-| **Read Committed** | Each consistent SELECT can see newly committed data | Successive queries in a transaction can differ |
+| **Read Committed** | Each consistent `SELECT` can see newly committed data | Successive queries in a transaction can differ |
 | **Repeatable Read** | The first consistent read normally establishes the snapshot | Repeated ordinary reads are more stable |
 
 #### 4. Why Phantom Prevention Also Involves Locks
@@ -1262,7 +1259,7 @@ A useful distinction is:
 
 ***
 
-## 9. SQL Optimization and Performance
+## IX. SQL Optimization and Performance
 
 When requests or queries slow down, inspect **indexes, N+1 queries, and slow-query logs**. Indexes affect individual statements, N+1 multiplies database round trips, and logs identify slow SQL.
 
@@ -1293,8 +1290,8 @@ SELECT * FROM order WHERE user_id = ?;  -- Executed 100 times
 | Approach | Explanation |
 | ------------ | ------------------------------------------ |
 | **JOIN** | Fetch parent and related data together |
-| **Eager fetching** | JPA @EntityGraph or JOIN FETCH; MyBatis joined or batched queries |
-| **Batch IN query** | Load parent IDs, then fetch related rows in a batch |
+| **Eager fetching** | JPA `@EntityGraph` or `JOIN FETCH`; MyBatis joined or batched queries |
+| **Batch IN query** | Load parent IDs, then fetch related rows with one `WHERE id IN (...)` query |
 
 The goal is to reduce **1+N queries to one or a small fixed number**.
 
@@ -1304,7 +1301,7 @@ A **slow query** exceeds a configured execution-time threshold. MySQL's **slow-q
 
 | Concept | Explanation |
 | -------------- | -------------------------------------- |
-| **Slow-query log** | Records statements exceeding long_query_time |
+| **Slow-query log** | Records statements exceeding `long_query_time` |
 | **Threshold** | Defaults to 10 seconds; can be lowered to 1 or 2 seconds |
 | **Common causes** | Missing indexes, table scans, large results, locking, or complex joins/subqueries |
 
@@ -1326,16 +1323,16 @@ SET GLOBAL long_query_time = 2;
 # Or configure slow_query_log_file in my.cnf
 ```
 
-**Workflow:** Enable logging → observe or load-test → identify slow statements → inspect EXPLAIN → adjust indexes/SQL and reduce large transactions or lock contention. Check the actual access type and chosen key rather than assuming an index is used.
+**Workflow:** Enable logging → observe or load-test → identify slow statements → inspect `EXPLAIN` → adjust indexes/SQL and reduce large transactions or lock contention. Check the actual access type and chosen key rather than assuming an index is used.
 
 ### 9.3 Pagination and Deep Offsets
 
-**Deep pagination** uses LIMIT offset, size with a large offset, requiring many rows to be scanned and skipped before a small page is returned.
+**Deep pagination** uses `LIMIT offset, size` with a large `offset`, requiring many rows to be scanned and skipped before a small page is returned.
 
 | Query style | Example | Characteristics |
 | -------- | ---- | ---- |
-| **Shallow pagination** | LIMIT 0, 20 | Early pages are usually inexpensive |
-| **Deep pagination** | LIMIT 100000, 20 | Many rows must be skipped |
+| **Shallow pagination** | `LIMIT 0, 20` | Early pages are usually inexpensive |
+| **Deep pagination** | `LIMIT 100000, 20` | Many rows must be skipped |
 
 #### 1. Why Deep Pagination Is Slow
 
@@ -1364,7 +1361,7 @@ Three common sources of cost are:
 | Cause | Explanation |
 | ---- | ---- |
 | **Large offsets** | Many rows are processed even though few are returned |
-| **Sorting** | ORDER BY may require a separate sort when index order is unsuitable |
+| **Sorting** | `ORDER BY` may require a separate sort when index order is unsuitable |
 | **Row lookups** | Secondary-index entries may require additional clustered-index reads to obtain complete rows, increasing random I/O |
 
 #### 2. What Indexes Can and Cannot Fix
@@ -1373,7 +1370,7 @@ A suitable index improves pagination but does not remove all deep-offset costs.
 
 | Indexes can help with | They do not eliminate |
 | -------- | ---------------- |
-| **Filtering** | The large offset itself |
+| **Filtering** | The large `offset` itself |
 | **Ordering** | Skipping many preceding rows |
 | **Covering the query** | The cost of arbitrary jumps to distant pages |
 
@@ -1442,7 +1439,7 @@ Interactive pages prioritize response time and usability. Common approaches incl
 | Approach | Explanation |
 | ---- | ---- |
 | **Prefer seek pagination** | Suitable for Next page and Load more interactions |
-| **Design a composite index** | Align WHERE filtering with ORDER BY where possible |
+| **Design a composite index** | Let `WHERE` filtering and `ORDER BY` use the same index where possible |
 | **Limit maximum page depth** | Prevent extremely deep offsets from overloading the database |
 | **Fetch IDs first, then full rows** | Page through a covering index before loading complete records |
 | **Narrow the result set** | Encourage filters instead of unbounded pagination |
@@ -1485,11 +1482,32 @@ ORDER BY id
 LIMIT 1000;
 ```
 
-After each batch, record its final id as the next batch's starting point.
+After each batch, record its final `id` as the next batch's starting point.
+
+#### 6. When Indexes Alone Are Not Enough
+
+An index does not by itself solve pagination problems in these cases:
+
+| Scenario | Reason |
+| ---- | ---- |
+| **Jumping to a distant page** | Large offsets still require skipped entries |
+| **Broad filters** | Many candidate rows may remain even with an index |
+| **Unstable or incompatible sort order** | An additional sort may be needed |
+| **Many selected columns** | Full-row lookups can remain expensive |
+
+Pagination design therefore combines:
+
+    Index design
+        +
+    Sort optimization
+        +
+    Pagination strategy
+        +
+    Separate designs for interactive pages and exports
 
 ***
 
-## 10. Read/Write Splitting and Sharding
+## X. Read/Write Splitting and Sharding
 
 ### 10.1 Read/Write Splitting
 
@@ -1531,7 +1549,7 @@ Splitting can be organized by **columns/business structure** or by **rows/data**
 | **Rows** | **Horizontal table split** | Distribute rows among identically structured tables in one database | Reduce each table's size |
 | **Rows** | **Horizontal database split** | Distribute rows among databases on different machines | Exceed a single machine's capacity |
 
-Horizontal table and database sharding are often combined; “database/table sharding” commonly refers to that combination.
+Horizontal table and database sharding are often combined; "database/table sharding" commonly refers to that combination.
 
 **Vertical table split:**
 
@@ -1543,10 +1561,10 @@ Original order table (wide)
 
                         ↓ Vertical split
 
-order (frequently accessed)     order_detail (less frequently accessed)
-+----+---------+--------+        +----------+--------------------+
-| id | user_id | amount |        | order_id | remark             |
-+----+---------+--------+        +----------+--------------------+
+order (frequently accessed)           order_detail (less frequently accessed)
++----+---------+--------+--------+    +----------+----------------------+
+| id | user_id | amount | status |    | order_id | remark (large field) |
++----+---------+--------+--------+    +----------+----------------------+
 ```
 
 **Horizontal split: distribute order rows by user_id % 4:**
@@ -1562,7 +1580,7 @@ Choose a **sharding key** and **routing rule**. Prefer a selective, stable key c
 
 | Strategy | Rule | Benefit | Cost |
 | ---- | ---- | ---- | ---- |
-| **Modulo/hash sharding** | hash(sharding_key) % shard_count | Simple and generally even distribution | Resizing can require substantial migration |
+| **Modulo/hash sharding** | `hash(sharding_key) % shard_count` | Simple and generally even distribution | Resizing can require substantial migration |
 | **Range sharding** | Divide key ranges, such as 0-9,999,999 and 10,000,000-19,999,999 | New ranges can be added without moving old data | Hot ranges can cause skew |
 | **Consistent hashing** | Place shards and keys on a hash ring | Moves less data when capacity changes | More complex implementation |
 
@@ -1570,14 +1588,14 @@ Choose a **sharding key** and **routing rule**. Prefer a selective, stable key c
 
 | Challenge | Explanation | Common approach |
 | ---- | ---- | ------------ |
-| **Globally unique IDs** | Independent AUTO_INCREMENT sequences can collide | Snowflake or allocated ID ranges |
-| **Cross-shard queries** | Sorting, grouping, aggregation, and joins may require result merging | Route by shard key; consider Elasticsearch for global queries |
+| **Globally unique IDs** | Independent `AUTO_INCREMENT` sequences can collide | Snowflake or allocated ID ranges |
+| **Cross-shard queries** | `ORDER BY`, `GROUP BY`, aggregation, and joins spanning shards may require result merging | Route by shard key; consider Elasticsearch for global queries |
 | **Distributed transactions** | One local transaction cannot coordinate independent databases | Seata AT/TCC or message-driven eventual consistency |
 | **Cross-shard pagination** | Fetching, merging, and sorting distant pages is expensive | Seek pagination, bounded depth, or Elasticsearch storage |
 | **Resharding/migration** | Existing data must be moved when routing changes | Coordinated dual writes or blue/green migration |
 | **SQL limitations** | Joins/subqueries without routing keys can be inefficient | Reduce cross-shard joins through domain design |
 
-> **Globally unique IDs:** Plain independent auto-increment sequences are insufficient. **Snowflake** is a common approach combining timestamp, machine ID, and a sequence number to generate globally unique, roughly increasing IDs, which are favorable for B+ tree inserts.
+> **Globally unique IDs:** Plain independent auto-increment sequences are insufficient. **Snowflake** is a common approach combining `timestamp + machine ID + sequence number` to generate globally unique, roughly increasing IDs, which are favorable for B+ tree inserts.
 
 ### 10.6 Sharding Middleware
 
@@ -1594,24 +1612,3 @@ Two ShardingSphere integration styles:
 | -------- | ---- | -------- |
 | **ShardingSphere-JDBC** | Java library; no separate proxy deployment | Java applications |
 | **ShardingSphere-Proxy** | Standalone, language-independent service | Multiple languages/services sharing a proxy |
-
-#### 6. When Indexes Alone Are Not Enough
-
-An index does not by itself solve pagination problems in these cases:
-
-| Scenario | Reason |
-| ---- | ---- |
-| **Jumping to a distant page** | Large offsets still require skipped entries |
-| **Broad filters** | Many candidate rows may remain even with an index |
-| **Unstable or incompatible sort order** | An additional sort may be needed |
-| **Many selected columns** | Full-row lookups can remain expensive |
-
-Pagination design therefore combines:
-
-    Index design
-        +
-    Sort optimization
-        +
-    Pagination strategy
-        +
-    Separate designs for interactive pages and exports

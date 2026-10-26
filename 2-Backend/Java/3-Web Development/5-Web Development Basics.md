@@ -1,4 +1,4 @@
-## 1. Spring MVC and HTTP Basics
+## I. Spring MVC and HTTP Basics
 
 ### 1.1 Spring MVC Overview
 
@@ -34,7 +34,7 @@
            ↓
     7. The response reaches the client
 
-> 💡 spring-boot-starter-web provides Spring MVC auto-configuration, so you can begin by writing Controllers.
+> 💡 `spring-boot-starter-web` provides Spring MVC auto-configuration, so you can begin by writing Controllers.
 
 ***
 
@@ -100,7 +100,7 @@
 
 ***
 
-## 2. Request Mapping and RESTful APIs
+## II. Request Mapping and RESTful APIs
 
 ### 2.1 @RequestMapping in Detail
 
@@ -197,8 +197,8 @@ public class UserController {
 
 | Annotation | Purpose | Behavior |
 | ----------------- | ------------------------ | ------------------------------------------------ |
-| `@Controller` | Marks a Controller | Can return view names; add @ResponseBody for response bodies |
-| `@RestController` | Marks a REST Controller | @Controller + @ResponseBody; commonly returns JSON |
+| `@Controller` | Marks a Controller | Can return view names; add `@ResponseBody` for response bodies |
+| `@RestController` | Marks a REST Controller | `@Controller` + `@ResponseBody`; commonly returns JSON |
 | `@ResponseBody` | Writes a return value to the response body | Uses message conversion, commonly JSON serialization |
 
 ***
@@ -229,7 +229,7 @@ public class UserController {
 
 ***
 
-## 3. Request Parameters
+## III. Request Parameters
 
 ### 3.1 Simple Parameters and @RequestParam
 
@@ -261,13 +261,13 @@ public String getUsers(@RequestParam List<Long> ids) {
 }
 ```
 
-| @RequestParam attribute | Meaning | Default |
+| `@RequestParam` attribute | Meaning | Default |
 | -------------------- | -------- | ------ |
-| value | Parameter name | - |
-| required | Whether it is required | true |
-| defaultValue | Fallback value | - |
+| `value` | Parameter name | - |
+| `required` | Whether it is required | `true` |
+| `defaultValue` | Fallback value | - |
 
-> 💡 value and required also appear on annotations such as @PathVariable and @RequestHeader. defaultValue is supported only by certain annotations; @PathVariable does not support it.
+> 💡 `value` and `required` also appear on annotations such as `@PathVariable` and `@RequestHeader`. `defaultValue` is supported only by certain annotations; `@PathVariable` does not support it.
 
 ### 3.2 Path Parameters: @PathVariable
 
@@ -386,11 +386,11 @@ public Result delete(HttpServletRequest request) {
 
 | Method | Purpose |
 | --------------------------- | -------------------- |
-| getParameter(String name) | Read a single parameter value |
-| getParameterValues(name) | Read multiple values for a parameter |
-| getHeader(String name) | Read a request header |
-| getMethod() | Read the HTTP method |
-| getRequestURI() | Read the request URI |
+| `getParameter(String name)` | Read a single parameter value |
+| `getParameterValues(name)` | Read multiple values for a parameter |
+| `getHeader(String name)` | Read a request header |
+| `getMethod()` | Read the HTTP method |
+| `getRequestURI()` | Read the request URI |
 
 ***
 
@@ -451,7 +451,7 @@ public class Order {
 
 #### Differences and Combined Usage
 
-| Aspect | @DateTimeFormat | @JsonFormat |
+| Aspect | `@DateTimeFormat` | `@JsonFormat` |
 | -------- | ----------------------- | -------------------------------- |
 | **Library** | Spring | Jackson |
 | **Purpose** | Request parameter format conversion | JSON serialization/deserialization format |
@@ -491,17 +491,17 @@ spring:
 | Annotation/approach | Source | Example |
 | -------------------- | ----------------- | ----------------------------- |
 | No annotation | Query/form parameters | `?name=张三` |
-| @RequestParam | Query parameters | `?name=张三` |
-| @PathVariable | URL path | `/user/1` |
-| @RequestBody | JSON request body | `{"name":"张三"}` |
-| @RequestHeader | Request header | `Authorization: Bearer token` |
+| `@RequestParam` | Query parameters | `?name=张三` |
+| `@PathVariable` | URL path | `/user/1` |
+| `@RequestBody` | JSON request body | `{"name":"张三"}` |
+| `@RequestHeader` | Request header | `Authorization: Bearer token` |
 | `@CookieValue`       | Cookie            | `Cookie: JSESSIONID=xxx`      |
-| @DateTimeFormat | Date/time conversion | `?date=2024-01-15` |
-| HttpServletRequest | Raw request object | `request.getParameter("id")` |
+| `@DateTimeFormat` | Date/time conversion | `?date=2024-01-15` |
+| `HttpServletRequest` | Raw request object | `request.getParameter("id")` |
 
 ***
 
-## 4. Response Data
+## IV. Response Data
 
 ### 4.1 ResultCode Enumeration
 
@@ -730,7 +730,7 @@ public PageResult<User> page(UserQuery query) {
 
 ***
 
-## 5. Input Validation
+## V. Input Validation
 
 ### 5.1 Adding the Dependency
 
@@ -747,17 +747,17 @@ public PageResult<User> page(UserQuery query) {
 
 | Annotation | Constraint | Example |
 | ------------------ | ------------------------------ | ------------------------------------- |
-| @NotNull | Must not be null | `@NotNull(message = "ID is required")` |
-| @NotEmpty | Non-null with nonzero length/size | `@NotEmpty(message = "Name is required")` |
-| @NotBlank | Non-null string containing non-whitespace characters | `@NotBlank(message = "Name must not be blank")` |
-| @Size(min, max) | String/collection size range | `@Size(min = 2, max = 10)` |
-| @Min(value) | Minimum value | `@Min(value = 0)` |
-| @Max(value) | Maximum value | `@Max(value = 100)` |
-| @Range(min, max) | Numeric range | `@Range(min = 1, max = 150)` |
-| @Email | Email format | `@Email(message = "Invalid email format")` |
-| @Pattern(regexp) | Regular-expression match | `@Pattern(regexp = "^1[3-9]\\d{9}$")` |
-| @Past | Date in the past | @Past |
-| @Future | Date in the future | @Future |
+| `@NotNull` | Must not be null | `@NotNull(message = "ID is required")` |
+| `@NotEmpty` | Non-null with nonzero length/size | `@NotEmpty(message = "Name is required")` |
+| `@NotBlank` | Non-null string containing non-whitespace characters | `@NotBlank(message = "Name must not be blank")` |
+| `@Size(min, max)` | String/collection size range | `@Size(min = 2, max = 10)` |
+| `@Min(value)` | Minimum value | `@Min(value = 0)` |
+| `@Max(value)` | Maximum value | `@Max(value = 100)` |
+| `@Range(min, max)` | Numeric range | `@Range(min = 1, max = 150)` |
+| `@Email` | Email format | `@Email(message = "Invalid email format")` |
+| `@Pattern(regexp)` | Regular-expression match | `@Pattern(regexp = "^1[3-9]\\d{9}$")` |
+| `@Past` | Date in the past | `@Past` |
+| `@Future` | Date in the future | `@Future` |
 
 ***
 
@@ -867,50 +867,50 @@ public Result<Void> update(@PathVariable Long id,
 
 | Annotation | Purpose |
 | ----------------- | ---------------------------------------------- |
-| @RestController | REST Controller; @Controller + @ResponseBody |
-| @Controller | Controller, including view-based responses |
-| @RequestMapping | Class/method request mapping |
-| @GetMapping | GET requests |
-| @PostMapping | POST requests |
-| @PutMapping | PUT requests |
-| @DeleteMapping | DELETE requests |
-| @ResponseBody | Write the method result to the response body |
+| `@RestController` | REST Controller; `@Controller` + `@ResponseBody` |
+| `@Controller` | Controller, including view-based responses |
+| `@RequestMapping` | Class/method request mapping |
+| `@GetMapping` | GET requests |
+| `@PostMapping` | POST requests |
+| `@PutMapping` | PUT requests |
+| `@DeleteMapping` | DELETE requests |
+| `@ResponseBody` | Write the method result to the response body |
 
 ### Parameter Binding
 
 | Annotation | Purpose |
 | ----------------- | -------------------------- |
-| @RequestParam | Query/form parameters |
-| @PathVariable | URL path variable |
-| @RequestBody | Request body, commonly JSON |
-| @RequestHeader | Request header |
-| @CookieValue | Cookie value |
-| @DateTimeFormat | Request parameter date conversion |
-| @JsonFormat | JSON date formatting for requests/responses |
+| `@RequestParam` | Query/form parameters |
+| `@PathVariable` | URL path variable |
+| `@RequestBody` | Request body, commonly JSON |
+| `@RequestHeader` | Request header |
+| `@CookieValue` | Cookie value |
+| `@DateTimeFormat` | Request parameter date conversion |
+| `@JsonFormat` | JSON date formatting for requests/responses |
 
 ### Validation
 
 | Annotation | Purpose |
 | ----------------------- | ---------------------------- |
-| @Valid / @Validated | Trigger validation |
-| @NotNull | Reject null |
-| @NotBlank | Reject blank strings |
-| @NotEmpty | Reject null or empty collections, arrays, and strings |
-| @Size(min, max) | Size/length range |
-| @Min / @Max | Numeric bounds |
-| @Range(min, max) | Numeric range (Hibernate Validator) |
-| @Email | Email format |
-| @Pattern(regexp) | Regular-expression match |
-| @Past / @Future | Past/future date |
+| `@Valid` / `@Validated` | Trigger validation |
+| `@NotNull` | Reject null |
+| `@NotBlank` | Reject blank strings |
+| `@NotEmpty` | Reject null or empty collections, arrays, and strings |
+| `@Size(min, max)` | Size/length range |
+| `@Min` / `@Max` | Numeric bounds |
+| `@Range(min, max)` | Numeric range (Hibernate Validator) |
+| `@Email` | Email format |
+| `@Pattern(regexp)` | Regular-expression match |
+| `@Past` / `@Future` | Past/future date |
 
 ### Lombok
 
 | Annotation | Purpose |
 | -------------------------- | ------------------------------ |
-| @Data | Generate accessors, toString, and related methods |
-| @AllArgsConstructor | All-arguments constructor |
-| @NoArgsConstructor | No-argument constructor |
-| @RequiredArgsConstructor | Constructor for required fields, including uninitialized final fields |
-| @Slf4j | Generate an SLF4J logger |
-| @Getter / @Setter | Generate accessors |
-| @Builder | Builder API |
+| `@Data` | Generate accessors, toString, and related methods |
+| `@AllArgsConstructor` | All-arguments constructor |
+| `@NoArgsConstructor` | No-argument constructor |
+| `@RequiredArgsConstructor` | Constructor for required fields, including uninitialized final fields |
+| `@Slf4j` | Generate an SLF4J logger |
+| `@Getter` / `@Setter` | Generate accessors |
+| `@Builder` | Builder API |

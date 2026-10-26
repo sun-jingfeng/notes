@@ -33,31 +33,30 @@ I/O (Input/Output) transfers data between a program and external resources (file
 | **Byte stream** | Transfers bytes (1 byte = 8 bits) | `InputStream`, `OutputStream` | All files (images, video, audio, text, etc.) |
 | **Character stream** | Reads/writes UTF-16 code units (char) | `Reader`, `Writer` | Plain-text files (.txt, .java, .html, etc.) |
 
-> Java's `char` is a 16-bit UTF-16 code unit, not necessarily a complete Unicode character: supplementary characters (such as some emoji) require two chars. File byte counts depend on the encoding; for example, “中” occupies 3 bytes in UTF-8. “1 character = 2 bytes” is not a general rule.
+> Java's `char` is a 16-bit UTF-16 code unit, not necessarily a complete Unicode character: supplementary characters (such as some emoji) require two chars. File byte counts depend on the encoding; for example, "中" occupies 3 bytes in UTF-8. "1 character = 2 bytes" is not a general rule.
 
 ***
 
 #### I/O Stream Hierarchy
 
-                                I/O streams
-                                  │
-                  ┌───────────────┴───────────────┐
-                  │                               │
-                Byte streams                     Character streams
-                  │                               │
-            ┌─────┴─────┐                   ┌─────┴─────┐
-            │           │                   │           │
-         InputStream  OutputStream       Reader       Writer
-        (byte input)   (byte output)     (character input) (character output)
-            │           │                   │           │
-        ────┴────   ────┴────           ────┴────   ────┴────
+                                 I/O streams
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+              Byte streams                      Character streams
+                    │                                   │
+            ┌───────┴───────┐                 ┌─────────┴─────────┐
+            │               │                 │                   │
+       InputStream    OutputStream         Reader              Writer
+      (byte input)    (byte output)   (character input)  (character output)
+
         Basic streams:                    Basic streams:
-        FileInputStream                  FileReader
-        FileOutputStream                 FileWriter
+        FileInputStream                   FileReader
+        FileOutputStream                  FileWriter
 
         Buffered streams:                 Buffered streams:
-        BufferedInputStream              BufferedReader
-        BufferedOutputStream             BufferedWriter
+        BufferedInputStream               BufferedReader
+        BufferedOutputStream              BufferedWriter
 
         Serialization streams:            Conversion streams:
         ObjectInputStream                InputStreamReader
@@ -680,7 +679,7 @@ Buffered streams add a **buffer** to an underlying stream, reducing I/O operatio
 
     ┌─────────┐                    ┌─────────┐
     │ Program │ ←──── Buffer ────→ │  Disk   │
-    └─────────┘    (8192 bytes)     └─────────┘
+    └─────────┘    (8192 bytes)    └─────────┘
 
 ### 2. Buffered Stream Types
 

@@ -67,7 +67,7 @@ ssh -i ~/.ssh/id_rsa username@serverIP
 
 Common SSH clients:
 - **Mac/Linux:** Built-in terminal, iTerm2
-- **Windows**: PuTTY, Windows Terminal, MobaXterm
+- **Windows:** PuTTY, Windows Terminal, MobaXterm
 - **Cross-platform graphical clients:** Royal TSX, Termius, FinalShell
 
 ***

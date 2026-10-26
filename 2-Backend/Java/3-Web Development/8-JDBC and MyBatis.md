@@ -1,4 +1,4 @@
-## 1. JDBC
+## I. JDBC
 
 ### 1.1 Introduction
 
@@ -6,7 +6,7 @@
 
 **Core concepts:**
 
-*   JDBC defines APIs in the java.sql and javax.sql packages.
+*   JDBC defines APIs in the `java.sql` and `javax.sql` packages.
 *   Database vendors supply implementations called drivers.
 *   The API separates Java application code from database-specific driver implementations.
 
@@ -14,11 +14,11 @@
 
 | Component | Purpose |
 | ------------------- | --------------- |
-| DriverManager | Locates drivers and obtains connections |
-| Connection | Represents a database connection |
-| Statement | Executes SQL |
-| PreparedStatement | Executes parameterized/prepared SQL (recommended) |
-| ResultSet | Provides access to query results |
+| `DriverManager` | Locates drivers and obtains connections |
+| `Connection` | Represents a database connection |
+| `Statement` | Executes SQL |
+| `PreparedStatement` | Executes parameterized/prepared SQL (recommended) |
+| `ResultSet` | Provides access to query results |
 
 **Workflow:**
 
@@ -59,10 +59,10 @@ public class JDBCDemo {
 
 | Parameter | Purpose |
 | ------------------- | -------------- |
-| useSSL | Whether to use an SSL connection |
-| serverTimezone | Server time zone |
-| characterEncoding | Character encoding, such as utf-8 |
-| allowMultiQueries | Whether multiple statements may be executed together |
+| `useSSL` | Whether to use an SSL connection |
+| `serverTimezone` | Server time zone |
+| `characterEncoding` | Character encoding, such as utf-8 |
+| `allowMultiQueries` | Whether multiple statements may be executed together |
 
 ***
 
@@ -96,11 +96,11 @@ public class QueryDemo {
 
 | Method | Purpose |
 | ------------------ | -------------- |
-| next() | Move to the next row; return whether a row is available |
-| getInt(columnName/index) | Read an int |
-| getString(columnName/index) | Read a String |
-| getDouble(columnName/index) | Read a double |
-| getDate(columnName/index) | Read a Date |
+| `next()` | Move to the next row; return whether a row is available |
+| `getInt(columnName/index)` | Read an int |
+| `getString(columnName/index)` | Read a String |
+| `getDouble(columnName/index)` | Read a double |
+| `getDate(columnName/index)` | Read a Date |
 
 ***
 
@@ -194,9 +194,9 @@ public class TransactionDemo {
 
 | Method | Purpose |
 | ---------------------- | ----------- |
-| setAutoCommit(false) | Disable auto-commit for explicit transaction boundaries |
-| commit() | Commit the transaction |
-| rollback() | Roll back the transaction |
+| `setAutoCommit(false)` | Disable auto-commit for explicit transaction boundaries |
+| `commit()` | Commit the transaction |
+| `rollback()` | Roll back the transaction |
 
 #### 1.5.2 Resource Management
 
@@ -226,7 +226,7 @@ public class BestPracticeDemo {
 
 ***
 
-## 2. MyBatis
+## II. MyBatis
 
 ### 2.1 Introduction
 
@@ -384,10 +384,10 @@ public class User implements java.io.Serializable {
 
 | Annotation | Purpose |
 | --------------------- | ----------------------------------------- |
-| @Data | Generate accessors, toString, equals, and hashCode |
-| @NoArgsConstructor | Generate a no-argument constructor |
-| @AllArgsConstructor | Generate an all-arguments constructor |
-| @Builder | Generate a builder API |
+| `@Data` | Generate accessors, toString, equals, and hashCode |
+| `@NoArgsConstructor` | Generate a no-argument constructor |
+| `@AllArgsConstructor` | Generate an all-arguments constructor |
+| `@Builder` | Generate a builder API |
 
 #### 2.2.6 Unit Test
 
@@ -414,8 +414,8 @@ class UserMapperTest {
 
 | Placeholder | Behavior | Typical use |
 | ----- | --------------------- | ------------- |
-| #{} | Binds a value through a prepared-statement parameter | ✅ Ordinary values (recommended) |
-| ${} | Inserts text directly, with SQL injection risk | ⚠️ Dynamic identifiers or ordering, after allowlist validation |
+| `#{}` | Binds a value through a prepared-statement parameter | ✅ Ordinary values (recommended) |
+| `${}` | Inserts text directly, with SQL injection risk | ⚠️ Dynamic identifiers or ordering, after allowlist validation |
 
 **Example:**
 
@@ -441,7 +441,7 @@ public interface UserMapper {
 
 #### 2.3.2 @Param
 
-With the -parameters compiler option enabled, MyBatis can use actual parameter names, so @Param can sometimes be omitted. Explicit @Param remains useful for readability and stable mappings.
+With the `-parameters` compiler option enabled, MyBatis can use actual parameter names, so `@Param` can sometimes be omitted. Explicit `@Param` remains useful for readability and stable mappings.
 
 ```java
 // Single parameter: @Param can be omitted
@@ -471,7 +471,7 @@ List<User> selectByUserAndStatus(@Param("user") User user, @Param("status") Inte
 | ------ | ------------------- | ------------------ |
 | Typical use | Short, simple CRUD statements | Complex dynamic SQL, joins, and batches |
 | Maintenance | SQL is embedded in Java | SQL is separate from Java |
-| Dynamic SQL | Available through script/provider mechanisms | Native XML scripting support |
+| Dynamic SQL | Available through `<script>` or SQL provider classes | Native XML scripting support |
 | IDE support | Basic | Richer support with tools such as MybatisX |
 | Suggested use | Simple queries | More complex persistence logic |
 
@@ -481,16 +481,16 @@ For XML mappers, observe these conventions and binding rules:
 
 | Rule | Explanation |
 | --------- | ------------------------------------------- |
-| Matching names | Conventionally UserMapper.java and UserMapper.xml; XML must be discovered by the configured loading mechanism |
+| Matching names | Conventionally `UserMapper.java` and `UserMapper.xml`; XML must be discovered by the configured loading mechanism |
 | namespace | Must be the Mapper interface's fully qualified name |
-| Statement id | `<select id="selectById">` maps to selectById() |
+| Statement id | `<select id="selectById">` maps to `selectById()` |
 
     UserMapper.java                         UserMapper.xml
-    ┌─────────────────────────────┐        ┌────────────────────────────┐
-    │ User selectById(Integer id);│ ◄────► │ <select id="selectById">   │
-    │ List<User> selectAll();     │ ◄────► │ <select id="selectAll">    │
-    └─────────────────────────────┘        └────────────────────────────┘
-                                              namespace="com.example.mapper.UserMapper"
+    ┌──────────────────────────────┐        ┌────────────────────────────┐
+    │ User selectById(Integer id); │ ◄────► │ <select id="selectById">   │
+    │ List<User> selectAll();      │ ◄────► │ <select id="selectAll">    │
+    └──────────────────────────────┘        └────────────────────────────┘
+                                            namespace="com.example.mapper.UserMapper"
 
 **XML mapper location:**
 
@@ -610,7 +610,7 @@ System.out.println("Generated primary key: " + user.getId());
 
 Configure result mappings when database column names differ from Java property names.
 
-> **Tip:** With map-underscore-to-camel-case: true, user_name maps to userName automatically.
+> **Tip:** With `map-underscore-to-camel-case: true`, `user_name` maps to `userName` automatically.
 
 **Annotation form:**
 
@@ -776,7 +776,7 @@ mybatis:
 
 #### 2.4.7 Dynamic SQL
 
-MyBatis provides dynamic SQL scripting. XML is a natural fit; annotation-based statements can use script tags or providers.
+MyBatis provides dynamic SQL scripting. XML is a natural fit; annotation-based statements can use `<script>` tags or SQL providers.
 
 ##### Conditional Queries with if and where
 
@@ -813,7 +813,7 @@ List<User> selectByCondition(@Param("name") String name, @Param("age") Integer a
 </select>
 ```
 
-> where adds WHERE when needed and removes a leading AND/OR.
+> `<where>` adds `WHERE` when needed and removes a leading `AND`/`OR`.
 
 ##### Conditional Updates with if and set
 
@@ -844,7 +844,7 @@ int updateSelective(User user);
 </update>
 ```
 
-> set adds SET and removes a trailing comma.
+> `<set>` adds `SET` and removes a trailing comma.
 
 ##### choose / when / otherwise
 
@@ -869,10 +869,10 @@ Flexible prefix/suffix handling:
 
 | Attribute | Purpose |
 | ----------------- | ----------- |
-| prefix | Add a prefix before the generated content |
-| suffix | Add a suffix after the generated content |
-| prefixOverrides | Remove matching leading tokens |
-| suffixOverrides | Remove matching trailing tokens |
+| `prefix` | Add a prefix before the generated content |
+| `suffix` | Add a suffix after the generated content |
+| `prefixOverrides` | Remove matching leading tokens |
+| `suffixOverrides` | Remove matching trailing tokens |
 
 ```xml
 <!-- Implement where with trim -->
@@ -906,26 +906,26 @@ Bind a variable in the dynamic SQL context, often for LIKE patterns:
 </select>
 ```
 
-> Compared with CONCAT('%', #{name}, '%'), bind can express the pattern without relying on a database concatenation function.
+> Compared with `CONCAT('%', #{name}, '%')`, `<bind>` can express the pattern without relying on a database concatenation function.
 
-#### 2.4.8 Batch Operations with foreach
+#### 2.4.8 Batch Operations with `<foreach>`
 
 | Attribute | Purpose |
 | ------------ | --------- |
-| collection | Collection to iterate |
-| item | Element variable name |
-| index | Index variable name |
-| open | Prefix emitted before the iteration |
-| close | Suffix emitted after the iteration |
-| separator | Separator between items |
+| `collection` | Collection to iterate |
+| `item` | Element variable name |
+| `index` | Index variable name |
+| `open` | Prefix emitted before the iteration |
+| `close` | Suffix emitted after the iteration |
+| `separator` | Separator between items |
 
 **Common collection names:**
 
 | Parameter type | collection value |
 | ------------- | --------------------- |
-| List | list or collection |
+| `List` | `list` or `collection` |
 | `Array`       | `array`               |
-| Named with @Param | The specified name |
+| Named with `@Param` | The specified name |
 
 ##### Batch Delete
 
@@ -1023,7 +1023,7 @@ Escape XML special characters or use CDATA where appropriate:
 </select>
 ```
 
-> **Note:** Dynamic SQL tags such as if and where are treated as plain text inside CDATA, so keep those tags outside the CDATA section.
+> **Note:** Dynamic SQL tags such as `<if>` and `<where>` are treated as plain text inside CDATA, so keep those tags outside the CDATA section.
 
 #### 2.4.11 Troubleshooting
 
@@ -1031,7 +1031,7 @@ Escape XML special characters or use CDATA where appropriate:
 | --------------------------------------------- | ------------- | -------------------- |
 | Invalid bound statement | XML mapping not loaded/bound | Check namespace, id, and file discovery |
 | Could not find result map | Missing resultMap | Check its id |
-| Parameter 'xxx' not found | Parameter names do not match | Use @Param or correct the names |
+| Parameter 'xxx' not found | Parameter names do not match | Use `@Param` or correct the names |
 | Error parsing SQL Mapper XML | Invalid XML | Check syntax and escaping |
 | Mapped Statements collection does not contain | Missing statement mapping | Match the method name with the statement id |
 
@@ -1045,21 +1045,21 @@ MyBatis caches query results to avoid repeated SQL execution and database access
 
 | Aspect | First-level cache | Second-level cache |
 | -------------- | ----------------------------- | -------------------------------- |
-| **Scope** | SqlSession | Mapper namespace |
+| **Scope** | `SqlSession` | `Mapper` `namespace` |
 | **Default** | Enabled | Requires mapper-level configuration |
-| **Cross-session reuse** | No | Yes |
+| **Cross-session reuse** | No; scoped to one `SqlSession` | Yes; shared across `SqlSession`s |
 | **Sharing** | Within the current session | Across sessions using the namespace cache |
 | **Typical use** | Built-in session optimization | Used cautiously in production |
 
 #### 1. First-Level Cache
 
-The first-level cache belongs to a SqlSession. Repeating the same query in that session can reuse its result.
+The first-level cache belongs to a `SqlSession`. Repeating the same query in that session can reuse its result.
 
 **Conditions for a cache hit:**
 
 | Condition | Explanation |
 | ---- | ---- |
-| **Same SqlSession** | Different sessions have separate local caches |
+| **Same `SqlSession`** | Different sessions have separate local caches |
 | **Same statement and parameters** | SQL, parameters, and pagination criteria must match |
 | **No intervening cache clear** | Explicit clearing removes reusable entries |
 | **No invalidating write** | Inserts, updates, and deletes normally clear the local cache |
@@ -1088,21 +1088,21 @@ void testFirstLevelCache() {
 | Scenario | Explanation |
 | ---- | ---- |
 | **Insert/update/delete** | MyBatis clears the session cache to avoid reusing stale results |
-| **sqlSession.clearCache()** | Explicitly clears the local cache |
-| **SqlSession closes** | The session cache is discarded |
+| **`sqlSession.clearCache()`** | Explicitly clears the local cache |
+| **`SqlSession` closes** | The session cache is discarded |
 | **Different query criteria** | A different cache key is used |
 
 #### 2. Second-Level Cache
 
-A namespace's second-level cache allows results to be shared by multiple SqlSessions.
+The **second-level cache** is scoped to a `Mapper` namespace, so multiple `SqlSession`s can share its cached results.
 
 **Requirements:**
 
 | Condition | Explanation |
 | ---- | ---- |
-| **Global cache support enabled** | MyBatis cacheEnabled setting |
-| **Mapper cache declared** | XML cache element or @CacheNamespace |
-| **Serializable cached data when required** | Default read/write cache handling normally requires Serializable |
+| **Global cache support enabled** | MyBatis `cacheEnabled` setting |
+| **Mapper cache declared** | `<cache/>` in XML or `@CacheNamespace` |
+| **`Serializable` cached data when required** | Default read/write cache handling normally requires `Serializable` |
 | **Transaction/session completion** | Pending second-level entries are published on commit or an appropriate successful session close |
 
 **Enable through XML:**
@@ -1178,7 +1178,7 @@ The **second-level cache** is used more cautiously, especially in microservices,
 | **Debugging** | It can be hard to explain why SQL did not execute or why data is stale |
 | **Alternatives** | Many systems use a centralized cache such as Redis |
 
-> **Interview baseline:** First-level caching is SqlSession-scoped; second-level caching is namespace-scoped and must be configured. Know the invalidation rules and why applications may instead use a centralized cache.
+> **Interview baseline:** First-level caching is `SqlSession`-scoped; second-level caching is `Mapper`-namespace-scoped and must be configured. Know the invalidation rules and why applications may instead use a centralized cache.
 
 #### 5. Recommendations
 
@@ -1235,11 +1235,11 @@ System.out.println("Current page: " + pageInfo.getList());
 
 | Property | Meaning |
 | ---------- | ----- |
-| total | Total matching records |
-| pages | Total pages |
-| pageNum | Current page number |
-| pageSize | Page size |
-| list | Current page data |
+| `total` | Total matching records |
+| `pages` | Total pages |
+| `pageNum` | Current page number |
+| `pageSize` | Page size |
+| `list` | Current page data |
 
 #### 2.6.2 How It Works
 
@@ -1376,9 +1376,9 @@ pagehelper:
 
 | Java type | MySQL type | Meaning |
 | -------------------- | ------------- | ------- |
-| java.util.Date | DATETIME/DATE | Legacy date/time type |
-| java.sql.Date | DATE | Date only |
-| java.sql.Timestamp | DATETIME | Date and time |
+| `java.util.Date` | DATETIME/DATE | Legacy date/time type |
+| `java.sql.Date` | DATE | Date only |
+| `java.sql.Timestamp` | DATETIME | Date and time |
 | `LocalDate`          | DATE          | Java 8+ |
 | `LocalDateTime`      | DATETIME      | Java 8+ |
 | `LocalTime`          | TIME          | Java 8+ |
@@ -1542,9 +1542,9 @@ mybatis:
 
 #### 2.8.2 SQL Completion in IDEA
 
-1. **Configure a data source:** View → Tool Windows → Database → add a MySQL connection.
-2. **Inject SQL language support:** Place the cursor in a SQL string → Alt + Enter → Inject language → MySQL.
-3. **Associate a data source:** Alt + Enter → Language injection settings → choose the data source.
+1. **Configure a data source:** `View → Tool Windows → Database` → add a MySQL connection.
+2. **Inject SQL language support:** Place the cursor in a SQL string → `Alt + Enter` → `Inject language` → MySQL.
+3. **Associate a data source:** `Alt + Enter` → `Language injection settings` → choose the data source.
 
 #### 2.8.3 MybatisX Plugin
 
@@ -1553,7 +1553,7 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 | Feature | Description |
 | --------------- | ----------------------------- |
 | Mapper ↔ XML navigation | Jump using the gutter icon |
-| SQL generation | Generate SQL from names such as selectByName |
+| SQL generation | Generate SQL from names such as `selectByName` |
 | XML completion | Complete table and column names |
 
 **Method-name keywords:**
@@ -1570,7 +1570,7 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 
 ***
 
-## 3. MyBatis-Plus
+## III. MyBatis-Plus
 
 ### 3.1 Introduction
 
@@ -1582,8 +1582,8 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 
 | Capability | Description |
 | -------------- | ------------------------------------------ |
-| **Generic CRUD** | Extend BaseMapper and ServiceImpl for standard single-table operations |
-| **Condition builders** | Build predicates with QueryWrapper or LambdaQueryWrapper |
+| **Generic CRUD** | Extend `BaseMapper` and `ServiceImpl` for standard single-table operations |
+| **Condition builders** | Build predicates with `QueryWrapper` or `LambdaQueryWrapper` |
 | **Pagination plugin** | Provides its own pagination support without PageHelper |
 | **Code generation** | Generate entities, mappers, services, and controllers from tables |
 
@@ -1620,7 +1620,7 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 </dependency>
 ```
 
-> Spring Boot 2 uses mybatis-plus-boot-starter. MyBatis-Plus already includes MyBatis integration; ordinary Mapper/XML usage remains available without adding mybatis-spring-boot-starter again.
+> Spring Boot 2 uses `mybatis-plus-boot-starter`. MyBatis-Plus already includes MyBatis integration; ordinary Mapper/XML usage remains available without adding `mybatis-spring-boot-starter` again.
 
 **Configuration: reuse Spring's data source settings and add MyBatis-Plus settings:**
 
@@ -1646,16 +1646,16 @@ mybatis-plus:
       logic-not-delete-value: 0
 ```
 
-> 💡 @MapperScan("com.example.mapper") still scans Mapper interfaces when using MyBatis-Plus.
+> 💡 `@MapperScan("com.example.mapper")` still scans Mapper interfaces when using MyBatis-Plus.
 
 **Common properties:**
 
 | Property | Purpose |
 | ------ | ---- |
-| map-underscore-to-camel-case | Map underscore-separated column names to camel-case properties |
-| log-impl | Select SQL logging |
-| id-type | Primary-key generation strategy |
-| logic-delete-field | Logical deletion field |
+| `map-underscore-to-camel-case` | Map underscore-separated column names to camel-case properties |
+| `log-impl` | Select SQL logging |
+| `id-type` | Primary-key generation strategy |
+| `logic-delete-field` | Logical deletion field |
 
 ***
 
@@ -1699,8 +1699,8 @@ void testPage() {
 | Component | Purpose |
 | ---- | ---- |
 | `Page<T>` | Page number, size, total, and records |
-| PaginationInnerInterceptor | Intercept and rewrite pagination SQL |
-| selectPage | Execute a conditional page query |
+| `PaginationInnerInterceptor` | Intercept and rewrite pagination SQL |
+| `selectPage` | Execute a conditional page query |
 
 ***
 
@@ -1720,10 +1720,10 @@ public interface UserMapper extends BaseMapper<User> {
 
 | Method | Purpose |
 | --------------- | -------------- |
-| insert(T entity) | Insert one row |
-| deleteById(Serializable id) | Delete by primary key |
-| updateById(T entity) | Update by primary key |
-| selectById(Serializable id) | Query by primary key |
+| `insert(T entity)` | Insert one row |
+| `deleteById(Serializable id)` | Delete by primary key |
+| `updateById(T entity)` | Update by primary key |
+| `selectById(Serializable id)` | Query by primary key |
 | `selectList(Wrapper<T> wrapper)` | Query matching records |
 | `selectPage(IPage<T> page, Wrapper<T> wrapper)` | Query a page of matching records |
 
@@ -1738,9 +1738,9 @@ public interface UserMapper extends BaseMapper<User> {
 | Component | Purpose |
 | ---------- | ------------------------------------------ |
 | **Custom interface** | Extends `IService<Entity>` and adds business methods |
-| **Implementation** | Extends `ServiceImpl<Mapper, Entity>` and implements the custom interface |
+| **Implementation** | Extends `ServiceImpl<Mapper, Entity>` and `implements` the custom interface |
 
-The implementation inherits methods such as save, getById, list, page, updateById, and removeById, while implementing its own business methods.
+The implementation inherits methods such as `save`, `getById`, `list`, `page`, `updateById`, and `removeById`, while implementing its own business methods.
 
 **Custom interface extending IService:**
 
@@ -1796,8 +1796,8 @@ public class UserController {
 | ------------ | ------------------------------------------------ |
 | **Interface** | Extends `IService<Entity>` for extension and replaceable implementations |
 | **Implementation** | Extends `ServiceImpl<Mapper, Entity>` and implements the interface |
-| **Generic operations** | Supplied by ServiceImpl |
-| **Business logic** | Declared in the custom interface and implemented with queries such as lambdaQuery() |
+| **Generic operations** | Supplied by `ServiceImpl` |
+| **Business logic** | Declared in the custom interface and implemented with queries such as `lambdaQuery()` |
 
 ***
 
@@ -1825,18 +1825,18 @@ public class User {
 
 | Annotation | Purpose |
 | ---------------- | ---------------------------- |
-| @TableName | Specify the table name |
-| @TableId | Primary key; IdType.AUTO uses database auto-increment |
-| @TableField | Column mapping; exist = false excludes a nonpersistent field |
-| @TableLogic | Marks the logical deletion field |
+| `@TableName` | Specify the table name |
+| `@TableId` | Primary key; `IdType.AUTO` uses database auto-increment |
+| `@TableField` | Column mapping; `exist = false` excludes a nonpersistent field |
+| `@TableLogic` | Marks the logical deletion field |
 
 **Common ID strategies:**
 
 | Strategy | Meaning |
 | ---- | ---- |
-| IdType.AUTO | Database auto-increment |
-| IdType.ASSIGN_ID | Generate an ID using the configured identifier generator, normally Snowflake |
-| IdType.INPUT | Application-supplied ID |
+| `IdType.AUTO` | Database auto-increment |
+| `IdType.ASSIGN_ID` | Generate an ID using the configured identifier generator, normally Snowflake |
+| `IdType.INPUT` | Application-supplied ID |
 
 ***
 
@@ -1857,11 +1857,11 @@ List<User> list = userService.lambdaQuery()
 
 | Method | Purpose |
 | ---- | ---- |
-| eq / ne | Equal / not equal |
-| gt / ge / lt / le | Greater than, at least, less than, at most |
-| like / likeLeft / likeRight | LIKE patterns |
-| in | IN predicate |
-| orderByAsc / orderByDesc | Sorting |
+| `eq` / `ne` | Equal / not equal |
+| `gt` / `ge` / `lt` / `le` | Greater than, at least, less than, at most |
+| `like` / `likeLeft` / `likeRight` | LIKE patterns |
+| `in` | `IN` predicate |
+| `orderByAsc` / `orderByDesc` | Sorting |
 
 **Dynamic conditions:**
 
@@ -1876,7 +1876,7 @@ public List<User> listUsers(String name, Integer status) {
 }
 ```
 
-For complex queries, use QueryWrapper or a Mapper method with XML.
+For complex queries, use **`QueryWrapper`** or a Mapper method with XML.
 
 ***
 
@@ -1936,10 +1936,10 @@ public MybatisPlusInterceptor mybatisPlusInterceptor() {
 
 | Mechanism | Purpose |
 | ---- | ---- |
-| @TableField(fill = ...) | Mark automatically filled fields |
-| MetaObjectHandler | Implement fill logic |
-| @Version | Mark the optimistic-lock version field |
-| OptimisticLockerInnerInterceptor | Enable optimistic-lock interception |
+| `@TableField(fill = ...)` | Mark automatically filled fields |
+| `MetaObjectHandler` | Implement fill logic |
+| `@Version` | Mark the optimistic-lock version field |
+| `OptimisticLockerInnerInterceptor` | Enable optimistic-lock interception |
 
 ***
 
@@ -1956,19 +1956,19 @@ MyBatis-Plus reduces boilerplate. Keep explicit XML or annotation-based SQL wher
 
 ***
 
-## 4. Troubleshooting Reference
+## IV. Troubleshooting Reference
 
 | Problem | Possible cause | Resolution |
 | ------------- | ----------------------- | -------------------------------- |
-| Mapper not found | Scanning is missing | Check @MapperScan |
+| Mapper not found | Scanning is missing | Check `@MapperScan` |
 | XML binding failure | namespace/id mismatch | Match the interface name and method id |
 | Null mapped fields | Column/property name mismatch | Enable camel-case mapping or define resultMap |
-| No SQL logs | Logging not configured | Set log-impl appropriately |
+| No SQL logs | Logging not configured | Set `mybatis.configuration.log-impl`, e.g. `org.apache.ibatis.logging.stdout.StdOutImpl` |
 | Connection timeout | Database is unreachable | Check address, port, and credentials |
-| Garbled Chinese text | Encoding mismatch | Align encodings, including characterEncoding=utf-8 where appropriate |
-| Parameter binding failure | Ambiguous/missing parameter names | Use @Param |
-| Bean injection failure | Mapper not registered with Spring | Add @Mapper or configure @MapperScan |
+| Garbled Chinese text | Encoding mismatch | Align encodings, including `characterEncoding=utf-8` where appropriate |
+| Parameter binding failure | Ambiguous/missing parameter names | Use `@Param` |
+| Bean injection failure | Mapper not registered with Spring | Add `@Mapper` or configure `@MapperScan` |
 | Pagination not applied | Wrong startPage placement or incompatible SQL | Put it before the target query and omit trailing semicolons |
 | Invalid bound statement | XML mapping not loaded correctly | Check mapper-locations |
-| Unexpected date format | Serialization format not configured | Use @JsonFormat or suitable global configuration |
+| Unexpected date format | Serialization format not configured | Use `@JsonFormat` or suitable global configuration |
 | Enum mapping failure | Missing/custom TypeHandler configuration | Register the appropriate TypeHandler |

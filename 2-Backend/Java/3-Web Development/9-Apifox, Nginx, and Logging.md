@@ -27,24 +27,24 @@
 
 #### Interface Overview
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │  Apifox                                                    👤 Log in    │
-    ├─────────────┬───────────────────────────────────────────────────────────┤
-    │             │                                                           │
-    │  📁 Projects │   GET  ▼  │ http://localhost:8080/api/users    │  Send  │
-    │             │  ─────────────────────────────────────────────────────── │
-    │  ├─ Users   │   Params │ Headers │ Body │ Auth │ Pre │ Post │        │
-    │  │  ├─ Query│  ─────────────────────────────────────────────────────── │
-    │  │  ├─ Add  │                                                          │
-    │  │  ├─ Edit │   Response 200 OK  ⏱ 45ms                                │
-    │  │  └─ Delete│  ┌──────────────────────────────────────────────────┐  │
-    │  │          │   │ {                                                  │  │
-    │  ├─ Depts   │   │   "code": 1,                                      │  │
-    │  │          │   │   "msg": "success",                                │  │
-    │  └─ ...     │   │   "data": [...]                                    │  │
-    │             │   │ }                                                  │  │
-    │             │   └──────────────────────────────────────────────────┘  │
-    └─────────────┴───────────────────────────────────────────────────────────┘
+    ┌──────────────────────────────────────────────────────────────────────────┐
+    │  Apifox                                                        Log in    │
+    ├───────────────┬──────────────────────────────────────────────────────────┤
+    │               │                                                          │
+    │  Projects     │  GET ▼ │ http://localhost:8080/api/users    │ Send       │
+    │  ├─ Users     │  ──────────────────────────────────────────────────────  │
+    │  │  ├─ Query  │  Params │ Headers │ Body │ Auth │ Pre │ Post             │
+    │  │  ├─ Add    │  ──────────────────────────────────────────────────────  │
+    │  │  ├─ Edit   │                                                          │
+    │  │  └─ Delete │  Response 200 OK   45 ms                                 │
+    │  │            │  ┌──────────────────────────────────────────────────┐    │
+    │  ├─ Depts     │  │ {                                                │    │
+    │  │            │  │   "code": 1,                                     │    │
+    │  └─ ...       │  │   "msg": "success",                              │    │
+    │               │  │   "data": [...]                                  │    │
+    │               │  │ }                                                │    │
+    │               │  └──────────────────────────────────────────────────┘    │
+    └───────────────┴──────────────────────────────────────────────────────────┘
 
 ***
 
@@ -151,12 +151,12 @@
                                       ▼
     ┌─────────────────────────────────────────────────────────────────────────┐
     │                            Nginx server                                 │
-    │  ┌─────────────────────────────────────────────────────────────────┐   │
-    │  │  • Reverse proxy                                                │   │
-    │  │  • Load balancing                                               │   │
-    │  │  • Static resource serving                                      │   │
-    │  │  • SSL termination                                              │   │
-    │  └─────────────────────────────────────────────────────────────────┘   │
+    │  ┌─────────────────────────────────────────────────────────────────┐    │
+    │  │  • Reverse proxy                                                │    │
+    │  │  • Load balancing                                               │    │
+    │  │  • Static resource serving                                      │    │
+    │  │  • SSL termination                                              │    │
+    │  └─────────────────────────────────────────────────────────────────┘    │
     └───────────┬─────────────────────┬─────────────────────┬─────────────────┘
                 │                     │                     │
                 ▼                     ▼                     ▼
@@ -301,21 +301,21 @@ nginx -s reload
 
 #### What Is a Reverse Proxy?
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
+    ┌──────────────────────────────────────────────────────────────────────────┐
     │  Forward proxy (acts on behalf of clients)                               │
-    │                                                                         │
+    │                                                                          │
     │  Client ──▶ Proxy server ──▶ Target server                               │
-    │  (Knows the target)  (Accesses it for the client)                         │
-    │                                                                         │
+    │  (Knows the target)  (Accesses it for the client)                        │
+    │                                                                          │
     │  Examples: VPNs, accessing restricted websites                           │
-    ├─────────────────────────────────────────────────────────────────────────┤
+    ├──────────────────────────────────────────────────────────────────────────┤
     │  Reverse proxy (acts on behalf of servers)                               │
-    │                                                                         │
+    │                                                                          │
     │  Client ──▶ Proxy server ──▶ Backend server                              │
     │  (Does not know the backend)  (Forwards requests)                        │
-    │                                                                         │
-    │  Example: Nginx reverse proxy                                           │
-    └─────────────────────────────────────────────────────────────────────────┘
+    │                                                                          │
+    │  Example: Nginx reverse proxy                                            │
+    └──────────────────────────────────────────────────────────────────────────┘
 
 #### Reverse Proxy Configuration
 
@@ -524,7 +524,7 @@ log.info("User logged in successfully");
 | **Log levels** | ❌ None | ✅ TRACE/DEBUG/INFO/WARN/ERROR |
 | **Format control** | ❌ None | ✅ Timestamp, class name, thread, line number, etc. |
 | **Enable/disable control** | ❌ Cannot be disabled | ✅ Enable/disable by level or package |
-| **Performance impact** | Synchronous and blocking; poor performance | Asynchronous writes; good performance |
+| **Performance impact** | Synchronous, unbuffered console writes; costly under load | Buffered appenders; asynchronous output available (such as Logback `AsyncAppender`) |
 | **File archiving** | ❌ Unsupported | ✅ Automatic archiving by date/size |
 
 ***
@@ -538,12 +538,12 @@ log.info("User logged in successfully");
                                   │
     ┌─────────────────────────────▼───────────────────────────────────────┐
     │                       Logging facade (interface layer)              │
-    │        SLF4J (Simple Logging Facade for Java) ← Mainstream           │
+    │        SLF4J (Simple Logging Facade for Java) ← most widely used    │
     └─────────────────────────────┬───────────────────────────────────────┘
                                   │
     ┌─────────────────────────────▼───────────────────────────────────────┐
     │                       Logging implementation layer                  │
-    │        Logback      ← Spring Boot default; best performance         │
+    │        Logback      ← Spring Boot default                           │
     │        Log4j2       ← From Apache; feature-rich                     │
     └─────────────────────────────────────────────────────────────────────┘
 

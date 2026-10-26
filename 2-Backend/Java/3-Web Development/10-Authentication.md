@@ -630,7 +630,7 @@ public class AuthController {
 
 A logout request submits both `Authorization: Bearer <accessToken>` and `X-Refresh-Token: <refreshToken>`, and adds both tokens to a Redis blocklist. Business endpoints check the access token, while the refresh endpoint checks the refresh token. The Redis key is `token:blacklist:{token}`; its TTL is the token's remaining lifetime rounded up to whole seconds, and it is deleted automatically on expiration.
 
-> This example does not rotate the refresh token during refresh; after logout, that token can no longer obtain new tokens. Logout revokes only the two tokens submitted in the request, not other access tokens already issued. To immediately invalidate an entire login session (including concurrent refreshes), add a server-side session identifier and atomic validation. To invalidate all devices, see the token-version approach in the next section.
+> This example does not rotate the refresh token during refresh; after logout, that token can no longer obtain new tokens. Logout revokes only the two tokens submitted in the request, not other access tokens already issued. To immediately invalidate an entire login session (including concurrent refreshes), add a server-side session identifier and atomic validation. To invalidate tokens on all devices, store a token version for each user, include it in issued tokens, and reject tokens whose version is older than the stored value.
 
 ```java
 package com.example.service;
@@ -695,7 +695,7 @@ Once issued, a JWT has no built-in revocation mechanism; its lifetime is determi
 | Aspect | Filter | Interceptor |
 | ------------------- | ---------------------- | ------------------------ |
 | **Specification** | Servlet specification | Spring MVC specification |
-| **Execution timing** | Before DispatcherServlet | After DispatcherServlet |
+| **Execution timing** | Before DispatcherServlet | Inside DispatcherServlet processing, around the handler |
 | **Access to the handler** | No | Yes |
 | **Dependency injection** | Requires special handling | Supported natively |
 | **Use cases** | Encoding, CORS, general filtering | Authentication, permissions, logging |

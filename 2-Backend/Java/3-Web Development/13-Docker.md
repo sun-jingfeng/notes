@@ -26,18 +26,18 @@ Docker is an open-source containerization platform that packages applications an
 **Architecture comparison:**
 
 ```
-Virtual machine architecture:      Container architecture:
-┌─────────────────────────┐        ┌─────────────────────────┐
-│  App A  │  App B  │ App C│        │  App A  │  App B  │ App C│
-├─────────┼─────────┼──────┤        ├─────────┼─────────┼──────┤
-│ Guest OS│ Guest OS│GuestOS│       │ Container│Container│Container│
-├─────────┴─────────┴──────┤        ├─────────┴─────────┴──────┤
-│       Hypervisor         │        │       Docker Engine       │
-├──────────────────────────┤        ├──────────────────────────┤
-│       Host OS            │        │       Host OS            │
-├──────────────────────────┤        ├──────────────────────────┤
-│       Hardware           │        │       Hardware           │
-└──────────────────────────┘        └──────────────────────────┘
+Virtual machine architecture:            Container architecture:
+┌───────────┬───────────┬───────────┐    ┌───────────┬───────────┬───────────┐
+│   App A   │   App B   │   App C   │    │   App A   │   App B   │   App C   │
+├───────────┼───────────┼───────────┤    ├───────────┼───────────┼───────────┤
+│ Guest OS  │ Guest OS  │ Guest OS  │    │ Container │ Container │ Container │
+├───────────┴───────────┴───────────┤    ├───────────┴───────────┴───────────┤
+│            Hypervisor             │    │           Docker Engine           │
+├───────────────────────────────────┤    ├───────────────────────────────────┤
+│              Host OS              │    │              Host OS              │
+├───────────────────────────────────┤    ├───────────────────────────────────┤
+│             Hardware              │    │             Hardware              │
+└───────────────────────────────────┘    └───────────────────────────────────┘
 ```
 
 ### 1.3 Core Docker Concepts
@@ -63,20 +63,20 @@ Docker uses a **client/server architecture**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Docker client                         │
+│                        Docker client                        │
 │  docker build  │  docker pull  │  docker run  │  ...        │
 └───────────────────────────┬─────────────────────────────────┘
                             │ REST API
 ┌───────────────────────────▼─────────────────────────────────┐
-│                      Docker daemon (dockerd)                 │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
-│  │  Images  │  │Containers│  │Networks │  │ Volumes  │        │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
-└─────────────────────────────────────────────────────────────┘
-                            │
+│                   Docker daemon (dockerd)                   │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐     │
+│  │  Images  │  │Containers│  │ Networks │  │ Volumes  │     │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘     │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ Pull / push images
 ┌───────────────────────────▼─────────────────────────────────┐
-│                      Docker registry                        │
-│               Docker Hub / Alibaba Cloud / Private registry │
+│                       Docker registry                       │
+│        Docker Hub / Alibaba Cloud / Private registry        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -304,7 +304,7 @@ docker images
 | `nginx` | Web server | `latest`, `1.24`, `alpine` |
 | `mysql` | MySQL database | `8.0`, `5.7` |
 | `redis` | Redis cache | `7`, `6`, `alpine` |
-| `openjdk` | Java runtime | `17`, `11`, `8` |
+| `eclipse-temurin` | Java runtime (replaces the deprecated `openjdk` image) | `21`, `17`, `17-jre` |
 | `node` | Node.js runtime | `20`, `18`, `alpine` |
 | `python` | Python runtime | `3.12`, `3.11`, `slim` |
 | `ubuntu` | Ubuntu base image | `22.04`, `20.04` |
@@ -320,9 +320,9 @@ The `alpine` tag is based on Alpine Linux, producing smaller images suitable for
 
 ```
 Create ──► Run ──► Pause ──► Stop ──► Delete
-         │         │       │
-         └─────────┴───────┘
-              Restart
+            ▲        │        │
+            └────────┴────────┘
+         unpause / start / restart
 ```
 
 ### 4.2 Creating and Running Containers
@@ -485,19 +485,19 @@ Restart policies:
 
 A Dockerfile is a text file containing all the instructions for building a Docker image. Use `docker build` to build a custom image from a Dockerfile.
 
-**Base image:** The first Dockerfile instruction must be `FROM`, specifying the **base image**. This underlying image usually contains an operating system and runtime (such as openjdk, node, or nginx). Subsequent `RUN`, `COPY`, and other instructions add layers to form the final image. Choose an official base image with a version tag and an appropriate size as the starting point.
+**Base image:** The first Dockerfile instruction must be `FROM`, specifying the **base image**. This underlying image usually contains an operating system and runtime (such as eclipse-temurin, node, or nginx). Subsequent `RUN`, `COPY`, and other instructions add layers to form the final image. Choose an official base image with a version tag and an appropriate size as the starting point.
 
 ### 5.2 Common Instructions
 
 | Instruction | Description | Example |
 | ------------ | ---------------------------------- | -------------------------------------- |
-| `FROM` | Specify the base image (must be the first instruction) | `FROM openjdk:17` |
+| `FROM` | Specify the base image (must be the first instruction) | `FROM eclipse-temurin:17` |
 | `WORKDIR` | Set the working directory | `WORKDIR /app` |
 | `COPY` | Copy files into the image | `COPY target/*.jar app.jar` |
 | `ADD` | Copy files (supports URLs and automatic extraction) | `ADD app.tar.gz /app` |
 | `RUN` | Execute a command during the build | `RUN apt update && apt install -y vim` |
 | `CMD` | Default command executed when a container starts | `CMD ["java", "-jar", "app.jar"]` |
-| `ENTRYPOINT` | Command executed when a container starts (not overridden) | `ENTRYPOINT ["java", "-jar"]` |
+| `ENTRYPOINT` | Command executed when a container starts (`docker run` arguments are appended, not substituted; override with `--entrypoint`) | `ENTRYPOINT ["java", "-jar"]` |
 | `ENV` | Set an environment variable | `ENV JAVA_HOME=/usr/lib/jvm/java-17` |
 | `ARG` | Build-time argument | `ARG VERSION=1.0` |
 | `EXPOSE` | Declare a container listening port (documentation only) | `EXPOSE 8080` |
@@ -511,7 +511,7 @@ A Dockerfile is a text file containing all the instructions for building a Docke
 
 ```dockerfile
 # Base image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre
 
 # Maintainer information
 LABEL maintainer="developer@example.com"
@@ -531,11 +531,11 @@ CMD ["java", "-jar", "app.jar"]
 
 #### Multi-stage Build
 
-Build the source with Maven inside the image, then keep only the JDK and jar in the runtime stage. A non-root user and health check are optional. This is suitable for building from source without first packaging a jar locally.
+Build the source with Maven inside the image, then keep only a JRE and the jar in the runtime stage. A non-root user and health check are optional. This is suitable for building from source without first packaging a jar locally.
 
 ```dockerfile
 # Stage 1: build
-FROM maven:3.9-openjdk-17 AS builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline
@@ -543,7 +543,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: run
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 RUN useradd -r -u 1001 appuser
 COPY --from=builder /build/target/*.jar app.jar
@@ -1222,7 +1222,7 @@ Visit `http://<hostIP>` for the frontend; `/api/xxx` forwards to the backend. Fo
 
 ### 9.2 Deploying with Compose
 
-The result is the same as in 9.1: Nginx serves the frontend and forwards `/api` to the backend, which connects to MySQL. **Create a project directory** under `/srv` containing `docker-compose.yml` and subdirectories such as `nginx/`, `mysql/`, and `backend/`. One `docker-compose.yml` defines the network, MySQL, backend (including its build), and Nginx; one command builds the backend image and starts every service. Multiple projects use independent directories and Compose configurations. If direct host access to MySQL is required, the second project can map `3307:3306` to avoid conflicts.
+The result matches the step-by-step deployment: Nginx serves the frontend and forwards `/api` to the backend, which connects to MySQL. **Create a project directory** under `/srv` containing `docker-compose.yml` and subdirectories such as `nginx/`, `mysql/`, and `backend/`. One `docker-compose.yml` defines the network, MySQL, backend (including its build), and Nginx; one command builds the backend image and starts every service. Multiple projects use independent directories and Compose configurations. If direct host access to MySQL is required, the second project can map `3307:3306` to avoid conflicts.
 
 #### 9.2.1 Prepare Directories and Files
 
@@ -1373,7 +1373,7 @@ Create a project directory under `/srv` (such as `/srv/my-microservice`), then s
 **Dockerfile for each microservice** (generic Spring Boot, JDK 17): Use `COPY target/*.jar app.jar` when the jar is under `target/`, or `COPY *.jar app.jar` when it shares the Dockerfile directory.
 
 ```dockerfile
-FROM eclipse-temurin:17-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080
@@ -1552,9 +1552,9 @@ volumes:
 **Notes:**
 
 - When Nacos stores configuration in MySQL, create its database and execute the official Nacos `schema.sql` beforehand (usually by placing `nacos-mysql.sql` under `mysql/init/`), or Nacos fails to start. For in-memory configuration only, remove Nacos's `SPRING_DATASOURCE_*`, `MYSQL_SERVICE_*`, and its `depends_on` dependency on `mysql`.
-- For services using Nacos configuration, set `spring.cloud.nacos.config.server-addr` to `nacos:8848` in `bootstrap.yml` or `application.yml`. To override it through the environment, use `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR` (also `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR` in Spring Boot 2).
+- For services using Nacos configuration, set `spring.cloud.nacos.config.server-addr` to `nacos:8848` in `bootstrap.yml` or `application.yml`. To override it through the environment, use `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR` (the same name applies in Spring Boot 2).
 - With authentication enabled in Nacos 2.5.2, explicitly configure `NACOS_AUTH_TOKEN` on the server (the Base64 encoding of a random key at least 32 bytes long). `NACOS_AUTH_IDENTITY_KEY/VALUE` identifies Nacos servers to one another; these are not Java client login credentials.
-- Each Java service configures its Nacos username/password separately through `spring.cloud.nacos.discovery.username/password` and `spring.cloud.nacos.config.username/password`; see the environment variables above. Initialize the user in Nacos and grant the required permissions first. Clients do not configure the server identity key.
+- Each Java service configures its Nacos username/password separately through `spring.cloud.nacos.discovery.username/password` and `spring.cloud.nacos.config.username/password`, supplied here through the corresponding `SPRING_CLOUD_NACOS_*_USERNAME` / `*_PASSWORD` environment variables. Initialize the user in Nacos and grant the required permissions first. Clients do not configure the server identity key.
 
 ---
 

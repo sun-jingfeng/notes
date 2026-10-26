@@ -6,32 +6,32 @@
 
 **Core idea:** Enhance functionality without changing the original code.
 
-    ┌─────────────────────────────────────────────────────────────┐
+    ┌──────────────────────────────────────────────────────────────┐
     │                        Traditional approach (intrusive code) │
-    │                                                             │
-    │  public void transfer() {                                   │
+    │                                                              │
+    │  public void transfer() {                                    │
     │      log.info("Start transfer");     // Logging              │
     │      checkPermission();              // Permission check     │
     │      beginTransaction();             // Begin transaction    │
-    │                                                             │
+    │                                                              │
     │      // Core business logic                                  │
-    │      accountDao.decrease(from, money);                      │
-    │      accountDao.increase(to, money);                        │
-    │                                                             │
+    │      accountDao.decrease(from, money);                       │
+    │      accountDao.increase(to, money);                         │
+    │                                                              │
     │      commitTransaction();            // Commit transaction   │
     │      log.info("Transfer complete");  // Logging              │
-    │  }                                                          │
-    ├─────────────────────────────────────────────────────────────┤
+    │  }                                                           │
+    ├──────────────────────────────────────────────────────────────┤
     │                        AOP approach (decoupled)              │
-    │                                                             │
-    │  public void transfer() {                                   │
-    │      // Focus only on core business logic                     │
-    │      accountDao.decrease(from, money);                      │
-    │      accountDao.increase(to, money);                        │
-    │  }                                                          │
-    │                                                             │
-    │  // Aspects handle logging, permissions, transactions, etc.   │
-    └─────────────────────────────────────────────────────────────┘
+    │                                                              │
+    │  public void transfer() {                                    │
+    │      // Focus only on core business logic                    │
+    │      accountDao.decrease(from, money);                       │
+    │      accountDao.increase(to, money);                         │
+    │  }                                                           │
+    │                                                              │
+    │  // Aspects handle logging, permissions, transactions, etc.  │
+    └──────────────────────────────────────────────────────────────┘
 
 ***
 
@@ -188,7 +188,7 @@ Complete attribute lists for advice annotations:
 | ----------------- | --------------------- | ------ | ---- | ---------------------------------------------------------- |
 | `@Aspect` | — | — | — | No attributes |
 | `@Pointcut` | `value` | String | Yes | Pointcut expression (default attribute; its name can be omitted) |
-| `@Pointcut` | `argNames` | String | No | Comma-separated parameter names for argument binding (see 2.4) |
+| `@Pointcut` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@Before` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
 | `@Before` | `argNames` | String | No | Same as above |
 | `@After` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
@@ -386,19 +386,19 @@ Advice argument binding involves two filtering stages. Both can prevent advice f
 Target method is called
       │
       ▼
-┌─────────────────────────────┐
+┌─────────────────────────────────────┐
 │  Static pointcut matching (startup) │  ← No match → No interception
-└─────────────┬───────────────┘
+└─────────────┬───────────────────────┘
               │ Match: target method executes
-              ├──────────────────────────────────┐
-              ▼ Returns normally                       ▼ Throws an exception
-┌─────────────────────────┐        ┌─────────────────────────┐
+              ├──────────────────────────────────────────┐
+              ▼ Returns normally                         ▼ Throws an exception
+┌─────────────────────────────────┐        ┌────────────────────────────────┐
 │  returning parameter type check │        │  throwing parameter type check │
-│  (Runtime)                     │        │  (Runtime)                     │
-└────────────┬────────────┘        └────────────┬────────────┘
-             │ No match → Skip advice               │ No match → Skip advice
-             ▼ Match                                 ▼ Match
-     Execute doAfterReturning                 Execute doAfterThrowing
+│  (runtime)                      │        │  (runtime)                     │
+└─────────────┬───────────────────┘        └─────────────┬──────────────────┘
+              │ No match → Skip advice                   │ No match → Skip advice
+              ▼ Match                                    ▼ Match
+  Execute doAfterReturning                    Execute doAfterThrowing
 ```
 
 Using `Object`/`Throwable` for `returning`/`throwing` parameters accepts the broadest range of values without filtering; this is the most common approach. With a specific type, the advice runs only when the actual value matches:
@@ -547,7 +547,7 @@ public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws 
 }
 ```
 
-> 💡 This is the most common approach in practice (see the examples in Chapter V), and is simpler than obtaining `MethodSignature` and reading the annotation through reflection.
+> 💡 This is the most common approach in practice, such as in operation-logging aspects, and is simpler than obtaining `MethodSignature` and reading the annotation through reflection.
 
 ***
 

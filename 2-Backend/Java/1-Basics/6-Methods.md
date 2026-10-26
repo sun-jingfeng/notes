@@ -832,7 +832,7 @@ private static void show(int a) { }  // Compile error
 
 ### 5. Matching Overloaded Methods
 
-When an overloaded method is called, the JVM matches in this order:
+When an overloaded method is called, the compiler matches in this order:
 
 ```java
 public static void test(int a) {
@@ -930,7 +930,7 @@ public static int add(int a, int b) { }
 public static double add(double a, double b) { }
 public static int add(int a, int b, int c) { }
 
-// Callers remember only add; the JVM selects the matching method
+// Callers remember only add; the compiler selects the matching method
 ```
 
 ### 9. Overloading vs. Overriding

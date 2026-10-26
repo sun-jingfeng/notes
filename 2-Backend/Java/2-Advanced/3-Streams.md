@@ -124,10 +124,10 @@ try (Stream<String> lines = Files.lines(Paths.get("data.txt"), StandardCharsets.
 ### 5. Creating Numeric Range Streams
 
 ```java
-// IntStream.range()：[start, end)
+// IntStream.range(): [start, end)
 IntStream.range(1, 5).forEach(System.out::println);  // 1, 2, 3, 4
 
-// IntStream.rangeClosed()：[start, end]
+// IntStream.rangeClosed(): [start, end]
 IntStream.rangeClosed(1, 5).forEach(System.out::println);  // 1, 2, 3, 4, 5
 
 // The same applies to LongStream
@@ -568,7 +568,7 @@ Map<Integer, String> result6 = list.stream()
     ));
 ```
 
-### 4. toList()（JDK 16+）
+### 4. toList() (JDK 16+)
 
 ```java
 List<String> list = Arrays.asList("A", "B", "C");

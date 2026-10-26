@@ -351,7 +351,7 @@ byte b6 = x + y;  // ✅ x and y are final; the compiler can evaluate them
 
 | Conversion | Direction  | Syntax      | Risk        |
 | ---- | --- | ------- | --------- |
-| Automatic | Smaller → larger | Direct assignment    | No risk       |
+| Automatic | Smaller → larger | Direct assignment    | No overflow; `int`/`long` → `float`/`double` may lose precision |
 | Explicit cast | Larger → smaller | `(Type)value` | Possible precision loss or overflow |
 
 **Data type ranges, smallest to largest:**
@@ -1294,5 +1294,5 @@ public class StudentScore {
 
 | Conversion | Direction  | Syntax      | Risk   |
 | ---- | --- | ------- | ---- |
-| Automatic | Smaller → larger | Direct assignment    | No risk  |
+| Automatic | Smaller → larger | Direct assignment    | No overflow; `int`/`long` → `float`/`double` may lose precision |
 | Explicit cast | Larger → smaller | `(Type)value` | Possible overflow |

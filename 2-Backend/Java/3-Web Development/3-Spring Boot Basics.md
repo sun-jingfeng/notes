@@ -1,4 +1,4 @@
-## 1. Spring Boot Overview
+## I. Spring Boot Overview
 
 ### 1.1 Introduction and Core Features
 
@@ -142,7 +142,7 @@ src/main/resources
 
 ***
 
-## 2. Core Mechanisms
+## II. Core Mechanisms
 
 ### 2.1 Understanding @SpringBootApplication
 
@@ -194,7 +194,7 @@ A **starter** groups related dependencies to simplify dependency management.
 | **AutoConfiguration** | Configuration classes | Conditionally creates default beans and assembles default behavior |
 | **Dependency management/BOM** | Version constraints | Coordinates dependency versions and reduces conflicts |
 
-> 💡 A starter supplies the materials, auto-configuration assembles defaults, and configuration files adjust the settings.
+> 💡 A `starter` supplies the materials, auto-configuration assembles defaults, and configuration files adjust the settings.
 
 ***
 
@@ -354,9 +354,9 @@ The **startup sequence** covers the process from `main()` to an application that
 
 | Topic | Typical question |
 | ------ | -------- |
-| **Configuration loading** | At which stage does application.yml take effect? |
+| **Configuration loading** | At which stage does `application.yml` take effect? |
 | **Bean creation** | When does the container instantiate singleton beans? |
-| **Application readiness** | When do runners execute and ApplicationReadyEvent fire? |
+| **Application readiness** | When do runners execute and `ApplicationReadyEvent` fire? |
 
 ```
 1. Start main()
@@ -384,11 +384,11 @@ The **startup sequence** covers the process from `main()` to an application that
 | ---- | ---- |
 | **Configuration precedes bean creation** | Spring prepares the environment before creating the context and beans |
 | **Auto-configuration is part of startup** | It participates in context preparation, rather than being added after startup |
-| **ApplicationReadyEvent comes last** | It signals that the application is ready to provide its services |
+| **`ApplicationReadyEvent` comes last** | It signals that the application is ready to provide its services |
 
 ***
 
-## 3. The IoC Container and Dependency Injection
+## III. The IoC Container and Dependency Injection
 
 ### 3.1 Core Concepts
 
@@ -498,10 +498,10 @@ public class AppConfig {
 
 `@Component` classes can also contain `@Bean` methods, but **calls between those methods** behave differently:
 
-| Feature | @Configuration | @Component |
+| Feature | `@Configuration` | `@Component` |
 | ------------------ | ---------------------------------- | -------------------------------------- |
 | Proxying | CGLIB proxy | No configuration-method proxy |
-| Calls between @Bean methods | Return the same container-managed singleton | Ordinary calls create new objects rather than retrieving the managed singleton |
+| Calls between `@Bean` methods | Return the same container-managed singleton | Ordinary calls create new objects rather than retrieving the managed singleton |
 
 ```java
 @Configuration
@@ -516,9 +516,9 @@ public class AppConfig {
 // ✅ a and c receive the same b (CGLIB intercepts the calls and returns the managed bean)
 ```
 
-Replacing `@Configuration` with `@Component` makes the `b` objects passed to `a` and `c` **different instances**.
+Replacing `@Configuration` with `@Component` makes the `b` objects passed to `a` and `c` **different instances**, so `b` is no longer a shared singleton.
 
-> 💡 This concerns calls between @Bean methods. A bean declared with an ordinary @Component still has singleton scope by default.
+> 💡 This concerns calls between `@Bean` methods. A bean declared with an ordinary `@Component` still has singleton scope by default.
 
 #### The proxyBeanMethods Attribute
 
@@ -526,8 +526,8 @@ Available with Spring Boot 2.2+, this attribute controls configuration-class pro
 
 | Mode | proxyBeanMethods | Characteristics | Suitable when |
 | ---- | ---------------- | -------------------- | ---------------------- |
-| Full | true (default) | Preserves managed singleton references; incurs proxy overhead | @Bean methods call one another |
-| Lite | false | No configuration proxy; faster startup | @Bean methods do not call one another |
+| Full | true (default) | Preserves managed singleton references; incurs proxy overhead | `@Bean` methods call one another |
+| Lite | false | No configuration proxy; faster startup | `@Bean` methods do not call one another |
 
 ```java
 // Lite mode: suitable when @Bean methods do not call one another
@@ -546,7 +546,7 @@ public class AppConfig {
 
 | Imported type | Purpose |
 | ------------------------------------ | -------------------------------------- |
-| Configuration class (@Configuration) | Import another configuration class |
+| Configuration class (`@Configuration`) | Import another configuration class |
 | Ordinary class | Register it directly as a bean |
 | ImportSelector implementation | Choose imported classes dynamically; central to auto-configuration |
 | ImportBeanDefinitionRegistrar implementation | Register bean definitions programmatically |
@@ -643,9 +643,9 @@ public class Application { }
 
 | Symptom | Common cause | Resolution |
 | ---- | -------- | -------- |
-| **Bean not found at startup** | The class is outside the application package and its subpackages | Adjust the package layout or add @ComponentScan |
-| **Third-party class cannot be injected** | The class cannot be annotated with @Component | Register it with @Configuration + @Bean |
-| **Mapper/Feign interfaces are inactive** | Their dedicated scanning support is missing | Use @MapperScan, @EnableFeignClients, or the corresponding mechanism |
+| **Bean not found at startup** | The class is outside the application package and its subpackages | Adjust the package layout or add `@ComponentScan` |
+| **Third-party class cannot be injected** | The class cannot be annotated with `@Component` | Register it with `@Configuration + @Bean` |
+| **Mapper/Feign interfaces are inactive** | Their dedicated scanning support is missing | Use `@MapperScan`, `@EnableFeignClients`, or the corresponding mechanism |
 | **An annotation appears to do nothing** | Its containing class is not Spring-managed | Ensure the container creates the class |
 
 ***
@@ -708,7 +708,7 @@ If an interface has multiple implementations, select the desired one:
 
 | Mechanism | Where it applies | Example |
 | ------------ | ---------------- | -------------------------------------- |
-| `@Primary` | Declaration: marks the preferred candidate | Add @Primary to an implementation |
+| `@Primary` | Declaration: marks the preferred candidate | Add `@Primary` to an implementation |
 | `@Qualifier` | Injection point: selects a candidate | `@Autowired @Qualifier("xxxImpl")` |
 | `@Resource` | Injection point: selects by name | `@Resource(name = "xxxImpl")` |
 
@@ -724,13 +724,13 @@ public class UserServiceImpl implements UserService { }
 private UserService userService;
 ```
 
-**@Autowired vs @Resource**:
+**`@Autowired` vs `@Resource`**:
 
-| Aspect | @Autowired | @Resource |
+| Aspect | `@Autowired` | `@Resource` |
 | -------- | ------------------- | ---------------- |
 | Origin | Spring | Jakarta Annotations (historically JSR-250) |
 | Default selection | By **type** | By **name** |
-| Explicit name | Combine with @Qualifier | Use the name attribute |
+| Explicit `name` | Combine with `@Qualifier` | Use the name attribute |
 
 #### Injecting a Collection of Beans
 
@@ -773,7 +773,7 @@ A bean's scope determines its instance count and lifetime. The default is `singl
 | **request** | One instance per HTTP request | Within the request | Web applications |
 | **session** | One instance per HTTP session | Within the session | Web applications |
 
-> **Note:** These request/session scopes require a servlet web context; they are not available in a plain non-web context or directly in WebFlux.
+> **Note:** These `request`/`session` scopes require a servlet web context; they are not available in a plain non-web context or directly in WebFlux.
 
 ```java
 @Service
@@ -821,7 +821,7 @@ public class HeavyService { }
 - Breaking certain circular dependency scenarios
 - Reducing startup work
 
-**Use @Lazy at the injection point as well:**
+**Use `@Lazy` at the injection point as well:**
 
 ```java
 @RestController
@@ -852,11 +852,11 @@ public class OrderService { }
 - Implicit dependencies through static methods or global state rather than injection
 - Infrastructure beans that must initialize before other beans
 
-> 💡 Spring already orders explicitly injected dependencies, so those relationships normally do not require @DependsOn.
+> 💡 Spring already orders explicitly injected dependencies, so those relationships normally do not require `@DependsOn`.
 
 ***
 
-## 4. Bean Lifecycle
+## IV. Bean Lifecycle
 
 ### 4.1 What Is the Bean Lifecycle?
 
@@ -879,27 +879,27 @@ Destroy when the container closes
 | Stage | What Spring does | Application-facing mechanism |
 | ---- | --------------- | ------------------ |
 | **Creation** | Calls a constructor | Constructor |
-| **Dependency injection** | Supplies dependencies and values, including @Autowired/@Value | Fields and constructor arguments |
-| **Initialization** | Executes initialization callbacks | @PostConstruct |
+| **Dependency injection** | Supplies dependencies and values, including `@Autowired`/`@Value` | Fields and constructor arguments |
+| **Initialization** | Executes initialization callbacks | `@PostConstruct` |
 | **Business use** | Makes the bean available | Normal Controller/Service calls |
-| **Destruction** | Runs cleanup before context shutdown | @PreDestroy |
+| **Destruction** | Runs cleanup before context shutdown | `@PreDestroy` |
 
 #### Four Practical Takeaways
 
 | Takeaway | Explanation |
 | ---- | ---- |
 | **Construction comes first** | Field-injected dependencies are not yet available during construction |
-| **Field/setter injection follows construction** | Avoid constructor logic that relies on @Autowired fields; constructor arguments are already supplied |
-| **@PostConstruct follows dependency injection** | Suitable for cache initialization, configuration checks, and listener registration |
-| **@PreDestroy precedes destruction** | Suitable for releasing connections, thread pools, caches, and other resources |
+| **Field/setter injection follows construction** | Avoid constructor logic that relies on `@Autowired` fields; constructor arguments are already supplied |
+| **`@PostConstruct` follows dependency injection** | Suitable for cache initialization, configuration checks, and listener registration |
+| **`@PreDestroy` precedes destruction** | Suitable for releasing connections, thread pools, caches, and other resources |
 
 #### Common Sources of Confusion
 
 | Question | Explanation |
 | ---- | -------- |
-| **Constructor vs @PostConstruct?** | The constructor runs earlier; @PostConstruct runs after dependencies have been injected |
+| **Constructor vs `@PostConstruct`?** | The constructor runs earlier; `@PostConstruct` runs after dependencies have been injected |
 | **Bean lifecycle vs application startup?** | The lifecycle concerns one bean; startup concerns the whole application |
-| **Does @PreDestroy run after each method call?** | No; it is a destruction callback, typically when the context closes |
+| **Does `@PreDestroy` run after each method call?** | No; it is a destruction callback, typically when the context closes |
 | **How do I use a bean only after initialization?** | Obtain it through normal dependency injection and invoke its business methods; Spring initializes it before normal use |
 
 ***
@@ -911,11 +911,11 @@ Start with these four mechanisms:
 | Mechanism | Timing | Typical work | Recommendation |
 | ---- | -------- | ---------- | -------- |
 | **Constructor** | Object creation | Basic construction and simple field assignment | ✅ Appropriate |
-| **@PostConstruct** | After dependency injection | Initialize caches, validate startup configuration, register listeners | ✅ **Common** |
-| **@PreDestroy** | Before bean destruction | Release resources, close connections, clear caches | ✅ **Common** |
-| **@Bean(initMethod / destroyMethod)** | Initialization / destruction | Initialize and clean up third-party classes | ✅ Specific use cases |
+| **`@PostConstruct`** | After dependency injection | Initialize caches, validate startup configuration, register listeners | ✅ **Common** |
+| **`@PreDestroy`** | Before bean destruction | Release resources, close connections, clear caches | ✅ **Common** |
+| **`@Bean(initMethod / destroyMethod)`** | Initialization / destruction | Initialize and clean up third-party classes | ✅ Specific use cases |
 
-#### Typical Usage: @PostConstruct and @PreDestroy
+#### Typical Usage: `@PostConstruct` and `@PreDestroy`
 
 ```java
 @Component
@@ -943,24 +943,24 @@ public class CacheService {
 | Hook | Appropriate logic |
 | ---- | -------- |
 | **Constructor** | Basic field initialization |
-| **@PostConstruct** | Initialization that requires injected dependencies |
-| **@PreDestroy** | Cleanup before context shutdown |
+| **`@PostConstruct`** | Initialization that requires injected dependencies |
+| **`@PreDestroy`** | Cleanup before context shutdown |
 
-> 💡 Learn @PostConstruct and @PreDestroy first. Other extension points are more advanced framework mechanisms.
+> 💡 Learn `@PostConstruct` and `@PreDestroy` first. Other extension points are more advanced framework mechanisms.
 
 ***
 
-### 4.3 @PostConstruct in Detail
+### 4.3 `@PostConstruct` in Detail
 
-**@PostConstruct** marks a common initialization callback: **the bean's dependencies have been injected, and Spring now runs its initialization logic.**
+**`@PostConstruct`** marks a common initialization callback: **the bean's dependencies have been injected, and Spring now runs its initialization logic.**
 
-| Aspect | @PostConstruct | Constructor |
+| Aspect | `@PostConstruct` | Constructor |
 | ------ | ---------------- | -------- |
 | **Timing** | After dependency injection | During object creation |
 | **Injected dependencies available?** | **Yes** | Constructor arguments are available; injected fields are not yet ready |
 | **Typical uses** | Initialize caches, register listeners, validate configuration | Simple assignment and basic object construction |
 
-#### Appropriate Uses of @PostConstruct
+#### Appropriate Uses of `@PostConstruct`
 
 | Use case | Explanation |
 | -------- | ---- |
@@ -969,24 +969,24 @@ public class CacheService {
 | **Validate startup configuration** | Fail startup if critical settings are missing |
 | **Prepare runtime state** | Build indexes, lookup maps, or thread-safe containers |
 
-#### Poor Fits for @PostConstruct
+#### Poor Fits for `@PostConstruct`
 
 | Discouraged use | Reason |
 | ---------- | ---- |
 | **Very slow initialization** | Directly delays startup |
 | **Many unreliable remote calls** | Failure may prevent bean creation |
-| **Application-wide startup work unrelated to this bean** | Prefer CommandLineRunner, ApplicationRunner, or ApplicationReadyEvent |
+| **Application-wide startup work unrelated to this bean** | Prefer `CommandLineRunner`, `ApplicationRunner`, or `ApplicationReadyEvent` |
 
 #### Compared with Application Startup Hooks
 
 | Hook | Timing | Typical use |
 | ---- | -------- | -------- |
-| **@PostConstruct** | During initialization of an individual bean | Initialize resources used by that bean |
-| **CommandLineRunner** | After the context's startup bean initialization | Run startup tasks |
-| **ApplicationRunner** | After the context's startup bean initialization | Process structured startup arguments |
-| **ApplicationReadyEvent** | When the application is fully ready | Work triggered by application readiness |
+| **`@PostConstruct`** | During initialization of an individual bean | Initialize resources used by that bean |
+| **`CommandLineRunner`** | After the context's startup bean initialization | Run startup tasks |
+| **`ApplicationRunner`** | After the context's startup bean initialization | Process structured startup arguments |
+| **`ApplicationReadyEvent`** | When the application is fully ready | Work triggered by application readiness |
 
-> 💡 **Use @PostConstruct for the bean itself; use runners or application events for application-wide startup work.**
+> 💡 **Use `@PostConstruct` for the bean itself; use runners or application events for application-wide startup work.**
 
 #### Usage Notes
 
@@ -1005,11 +1005,11 @@ Spring provides additional lifecycle extension points beyond the usual annotatio
 
 | Extension point | Purpose | Typical frequency of use |
 | ------ | ---- | ---------------- |
-| Aware interfaces such as BeanNameAware | Expose container information to the bean | Low |
-| BeanPostProcessor | Apply processing before and after initialization | Medium |
-| InitializingBean | Initialization callback interface | Low |
-| DisposableBean | Destruction callback interface | Low |
-| initMethod / destroyMethod | Specify lifecycle methods for third-party classes | Medium |
+| Aware interfaces such as `BeanNameAware` | Expose container information to the bean | Low |
+| `BeanPostProcessor` | Apply processing before and after initialization | Medium |
+| `InitializingBean` | Initialization callback interface | Low |
+| `DisposableBean` | Destruction callback interface | Low |
+| `initMethod` / `destroyMethod` | Specify lifecycle methods for third-party classes | Medium |
 
 The overall sequence is approximately:
 
@@ -1039,7 +1039,7 @@ DisposableBean.destroy()
 Custom destroyMethod
 ```
 
-> **Note:** AOP proxies are usually created during after-initialization processing. Proxy-dependent behavior may therefore not yet be fully available inside @PostConstruct.
+> **Note:** AOP proxies are usually created during after-initialization processing. Proxy-dependent behavior may therefore not yet be fully available inside `@PostConstruct`.
 
 ***
 
@@ -1047,10 +1047,10 @@ Custom destroyMethod
 
 | Mechanism | Timing | Description |
 | ----------------------- | -------------------- | -------------------------- |
-| @PostConstruct | Individual bean initialization | Applies to the current bean |
-| CommandLineRunner | After startup bean initialization | Receives raw command-line arguments |
-| ApplicationRunner | After startup bean initialization | Receives parsed command-line arguments |
-| ApplicationReadyEvent | Application readiness | Runs last in this sequence |
+| `@PostConstruct` | Individual bean initialization | Applies to the current bean |
+| `CommandLineRunner` | After startup bean initialization | Receives raw command-line arguments |
+| `ApplicationRunner` | After startup bean initialization | Receives parsed command-line arguments |
+| `ApplicationReadyEvent` | Application readiness | Runs last in this sequence |
 
 #### CommandLineRunner
 
@@ -1098,18 +1098,18 @@ public class MyListener {
 }
 ```
 
-**Order:** @PostConstruct → CommandLineRunner / ApplicationRunner → ApplicationReadyEvent
+**Order:** `@PostConstruct` → `CommandLineRunner` / `ApplicationRunner` → `ApplicationReadyEvent`
 
 | Requirement | Best fit |
 | ---- | ------------ |
-| **Initialize a bean's own data** | @PostConstruct |
-| **Run startup scripts or warm-up tasks** | CommandLineRunner |
-| **Read structured startup arguments** | ApplicationRunner |
-| **Wait until the application is ready** | ApplicationReadyEvent |
+| **Initialize a bean's own data** | `@PostConstruct` |
+| **Run startup scripts or warm-up tasks** | `CommandLineRunner` |
+| **Read structured startup arguments** | `ApplicationRunner` |
+| **Wait until the application is ready** | `ApplicationReadyEvent` |
 
 ***
 
-## 5. Configuration Management
+## V. Configuration Management
 
 ### 5.1 Configuration File Types
 
@@ -1133,7 +1133,7 @@ Configuration files normally live in `src/main/resources/`.
 | **Loading stage** | BootstrapContext initialization, earlier | ApplicationContext setup |
 | **Main purpose** | Configuration-server address, encryption keys, service name | Business settings and framework configuration |
 | **Priority** | Bootstrap property-source precedence depends on the source and override policy | Can be overridden by profiles, environment variables, and other higher-priority sources |
-| **Dependencies** | Spring Cloud bootstrap support; explicitly enable it with Boot 2.4+ | Built into Spring Boot |
+| **Dependencies** | Requires `spring-cloud-context`; with Spring Boot 2.4+, also add `spring-cloud-starter-bootstrap` (or set `spring.cloud.bootstrap.enabled=true`) | Built into Spring Boot |
 | **Typical use** | Spring Cloud Config, Vault, or Nacos bootstrap integration | Most everyday application configuration |
 
 **Typical bootstrap.yml contents:**
@@ -1149,7 +1149,7 @@ spring:
       label: main                       # Git branch
 ```
 
-**Change with Spring Boot 2.4+:** Earlier Spring Cloud setups enabled bootstrap.yml through spring-cloud-context. In the Boot 2.4 generation, bootstrap became optional and must be enabled explicitly:
+**Change with Spring Boot 2.4+:** Earlier Spring Cloud setups enabled `bootstrap.yml` through `spring-cloud-context`. In the Boot 2.4 generation, bootstrap became optional and must be enabled explicitly:
 
 ```xml
 <dependency>
@@ -1158,7 +1158,7 @@ spring:
 </dependency>
 ```
 
-> 💡 A plain Spring Boot application without Spring Cloud does not need bootstrap.yml; application.yml is sufficient.
+> 💡 A plain Spring Boot application without Spring Cloud does not need `bootstrap.yml`; `application.yml` is sufficient.
 
 ***
 
@@ -1168,7 +1168,7 @@ spring:
 | ------------ | ---------------------------------- |
 | Space after a colon | Write `port: 8080`, with a space after the colon |
 | Indentation defines nesting | Use spaces, not tabs; two spaces per level is common |
-| # starts a comment | Text after # to the end of the line is a comment |
+| `#` starts a comment | Text after `#` to the end of the line is a comment |
 | Case-sensitive | `Port` and `port` are different |
 
 #### Data Structures
@@ -1272,7 +1272,7 @@ private Integer port;
 private String appName;
 ```
 
-**Common @Value forms:**
+**Common `@Value` forms:**
 
 | Form | Description |
 | -------------------------------- | ------------------------------ |
@@ -1322,7 +1322,7 @@ public class AppConfig {
 }
 ```
 
-#### Registering @ConfigurationProperties Classes
+#### Registering `@ConfigurationProperties` Classes
 
 | Method | Description | Typical use |
 | ---- | ---- | -------- |
@@ -1369,7 +1369,7 @@ public class AppProperties {
 
 **Comparing the two approaches:**
 
-| Feature | @Value | @ConfigurationProperties |
+| Feature | `@Value` | `@ConfigurationProperties` |
 | ------------ | ---------------- | ------------------------------------ |
 | **Suitable for** | A few simple settings | Larger or more complex configuration |
 | **Nested objects** | No automatic object binding | Supported |
@@ -1377,7 +1377,7 @@ public class AppProperties {
 | **Relaxed binding** | Limited; prefer canonical property names | Supported, including naming-style conversion |
 | **Type handling** | Declare the target type explicitly | Converts values to the properties class's field types |
 
-> 💡 **Use @Value for isolated values and @ConfigurationProperties for groups of related settings.**
+> 💡 **Use `@Value` for isolated values and `@ConfigurationProperties` for groups of related settings.**
 
 ***
 
@@ -1418,7 +1418,7 @@ set SERVER_PORT=9090
 java -jar app.jar
 ```
 
-**Name conversion:** `server.port` → `SERVER_PORT`. Replace dots with underscores, remove hyphens, and convert to uppercase.
+**Name conversion:** `server.port` → `SERVER_PORT`. Replace dots (`.`) with underscores (`_`), remove hyphens (`-`), and convert to uppercase.
 
 **Referencing environment variables in a configuration file:**
 
@@ -1457,9 +1457,9 @@ Environment-specific configuration lets the same code run with different setting
 
 #### Option 1: Separate Configuration Files
 
-**Naming:** Use `application-{profile}.yml` or `.yaml` (the same pattern applies to `.properties`). Profile names are user-defined; Spring Boot does not reserve names such as dev or prod. The .yml and .yaml extensions are equivalent.
+**Naming:** Use `application-{profile}.yml` or `.yaml` (the same pattern applies to `.properties`). Profile names are user-defined; Spring Boot does not reserve names such as dev or prod. The `.yml` and `.yaml` extensions are equivalent.
 
-**Loading order:** Load application.yml, then the files for spring.profiles.active. Matching keys in profile-specific files override the main file. An active profile without a matching file is not an error; existing configuration sources still apply.
+**Loading order:** Load `application.yml`, then the files for `spring.profiles.active`. Matching keys in profile-specific files override the main file. An active profile without a matching file is not an error; existing configuration sources still apply.
 
 | Common profile name | Purpose |
 | ------------ | -------- |
@@ -1567,7 +1567,7 @@ When a setting appears in several places, a higher-priority source overrides a l
 | 3 | Environment variables | `SERVER_PORT=9090` |
 | 4 | Configuration outside the JAR | `./config/application.yml` |
 | 5 | Configuration inside the JAR | `classpath:application.yml` |
-| 6 (lowest here) | Code-level fallback | Default in @Value |
+| 6 (lowest here) | Code-level fallback | Default in `@Value` |
 
 #### A Memory Aid
 
@@ -1591,7 +1591,7 @@ Closer to code defaults usually means lower priority
 
 ***
 
-## 6. Troubleshooting
+## VI. Troubleshooting
 
 ### 6.1 Dependency Injection Failures
 
@@ -1600,8 +1600,8 @@ Injection fails when Spring cannot find a required dependency or finds several c
 | Common error | Cause | Resolution |
 | -------- | ---- | -------- |
 | `NoSuchBeanDefinitionException` | No matching bean in the container | Check scan boundaries, annotations, and configuration registration |
-| `NoUniqueBeanDefinitionException` | Multiple matching beans | Use @Primary, @Qualifier, or explicit name-based selection |
-| Circular dependency exception | Beans depend on one another | Prefer restructuring dependencies; use @Lazy where appropriate |
+| `NoUniqueBeanDefinitionException` | Multiple matching beans | Use `@Primary`, `@Qualifier`, or explicit name-based selection |
+| Circular dependency exception | Beans depend on one another | Prefer restructuring dependencies; use `@Lazy` where appropriate |
 
 Diagnostic sequence:
 
@@ -1648,12 +1648,12 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--debug
 
 | Symptom | Common cause | Resolution |
 | ---- | -------- | -------- |
-| **Null field** | Incorrect prefix, unregistered class, or missing setter | Check prefix, registration, and accessors |
-| **Environment override ignored** | Incorrect variable naming | For example, server.port maps to SERVER_PORT |
+| **Null field** | Incorrect `prefix`, unregistered class, or missing setter | Check prefix, registration, and accessors |
+| **Environment override ignored** | Incorrect variable naming | For example, `server.port` maps to `SERVER_PORT` |
 | **Changing profiles has no effect** | A higher-priority source overrides profile activation | Check application arguments, environment, and JVM properties |
-| **Startup fails immediately** | Configuration validation failed | Inspect @Validated constraint errors |
+| **Startup fails immediately** | Configuration validation failed | Inspect `@Validated` constraint errors |
 
-> 💡 For subtle configuration problems, identify the source of the effective value instead of inspecting only one application.yml file.
+> 💡 For subtle configuration problems, identify the source of the effective value instead of inspecting only one `application.yml` file.
 
 ***
 
@@ -1677,7 +1677,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | Annotation | Purpose |
 | -------------------------- | ---------------------------------- |
 | `@SpringBootApplication` | Composed application entry-point annotation |
-| `@SpringBootConfiguration` | Marks a configuration class based on @Configuration |
+| `@SpringBootConfiguration` | Marks a configuration class based on `@Configuration` |
 | `@Configuration` | Declares a configuration class |
 | `@EnableAutoConfiguration` | Enables auto-configuration |
 | `@ComponentScan` | Scans components |
@@ -1693,7 +1693,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | `@Component` | General-purpose component |
 | `@Service` | Business-layer component |
 | `@Controller` | Web controller |
-| `@RestController` | REST controller (@Controller + @ResponseBody) |
+| `@RestController` | REST controller (`@Controller` + `@ResponseBody`) |
 | `@Repository` | Persistence-layer component |
 | `@Bean` | Method-level bean definition |
 | `@Scope` | Bean scope; scoped proxies support shorter-lived dependencies of singletons |
@@ -1719,8 +1719,8 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | ---------------- | ----------------- |
 | `@PostConstruct` | Initialization callback after dependency injection |
 | `@PreDestroy` | Callback before bean destruction |
-| `InitializingBean.afterPropertiesSet()` | Initialization callback, in addition to @PostConstruct |
-| `DisposableBean.destroy()` | Destruction callback, in addition to @PreDestroy |
+| `InitializingBean.afterPropertiesSet()` | Initialization callback (same role as `@PostConstruct`) |
+| `DisposableBean.destroy()` | Destruction callback (same role as `@PreDestroy`) |
 | `@Order` | Specifies ordering |
 | `@EventListener` | Handles application events |
 

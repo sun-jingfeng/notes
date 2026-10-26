@@ -1615,7 +1615,7 @@ public class MethodReferenceDemo {
 | Syntax      | Requires a full class definition        | Concise arrow syntax               |
 | Compilation result    | Generates a separate .class file | Does not generate an additional .class file       |
 | Meaning of this | Refers to the anonymous inner-class object       | Refers to the enclosing-class object               |
-| Access to external variables  | Must be final       | Must be effectively final |
+| Access to external variables  | Must be final or effectively final (JDK 8+) | Must be effectively final |
 
 ```java
 public class ThisDemo {

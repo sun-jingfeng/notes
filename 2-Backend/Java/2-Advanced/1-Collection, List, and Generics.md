@@ -10,28 +10,30 @@
 
 ### 2. Collections Hierarchy
 
-                                Iterable (iterable)
-                                      │
-                                 Collection (individual elements)
+                                          Iterable
+                                              │
+                              Collection (individual elements)
+                                              │
+                  ┌───────────────────────────┼─────────────────────────┐
+                  │                           │                         │
+                List                         Set                      Queue
+              (ordered,                (no duplicates)               (queue)
+         duplicates allowed)
+                  │                           │                         │
+        ┌─────────┼─────────┐       ┌─────────┼───────────┐           Deque
+        │         │         │       │         │           │   (double-ended queue)
+    ArrayList     │      Vector  HashSet   TreeSet  LinkedHashSet       │
+             LinkedList                                            ArrayDeque
+                                                                   LinkedList
+                                                             (also usable as stacks)
+
+
+                         Map (key-value collections)
                                       │
                 ┌─────────────────────┼─────────────────────┐
                 │                     │                     │
-              List                   Set                  Queue
-           (ordered, duplicates allowed) (no duplicates) (queue)
-                │                     │                     │
-        ┌───────┼───────┐     ┌───────┼───────┐           Deque
-        │       │       │     │       │       │          (double-ended queue)
-    ArrayList  │    Vector  HashSet TreeSet LinkedHashSet   │
-            LinkedList                                   ArrayDeque
-               (stack)                                  LinkedList
-
-
-                                 Map (key-value collections)
-                                      │
-                ┌─────────────────────┼─────────────────────┐
-                │                     │                     │
-             HashMap              TreeMap            LinkedHashMap
-             (unordered)          (sorted)           (insertion order)
+             HashMap               TreeMap            LinkedHashMap
+           (unordered)            (sorted)          (insertion order)
                 │
            Hashtable (thread-safe, legacy)
 

@@ -324,17 +324,15 @@ Singleton.INSTANCE.doSomething();
 
 ### 1. Class Loading Process
 
-    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-    │   Loading   │────→│   Linking   │────→│ Initialization │
-    │  (Loading)  │     │  (Linking)  │     │(Initialization)│
-    └─────────────┘     └──────┬──────┘     └─────────────┘
-                               │
-                  ┌────────────┼────────────┐
-                  │            │            │
-            ┌─────┴─────┐ ┌────┴────┐ ┌─────┴─────┐
-            │Verification│ │Preparation│ │Resolution│
-            │(Verification)│ │(Preparation)│ │(Resolution)│
-            └───────────┘ └─────────┘ └───────────┘
+    ┌────────────┐     ┌────────────┐     ┌────────────────┐
+    │  Loading   │────→│  Linking   │────→│ Initialization │
+    └────────────┘     └─────┬──────┘     └────────────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+    ┌───────┴──────┐  ┌──────┴──────┐  ┌──────┴─────┐
+    │ Verification │  │ Preparation │  │ Resolution │
+    └──────────────┘  └─────────────┘  └────────────┘
 
 | Stage | Description |
 | ------- | ------------------------ |
@@ -350,40 +348,40 @@ Singleton.INSTANCE.doSomething();
 
 #### JDK 8 and Earlier
 
-    ┌─────────────────────────────────────────────────────┐
-    │           Bootstrap ClassLoader                       │
-    │           Loads rt.jar and resources.jar (jre/lib)    │
+    ┌───────────────────────────────────────────────────────────┐
+    │           Bootstrap ClassLoader                           │
+    │           Loads rt.jar and resources.jar (jre/lib)        │
     │           Implemented in C++; represented as null in Java │
-    └───────────────────────┬─────────────────────────────┘
+    └───────────────────────┬───────────────────────────────────┘
                             │ Parent loader
-    ┌───────────────────────┴─────────────────────────────┐
-    │           Extension ClassLoader                       │
-    │           Loads classes from jre/lib/ext              │
-    └───────────────────────┬─────────────────────────────┘
+    ┌───────────────────────┴───────────────────────────────────┐
+    │           Extension ClassLoader                           │
+    │           Loads classes from jre/lib/ext                  │
+    └───────────────────────┬───────────────────────────────────┘
                             │ Parent loader
-    ┌───────────────────────┴─────────────────────────────┐
-    │           Application ClassLoader                     │
-    │           Loads classpath classes (our own classes)   │
-    └─────────────────────────────────────────────────────┘
+    ┌───────────────────────┴───────────────────────────────────┐
+    │           Application ClassLoader                         │
+    │           Loads classpath classes (our own classes)       │
+    └───────────────────────────────────────────────────────────┘
 
 #### JDK 9 and Later (Module System)
 
-    ┌─────────────────────────────────────────────────────┐
-    │           Bootstrap ClassLoader                       │
-    │           Loads core modules (java.base, etc.)        │
-    │           Implemented in C++; represented as null in Java │
-    └───────────────────────┬─────────────────────────────┘
+    ┌──────────────────────────────────────────────────────────────┐
+    │           Bootstrap ClassLoader                              │
+    │           Loads core modules (java.base, etc.)               │
+    │           Implemented in C++; represented as null in Java    │
+    └───────────────────────┬──────────────────────────────────────┘
                             │ Parent loader
-    ┌───────────────────────┴─────────────────────────────┐
-    │           Platform ClassLoader                        │
-    │           Loads platform modules (java.sql, java.xml, etc.) │
-    │           ⚠️ Replaces Extension ClassLoader            │
-    └───────────────────────┬─────────────────────────────┘
+    ┌───────────────────────┴──────────────────────────────────────┐
+    │           Platform ClassLoader                               │
+    │           Loads platform modules (java.sql, java.xml, etc.)  │
+    │           ⚠️ Replaces Extension ClassLoader                  │
+    └───────────────────────┬──────────────────────────────────────┘
                             │ Parent loader
-    ┌───────────────────────┴─────────────────────────────┐
-    │           Application ClassLoader                     │
-    │           Loads classpath classes and application modules │
-    └─────────────────────────────────────────────────────┘
+    ┌───────────────────────┴──────────────────────────────────────┐
+    │           Application ClassLoader                            │
+    │           Loads classpath classes and application modules    │
+    └──────────────────────────────────────────────────────────────┘
 
 ***
 
@@ -450,44 +448,44 @@ public class ClassLoaderDemo {
                             Start
                               |
                               ↓
-        ┌─────────────────────────────────────────────┐
+        ┌──────────────────────────────────────────────┐
         │             AppClassLoader                   │
-        │ Already loaded? → Yes → reuse; do not reload        │
-        │                 ↓ No                               │
-        │            Delegate to parent                      │
-        └─────────────────────────────────────────────┘
+        │ Already loaded? → Yes → reuse; do not reload │
+        │                 ↓ No                         │
+        │            Delegate to parent                │
+        └──────────────────────────────────────────────┘
                               |
                               ↓
-        ┌─────────────────────────────────────────────┐
+        ┌──────────────────────────────────────────────┐
         │       Platform/Extension ClassLoader         │
-        │ Already loaded? → Yes → reuse; do not reload        │
-        │                 ↓ No                               │
-        │            Delegate to parent                      │
-        └─────────────────────────────────────────────┘
+        │ Already loaded? → Yes → reuse; do not reload │
+        │                 ↓ No                         │
+        │            Delegate to parent                │
+        └──────────────────────────────────────────────┘
                               |
                               ↓
-        ┌─────────────────────────────────────────────┐
+        ┌──────────────────────────────────────────────┐
         │          Bootstrap ClassLoader               │
-        │ Already loaded? → Yes → reuse; do not reload        │
-        │                 ↓ No                               │
-        │ Can load? → Yes → load this class and return        │
-        │                 ↓ No                               │
-        └─────────────────────────────────────────────┘
+        │ Already loaded? → Yes → reuse; do not reload │
+        │                 ↓ No                         │
+        │ Can load? → Yes → load this class and return │
+        │                 ↓ No                         │
+        └──────────────────────────────────────────────┘
                               |
                               ↓
-        ┌─────────────────────────────────────────────┐
+        ┌──────────────────────────────────────────────┐
         │       Platform/Extension ClassLoader         │
-        │ Can load? → Yes → load this class and return        │
-        │                 ↓ No                               │
-        └─────────────────────────────────────────────┘
+        │ Can load? → Yes → load this class and return │
+        │                 ↓ No                         │
+        └──────────────────────────────────────────────┘
                               |
                               ↓
-        ┌─────────────────────────────────────────────┐
+        ┌──────────────────────────────────────────────┐
         │             AppClassLoader                   │
-        │ Can load? → Yes → load this class and return        │
-        │                 ↓ No                               │
+        │ Can load? → Yes → load this class and return │
+        │                 ↓ No                         │
         │         ClassNotFoundException               │
-        └─────────────────────────────────────────────┘
+        └──────────────────────────────────────────────┘
 
 **Parent Delegation** (applies to both JDK 8 and JDK 9+):
 
@@ -576,19 +574,19 @@ Object obj = clazz.getDeclaredConstructor().newInstance();
 
 Reflection dynamically obtains class information, creates objects and invokes methods **at runtime**.
 
-    Compile time                      Runtime
+    Compile time                        Runtime
     ┌──────────────┐                ┌──────────────┐
-    │  .java file  │ → compile →   │  .class file │
-    │ Source code │                │  Bytecode   │
-    └──────────────┘                └───────┬──────┘
-                                            │
-                                            ↓ Reflection
-                                    ┌──────────────┐
-                                    │  Class object  │
-                                    │ Inspect class  │
-                                    │ Create objects │
-                                    │ Invoke methods │
-                                    └──────────────┘
+    │  .java file  │ ── compile ──→ │ .class file  │
+    │ Source code  │                │   Bytecode   │
+    └──────────────┘                └──────┬───────┘
+                                           │
+                                           ↓ Reflection
+                                   ┌───────┴────────┐
+                                   │  Class object  │
+                                   │ Inspect class  │
+                                   │ Create objects │
+                                   │ Invoke methods │
+                                   └────────────────┘
 
 ***
 
@@ -1157,12 +1155,12 @@ public class TestRunner {
 The proxy design pattern **controls access to an original object** through a proxy object.
 
     ┌──────────┐         ┌──────────┐         ┌──────────┐
-    │  Caller   │ ──────→ │   Proxy   │ ──────→ │  Target   │
+    │  Caller  │ ──────→ │   Proxy  │ ──────→ │  Target  │
     └──────────┘         └──────────┘         └──────────┘
                                │
                                ↓
                          Added behavior
-                       (logging, authorization, transactions)
+             (logging, authorization, transactions)
 
 ***
 
@@ -1333,7 +1331,7 @@ proxy.add();
 | **Creation performance** | Fast proxy creation | Slower creation (bytecode generation required) |
 | **Invocation performance** | Slightly slower | Fast (direct method calls) |
 | **Dependency** | Built into the JDK | Requires the cglib library |
-| **Spring selection** | Default when interfaces exist | Automatically used without interfaces |
+| **Spring selection** | Spring Framework default when interfaces exist | Used without interfaces; Spring Boot 2.0+ uses it by default (`spring.aop.proxy-target-class=true`) |
 
 #### CGLIB Example (Dependency Required)
 
@@ -1489,8 +1487,8 @@ public class Demo {
         │
         ├── Class loaders
         │     ├── Process: loading → linking → initialization
-        │     ├── JDK 8：Bootstrap → Extension → Application
-        │     ├── JDK 9+：Bootstrap → Platform → Application
+        │     ├── JDK 8: Bootstrap → Extension → Application
+        │     ├── JDK 9+: Bootstrap → Platform → Application
         │     │           (Extension renamed to Platform)
         │     ├── Parent delegation: delegate first; load locally only if the parent fails
         │     └── Departures: SPI, Tomcat, OSGi, custom class loaders
@@ -1515,5 +1513,5 @@ public class Demo {
               ├── JDK dynamic proxy: Proxy.newProxyInstance()
               │     └── Requirement: target object implements an interface
               ├── CGLIB: inheritance-based; no interface required
-              ├── InvocationHandler：invoke(proxy, method, args)
+              ├── InvocationHandler: invoke(proxy, method, args)
               └── Uses: logging, authorization, transactions, Spring AOP

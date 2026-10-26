@@ -1,4 +1,4 @@
-## 1. Starters
+## I. Starters
 
 ### 1.1 Starter Overview
 
@@ -135,7 +135,7 @@ In IDEA, open the `Maven` tool window → `Dependencies` to inspect the tree.
 
 ***
 
-## 2. Auto-configuration Internals
+## II. Auto-configuration Internals
 
 ### 2.1 Overview
 
@@ -243,7 +243,7 @@ org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
 ...
 ```
 
-> ⚠️ Spring Boot 3.0 removed auto-configuration registration through spring.factories; use the .imports registration file.
+> ⚠️ Spring Boot 3.0 removed auto-configuration registration through `spring.factories`; use the `.imports` registration file.
 
 ***
 
@@ -531,7 +531,7 @@ spring:
 
 ***
 
-## 3. Custom Starters
+## III. Custom Starters
 
 ### 3.1 Why Create a Starter?
 
@@ -580,14 +580,14 @@ xxx-spring-boot-starter-parent/
 
 | Step | Task | Key detail |
 | ---- | ----------------------- | ------------------------------------------------------- |
-| 1 | Create the autoconfigure module | Depend on spring-boot-autoconfigure |
+| 1 | Create the autoconfigure module | Depend on `spring-boot-autoconfigure` |
 | 2 | Define configuration properties | `@ConfigurationProperties(prefix = "xxx")` |
 | 3 | Implement the service | Inject properties through its constructor |
-| 4 | Define auto-configuration | @AutoConfiguration + @EnableConfigurationProperties |
-| 5 | Register the auto-configuration | META-INF/spring/...AutoConfiguration.imports |
-| 6 | Add optional configuration metadata | additional-spring-configuration-metadata.json |
+| 4 | Define auto-configuration | `@AutoConfiguration` + `@EnableConfigurationProperties` |
+| 5 | Register the auto-configuration | `META-INF/spring/...AutoConfiguration.imports` |
+| 6 | Add optional configuration metadata | `additional-spring-configuration-metadata.json` |
 | 7 | Create the starter module | POM depending on autoconfigure |
-| 8 | Install and use it | mvn install → add the dependency to another project |
+| 8 | Install and use it | `mvn install` → add the dependency to another project |
 
 ***
 
@@ -597,14 +597,14 @@ xxx-spring-boot-starter-parent/
 
 | Annotation | Location | Purpose |
 | ---- | ------ | ---- |
-| `@ConfigurationProperties(prefix="xxx")` | Properties class | Bind xxx.* properties to its fields |
+| `@ConfigurationProperties(prefix="xxx")` | Properties class | Bind `xxx.*` properties to its fields |
 | `@EnableConfigurationProperties(Xxx.class)` | Auto-configuration | Enable binding and register the properties bean |
 | `@AutoConfiguration` | Auto-configuration class | Mark an auto-configuration (Spring Boot 2.7+) |
 | `@ConditionalOnProperty` | Auto-configuration | Enable a feature based on a property |
-| `@ConditionalOnMissingBean` | @Bean method | Create the default only if the user has not supplied a bean |
+| `@ConditionalOnMissingBean` | `@Bean` method | Create the default only if the user has not supplied a bean |
 | `@Bean` | Configuration method | Register the method's result as a bean |
 
-**Relaxed binding:** access-key-id, accessKeyId, and access_key_id in a configuration file can bind to the Java field accessKeyId.
+**Relaxed binding:** `access-key-id`, `accessKeyId`, and `access_key_id` in a configuration file can bind to the Java field `accessKeyId`.
 
 #### Registration File
 
@@ -623,7 +623,7 @@ The application depends on the starter, which depends on the autoconfigure modul
 
 **2. Spring Boot discovers auto-configuration classes**
 
-The autoconfigure module's .imports file lists configuration class names. At startup:
+The autoconfigure module's `.imports` file lists configuration class names. At startup:
 
 ```
 @SpringBootApplication
@@ -639,9 +639,9 @@ Import selection reads .imports and returns configuration candidates
 
 **3. The configuration applies**
 
-- Mark the class with @AutoConfiguration (@Configuration also works for registration, but @AutoConfiguration is preferred).
-- Bind the properties class with @EnableConfigurationProperties.
-- Declare the service beans with @Bean methods.
+- Mark the class with `@AutoConfiguration` (`@Configuration` also works for registration, but `@AutoConfiguration` is preferred).
+- Bind the properties class with `@EnableConfigurationProperties`.
+- Declare the service beans with `@Bean` methods.
 
 **4. The application uses the feature**
 
@@ -661,22 +661,22 @@ private SmsService smsService;
 
 | File | Purpose |
 | ---- | ---- |
-| XxxProperties.java | Receives the application's xxx.* configuration |
-| XxxService.java | Implements the service |
-| XxxAutoConfiguration.java | Connects properties and service creation |
-| .imports file | Registers the auto-configuration for discovery |
+| `XxxProperties.java` | Receives the application's `xxx.*` configuration |
+| `XxxService.java` | Implements the service |
+| `XxxAutoConfiguration.java` | Connects properties and service creation |
+| `.imports` file | Registers the auto-configuration for discovery |
 
 #### Key Questions
 
-**Why use @ConditionalOnMissingBean?**
+**Why use `@ConditionalOnMissingBean`?**
 
 It gives user-defined beans priority. If the application defines its own SmsService, your auto-configuration backs off.
 
-**Why use @ConditionalOnProperty?**
+**Why use `@ConditionalOnProperty`?**
 
 It lets applications disable the feature through configuration. `matchIfMissing = true` enables it by default when no property is set.
 
-**Why leave @Component off the service class?**
+**Why leave `@Component` off the service class?**
 
 The auto-configuration should control its creation. Component scanning could otherwise register it independently of those conditions.
 
@@ -929,14 +929,14 @@ sms-spring-boot-starter/
 
 | Practice | Explanation |
 | -------------------------------- | --------------------------------------------------------------------- |
-| Use @ConditionalOn* | Create beans only when the required conditions match |
+| Use `@ConditionalOn*` | Create beans only when the required conditions match |
 | Provide an enable/disable switch | `@ConditionalOnProperty(name = "xxx.enabled", matchIfMissing = true)` |
-| Use @ConditionalOnMissingBean | Let consumers replace default implementations |
-| Provide configuration metadata | Use spring-boot-configuration-processor for IDE completion |
+| Use `@ConditionalOnMissingBean` | Let consumers replace default implementations |
+| Provide configuration metadata | Use `spring-boot-configuration-processor` for IDE completion |
 | Mark optional dependencies | Use `<optional>true</optional>` for nonessential dependencies |
 | Choose sensible defaults | Make the feature usable with minimal configuration |
-| Use clear package boundaries | Put auto-configuration in a dedicated package such as xxx.autoconfigure |
-| Use lite configuration | @Configuration(proxyBeanMethods = false) avoids configuration proxy overhead |
+| Use clear package boundaries | Put auto-configuration in a dedicated package such as `xxx.autoconfigure` |
+| Use lite configuration | `@Configuration(proxyBeanMethods = false)` avoids configuration proxy overhead |
 | State version compatibility | Document the supported Spring Boot versions |
 | Provide documentation | Explain configuration and usage in a README |
 
@@ -949,12 +949,12 @@ sms-spring-boot-starter/
 | Topic | Section | Description |
 | ---------------- | ---- | -------------------------------------------------------------- |
 | Starter concept | 1.1 | Dependency aggregation |
-| Starter names | 1.2 | Official spring-boot-starter-* and third-party *-spring-boot-starter |
-| Auto-configuration trigger | 2.2 | @EnableAutoConfiguration → AutoConfigurationImportSelector |
-| Conditional annotations | 2.4 | @ConditionalOnClass, @ConditionalOnMissingBean, and others |
+| Starter names | 1.2 | Official `spring-boot-starter-*` and third-party `*-spring-boot-starter` |
+| Auto-configuration trigger | 2.2 | `@EnableAutoConfiguration` → `AutoConfigurationImportSelector` |
+| Conditional annotations | 2.4 | `@ConditionalOnClass`, `@ConditionalOnMissingBean`, and others |
 | Overriding defaults | 2.6 | User-defined beans take precedence |
-| Configuration report | 2.7 | debug: true |
-| Excluding configurations | 2.8 | exclude attributes or configuration properties |
+| Configuration report | 2.7 | `debug: true` |
+| Excluding configurations | 2.8 | `exclude` attributes or configuration properties |
 | Development process | 3.2 | Eight-step workflow |
 | Core mechanisms | 3.3 | Annotations and runtime flow |
 | Practical example | 3.4 | Complete SMS starter code |
@@ -966,59 +966,59 @@ sms-spring-boot-starter/
 
 | Annotation | Purpose |
 | -------------------------------- | ---------------------------------- |
-| @AutoConfiguration | Declare an auto-configuration (Spring Boot 2.7+) |
-| @AutoConfiguration(before=...) | Order it before another configuration |
-| @AutoConfiguration(after=...) | Order it after another configuration |
-| @Configuration | Declare a configuration class |
-| @EnableConfigurationProperties | Enable configuration-properties binding |
-| @ConfigurationProperties | Bind settings under a prefix |
+| `@AutoConfiguration` | Declare an auto-configuration (Spring Boot 2.7+) |
+| `@AutoConfiguration(before=...)` | Order it before another configuration |
+| `@AutoConfiguration(after=...)` | Order it after another configuration |
+| `@Configuration` | Declare a configuration class |
+| `@EnableConfigurationProperties` | Enable configuration-properties binding |
+| `@ConfigurationProperties` | Bind settings under a prefix |
 
 #### Conditional Annotations
 
 | Annotation | Condition |
 | --------------------------------- | ------------------------- |
-| @ConditionalOnClass | Class present |
-| @ConditionalOnMissingClass | Class absent |
-| @ConditionalOnBean | Bean present |
-| @ConditionalOnMissingBean | Bean absent |
-| @ConditionalOnProperty | Property matches |
-| @ConditionalOnResource | Resource exists |
-| @ConditionalOnWebApplication | Web application |
-| @ConditionalOnNotWebApplication | Non-web application |
-| @ConditionalOnExpression | SpEL expression is true |
-| @ConditionalOnSingleCandidate | One eligible candidate, including a uniquely primary bean |
-| @ConditionalOnJava | Java version matches |
-| @ConditionalOnJndi | Required JNDI resource exists |
-| @ConditionalOnCloudPlatform | Cloud platform matches |
+| `@ConditionalOnClass` | Class present |
+| `@ConditionalOnMissingClass` | Class absent |
+| `@ConditionalOnBean` | Bean present |
+| `@ConditionalOnMissingBean` | Bean absent |
+| `@ConditionalOnProperty` | Property matches |
+| `@ConditionalOnResource` | Resource exists |
+| `@ConditionalOnWebApplication` | Web application |
+| `@ConditionalOnNotWebApplication` | Non-web application |
+| `@ConditionalOnExpression` | SpEL expression is true |
+| `@ConditionalOnSingleCandidate` | One eligible candidate, including a uniquely primary bean |
+| `@ConditionalOnJava` | Java version matches |
+| `@ConditionalOnJndi` | Required JNDI resource exists |
+| `@ConditionalOnCloudPlatform` | Cloud platform matches |
 
 #### Registration File Locations
 
 | Spring Boot version | Registration file |
 | ---------------- | ---------------------------------------------------------------------------------- |
 | 3.x / 2.7+       | `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` |
-| Before 2.7 | META-INF/spring.factories (legacy auto-configuration registration) |
+| Before 2.7 | `META-INF/spring.factories` (legacy auto-configuration registration) |
 
 ### C. Troubleshooting
 
 | Problem | Cause | Resolution |
 | ------------------------------ | -------------------------------------------- | -------------------------------- |
-| Auto-configuration does not apply | Missing .imports registration | Check the path and fully qualified class name |
-| Properties do not bind | Missing @EnableConfigurationProperties | Enable binding in the configuration class |
-| No IDE property completion | Missing configuration-processor | Add it and recompile |
-| User-defined bean does not take precedence | Missing @ConditionalOnMissingBean | Add the condition to the @Bean method |
-| Boot 3.x does not load the configuration | Legacy spring.factories registration | Use the .imports file |
-| NoClassDefFoundError at startup | A referenced conditional class is absent | Use the name attribute with a class-name string where appropriate |
+| Auto-configuration does not apply | Missing `.imports` registration | Check the path and fully qualified class name |
+| Properties do not bind | Missing `@EnableConfigurationProperties` | Enable binding in the configuration class |
+| No IDE property completion | Missing `configuration-processor` | Add it and recompile |
+| User-defined bean does not take precedence | Missing `@ConditionalOnMissingBean` | Add the condition to the `@Bean` method |
+| Boot 3.x does not load the configuration | Legacy `spring.factories` registration | Use the `.imports` file |
+| `NoClassDefFoundError` at startup | A referenced conditional class is absent | Use the `name` attribute with a class-name string where appropriate |
 
 ### D. Custom Starter Checklist
 
-- [ ] pom.xml includes spring-boot-autoconfigure
-- [ ] XxxProperties uses @ConfigurationProperties(prefix = "xxx")
-- [ ] XxxAutoConfiguration uses @AutoConfiguration
-- [ ] @EnableConfigurationProperties enables property binding
-- [ ] @ConditionalOnProperty provides an enable/disable switch
-- [ ] @ConditionalOnMissingBean allows user overrides
-- [ ] META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports exists
+- [ ] `pom.xml` includes `spring-boot-autoconfigure`
+- [ ] `XxxProperties` uses `@ConfigurationProperties(prefix = "xxx")`
+- [ ] `XxxAutoConfiguration` uses `@AutoConfiguration`
+- [ ] `@EnableConfigurationProperties` enables property binding
+- [ ] `@ConditionalOnProperty` provides an enable/disable switch
+- [ ] `@ConditionalOnMissingBean` allows user overrides
+- [ ] `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` exists
 - [ ] The file contains the fully qualified configuration class name
-- [ ] Optional: configuration-processor is included for IDE support
-- [ ] Optional: additional-spring-configuration-metadata.json supplements the metadata
-- [ ] mvn install installs the module locally
+- [ ] Optional: `configuration-processor` is included for IDE support
+- [ ] Optional: `additional-spring-configuration-metadata.json` supplements the metadata
+- [ ] `mvn install` installs the module locally

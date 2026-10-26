@@ -16,16 +16,16 @@
 ### 2. Diagram
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                        Operating system                          │
-    │  ┌─────────────────────┐    ┌─────────────────────┐         │
-    │  │   Process 1 (QQ)     │    │   Process 2 (WeChat)  │         │
-    │  │  ┌─────┐ ┌─────┐   │    │  ┌─────┐ ┌─────┐   │         │
-    │  │  │ T1  │ │ T2  │   │    │  │ T1  │ │ T2  │   │         │
-    │  │  └─────┘ └─────┘   │    │  └─────┘ └─────┘   │         │
-    │  │  ┌─────┐           │    │  ┌─────┐           │         │
-    │  │  │ T3  │           │    │  │ T3  │           │         │
-    │  │  └─────┘           │    │  └─────┘           │         │
-    │  └─────────────────────┘    └─────────────────────┘         │
+    │                      Operating system                       │
+    │  ┌──────────────────────┐  ┌──────────────────────┐         │
+    │  │    Process 1 (QQ)    │  │  Process 2 (WeChat)  │         │
+    │  │  ┌─────┐ ┌─────┐     │  │  ┌─────┐ ┌─────┐     │         │
+    │  │  │ T1  │ │ T2  │     │  │  │ T1  │ │ T2  │     │         │
+    │  │  └─────┘ └─────┘     │  │  └─────┘ └─────┘     │         │
+    │  │  ┌─────┐             │  │  ┌─────┐             │         │
+    │  │  │ T3  │             │  │  │ T3  │             │         │
+    │  │  └─────┘             │  │  └─────┘             │         │
+    │  └──────────────────────┘  └──────────────────────┘         │
     └─────────────────────────────────────────────────────────────┘
 
 ### 3. Concurrency and Parallelism
@@ -60,7 +60,7 @@ public class MyThread extends Thread {
     @Override
     public void run() {
         for (int i = 0; i < 100; i++) {
-            System.out.println(getName() + "：" + i);
+            System.out.println(getName() + ": " + i);
         }
     }
 }
@@ -100,7 +100,7 @@ public class MyRunnable implements Runnable {
     public void run() {
         for (int i = 0; i < 100; i++) {
             // Runnable has no getName(); use Thread.currentThread()
-            System.out.println(Thread.currentThread().getName() + "：" + i);
+            System.out.println(Thread.currentThread().getName() + ": " + i);
         }
     }
 }
@@ -293,13 +293,13 @@ public class Demo {
     public static void main(String[] args) {
         Thread t1 = new Thread(() -> {
             for (int i = 0; i < 100; i++) {
-                System.out.println("t1：" + i);
+                System.out.println("t1: " + i);
             }
         });
 
         Thread t2 = new Thread(() -> {
             for (int i = 0; i < 100; i++) {
-                System.out.println("t2：" + i);
+                System.out.println("t2: " + i);
             }
         });
 
@@ -366,26 +366,26 @@ public class Demo {
 
 Java threads have **six states**, defined in the `Thread.State` enum:
 
-                                         ┌──────────────────┐
-                                         │     BLOCKED      │
-                                         │ (blocked: waiting for a lock) │
-                                         └────────┬─────────┘
-                                                  ↑ Waiting for a lock
-                                                  │
-    ┌─────────┐     ┌───────────────┐     ┌───────┴───────┐     ┌─────────────┐
-    │   NEW   │────→│   RUNNABLE    │←───→│ Lock acquired │────→│ TERMINATED  │
-    │ Created │     │ Ready/running │     │               │     │  Finished   │
-    └─────────┘     └───────┬───────┘     └───────────────┘     └─────────────┘
-      new Thread()          │ wait()/join()/sleep()
-           ↓ start()        ↓
-                      ┌─────────────────┐
-                      │    WAITING      │  Indefinite wait
-                      │  (no timeout)   │  wait(), join()
-                      └─────────────────┘
-                      ┌─────────────────┐
-                      │  TIMED_WAITING  │  Bounded wait
-                      │  (with timeout) │  sleep(n), wait(n), join(n)
-                      └─────────────────┘
+                             ┌─────────────────────┐
+                             │       BLOCKED       │
+                             │ (waiting for lock)  │
+                             └────┴───────────┬────┘
+                 lock unavailable ↑           │ lock acquired
+                                  │           ↓
+    ┌─────────┐              ┌────┴───────────┴────┐                ┌────────────┐
+    │   NEW   │── start() ──→│      RUNNABLE       │── run() ends ─→│ TERMINATED │
+    └─────────┘              │  (ready / running)  │                └────────────┘
+                             └────┬───────────┬────┘
+             wait()/join()/park() │           │ notify()/unpark()
+                 sleep(n)/wait(n) │           │ timeout/interrupt
+                                  ↓           │
+                             ┌────┴───────────┴────┐
+                             │       WAITING       │
+                             │    (no timeout)     │
+                             ├─────────────────────┤
+                             │    TIMED_WAITING    │
+                             │   (with timeout)    │
+                             └─────────────────────┘
 
 | State | Description | Trigger |
 | ------------------ | ------------ | -------------------------------------- |
@@ -434,7 +434,7 @@ public class Ticket implements Runnable {
                     e.printStackTrace();
                 }
                 System.out.println(Thread.currentThread().getName()
-                    + " sold ticket " + ticket + "");
+                    + " sold ticket " + ticket);
                 ticket--;
             } else {
                 break;
@@ -481,7 +481,7 @@ public class Ticket implements Runnable {
                         e.printStackTrace();
                     }
                     System.out.println(Thread.currentThread().getName()
-                        + " sold ticket " + ticket + "");
+                        + " sold ticket " + ticket);
                     ticket--;
                 } else {
                     break;
@@ -535,7 +535,7 @@ public class Ticket implements Runnable {
                 e.printStackTrace();
             }
             System.out.println(Thread.currentThread().getName()
-                + " sold ticket " + ticket + "");
+                + " sold ticket " + ticket);
             ticket--;
             return true;
         }
@@ -569,7 +569,7 @@ public class Ticket implements Runnable {
                 if (ticket > 0) {
                     Thread.sleep(10);
                     System.out.println(Thread.currentThread().getName()
-                        + " sold ticket " + ticket + "");
+                        + " sold ticket " + ticket);
                     ticket--;
                 } else {
                     break;
@@ -696,7 +696,7 @@ private static volatile boolean flag = true;  // Add volatile
 // After modification, the child thread can see the change to flag immediately
 ```
 
-**volatile vs synchronized**：
+**volatile vs synchronized**:
 
 | Comparison | volatile | synchronized |
 | -------- | -------- | ------------ |
@@ -722,7 +722,7 @@ Objects in heap memory that are shared across threads face thread-safety issues.
 
 #### Approach 1: Locking
 
-See the `synchronized` and `Lock` sections in this chapter.
+Guard the critical section with `synchronized` or a `Lock` (such as `ReentrantLock`) so that only one thread at a time reads and modifies the shared state.
 
 #### Approach 2: Thread-Safe Containers
 
@@ -908,14 +908,14 @@ class DataBox {
 
 **Solution**: create a set of threads in advance, keep them in a pool, use them as needed and return them afterward.
 
-    ┌────────────────────────────────────────────────────┐
+    ┌─────────────────────────────────────────────────────┐
     │                      Thread pool                    │
-    │  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐           │
-    │  │ T1   │  │ T2   │  │ T3   │  │ T4   │ ...       │
-    │  └──────┘  └──────┘  └──────┘  └──────┘           │
-    │                                                    │
+    │  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐             │
+    │  │ T1   │  │ T2   │  │ T3   │  │ T4   │ ...         │
+    │  └──────┘  └──────┘  └──────┘  └──────┘             │
+    │                                                     │
     │              Task queue: [Task A] [Task B] [Task C] │
-    └────────────────────────────────────────────────────┘
+    └─────────────────────────────────────────────────────┘
 
     Workflow:
     1. Submit tasks to the task queue
@@ -1122,25 +1122,23 @@ public ThreadPoolExecutor(
         │
         ↓
     ┌─────────────────────────────────────────────────────────────────┐
-    │                        Thread pool                              │
-    │                                                                  │
+    │                           Thread pool                           │
+    │                                                                 │
     │  ┌─────────────────────┐    ┌─────────────────────┐             │
-    │  │    Core threads     │    │    Task queue         │             │
-    │  │  ┌────┐ ┌────┐     │    │  [Task] [Task] ...   │             │
-    │  │  │ T  │ │ T  │ ... │    │                      │             │
-    │  │  └────┘ └────┘     │    └─────────────────────┘             │
-    │  │  (corePoolSize)    │              │                          │
-    │  └─────────────────────┘              │                          │
-    │                                       ↓                          │
-    │  ┌─────────────────────┐        Queue full?                     │
-    │  │ Temporary threads  │        ┌──────┐                        │
-    │  │  ┌────┐ ┌────┐     │←───────│Create│ temporary threads       │
-    │  │  │ T  │ │ T  │ ... │        └──────┘                        │
-    │  │  └────┘ └────┘     │                                         │
-    │  │  (max - core)      │              │                          │
-    │  └─────────────────────┘              ↓                          │
-    │                                  Thread limit also reached?     │
-    │                                  Apply rejection policy         │
+    │  │    Core threads     │    │     Task queue      │             │
+    │  │  ┌────┐ ┌────┐      │    │  [Task] [Task] ...  │             │
+    │  │  │ T  │ │ T  │ ...  │    │                     │             │
+    │  │  └────┘ └────┘      │    └──────────┬──────────┘             │
+    │  │  (corePoolSize)     │               │ Queue full?            │
+    │  └─────────────────────┘               ↓                        │
+    │  ┌─────────────────────┐    ┌──────────┴──────────┐             │
+    │  │  Temporary threads  │    │ Create a temporary  │             │
+    │  │  ┌────┐ ┌────┐      │←───│ thread              │             │
+    │  │  │ T  │ │ T  │ ...  │    └──────────┬──────────┘             │
+    │  │  └────┘ └────┘      │               │ Max threads reached?   │
+    │  │  (max - core)       │               ↓                        │
+    │  └─────────────────────┘    Apply rejection policy              │
+    │                                                                 │
     └─────────────────────────────────────────────────────────────────┘
 
 **Task Processing Flow**:
@@ -1588,14 +1586,14 @@ public class Demo {
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │  ThreadLocal<String> name = new ThreadLocal<>();    │    │
 │  └─────────────────────────────────────────────────────┘    │
-│                          │                                   │
+│                          │                                  │
 │          ┌───────────────┼───────────────┐                  │
 │          ↓               ↓               ↓                  │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐             │
-│   │ Thread A│    │ Thread B│    │ Thread C│             │
-│   │ name="张三"│    │ name="李四"│    │ name="王五"│             │
-│   └──────────┘    └──────────┘    └──────────┘             │
-│   Each thread has an independent copy; no interference       │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│   │ Thread A    │    │ Thread B    │    │ Thread C    │     │
+│   │ name="张三" │    │ name="李四" │    │ name="王五" │     │
+│   └─────────────┘    └─────────────┘    └─────────────┘     │
+│   Each thread has an independent copy; no interference      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1630,20 +1628,20 @@ public class ThreadLocalDemo {
         // Thread 1
         new Thread(() -> {
             threadLocal.set("Thread 1 data");
-            System.out.println(Thread.currentThread().getName() + "：" + threadLocal.get());
+            System.out.println(Thread.currentThread().getName() + ": " + threadLocal.get());
             threadLocal.remove();  // Remember to remove after use
         }, "Thread-1").start();
 
         // Thread 2
         new Thread(() -> {
             threadLocal.set("Thread 2 data");
-            System.out.println(Thread.currentThread().getName() + "：" + threadLocal.get());
+            System.out.println(Thread.currentThread().getName() + ": " + threadLocal.get());
             threadLocal.remove();
         }, "Thread-2").start();
 
         // Main thread
         threadLocal.set("Main thread data");
-        System.out.println(Thread.currentThread().getName() + "：" + threadLocal.get());
+        System.out.println(Thread.currentThread().getName() + ": " + threadLocal.get());
         threadLocal.remove();
     }
 }

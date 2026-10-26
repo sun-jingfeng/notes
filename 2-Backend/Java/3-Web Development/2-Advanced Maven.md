@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Multi-Module Design and Development
+## I. Multi-Module Design and Development
 
 ### 1.1 What Is a Multi-Module Project?
 
@@ -96,7 +96,7 @@ project-parent/
 
 Maven dependencies are transitive: if A depends on B and B depends on C, A can obtain C automatically.
 
-Thus, although `web` declares only a dependency on `service`, it can use classes from `pojo` through the service → mapper → pojo dependency chain.
+Thus, although `myapp-web` declares only a dependency on `myapp-service`, it can use classes from `myapp-common` through the myapp-service → myapp-dao → myapp-common dependency chain.
 
 ### 1.6 Declaring Module Dependencies
 
@@ -153,7 +153,7 @@ Dependencies must be built before the modules that use them. Run `mvn clean inst
 
 ---
 
-## 2. Inheritance and Aggregation
+## II. Inheritance and Aggregation
 
 Inheritance centralizes **configuration**; aggregation coordinates **builds**. Projects commonly use both.
 
@@ -257,12 +257,12 @@ Maven lets you define custom values in `<properties>` and reference them elsewhe
 
 > **Inheritance:** Children inherit the parent's `<properties>`. Define shared versions in the parent to avoid repeating them.
 
-**3. Dependency version management** — declare versions without adding dependencies (see 2.1.4).
+**3. Dependency version management** — declare versions without adding dependencies.
 
 ```xml
 <dependencyManagement>
     <dependencies>
-        <!-- Import Spring Boot dependency management through its BOM (see 2.1.8) -->
+        <!-- Import Spring Boot dependency management through its BOM -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-dependencies</artifactId>
@@ -289,7 +289,7 @@ Maven lets you define custom values in `<properties>` and reference them elsewhe
 </dependencyManagement>
 ```
 
-**4. Shared dependencies** — automatically inherited by every child (see 2.1.4).
+**4. Shared dependencies** — automatically inherited by every child.
 
 ```xml
 <dependencies>
@@ -369,7 +369,7 @@ A child declares its parent with `<parent>`. `<relativePath>` specifies the rela
 A **BOM (Bill of Materials)** is a Maven POM used to **manage dependency versions without adding the dependencies themselves**.
 
 Think of it as a version catalog:
-- Its `<dependencyManagement>` entries say, for example, “If you use spring-boot-starter-web, use version 3.2.10.”
+- Its `<dependencyManagement>` entries say, for example, "If you use spring-boot-starter-web, use version 3.2.10."
 - It **does not** add those dependencies to your project; it specifies which versions to use.
 - When you declare a managed dependency in `<dependencies>`, you **can omit its version** and use the catalog's version.
 
@@ -491,7 +491,7 @@ mvn clean install -pl myapp-dao -amd
 
 ---
 
-## 3. Private Repositories
+## III. Private Repositories
 
 ### 3.1 What Is a Private Repository?
 
@@ -671,7 +671,7 @@ Local repository → Private repository group → Maven Central
 
 ---
 
-## 4. Practical Example: Building a Multi-Module Project
+## IV. Practical Example: Building a Multi-Module Project
 
 ### 4.1 Project Layout
 
@@ -874,7 +874,7 @@ java -jar target/myapp-web-1.0.0.jar
 
 ---
 
-## 5. Summary
+## V. Summary
 
 ### 5.1 Quick Reference
 

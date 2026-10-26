@@ -133,7 +133,7 @@ String parent = file.getParent();  // "D:/test/../test"
 File parentFile = file.getParentFile();  // File object
 
 // Get file size (bytes)
-long size = file.length();  // File size in bytes; returns 0 for a directory
+long size = file.length();  // File size in bytes; 0 if the file does not exist; unspecified for a directory
 
 // Get the last-modified time (milliseconds)
 long lastModified = file.lastModified();  // Timestamp
@@ -530,17 +530,17 @@ public static int factorial(int n) {
 
 **Diagram:**
 
-    ┌─────────────────────────────────────────┐
-    │  factorial(5) = 5 * factorial(4) = 120  │ ← returns last
-    ├─────────────────────────────────────────┤
-    │  factorial(4) = 4 * factorial(3) = 24   │
-    ├─────────────────────────────────────────┤
-    │  factorial(3) = 3 * factorial(2) = 6    │
-    ├─────────────────────────────────────────┤
-    │  factorial(2) = 2 * factorial(1) = 2    │
-    ├─────────────────────────────────────────┤
+    ┌──────────────────────────────────────────┐
+    │  factorial(5) = 5 * factorial(4) = 120   │ ← returns last
+    ├──────────────────────────────────────────┤
+    │  factorial(4) = 4 * factorial(3) = 24    │
+    ├──────────────────────────────────────────┤
+    │  factorial(3) = 3 * factorial(2) = 6     │
+    ├──────────────────────────────────────────┤
+    │  factorial(2) = 2 * factorial(1) = 2     │
+    ├──────────────────────────────────────────┤
     │  factorial(1) = 1                        │ ← base case; starts returning
-    └─────────────────────────────────────────┘
+    └──────────────────────────────────────────┘
 
 ***
 
@@ -975,7 +975,7 @@ sumTail(100, 0);  // 5050
 
 *   Tree traversal, divide-and-conquer problems → use recursion.
 *   Simple iteration, large inputs → use loops.
-*   Performance optimization → consider tail recursion or caching.
+*   Performance optimization → consider caching (memoization) or an iterative rewrite.
 
 ***
 

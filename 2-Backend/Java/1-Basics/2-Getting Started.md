@@ -143,7 +143,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
     3. Choose an installation path (preferably without Chinese characters or spaces)
        Recommended path: D:\Java\jdk-17
     4. Click "Next" to complete installation
-    5. Configure environment variables (see below)
+    5. Configure the JAVA_HOME and Path environment variables
 
 **Option 2: Install with Scoop (recommended)**
 
@@ -571,22 +571,22 @@ jshell> /exit
     └─────────────────────────────────────────────────┘
                               ↓ javac HelloWorld.java
     ┌─────────────────────────────────────────────────────────────┐
-    │ 2. Compile to bytecode                                       │
+    │ 2. Compile to bytecode                                      │
     │    HelloWorld.class                                         │
-    │    (a binary file that the JVM can execute)                   │
-    │    ├─ Class and method information                            │
-    │    ├─ Constant pool                                          │
-    │    └─ Bytecode instructions                                  │
+    │    (a binary file that the JVM can execute)                 │
+    │    ├─ Class and method information                          │
+    │    ├─ Constant pool                                         │
+    │    └─ Bytecode instructions                                 │
     └─────────────────────────────────────────────────────────────┘
                               ↓ java HelloWorld
     ┌─────────────────────────────────────────────────────────────┐
-    │ 3. The JVM loads and executes it                              │
-    │    ├─ The class loader loads the .class file                   │
-    │    │   ├─ Loading                                            │
-    │    │   ├─ Linking: verification, preparation, resolution      │
-    │    │   └─ Initialization                                     │
-    │    ├─ Interpretation / JIT compilation                       │
-    │    └─ Output: Hello, World!                                   │
+    │ 3. The JVM loads and executes it                            │
+    │    ├─ The class loader loads the .class file                │
+    │    │   ├─ Loading                                           │
+    │    │   ├─ Linking: verification, preparation, resolution    │
+    │    │   └─ Initialization                                    │
+    │    ├─ Interpretation / JIT compilation                      │
+    │    └─ Output: Hello, World!                                 │
     └─────────────────────────────────────────────────────────────┘
 
 ### 3. Why Can Java Run Across Platforms?
@@ -727,7 +727,7 @@ du -sh custom-jre
         │     ├─ Father of Java: James Gosling
         │     ├─ Characteristics: cross-platform, object-oriented, secure, robust
         │     ├─ Three editions: SE, EE, ME
-        │     └─ LTS releases: 8, 11, 17, 21
+        │     └─ LTS releases: 8, 11, 17, 21, 25
         │
         ├── Choosing a JDK
         │     ├─ Oracle JDK vs OpenJDK

@@ -21,21 +21,21 @@ Network programming enables **programs on different computers** to exchange data
 #### OSI Seven-Layer vs TCP/IP Four-Layer Model
 
     OSI seven-layer model     TCP/IP four-layer model   Protocols
-    ┌─────────────┐          ┌─────────────┐
-    │ Application │          │             │
-    ├─────────────┤          │ Application │         HTTP, FTP, DNS, SMTP
-    │Presentation │          │             │
-    ├─────────────┤          └─────────────┘
-    │   Session   │
-    ├─────────────┤          ┌─────────────┐
-    │  Transport  │          │  Transport  │         TCP, UDP
-    ├─────────────┤          └─────────────┘
-    │   Network   │          ┌─────────────┐
-    ├─────────────┤          │   Network   │         IP, ICMP
-    │  Data link  │          └─────────────┘
-    ├─────────────┤          ┌─────────────┐
-    │  Physical   │          │Network access│        Ethernet, Wi-Fi
-    └─────────────┘          └─────────────┘
+    ┌─────────────┐           ┌────────────────┐
+    │ Application │           │                │
+    ├─────────────┤           │                │
+    │Presentation │           │  Application   │        HTTP, FTP, DNS, SMTP
+    ├─────────────┤           │                │
+    │   Session   │           │                │
+    ├─────────────┤           ├────────────────┤
+    │  Transport  │           │   Transport    │        TCP, UDP
+    ├─────────────┤           ├────────────────┤
+    │   Network   │           │    Network     │        IP, ICMP
+    ├─────────────┤           ├────────────────┤
+    │  Data link  │           │                │
+    ├─────────────┤           │ Network access │        Ethernet, Wi-Fi
+    │  Physical   │           │                │
+    └─────────────┘           └────────────────┘
 
 ***
 
@@ -84,7 +84,7 @@ public class Demo {
         // Get all IPs for a domain (load-balancing scenarios)
         InetAddress[] allIPs = InetAddress.getAllByName("www.baidu.com");
         for (InetAddress ip : allIPs) {
-            System.out.println("IP：" + ip.getHostAddress());
+            System.out.println("IP: " + ip.getHostAddress());
         }
 
         // Test reachability (ping), with a 3000 ms timeout
@@ -486,22 +486,22 @@ public class UDPReceiver {
 
 ### 5. UDP Communication Flow
 
-    Sender                                     Receiver
-    ┌─────────────────┐                      ┌─────────────────┐
-    │ DatagramSocket  │                      │ DatagramSocket  │
-    │ (any port)     │                      │  (bound port)    │
-    └────────┬────────┘                      └────────┬────────┘
+    Sender                                   Receiver
+    ┌──────────────────────┐                 ┌─────────────────┐
+    │ DatagramSocket       │                 │ DatagramSocket  │
+    │ (any port)           │                 │ (bound port)    │
+    └────────┬─────────────┘                 └────────┬────────┘
              │                                        │
-             │  1. Create packet                     │  1. Create empty packet
+             │  1. Create packet                      │  1. Create empty packet
              ↓                                        ↓
-    ┌─────────────────┐                      ┌─────────────────┐
-    │ DatagramPacket  │                      │ DatagramPacket  │
-    │ (data + destination) │── UDP transfer ───────→│ (received data) │
-    └─────────────────┘                      └─────────────────┘
+    ┌────────┴─────────────┐                 ┌────────┴────────┐
+    │ DatagramPacket       │                 │ DatagramPacket  │
+    │ (data + destination) │─ UDP transfer ─→│ (received data) │
+    └────────┬─────────────┘                 └────────┬────────┘
              │                                        │
              │  2. send(packet)                       │  2. receive(packet)
              ↓                                        ↓
-          Sending complete                         Parse data
+      Sending complete                           Parse data
 
 ***
 
@@ -592,15 +592,15 @@ try (MulticastSocket socket = new MulticastSocket(10086)) {
 
 ### 2. Three-Way Handshake
 
-    Client                                    Server
-       │                                        │
-       │ ─────── 1. SYN (request connection) ───→ │
-       │                                        │
-       │ ←────── 2. SYN+ACK (accept connection) ─ │
-       │                                        │
-       │ ─────── 3. ACK (acknowledge) ─────────→ │
-       │                                        │
-       │           Connection established         │
+    Client                                       Server
+       │                                            │
+       │ ────── 1. SYN (request connection) ──────→ │
+       │                                            │
+       │ ←───── 2. SYN+ACK (accept connection) ──── │
+       │                                            │
+       │ ────── 3. ACK (acknowledge) ─────────────→ │
+       │                                            │
+       │           Connection established           │
 
 **Memory Aid**:
 
@@ -612,17 +612,17 @@ try (MulticastSocket socket = new MulticastSocket(10086)) {
 
 ### 3. Four-Way Termination
 
-    Client                                    Server
-       │                                        │
-       │ ─────── 1. FIN (I want to close) ─────→ │
-       │                                        │
-       │ ←────── 2. ACK (received) ───────────── │
-       │                                        │
-       │ ←────── 3. FIN (I want to close too) ── │
-       │                                        │
-       │ ─────── 4. ACK (received) ────────────→ │
-       │                                        │
-       │           Connection closed              │
+    Client                                       Server
+       │                                            │
+       │ ────── 1. FIN (I want to close) ─────────→ │
+       │                                            │
+       │ ←───── 2. ACK (received) ───────────────── │
+       │                                            │
+       │ ←───── 3. FIN (I want to close too) ────── │
+       │                                            │
+       │ ────── 4. ACK (received) ────────────────→ │
+       │                                            │
+       │             Connection closed              │
 
 **Memory Aid**:
 
@@ -784,40 +784,40 @@ public class TCPServerText {
 
 ### 8. TCP Communication Flow
 
-    Client (Socket)                           Server (ServerSocket)
+    Client (Socket)                       Server (ServerSocket)
           │                                         │
           │                                         │ 1. Create ServerSocket
           │                                         │    Bind port
           │                                         ↓
-          │                                   ┌───────────┐
-          │                                   │  accept() │ Wait for connection
+          │                                   ┌─────┴─────┐
+          │                                   │ accept()  │ Wait for connection
           │                                   └─────┬─────┘
           │                                         │
-          │ 2. Create Socket                         │
-          │    Specify server IP and port            │
+          │ 2. Create Socket                        │
+          │    Specify server IP and port           │
           ↓                                         │
-    ┌───────────┐                                   │
-    │ Connection request │ ── three-way handshake ─→ │
-    └───────────┘                                   ↓
-          │                                   ┌───────────┐
-          │                                   │ Return Socket │
-          │                                   └─────┬─────┘
+    ┌─────┴──────────────┐                          │
+    │ Connection request │ ── three-way handshake ─→│
+    └─────┬──────────────┘                          ↓
+          │                                 ┌───────┴───────┐
+          │                                 │ Return Socket │
+          │                                 └───────┬───────┘
           │                                         │
-          │ ←──────── Connection established ───────→ │
+          │ ←────── Connection established ───────→ │
           │                                         │
-          │ 3. Get output stream                     │ 3. Get input stream
-          │    Send data                             │    Receive data
+          │ 3. Get output stream                    │ 3. Get input stream
+          │    Send data                            │    Receive data
           ↓                                         ↓
-       os.write() ─────── Data transfer ─────────→ is.read()
+       os.write() ────── Data transfer ───────→ is.read()
           │                                         │
-          │ 4. Get input stream                      │ 4. Get output stream
-          │    Receive response                      │    Send response
+          │ 4. Get input stream                     │ 4. Get output stream
+          │    Receive response                     │    Send response
           ↓                                         ↓
-       is.read() ←─────── Data transfer ────────── os.write()
+      is.read() ←────── Data transfer ──────── os.write()
           │                                         │
-          │ 5. Close connection                      │ 5. Close connection
+          │ 5. Close connection                     │ 5. Close connection
           ↓                                         ↓
-       socket.close()                          socket.close()
+   socket.close()                            socket.close()
 
 ***
 
@@ -974,7 +974,7 @@ public class TCPServerMulti {
         │
         ├── Three essentials
         │     ├── IP address: identifies a device (InetAddress)
-        │     │     └── getLocalHost()、getByName()、getAllByName()
+        │     │     └── getLocalHost(), getByName(), getAllByName()
         │     ├── Port: identifies a program (0–65535)
         │     └── Protocol: transmission rules (UDP/TCP)
         │

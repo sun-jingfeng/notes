@@ -28,18 +28,18 @@ list.add(4);  // ✅ Expands automatically
 
 ### 3. Collection Hierarchy
 
-                            Collection (individual-element collections)
-                                  │
-                  ┌───────────────┼───────────────┐
-                  │               │               │
-                List             Set            Queue
-             (ordered, duplicates allowed) (unordered, no duplicates) (queue)
-                  │               │
-            ┌─────┼─────┐    ┌────┼────────┐
-            │           │    │    │        │
-        ArrayList  LinkedList │  TreeSet  LinkedHashSet
-                          HashSet  (sorted)    (insertion order)
-                           (unordered)
+                         Collection (individual-element collections)
+                                              │
+                ┌─────────────────────────────┼─────────────────────┐
+                │                             │                     │
+              List                           Set                  Queue
+            (ordered,                    (unordered,             (queue)
+       duplicates allowed)             no duplicates)
+                │                             │
+          ┌─────┴─────┐           ┌───────────┼─────────────┐
+          │           │           │           │             │
+      ArrayList  LinkedList    HashSet     TreeSet    LinkedHashSet
+                             (unordered)  (sorted)  (insertion order)
 
 
                             Map (key-value collections)
@@ -53,9 +53,9 @@ list.add(4);  // ✅ Expands automatically
 
 | Interface       | Characteristics         | Common implementations                | Use case |
 | -------- | ---------- | -------------------- | ---- |
-| **List** | Ordered; allows duplicates; indexed | ArrayList、LinkedList | Ordered lists |
-| **Set**  | Unordered; no duplicates; no index | HashSet、TreeSet      | Deduplication   |
-| **Map**  | Key-value pairs; unique keys   | HashMap、TreeMap      | Key-value mappings |
+| **List** | Ordered; allows duplicates; indexed | ArrayList, LinkedList | Ordered lists |
+| **Set**  | Unordered; no duplicates; no index | HashSet, TreeSet      | Deduplication   |
+| **Map**  | Key-value pairs; unique keys   | HashMap, TreeMap      | Key-value mappings |
 
 ***
 

@@ -15,7 +15,7 @@ Object-oriented programming (OOP) is a programming approach **centered on object
 
 | Feature     | Description              | Keywords                     |
 | ------ | --------------- | ----------------------- |
-| **Encapsulation** | Hide internal details and expose a public interface | `private`、getter/setter |
+| **Encapsulation** | Hide internal details and expose a public interface | `private`, getter/setter |
 | **Inheritance** | A subclass inherits fields and methods from a superclass    | `extends`               |
 | **Polymorphism** | The same method behaves differently on different objects | Overriding; a superclass reference referring to a subclass instance           |
 
@@ -134,7 +134,7 @@ System.out.println(p1.equals(p2));  // false (not overridden)
 | -------------------- | --------------------- | --------- |
 | **Stack**       | Method execution, local variables, and object references (addresses)   | No change       |
 | **Heap**        | Objects created with new and their fields        | No change       |
-| **Method area** | .class bytecode files, static variables, and constant pools | Replaced by **Metaspace** |
+| **Method area** | Class metadata (structure, method bytecode) and runtime constant pools | Implemented as **Metaspace**; static variables and the string pool are on the heap (JDK 7+) |
 
 **JDK 8+ change**: The method area moved from JVM memory to **Metaspace**, which uses native memory and is no longer limited by the JVM heap size.
 
@@ -151,16 +151,16 @@ p.price = 2999.0;
     │  Phone.class          │
     └───────────────────────┘
 
-    ┌─────────────────┐                    ┌──────────────────────┐
-    │     Stack        │                    │       Heap            │
-    │                 │                    │                      │
-    │  main method    │                    │   Phone object @0x001 │
-    │  ┌───────────┐  │                    │  ┌──────────────────┐ │
-    │  │ p = 0x001 │──┼────────────────────┼─→│ brand = "Xiaomi"  │ │
-    │  └───────────┘  │                    │  │ price = 2999.0   │ │
-    │                 │                    │  │ color = null     │ │
-    └─────────────────┘                    │  └──────────────────┘ │
-                                           └──────────────────────┘
+    ┌──────────────────┐                    ┌───────────────────────┐
+    │      Stack       │                    │         Heap          │
+    │                  │                    │                       │
+    │  main method     │                    │  Phone object @0x001  │
+    │  ┌───────────┐   │                    │  ┌──────────────────┐ │
+    │  │ p = 0x001 │───┼────────────────────┼─→│ brand = "Xiaomi" │ │
+    │  └───────────┘   │                    │  │ price = 2999.0   │ │
+    │                  │                    │  │ color = null     │ │
+    └──────────────────┘                    │  └──────────────────┘ │
+                                            └───────────────────────┘
 
 ### 3. Two References to the Same Object
 
@@ -174,16 +174,16 @@ p2.brand = "Apple";    // Modify through p2
 System.out.println(p1.brand);  // Apple (changed!)
 ```
 
-    ┌─────────────────┐                    ┌──────────────────────┐
-    │     Stack        │                    │       Heap            │
-    │                 │                    │                      │
-    │  ┌───────────┐  │                    │   Phone object @0x001 │
-    │  │p1 = 0x001 │──┼──────────┐         │  ┌──────────────────┐ │
-    │  └───────────┘  │          └─────────┼─→│ brand = "Apple"   │ │
-    │  ┌───────────┐  │          ┌─────────┼─→│ price = 0.0      │ │
-    │  │p2 = 0x001 │──┼──────────┘         │  │ color = null     │ │
-    │  └───────────┘  │                    │  └──────────────────┘ │
-    └─────────────────┘                    └──────────────────────┘
+    ┌──────────────────┐                    ┌───────────────────────┐
+    │      Stack       │                    │         Heap          │
+    │                  │                    │                       │
+    │  ┌───────────┐   │                    │  Phone object @0x001  │
+    │  │p1 = 0x001 │───┼──────────┐         │  ┌──────────────────┐ │
+    │  └───────────┘   │          └─────────┼─→│ brand = "Apple"  │ │
+    │  ┌───────────┐   │          ┌─────────┼─→│ price = 0.0      │ │
+    │  │p2 = 0x001 │───┼──────────┘         │  │ color = null     │ │
+    │  └───────────┘   │                    │  └──────────────────┘ │
+    └──────────────────┘                    └───────────────────────┘
 
 **Conclusion**: Changing a field through p2 also affects what p1 sees, because both refer to the same object.
 
@@ -799,7 +799,7 @@ public class Student {
 | Difference   | Static variable (class variable)    | Instance variable (object variable) |
 | ---- | ------------ | ---------- |
 | Ownership   | Belongs to the class          | Belongs to an object       |
-| Memory location | Method area/Metaspace      | Heap        |
+| Memory location | Heap (with the `Class` object, JDK 7+; method area in older JDKs) | Heap (inside each object) |
 | Creation timing | When the class is loaded         | When an object is created      |
 | Access syntax | `ClassName.fieldName` (recommended) | `objectName.fieldName`  |
 | Sharing  | One copy shared by all objects     | A separate copy for each object   |
@@ -814,23 +814,25 @@ Student s2 = new Student();
 s2.name = "李四";
 ```
 
-    ┌───────────────────────┐
-    │ Method area/Metaspace   │
-    │  ┌─────────────────┐  │
-    │  │ Student.class   │  │
-    │  │ school = "Tsinghua" │←┼──── Shared by all objects
-    │  └─────────────────┘  │
-    └───────────────────────┘
+    ┌───────────────────────────┐
+    │ Class data (Student)      │
+    │  ┌─────────────────────┐  │
+    │  │ Student.class       │  │
+    │  │ school = "Tsinghua" │←─┼──── Shared by all objects
+    │  └─────────────────────┘  │
+    └───────────────────────────┘
 
-    ┌─────────────────┐        ┌─────────────────────────────────┐
+    ┌──────────────────┐        ┌───────────────────────────────────┐
     │     Stack        │        │           Heap                    │
-    │  ┌───────────┐  │        │  ┌───────────┐  ┌───────────┐  │
-    │  │s1 = 0x001 │──┼────────┼─→│name="张三" │  │name="李四" │←─┼── s2
-    │  └───────────┘  │        │  └───────────┘  └───────────┘  │
-    │  ┌───────────┐  │        │      @0x001         @0x002     │
-    │  │s2 = 0x002 │──┼────────┼─────────────────────┘          │
-    │  └───────────┘  │        └─────────────────────────────────┘
-    └─────────────────┘
+    │  ┌───────────┐   │        │  ┌────────────┐  ┌────────────┐   │
+    │  │s1 = 0x001 │───┼────────┼─→│name="张三" │  │name="李四" │←──┼── s2
+    │  └───────────┘   │        │  └────────────┘  └────────────┘   │
+    │  ┌───────────┐   │        │      @0x001         @0x002        │
+    │  │s2 = 0x002 │───┼────────┼─────────────────────┘             │
+    │  └───────────┘   │        └───────────────────────────────────┘
+    └──────────────────┘
+
+> 💡 Static variables belong to the class rather than to any object. In HotSpot JDK 7+, they are stored with the class's `Class` object on the heap, while class metadata (method bytecode, field and method descriptions) lives in Metaspace.
 
 ### 4. Using Static Variables
 
@@ -1003,20 +1005,20 @@ int capacity = ArrayUtils.DEFAULT_CAPACITY;
 ### 2. Access Scope Diagram
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                        public                                │
+    │                           public                            │
     │  ┌───────────────────────────────────────────────────────┐  │
-    │  │                    protected                           │  │
+    │  │                       protected                       │  │
     │  │  ┌─────────────────────────────────────────────────┐  │  │
-    │  │  │                  Default (package access)       │  │  │
+    │  │  │            Default (package access)             │  │  │
     │  │  │  ┌───────────────────────────────────────────┐  │  │  │
-    │  │  │  │               private                      │  │  │  │
-    │  │  │  │           (this class only)                 │  │  │  │
+    │  │  │  │                  private                  │  │  │  │
+    │  │  │  │             (this class only)             │  │  │  │
     │  │  │  └───────────────────────────────────────────┘  │  │  │
-    │  │  │              (same package)                      │  │  │
+    │  │  │                 (same package)                  │  │  │
     │  │  └─────────────────────────────────────────────────┘  │  │
-    │  │            (same package + subclasses in other packages) │  │
+    │  │     (same package + subclasses in other packages)     │  │
     │  └───────────────────────────────────────────────────────┘  │
-    │                    (accessible everywhere)                  │
+    │                   (accessible everywhere)                   │
     └─────────────────────────────────────────────────────────────┘
 
 ### 3. Usage Recommendations

@@ -2,32 +2,32 @@
 
 ### 1. Three Execution Structures
 
-    ┌─────────────────────────────────────────┐
-    │              Program Control Flow       │
-    ├─────────────────────────────────────────┤
-    │                                         │
+    ┌──────────────────────────────────────────┐
+    │           Program Control Flow           │
+    ├──────────────────────────────────────────┤
+    │                                          │
     │  1. Sequence: execute from top to bottom │
-    │                                         │
+    │                                          │
     │  2. Branching: choose by condition       │
-    │     ├─ if statements                    │
-    │     └─ switch statements                │
-    │                                         │
+    │     ├─ if statements                     │
+    │     └─ switch statements                 │
+    │                                          │
     │  3. Loops: repeat a block of code        │
-    │     ├─ for loops                        │
-    │     ├─ while loops                      │
-    │     └─ do...while loops                 │
-    │                                         │
-    └─────────────────────────────────────────┘
+    │     ├─ for loops                         │
+    │     ├─ while loops                       │
+    │     └─ do...while loops                  │
+    │                                          │
+    └──────────────────────────────────────────┘
 
 ### 2. Flow Diagrams
 
-    Sequence:             Branching:          Loop:
-        ↓                  ↓                  ↓
-       Code 1              [Condition]        [Condition]
-        ↓              ↙    ↘              ↙    ↘
-       Code 2           Code A  Code B       Code   Exit
-        ↓              ↘    ↙              ↖  ↙
-       Code 3                  ↓                   ↓
+    Sequence:            Branching:             Loop:
+        ↓                     ↓                         ↓
+     Code 1              [Condition]            ┌─→[Condition] ──false──→ Exit
+        ↓                  ↙     ↘              │       │ true
+     Code 2          Code A      Code B         │       ↓
+        ↓                  ↘     ↙              │   Loop body
+     Code 3                   ↓                 └───────┘
 
 ***
 
@@ -1110,7 +1110,7 @@ secureRandom.nextBytes(bytes);  // Generate random bytes
 
 // Random vs SecureRandom
 // Random: pseudorandom, predictable seed, not secure
-// SecureRandom: truly random, unpredictable, secure
+// SecureRandom: cryptographically strong pseudorandom generator; unpredictable, secure
 ```
 
 ### 8. Comparing Random Number Generators

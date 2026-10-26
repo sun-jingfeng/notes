@@ -504,16 +504,16 @@ import java.util.ArrayList;
 
 ### 3. Debug Tool Window
 
-    ┌─────────────────────────────────────────────────────────┐
+    ┌──────────────────────────────────────────────────────────┐
     │ Debug window                                             │
-    ├─────────────────────────────────────────────────────────┤
+    ├──────────────────────────────────────────────────────────┤
     │ Debugger                                                 │
-    │ ├─ Frames: shows the method call stack                    │
-    │ ├─ Variables: shows current variable values               │
-    │ └─ Watches: custom expressions to monitor                 │
+    │ ├─ Frames: shows the method call stack                   │
+    │ ├─ Variables: shows current variable values              │
+    │ └─ Watches: custom expressions to monitor                │
     │                                                          │
     │ Console: displays program output                         │
-    └─────────────────────────────────────────────────────────┘
+    └──────────────────────────────────────────────────────────┘
 
 ### 4. Advanced Debugging
 
@@ -633,20 +633,20 @@ for (int i = 0; i < 100; i++) {
 
 ### 2. Terminal Features
 
-    ┌─────────────────────────────────────────────────────────┐
+    ┌──────────────────────────────────────────────────────────┐
     │ Terminal window                                          │
-    ├─────────────────────────────────────────────────────────┤
-    │ ├─ "+" button: create a terminal tab                      │
-    │ ├─ Local/SSH: local or remote terminal                    │
-    │ └─ Opens in the project root by default                   │
+    ├──────────────────────────────────────────────────────────┤
+    │ ├─ "+" button: create a terminal tab                     │
+    │ ├─ Local/SSH: local or remote terminal                   │
+    │ └─ Opens in the project root by default                  │
     │                                                          │
     │ Common commands:                                         │
     │ ├─ cd: change directory                                  │
     │ ├─ ls / dir: list files                                  │
     │ ├─ javac: compile Java files                             │
     │ ├─ java: run Java programs                               │
-    │ └─ mvn / gradle: build tool commands                      │
-    └─────────────────────────────────────────────────────────┘
+    │ └─ mvn / gradle: build tool commands                     │
+    └──────────────────────────────────────────────────────────┘
 
 ***
 
