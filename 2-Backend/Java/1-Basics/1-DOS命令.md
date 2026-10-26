@@ -304,7 +304,7 @@ sed '/关键字/d' 文件名         # 删除匹配行
 命令1 | 命令2           # 命令1 输出作为命令2 输入
 ls -l | grep ".java"    # 筛选 java 文件
 cat log.txt | grep error | wc -l   # 统计错误行数
-ps aux | sort -k4 -rn | head -10   # CPU 占用前 10 进程
+ps aux | sed '1d' | sort -k3,3nr | head -n 10   # 按第 3 列 %CPU 排序（第 4 列是 %MEM）
 history | awk '{print $2}' | sort | uniq -c | sort -rn | head -10   # 最常用命令
 
 # 组合命令
@@ -679,7 +679,7 @@ jstack <pid>                          # 导出所有线程调用栈
 jstack <pid> | grep -A 30 "BLOCKED"   # 过滤阻塞线程
 
 # 堆内存诊断
-jmap -heap <pid>                             # 查看堆内存概况（各区大小与占用）
+jcmd <pid> GC.heap_info                     # 查看堆内存概况（现代 JDK；jmap -heap 是旧版用法）
 jmap -histo <pid>                            # 查看各类对象实例数与占用大小
 jmap -dump:format=b,file=heap.hprof <pid>    # 导出堆快照（.hprof），供 MAT/VisualVM 分析
 

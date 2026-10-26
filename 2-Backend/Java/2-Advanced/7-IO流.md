@@ -31,7 +31,9 @@ IO（Input/Output）是指**输入/输出**，用于在程序和外部设备（�
 | 类型      | 说明                  | 基类                           | 适用场景                      |
 | ------- | ------------------- | ---------------------------- | ------------------------- |
 | **字节流** | 以字节为单位传输（1字节 = 8位）  | `InputStream`、`OutputStream` | 所有文件（图片、视频、音频、文本等）        |
-| **字符流** | 以字符为单位传输（1字符 = 2字节） | `Reader`、`Writer`            | 纯文本文件（.txt、.java、.html 等） |
+| **字符流** | 读写 UTF-16 代码单元（char） | `Reader`、`Writer`            | 纯文本文件（.txt、.java、.html 等） |
+
+> Java 的 `char` 是 16 位 UTF-16 代码单元，不等于一个完整 Unicode 字符：补充字符（如部分 emoji）需要两个 char。文件中的字节数取决于编码，例如 UTF-8 中“中”占 3 字节，不能笼统说“1 字符 = 2 字节”。
 
 ***
 
@@ -86,7 +88,7 @@ IO（Input/Output）是指**输入/输出**，用于在程序和外部设备（�
 
 | 对比项      | 字节流                        | 字符流             |
 | -------- | -------------------------- | --------------- |
-| **单位**   | 字节（1字节 = 8位）               | 字符（1字符 = 2字节）   |
+| **单位**   | 字节（1字节 = 8位）               | UTF-16 代码单元（char） |
 | **适用文件** | 所有文件                       | 纯文本文件           |
 | **基类**   | InputStream / OutputStream | Reader / Writer |
 | **中文处理** | 需要手动处理编码                   | 自动处理编码          |
@@ -1318,10 +1320,10 @@ public class FilesWalkDemo {
 | **基类**   | InputStream / OutputStream                 | Reader / Writer                 |
 | **实现类**  | FileInputStream / FileOutputStream         | FileReader / FileWriter         |
 | **缓冲流**  | BufferedInputStream / BufferedOutputStream | BufferedReader / BufferedWriter |
-| **单位**   | 字节（byte）                                   | 字符（char）                        |
+| **单位**   | 字节（byte）                                   | UTF-16 代码单元（char）              |
 | **缓冲区**  | 无（直接写入）                                    | 有（需要 flush）                     |
 | **适用文件** | 所有文件                                       | 纯文本文件                           |
-| **中文处理** | 可能乱码                                       | 不会乱码                            |
+| **中文处理** | 解码时需选择正确编码                             | 编码不匹配仍会乱码                  |
 | **使用场景** | 图片、视频、音频等                                  | 文本文件                            |
 
 **选择建议：**

@@ -35,8 +35,10 @@ System.out.println(result2);  // [张无忌, 张三丰, 张翠山]
 | **声明式编程**  | 告诉"做什么"，而不是"怎么做"        |
 | **链式调用**   | 多个操作可以链接在一起             |
 | **延迟执行**   | 中间操作不会立即执行，只有终结操作才会触发执行 |
-| **一次性使用**  | 流只能使用一次，用完就关闭           |
+| **一次性使用**  | 终结操作后不能复用，但不会因此自动调用 close() |
 | **不改变原数据** | 流操作不会修改原集合              |
+
+> 来自 `Files.lines()` 等 IO 资源的流仍需显式关闭，通常使用 try-with-resources；集合或数组创建的流一般不需要关闭。
 
 ### 4. Stream 流的思想
 
@@ -146,8 +148,8 @@ Stream<Integer> stream3 = Stream.iterate(0, n -> n < 100, n -> n + 10);
 // 空流
 Stream<String> emptyStream = Stream.empty();
 
-// 拼接两个流
-Stream<String> combined = Stream.concat(stream1, stream2);
+// 各取 3 项再顺序拼接；Integer 和 Double 的共同父类是 Number
+Stream<Number> combined = Stream.concat(stream1.limit(3), stream2.limit(3));
 
 // 单个元素的流
 Stream<String> single = Stream.of("Hello");
