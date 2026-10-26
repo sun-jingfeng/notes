@@ -1495,10 +1495,10 @@ public class OrderService {
     public boolean createOrder(Long productId) {
         RLock lock = redissonClient.getLock("lock:order:" + productId);
 
-        // 尝试加锁：最多等待 3 秒，锁持有最长 30 秒
+        // 最多等待 3 秒；不指定 leaseTime，使用 watchdog 自动续期
         boolean locked;
         try {
-            locked = lock.tryLock(3, 30, TimeUnit.SECONDS);
+            locked = lock.tryLock(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return false;
@@ -1522,6 +1522,7 @@ public class OrderService {
 **Redisson watchdog 机制：**
 
 - 加锁时若未设置 leaseTime（或设为 -1），watchdog 启动
+- 显式指定 leaseTime（如 `tryLock(3, 30, TimeUnit.SECONDS)`）时按固定租期释放，不启用 watchdog
 - 每隔 `lockWatchdogTimeout / 3`（默认 10 秒）自动为锁续期
 - 业务结束调用 `unlock()` 后，watchdog 停止续期
 - 若 JVM 宕机，watchdog 随之停止，锁到期后自动释放，防止死锁
@@ -1665,7 +1666,12 @@ public class BloomFilterService {
 
 **方案示例：互斥锁重建**
 
+复用 7.3 节的 `DistributedLockService`，用唯一锁值和 Lua 比较后删除，避免锁过期后误删其他请求的锁。
+
 ```java
+@Autowired
+private DistributedLockService lockService;
+
 public User getUserById(Long id) {
     String cacheKey = "user:" + id;
     String lockKey = "lock:rebuild:user:" + id;
@@ -1677,10 +1683,10 @@ public User getUserById(Long id) {
     }
 
     // 2. 缓存未命中，抢互斥锁（10 秒过期防止死锁）
-    Boolean locked = redisTemplate.opsForValue()
-        .setIfAbsent(lockKey, "1", 10, TimeUnit.SECONDS);
+    String lockValue = UUID.randomUUID().toString();
+    boolean locked = lockService.tryLock(lockKey, lockValue, 10);
 
-    if (Boolean.TRUE.equals(locked)) {
+    if (locked) {
         try {
             // 3. 双重检查：前一个线程可能刚回填完
             user = (User) redisTemplate.opsForValue().get(cacheKey);
@@ -1693,7 +1699,7 @@ public User getUserById(Long id) {
             }
             return user;
         } finally {
-            redisTemplate.delete(lockKey); // 5. 释放锁
+            lockService.unlock(lockKey, lockValue); // 5. 原子校验归属后释放锁
         }
     } else {
         // 未抢到锁：短暂等待后重试（其他线程正在回填）
@@ -1752,6 +1758,9 @@ redisTemplate.opsForValue().set(key, value, baseTtl + randomSeconds, TimeUnit.SE
 **方案示例：先更新库，再删缓存（Cache-Aside）**
 
 ```java
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 @Service
 public class UserService {
 
@@ -1778,14 +1787,22 @@ public class UserService {
         return user;
     }
 
-    // 写：先更新数据库，再删除缓存
+    // 写：数据库事务成功提交后，再删除缓存
     @Transactional
     public void updateUser(User user) {
-        userMapper.updateById(user);                        // 1. 更新库
-        redisTemplate.delete(KEY_PREFIX + user.getId());   // 2. 删缓存
+        userMapper.updateById(user);
+        String key = KEY_PREFIX + user.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                redisTemplate.delete(key);
+            }
+        });
     }
 }
 ```
+
+> `@Transactional` 方法通过 Spring 代理调用时，事务通常在方法返回后提交，因此不能在方法内直接删缓存。提交后删除失败需重试或通过 MQ/binlog 补偿；该方案仍以最终一致性为目标，TTL 是兜底。
 
 ### 8.6 本地缓存与两级缓存
 

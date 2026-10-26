@@ -1115,7 +1115,7 @@ Spring AOP 使用两种代理方式：
 Spring Boot 2.x 将 `spring.aop.proxy-target-class` 默认设为 `true`，统一使用 CGLIB，减少因「有接口用 JDK 代理 / 无接口用 CGLIB」导致的行为差异。如需显式切换：
 
 ```yaml
-# 强制 JDK 动态代理（目标类必须实现接口，否则报错）
+# 优先使用 JDK 动态代理；目标类没有合适接口时仍使用 CGLIB
 spring:
   aop:
     proxy-target-class: false
@@ -1171,7 +1171,7 @@ Spring AOP 基于代理实现，有以下固有限制：
 
 | 限制                     | 说明                                                                |
 | ------------------------ | ------------------------------------------------------------------- |
-| **只能增强 public 方法** | private/protected 方法不会被代理拦截                                |
+| **受代理方式与方法可见性限制** | JDK 代理拦截接口中的 public 方法；CGLIB 还可拦截可覆盖的 protected/包可见方法，不能增强 private/final 方法 |
 | **只能增强 Spring Bean** | 通过 `new` 手动创建的对象不受 Spring 管理，切面不生效               |
 | **只支持方法级连接点**   | 不能拦截字段访问、构造器调用（需 AspectJ 编译时织入才能实现）       |
 | **同类方法调用不生效**   | `this.method()` 绕过代理直接调用原始对象，切面不触发               |

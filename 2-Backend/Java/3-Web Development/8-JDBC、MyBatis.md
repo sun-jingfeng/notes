@@ -1609,15 +1609,17 @@ IDEA 插件市场搜索 **MybatisX** 安装，主要功能：
 
 ### 3.2 依赖与配置
 
-**依赖（与 MyBatis 二选一或共存）：**
+**依赖（以下对应 Spring Boot 3）：**
 
 ```xml
 <dependency>
     <groupId>com.baomidou</groupId>
-    <artifactId>mybatis-plus-boot-starter</artifactId>
+    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
     <version>3.5.5</version>
 </dependency>
 ```
+
+> Spring Boot 2 使用 `mybatis-plus-boot-starter`。MyBatis-Plus 已包含 MyBatis 集成，普通 Mapper/XML 可以继续使用，无需再叠加 `mybatis-spring-boot-starter`。
 
 **配置（沿用 Spring 数据源，可补充 MyBatis-Plus 项）：**
 

@@ -712,10 +712,30 @@ myapp-parent/
     <!-- 属性 -->
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <spring-boot.version>3.2.10</spring-boot.version>
         <mybatis.version>3.0.3</mybatis.version>
         <myapp.version>1.0.0</myapp.version>
     </properties>
+
+    <!-- BOM 只管理依赖版本，编译器和 Boot 插件需自行配置 -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
     
     <!-- 版本管理 -->
     <dependencyManagement>
@@ -768,6 +788,7 @@ myapp-parent/
 
 ```xml
 <project>
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.example</groupId>
         <artifactId>myapp-parent</artifactId>
@@ -781,6 +802,7 @@ myapp-parent/
 
 ```xml
 <project>
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.example</groupId>
         <artifactId>myapp-parent</artifactId>
@@ -801,6 +823,7 @@ myapp-parent/
 
 ```xml
 <project>
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.example</groupId>
         <artifactId>myapp-parent</artifactId>
@@ -824,6 +847,13 @@ myapp-parent/
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

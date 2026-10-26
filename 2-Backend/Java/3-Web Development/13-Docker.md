@@ -1401,6 +1401,7 @@ services:
       - JVM_XMS=256m
       - JVM_XMX=256m
       - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_TOKEN=<至少32字节随机密钥的Base64编码>
       - NACOS_AUTH_IDENTITY_KEY=serverIdentity
       - NACOS_AUTH_IDENTITY_VALUE=security
       - SPRING_DATASOURCE_PLATFORM=mysql
@@ -1468,8 +1469,10 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
       - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
-      - NACOS_AUTH_IDENTITY_KEY=serverIdentity
-      - NACOS_AUTH_IDENTITY_VALUE=security
+      - SPRING_CLOUD_NACOS_DISCOVERY_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD=<Nacos 密码>
+      - SPRING_CLOUD_NACOS_CONFIG_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_CONFIG_PASSWORD=<Nacos 密码>
     depends_on:
       nacos:
         condition: service_healthy
@@ -1491,8 +1494,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<MySQL 根密码>
       - SPRING_REDIS_HOST=redis
-      - NACOS_AUTH_IDENTITY_KEY=serverIdentity
-      - NACOS_AUTH_IDENTITY_VALUE=security
+      - SPRING_CLOUD_NACOS_DISCOVERY_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD=<Nacos 密码>
+      - SPRING_CLOUD_NACOS_CONFIG_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_CONFIG_PASSWORD=<Nacos 密码>
     depends_on:
       nacos:
         condition: service_healthy
@@ -1518,8 +1523,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<MySQL 根密码>
       - SPRING_REDIS_HOST=redis
-      - NACOS_AUTH_IDENTITY_KEY=serverIdentity
-      - NACOS_AUTH_IDENTITY_VALUE=security
+      - SPRING_CLOUD_NACOS_DISCOVERY_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD=<Nacos 密码>
+      - SPRING_CLOUD_NACOS_CONFIG_USERNAME=<Nacos 用户名>
+      - SPRING_CLOUD_NACOS_CONFIG_PASSWORD=<Nacos 密码>
     depends_on:
       nacos:
         condition: service_healthy
@@ -1546,7 +1553,8 @@ volumes:
 
 - Nacos 使用 MySQL 存储配置时，需在 MySQL 中提前建库并执行 Nacos 官方 `schema.sql`（通常在 `mysql/init/` 下放 `nacos-mysql.sql`），否则 Nacos 启动报错；若仅用内存配置可去掉 Nacos 的 `SPRING_DATASOURCE_*` 与 `MYSQL_SERVICE_*`，并去掉对 `mysql` 的 `depends_on`。
 - 业务服务若使用 Nacos 配置中心，`bootstrap.yml` 或 `application.yml` 中 `spring.cloud.nacos.config.server-addr` 写 `nacos:8848`；若通过环境变量覆盖，使用 `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR`（Spring Boot 2 中对应 `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR`）。
-- 开启 Nacos 认证时，各 Java 服务需配置 `nacos.auth.identity.key` 与 `nacos.auth.identity.value`（或环境变量 `NACOS_AUTH_IDENTITY_KEY`、`NACOS_AUTH_IDENTITY_VALUE`），与 Nacos 容器内一致。
+- Nacos 2.5.2 开启认证时，服务端需显式设置 `NACOS_AUTH_TOKEN`（至少 32 字节随机密钥的 Base64 编码）。`NACOS_AUTH_IDENTITY_KEY/VALUE` 用于 Nacos 服务端之间的身份识别，不是 Java 客户端的登录凭据。
+- 各 Java 服务分别通过 `spring.cloud.nacos.discovery.username/password` 和 `spring.cloud.nacos.config.username/password` 配置 Nacos 用户名、密码；对应环境变量见上例。需先在 Nacos 中初始化用户并授予所需权限，客户端不配置服务端身份密钥。
 
 ---
 

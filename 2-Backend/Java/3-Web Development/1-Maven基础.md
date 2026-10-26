@@ -159,12 +159,14 @@ mvn archetype:generate \
 
 #### 4.3 依赖范围（scope）
 
-| scope           | 主程序编译 | 测试编译 | 打入当前包 | 传递给依赖方 | 示例                 |
+| scope           | 主程序编译 | 测试编译 | 主程序运行时 | 传递给依赖方 | 示例                 |
 | --------------- | ---------- | -------- | ---------- | ------------ | -------------------- |
 | **compile**（默认） | ✓          | ✓        | ✓          | ✓            | spring-core          |
 | **test**        | ✗          | ✓        | ✗          | ✗            | junit                |
 | **provided**    | ✓          | ✓        | ✗          | ✗            | servlet-api、lombok  |
 | **runtime**     | ✗          | ✓        | ✓          | ✓（以 runtime 传递） | mysql-connector      |
+
+> **注意**：scope 决定依赖在哪些阶段可用，不直接决定是否打入产物。普通 JAR 默认不包含依赖；WAR、Spring Boot 可执行 JAR、Shade 等由各自的打包插件决定包含哪些依赖。
 
 #### 4.4 依赖传递与排除
 

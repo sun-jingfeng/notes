@@ -693,10 +693,12 @@ public void saveLog(String content) { }
 
 | 场景                | 原因                 | 解决方案         |
 | ------------------- | -------------------- | ---------------- |
-| 方法不是 public     | AOP 只代理 public    | 改为 public      |
+| 方法不能被当前代理拦截 | JDK 代理仅拦截接口中的 public 方法；类代理不能拦截 private/final 方法 | 对外事务入口优先用 public，并通过代理调用 |
 | 内部方法调用        | 未通过代理对象       | 注入自身调用     |
 | 异常被捕获          | 异常未抛出           | 重新抛出         |
 | 非 RuntimeException | 默认只回滚运行时异常 | 添加 rollbackFor |
+
+> **版本说明**：Spring 6 起，类代理默认也支持 protected 和包可见方法上的 `@Transactional`；不能笼统地认为“非 public 方法事务一定失效”。
 
 ```java
 // ❌ 内部调用，事务失效
