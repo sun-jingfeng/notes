@@ -147,7 +147,7 @@ public class Demo {
 
 ***
 
-### Summary of the Three Essentials
+### 4. Summary of the Three Essentials
 
     Network communication = IP address (which computer) + port (which program) + protocol (how data is sent)
 
@@ -235,7 +235,7 @@ ping 127.0.0.1
 | Symptom | Possible cause |
 | ------- | ------------- |
 | Request timed out | Destination unreachable or blocked by a firewall |
-| TTL expired | Too many routing hops |
+| TTL expired | Too many routing hops or a routing loop |
 | Destination host unreachable | Routing problem or nonexistent destination |
 
 ***
@@ -264,10 +264,10 @@ netstat -an -p udp
 
 **Sample Output**:
 
-    Proto   Local Address     Foreign Address         State          PID
-    TCP    0.0.0.0:80         0.0.0.0:0            LISTENING      4
-    TCP    127.0.0.1:8080     127.0.0.1:52341      ESTABLISHED    12345
-    TCP    192.168.1.100:443  110.242.68.66:443    ESTABLISHED    5678
+    Proto  Local Address        Foreign Address      State          PID
+    TCP    0.0.0.0:80           0.0.0.0:0            LISTENING      4
+    TCP    127.0.0.1:8080       127.0.0.1:52341      ESTABLISHED    12345
+    TCP    192.168.1.100:52344  110.242.68.66:443    ESTABLISHED    5678
 
 **Connection States**:
 
@@ -275,8 +275,8 @@ netstat -an -p udp
 | ----------- | -------- |
 | LISTENING | Listening for connections |
 | ESTABLISHED | Connection established |
-| TIME\_WAIT | Waiting for closure |
-| CLOSE\_WAIT | Waiting for closure |
+| TIME\_WAIT | The side that closed first waits (2 × MSL) so the final ACK can arrive |
+| CLOSE\_WAIT | The peer has closed; waiting for the local application to close the socket |
 | SYN\_SENT | Connection request sent |
 
 ***
@@ -545,7 +545,7 @@ try (MulticastSocket socket = new MulticastSocket()) {
 
     DatagramPacket packet = new DatagramPacket(
         data, data.length,
-        InetAddress.getByName("224.0.0.1"),  // Multicast address
+        InetAddress.getByName("239.255.0.1"),  // Multicast address (239.x.x.x is reserved for private use)
         10086
     );
 
@@ -555,8 +555,8 @@ try (MulticastSocket socket = new MulticastSocket()) {
 // Multicast receiving
 try (MulticastSocket socket = new MulticastSocket(10086)) {
     // Join the multicast group
-    InetAddress group = InetAddress.getByName("224.0.0.1");
-    socket.joinGroup(group);
+    InetAddress group = InetAddress.getByName("239.255.0.1");
+    socket.joinGroup(group);  // Deprecated since JDK 14; newer code uses joinGroup(SocketAddress, NetworkInterface)
 
     byte[] buffer = new byte[1024];
     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -990,7 +990,7 @@ public class TCPServerMulti {
         │     ├── Classes: DatagramSocket, DatagramPacket
         │     ├── Send: create Socket → create Packet → send()
         │     ├── Receive: create Socket(port) → create Packet → receive()
-        │     └── Extensions: broadcast (255.255.255.255), multicast (224.x.x.x)
+        │     └── Extensions: broadcast (255.255.255.255), multicast (224.0.0.0–239.255.255.255)
         │
         └── TCP communication
               ├── Characteristics: connection-oriented, reliable, three-way handshake, four-way termination

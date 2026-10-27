@@ -12,11 +12,12 @@ Java is an **object-oriented programming language** released by Sun Microsystems
 
 | Year | Event |
 | ------ | ------------------------------------- |
-| 1995 | Java 1.0 released |
+| 1995 | Java publicly announced by Sun Microsystems |
+| 1996 | JDK 1.0 released |
 | 2004 | Java 5.0 released (major additions: generics, annotations, enums, etc.) |
-| 2009 | Oracle acquired Sun Microsystems |
+| 2010 | Oracle completed its acquisition of Sun Microsystems |
 | 2014 | Java 8 released (major additions: lambda expressions and the Stream API) |
-| 2017 | Java 9 released; a new release every 6 months began |
+| 2017 | Java 9 released (module system); the six-month release cadence began with Java 10 in 2018 |
 | 2018 | Java 11 (LTS: long-term support) |
 | 2021 | Java 17 (LTS: long-term support) |
 | 2023 | Java 21 (LTS: long-term support) |
@@ -76,7 +77,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
     JDK (Java Development Kit)
     ├─ JRE (Java Runtime Environment)
     │   ├─ JVM (Java Virtual Machine)
-    │   └─ Core class libraries (rt.jar, etc.)
+    │   └─ Core class libraries (rt.jar before JDK 9)
     ├─ javac (compiler)
     ├─ java (launcher)
     ├─ javadoc (documentation tool)
@@ -84,7 +85,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
     ├─ jshell (interactive tool, JDK 9+)
     └─ Other development tools
 
-> **Note**: Starting with JDK 11, a separate JRE is no longer provided; the JDK includes everything needed to run Java.
+> **Note**: Starting with JDK 11, Oracle no longer ships a separate JRE; the JDK includes everything needed to run Java. Some distributions, such as Eclipse Temurin, still offer JRE builds.
 
 ### 2. Oracle JDK vs OpenJDK
 
@@ -181,7 +182,7 @@ scoop reset temurin21-jdk
 # Install JDK 17
 brew install openjdk@17
 
-# Create a symbolic link
+# Create a symbolic link (Apple Silicon path; Intel Macs use /usr/local/opt)
 sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
 ```
 
@@ -195,7 +196,7 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 # List available JDK versions
 sdk list java
 
-# Install a JDK
+# Install a JDK (exact identifiers change over time; copy one from sdk list java)
 sdk install java 17.0.9-tem    # Eclipse Temurin 17
 sdk install java 21.0.1-tem    # Eclipse Temurin 21
 
@@ -344,7 +345,7 @@ sudo nano /etc/profile
 
 ```bash
 # Java environment variables
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk   # Path varies by distribution (Ubuntu: java-17-openjdk-amd64)
 export PATH=$JAVA_HOME/bin:$PATH
 ```
 
@@ -493,13 +494,13 @@ jshell> int b = 20
 b ==> 20
 
 jshell> a + b
-$3 ==> 30
+$4 ==> 30
 
 jshell> String name = "Java"
 name ==> "Java"
 
 jshell> name.toUpperCase()
-$5 ==> "JAVA"
+$6 ==> "JAVA"
 
 # List variables
 jshell> /vars
@@ -540,7 +541,7 @@ jshell> /exit
 | `class HelloWorld is public` | Filename does not match the class name | Make the names match |
 | `error: ';' expected` | Missing semicolon | Add the semicolon |
 | `Garbled text` | Encoding problem | Use `javac -encoding UTF-8` |
-| `Could not load main class` | Package or classpath problem | Check the package declaration and execution directory |
+| `Could not find or load main class` | Package or classpath problem | Check the package declaration and execution directory |
 
 ***
 
@@ -676,18 +677,18 @@ jshell> /exit
 | Tool | Description |
 | ----------- | --------------------- |
 | `javac` | Java compiler: compiles .java files |
-| `java` | Java interpreter: runs .class files |
+| `java` | Java launcher: starts the JVM to run .class or .jar files |
 | `javadoc` | Generates API documentation |
 | `jar` | Packaging tool: creates .jar files |
 | `jshell` | Interactive programming tool (JDK 9+) |
 | `jlink` | Creates custom runtime images (JDK 9+) |
-| `jpackage` | Packages applications (JDK 14+) |
+| `jpackage` | Packages applications as native installers (JDK 16+; incubating in 14) |
 | `jps` | Lists Java processes |
 | `jstack` | Displays thread stack traces |
 | `jmap` | Displays memory information |
 | `jstat` | Monitors JVM statistics |
 | `jconsole` | Graphical monitoring tool |
-| `jvisualvm` | Visual performance analysis (not included in some JDKs) |
+| `jvisualvm` | Visual performance analysis (bundled only through JDK 8; download VisualVM separately for later JDKs) |
 | `keytool` | Manages keys and certificates |
 
 ### 3. Modularity in JDK 9+
@@ -760,11 +761,11 @@ du -sh custom-jre
 
 ## IX. Frequently Asked Questions
 
-### Q1: Which Version Should I Use to Learn Java?
+### 1. Which Version Should I Use to Learn Java?
 
 **Recommended**: JDK 17 or JDK 21 (LTS: long-term support)
 
-### Q2: How Do the JDK and JRE Differ?
+### 2. How Do the JDK and JRE Differ?
 
 | JDK         | JRE       |
 | ----------- | --------- |
@@ -772,15 +773,15 @@ du -sh custom-jre
 | Includes the javac compiler | Does not include a compiler |
 | Needed by developers | Users only need the JRE |
 
-> **Note**: Starting with JDK 11, a separate JRE is no longer provided
+> **Note**: Starting with JDK 11, Oracle no longer ships a separate JRE (some distributions, such as Eclipse Temurin, still offer JRE builds)
 
-### Q3: Why Configure JAVA\_HOME?
+### 3. Why Configure JAVA\_HOME?
 
 *   Many tools (Maven, Gradle, Tomcat, IDEA) need it
 *   It makes switching JDK versions easier
 *   It provides a consistent configuration
 
-### Q4: How Do Compilation and Execution Differ?
+### 4. How Do Compilation and Execution Differ?
 
 | Compilation | Execution |
 | -------------- | --------- |
@@ -789,13 +790,13 @@ du -sh custom-jre
 | Checks syntax errors | Runs program logic |
 | Generates bytecode | The JVM loads and executes it |
 
-### Q5: Should I Choose Oracle JDK or OpenJDK?
+### 5. Should I Choose Oracle JDK or OpenJDK?
 
 *   **Learning and development**: Either works; Eclipse Temurin (an OpenJDK distribution) is recommended
 *   **Enterprise production**: Follow company requirements, considering licensing and support
 *   **Feature differences**: Essentially the same; Oracle JDK has a small number of commercial features
 
-### Q6: How Can I Manage Multiple JDK Versions?
+### 6. How Can I Manage Multiple JDK Versions?
 
 *   **Linux/macOS**: Use SDKMAN
 *   **Windows**: Use Scoop or switch JAVA\_HOME manually

@@ -44,6 +44,7 @@ public class Demo {
     /**
      * Method description
      * @param a Parameter description
+     * @param b Parameter description
      * @return Return value description
      */
     public int add(int a, int b) {
@@ -129,7 +130,7 @@ Keywords are **predefined words with special meanings** in Java.
 *   Highlighted in the editor
 *   Cannot be used as identifiers (variable names, class names, etc.)
 
-### 2. Complete Java Keyword List (50)
+### 2. Java Keyword List (48 Keywords in Use)
 
 #### (1) Data Types (8)
 
@@ -143,7 +144,7 @@ byte  short  int  long  float  double  char  boolean
 public  protected  private
 ```
 
-#### (3) Classes, Methods, and Variable Modifiers (13)
+#### (3) Classes, Methods, and Variable Modifiers (12)
 
 ```java
 class       // Define a class
@@ -151,17 +152,16 @@ interface   // Define an interface
 enum        // Define an enum
 extends     // Inherit
 implements  // Implement an interface
-new         // Create an object
 static      // Static
 final       // Final
 abstract    // Abstract
 void        // No return value
 native      // Native method
-strictfp    // Strict floating-point behavior
+strictfp    // Strict floating-point behavior (redundant since JDK 17)
 transient   // Transient: omitted during serialization
 ```
 
-#### (4) Control Flow (12)
+#### (4) Control Flow (11)
 
 ```java
 if  else  switch  case  default  // Conditional branches
@@ -208,6 +208,8 @@ assert  // Assertion
 ```java
 goto  const  // Reserved but unused; cannot be identifiers
 ```
+
+The 48 keywords in use plus these 2 reserved words make up Java's 50 traditional reserved keywords. Since JDK 9, the underscore `_` is also a keyword. Contextual keywords such as `var`, `record`, `sealed`, `non-sealed`, `permits`, `yield`, and `module` have special meaning only in specific positions.
 
 ### 4. Special Literals (Not Keywords)
 
@@ -572,7 +574,7 @@ Identifiers are names chosen by programmers for **classes, methods, variables**,
 
 | Rule  | Description                   | Example                            |
 | --- | -------------------- | ----------------------------- |
-| Characters  | Letters, digits, underscores `_`, and dollar signs `$$` | `age`, `age2`, `_age`, `$age` |
+| Characters  | Letters, digits, underscores `_`, and dollar signs `$` | `age`, `age2`, `_age`, `$age` |
 | First character  | Cannot be a digit              | ❌ `2age`                      |
 | Keywords | Cannot use keywords              | ❌ `class`, `int`              |
 | Case | Strictly case-sensitive              | `Age` ≠ `age`                 |
@@ -582,7 +584,7 @@ Identifiers are names chosen by programmers for **classes, methods, variables**,
 
 | Type      | Convention      | Example                        |
 | ------- | ------- | ------------------------- |
-| **Package name**  | All lowercase     | `com.itheima.demo`        |
+| **Package name**  | All lowercase     | `com.example.demo`        |
 | **Class name**  | UpperCamelCase     | `Student`, `UserService`  |
 | **Interface name** | UpperCamelCase     | `Runnable`, `Comparable`  |
 | **Method name** | lowerCamelCase     | `getUserById`, `addUser`  |
@@ -593,7 +595,7 @@ Identifiers are names chosen by programmers for **classes, methods, variables**,
 
 ```java
 // Package name: all lowercase
-package com.itheima.demo;
+package com.example.demo;
 
 // Class name: UpperCamelCase
 public class StudentManager {
@@ -823,7 +825,7 @@ double d = num; // int → double, automatic
 ```java
 // Larger → smaller type: cast required
 int i = 128;
-byte b = (byte)i;  // Explicit cast; may lose precision
+byte b = (byte)i;  // Explicit cast; may overflow: b = -128
 
 double d = 3.99;
 int n = (int)d;    // Explicit cast; n = 3 (fraction truncated)
@@ -859,8 +861,7 @@ int code = c;  // code = 65 (Unicode code point)
 System.out.println(0.1 + 0.2);           // 0.30000000000000004
 System.out.println(0.1 + 0.2 == 0.3);    // false
 
-// Solution 1: BigDecimal (recommended for monetary calculations)
-import java.math.BigDecimal;
+// Solution 1: BigDecimal (recommended for monetary calculations; import java.math.BigDecimal)
 BigDecimal a = new BigDecimal("0.1");
 BigDecimal b = new BigDecimal("0.2");
 System.out.println(a.add(b));            // 0.3
@@ -953,7 +954,7 @@ String[] names = {"张三", "李四", "王五"};
 ## VII. Combined Example
 
 ```java
-package com.itheima.demo;
+package com.example.demo;
 
 /**
  * Combined example of Java basic syntax
@@ -1031,7 +1032,7 @@ public class BasicSyntaxDemo {
 
 ## VIII. Quick Reference
 
-### Comments
+### 1. Comments
 
 | Type | Syntax       | Purpose      |
 | -- | -------- | ------- |
@@ -1039,7 +1040,7 @@ public class BasicSyntaxDemo {
 | Block | `/* */`  | Multiline explanation    |
 | Documentation | `/** */` | Generate API documentation |
 
-### Data Types
+### 2. Data Types
 
 | Category | Type      | Bytes | Wrapper class       | Example       |
 | -- | ------- | -- | --------- | -------- |
@@ -1052,7 +1053,7 @@ public class BasicSyntaxDemo {
 | Character | char    | 2  | Character | `'A'`    |
 | Boolean | boolean | -  | Boolean   | `true`   |
 
-### Identifier Naming
+### 3. Identifier Naming
 
 | Type  | Convention  | Example            |
 | --- | --- | ------------- |
@@ -1062,7 +1063,7 @@ public class BasicSyntaxDemo {
 | Constant name | All uppercase | `MAX_SIZE`    |
 | Package name  | All lowercase | `com.example` |
 
-### Features by JDK Version
+### 4. Features by JDK Version
 
 | Version     | Feature              |
 | ------ | --------------- |

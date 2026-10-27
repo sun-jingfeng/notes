@@ -143,7 +143,7 @@ public class ArrayDemo {
         // Boolean array
         boolean[] flags = {true, false, true};
 
-        // Print the array variable (displays an address representation)
+        // Print the array variable (displays the type and a hash code)
         System.out.println(numbers);  // [I@1b6d3586
         System.out.println(names);    // [Ljava.lang.String;@4554617c
     }
@@ -160,7 +160,7 @@ System.out.println(arr);  // [I@1b6d3586
 // [  → An array
 // I  → Element type is int
 // @  → Separator
-// 1b6d3586 → Hexadecimal memory address
+// 1b6d3586 → Identity hash code in hexadecimal (not an actual memory address)
 
 // Identifiers for other types:
 // [I  → int[]
@@ -183,7 +183,7 @@ System.out.println(arr);  // [I@1b6d3586
 
 ```java
 // Read an element
-arrayName[index]
+DataType value = arrayName[index];
 
 // Modify an element
 arrayName[index] = newValue;
@@ -241,12 +241,12 @@ int[] arr = {10, 20, 30, 40, 50};
 int len = arr.length;  // 5
 
 // Note: length is a field, not a method
-arr.length   // ✅ Correct
-arr.length() // ❌ Incorrect
+int n1 = arr.length;       // ✅ Correct
+// int n2 = arr.length();  // ❌ Incorrect
 
 // In contrast, String's length is a method
 String str = "Hello";
-str.length()  // ✅ Correct (String uses a method)
+int n3 = str.length();     // ✅ Correct (String uses a method)
 ```
 
 ***
@@ -744,7 +744,7 @@ int[][] arr = {
 };
 
 // Equivalent to
-int[][] arr = new int[][]{{10, 20, 30}, {40, 50, 60}, {70, 80, 90}};
+int[][] arr2 = new int[][]{{10, 20, 30}, {40, 50, 60}, {70, 80, 90}};
 ```
 
 ### 3. Dynamic Initialization of Two-Dimensional Arrays
@@ -842,24 +842,16 @@ int[][] arr = new int[2][3];
 **Memory diagram:**
 
     Stack                  Heap
-    ┌─────────────┐      ┌─────────────────────────────┐
-    │   arr       │      │  int[][]                    │
-    │ ┌─────────┐ │      │ ┌─────────────────────────┐ │
-    │ │0x001    │─┼──────┼→│ [0] = 0x100 ──┐         │ │
-    │ └─────────┘ │      │ ├─────────────────────────┤ │
-    │             │      │ │ [1] = 0x200 ──┼──┐      │ │
-    └─────────────┘      │ └─────────────────────────┘ │
-                         │                             │
-                         │  int[] (address: 0x100)     │
-                         │ ┌───────────────────┐       │
-                         │ │ [0]=0 [1]=0 [2]=0 │ ←─────┘
-                         │ └───────────────────┘       │
-                         │                             │
-                         │  int[] (address: 0x200)     │
-                         │ ┌───────────────────┐       │
-                         │ │ [0]=0 [1]=0 [2]=0 │ ←─────┘
-                         │ └───────────────────┘       │
-                         └─────────────────────────────┘
+    ┌─────────────┐      ┌────────────────────────────────────────────────┐
+    │   arr       │      │  int[][] (0x001)        int[] (0x100)          │
+    │ ┌─────────┐ │      │ ┌─────────────┐         ┌───────────────────┐  │
+    │ │0x001    │─┼──────┼→│ [0] = 0x100 │────────→│ [0]=0 [1]=0 [2]=0 │  │
+    │ └─────────┘ │      │ ├─────────────┤         └───────────────────┘  │
+    │             │      │ │ [1] = 0x200 │──┐      int[] (0x200)          │
+    └─────────────┘      │ └─────────────┘  │      ┌───────────────────┐  │
+                         │                  └─────→│ [0]=0 [1]=0 [2]=0 │  │
+                         │                         └───────────────────┘  │
+                         └────────────────────────────────────────────────┘
 
 ### 7. Two-Dimensional Array Examples
 
@@ -975,6 +967,7 @@ int[] arr6 = arr1.clone();
 
 ```java
 import java.util.Arrays;
+import java.util.Collections;
 
 int[] arr = {5, 2, 8, 1, 9, 3};
 
@@ -1035,7 +1028,7 @@ System.out.println(str);  // [10, 20, 30, 40, 50]
 
 // Two-dimensional array to string
 int[][] arr2 = {{1, 2}, {3, 4}, {5, 6}};
-System.out.println(Arrays.toString(arr2));      // Incorrect: [[I@..., [I@...]
+System.out.println(Arrays.toString(arr2));      // Not useful: [[I@..., [I@..., [I@...]
 System.out.println(Arrays.deepToString(arr2));  // [[1, 2], [3, 4], [5, 6]]
 ```
 
@@ -1307,7 +1300,7 @@ Arrays.stream(arr).forEach(System.out::println);
 int[][] arr = {{1,2}, {3,4}, {5,6}};
 
 // Dynamic initialization
-int[][] arr = new int[3][4];  // 3 rows, 4 columns
+int[][] grid = new int[3][4];  // 3 rows, 4 columns
 
 // Iterate
 for (int i = 0; i < arr.length; i++) {
@@ -1351,11 +1344,11 @@ Arrays.stream(arr);             // Convert to stream
 
 ```java
 // Array → List
-List<String> list = Arrays.asList(arr);           // Fixed size
-List<String> list = new ArrayList<>(Arrays.asList(arr));  // Mutable
-List<String> list = List.of(arr);                 // Immutable (JDK 9+)
+List<String> list1 = Arrays.asList(arr);                   // Fixed size
+List<String> list2 = new ArrayList<>(Arrays.asList(arr));  // Mutable
+List<String> list3 = List.of(arr);                         // Immutable (JDK 9+)
 
 // List → array
-String[] arr = list.toArray(new String[0]);
-String[] arr = list.toArray(String[]::new);       // JDK 11+
+String[] arrA = list2.toArray(new String[0]);
+String[] arrB = list2.toArray(String[]::new);              // JDK 11+
 ```

@@ -49,9 +49,9 @@ mysqld --install MySQL
 # Start the service
 net start MySQL
 
-# Log in and change the password
+# Log in (press Enter at the empty-password prompt), then change the password inside the mysql client
 mysql -u root -p
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'your-new-password';
+# mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'your-new-password';
 ```
 
 #### macOS / Linux
@@ -202,11 +202,13 @@ DROP DATABASE IF EXISTS database_name;
 | Auto-increment | AUTO_INCREMENT | Generate increasing values |
 | Unsigned | UNSIGNED | Allow only nonnegative numeric values |
 
-> **UNSIGNED use cases:** Values such as age, quantity, or prices that are designed to be nonnegative. Benefits include:
+> **UNSIGNED use cases:** Integer values such as age or quantity that are designed to be nonnegative. Benefits include:
 >
 > 1. **A larger nonnegative integer range**, such as TINYINT increasing from a maximum of 127 to 255.
 > 2. **Clearer intent:** The column is not intended to accept negative values.
 > 3. **Range validation:** Out-of-range inserts are rejected in strict SQL mode.
+>
+> `UNSIGNED` on `DECIMAL`, `FLOAT`, and `DOUBLE` columns is deprecated since MySQL 8.0.17; express nonnegative decimals with a `CHECK` constraint (enforced since MySQL 8.0.16).
 
 #### Example Table Definition
 
@@ -218,7 +220,7 @@ CREATE TABLE employee (
     gender CHAR(1) DEFAULT '男' COMMENT 'Gender',
     age TINYINT UNSIGNED COMMENT 'Age, 0-255; nonnegative',
     phone CHAR(11) COMMENT 'Phone number',
-    salary DECIMAL(10, 2) UNSIGNED COMMENT 'Salary; nonnegative',
+    salary DECIMAL(10, 2) COMMENT 'Salary; nonnegative' CHECK (salary >= 0),
     dept_id INT UNSIGNED COMMENT 'Department ID',
     hire_date DATE COMMENT 'Hire date',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
@@ -331,7 +333,7 @@ DELETE FROM employee WHERE id = 5;
 
 ## IV. DQL — Querying Data
 
-### Overall Syntax
+### 4.1 Overall Syntax
 
 ```sql
 SELECT [DISTINCT] column_list [AS alias]
@@ -345,7 +347,7 @@ FROM table_name
 
 **Logical processing order:** FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
 
-### 4.1 Basic Queries
+### 4.2 Basic Queries
 
 ```sql
 SELECT * FROM employee;                            -- All columns
@@ -354,7 +356,7 @@ SELECT name AS 'Name', salary 'Salary' FROM employee;  -- Aliases; AS is optiona
 SELECT DISTINCT dept_id FROM employee;             -- Remove duplicates
 ```
 
-### 4.2 Filtering with WHERE
+### 4.3 Filtering with WHERE
 
 **Comparison operators:**
 
@@ -380,7 +382,7 @@ SELECT * FROM employee WHERE email IS NULL;
 SELECT * FROM employee WHERE age >= 25 AND salary >= 10000;
 ```
 
-### 4.3 Aggregate Functions
+### 4.4 Aggregate Functions
 
 | Function | Purpose |
 | --------- | ---- |
@@ -395,7 +397,7 @@ SELECT COUNT(*) FROM employee;
 SELECT AVG(salary), MAX(salary), MIN(salary) FROM employee;
 ```
 
-### 4.4 Grouping with GROUP BY
+### 4.5 Grouping with GROUP BY
 
 ```sql
 SELECT columns FROM table_name GROUP BY grouping_columns [HAVING condition];
@@ -421,14 +423,14 @@ GROUP BY dept_id
 HAVING num > 5;
 ```
 
-### 4.5 Sorting with ORDER BY
+### 4.6 Sorting with ORDER BY
 
 ```sql
 SELECT * FROM employee ORDER BY salary DESC;           -- Descending order
 SELECT * FROM employee ORDER BY salary DESC, age ASC;  -- Multiple sort keys
 ```
 
-### 4.6 Pagination with LIMIT
+### 4.7 Pagination with LIMIT
 
 ```sql
 SELECT * FROM table_name LIMIT offset, row_count;
@@ -444,7 +446,7 @@ SELECT * FROM employee LIMIT 20, 10;   -- Page 3
 
 > **Note:** `LIMIT offset, size` is useful for basic pagination, but a large `offset` causes **deep-pagination performance problems**: the database must scan and skip many rows before returning a small page, so later pages generally take longer.
 
-### Combined Query Exercise
+### 4.8 Combined Query Exercise
 
 ```sql
 -- Select male employees aged 25-35 and group by department.
@@ -494,10 +496,10 @@ An **index** is a data structure for **efficient retrieval**. Like a book's tabl
 -- Define indexes when creating the table
 CREATE TABLE user (
     id INT PRIMARY KEY AUTO_INCREMENT,           -- Primary key
-    phone VARCHAR(11) UNIQUE,                    -- Unique index
+    phone VARCHAR(11),
     name VARCHAR(50),
-    INDEX idx_name (name),                        -- Non-unique index
-    UNIQUE KEY uk_phone (phone)
+    INDEX idx_name (name),                       -- Non-unique index
+    UNIQUE KEY uk_phone (phone)                  -- Unique index
 );
 
 -- Add indexes after table creation
@@ -505,7 +507,7 @@ ALTER TABLE table_name ADD INDEX index_name (column_name);
 ALTER TABLE table_name ADD UNIQUE INDEX index_name (column_name);
 
 -- Composite index
-ALTER TABLE table_name ADD INDEX idx_ab (a, b, c);
+ALTER TABLE table_name ADD INDEX idx_abc (a, b, c);
 ```
 
 #### Inspect
@@ -1281,7 +1283,7 @@ SELECT * FROM user WHERE dept_id = 1;
 -- Assume it returns 100 rows
 
 -- N queries: load orders for each user, once per loop iteration
-SELECT * FROM order WHERE user_id = ?;  -- Executed 100 times
+SELECT * FROM orders WHERE user_id = ?;  -- Executed 100 times (ORDER is a reserved word, so the table is orders)
 -- Total: 1 + 100 = 101 statements
 ```
 
@@ -1415,7 +1417,7 @@ LIMIT 100000, 20;
 SELECT *
 FROM order_info
 WHERE supplier_id = 1001
-  AND id > 100000
+  AND id > 100000   -- The last id returned on the previous page, not an offset
 ORDER BY id
 LIMIT 20;
 ```
@@ -1513,7 +1515,7 @@ Pagination design therefore combines:
 
 **Read/write splitting** routes writes to a primary and reads to replicas, using replication based on the binary log to synchronize data.
 
-```
+```text
 Writes → Primary (Master)
               ↓ Replication (binlog)
 Reads  → Replicas (Slave 1, Slave 2, ...)
@@ -1553,7 +1555,7 @@ Horizontal table and database sharding are often combined; "database/table shard
 
 **Vertical table split:**
 
-```
+```text
 Original order table (wide)
 +----+---------+--------+--------+----------------------+
 | id | user_id | amount | status | remark (large field) |
@@ -1561,7 +1563,7 @@ Original order table (wide)
 
                         ↓ Vertical split
 
-order (frequently accessed)           order_detail (less frequently accessed)
+orders (frequently accessed)          order_detail (less frequently accessed)
 +----+---------+--------+--------+    +----------+----------------------+
 | id | user_id | amount | status |    | order_id | remark (large field) |
 +----+---------+--------+--------+    +----------+----------------------+
@@ -1569,7 +1571,7 @@ order (frequently accessed)           order_detail (less frequently accessed)
 
 **Horizontal split: distribute order rows by user_id % 4:**
 
-```
+```text
 order_0              order_1              order_2              order_3
 user_id % 4 = 0      user_id % 4 = 1      user_id % 4 = 2      user_id % 4 = 3
 ```

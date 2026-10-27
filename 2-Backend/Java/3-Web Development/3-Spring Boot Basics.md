@@ -42,7 +42,7 @@ Start with these four responsibilities:
 | Spring Framework | **Core framework** providing IoC, AOP, MVC, and other foundational capabilities |
 | Spring Boot | **Application scaffolding** built on Spring Framework to simplify setup |
 
-```
+```text
 Spring Boot = Spring Framework + Auto-configuration + Embedded server + Starters
 ```
 
@@ -66,7 +66,7 @@ Spring Boot = Spring Framework + Auto-configuration + Embedded server + Starters
 
 #### The Spring Ecosystem
 
-```
+```text
 Spring ecosystem
 ├── Spring Framework (core framework)
 │   ├── Spring Core (IoC container and dependency injection)
@@ -74,7 +74,7 @@ Spring ecosystem
 │   ├── Spring MVC (web development)
 │   └── Spring JDBC/ORM (data access)
 │
-├── Spring Boot (application setup) ← Focus of this note
+├── Spring Boot (application setup)
 │   ├── Auto-configuration
 │   ├── Embedded servers
 │   └── Starter dependencies
@@ -212,7 +212,7 @@ The key idea is: **Spring Boot evaluates conditions before deciding whether to r
 
 #### Core Mechanism
 
-```
+```text
 @EnableAutoConfiguration
         ↓
 Through @Import(AutoConfigurationImportSelector.class)
@@ -301,7 +301,7 @@ public class DataSourceAutoConfiguration {
 
 ### 2.4 Embedded Servers
 
-```
+```text
 ┌───────────────────────────────────────┐
 │ Spring Boot application               │
 │ ┌───────────────────────────────────┐ │
@@ -344,7 +344,7 @@ public class DataSourceAutoConfiguration {
 | ------ | ---- | -------- |
 | **Tomcat** | Mature ecosystem, extensive documentation, default choice | Most conventional web applications |
 | **Jetty** | Lightweight with strong embedding support | Projects familiar with the Jetty ecosystem |
-| **Undertow** | Fast startup and a straightforward threading model | Lightweight, high-throughput applications |
+| **Undertow** | Fast startup and a straightforward threading model | Lightweight, high-throughput applications (Spring Boot 3.x only; Spring Boot 4.0 removed Undertow support) |
 
 ***
 
@@ -358,7 +358,7 @@ The **startup sequence** covers the process from `main()` to an application that
 | **Bean creation** | When does the container instantiate singleton beans? |
 | **Application readiness** | When do runners execute and `ApplicationReadyEvent` fire? |
 
-```
+```text
 1. Start main()
       ↓
 2. Create SpringApplication
@@ -397,7 +397,7 @@ The **startup sequence** covers the process from `main()` to an application that
 | **IoC** | Inversion of Control | Responsibility for creating objects moves from application code to the container |
 | **DI** | Dependency Injection | The container supplies the dependencies an application needs at runtime |
 
-```
+```text
 ┌───────────────────────────────────────────────────────────────────────────┐
 │ Traditional approach (coupled)                                            │
 │ Controller ──── new ────▶ ServiceImpl                                     │
@@ -522,7 +522,7 @@ Replacing `@Configuration` with `@Component` makes the `b` objects passed to `a`
 
 #### The proxyBeanMethods Attribute
 
-Available with Spring Boot 2.2+, this attribute controls configuration-class proxying:
+Available since Spring Framework 5.2 (Spring Boot 2.2), this attribute controls configuration-class proxying:
 
 | Mode | proxyBeanMethods | Characteristics | Suitable when |
 | ---- | ---------------- | -------------------- | ---------------------- |
@@ -622,7 +622,7 @@ public class AppConfig { }
 
 `@SpringBootApplication` scans **the application class's package and subpackages** by default.
 
-```
+```text
 com.example/              ← Application class package
 ├── Application.java      ✅ Included in the scan
 ├── controller/           ✅ Included in the scan
@@ -798,7 +798,7 @@ When a **request/session-scoped bean is injected into a singleton**, such as a s
 @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestScopedBean { }
 
-// Option 2: @RequestScope (Spring 4.3+)
+// Option 2: @RequestScope (Spring 4.3+; proxyMode already defaults to TARGET_CLASS)
 @Component
 @RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestScopedBean { }
@@ -1158,7 +1158,7 @@ spring:
 </dependency>
 ```
 
-> 💡 A plain Spring Boot application without Spring Cloud does not need `bootstrap.yml`; `application.yml` is sufficient.
+> 💡 A plain Spring Boot application without Spring Cloud does not need `bootstrap.yml`; `application.yml` is sufficient. Since Spring Boot 2.4, the preferred alternative to bootstrap is `spring.config.import` in `application.yml` (for example, `spring.config.import: optional:configserver:http://config-server:8888`).
 
 ***
 
@@ -1167,7 +1167,7 @@ spring:
 | Rule | Explanation |
 | ------------ | ---------------------------------- |
 | Space after a colon | Write `port: 8080`, with a space after the colon |
-| Indentation defines nesting | Use spaces, not tabs; two spaces per level is common |
+| cf defines nesting | Use spaces, not tabs; two spaces per level is common |
 | `#` starts a comment | Text after `#` to the end of the line is a comment |
 | Case-sensitive | `Port` and `port` are different |
 
@@ -1178,15 +1178,15 @@ spring:
 user:
   name: 张三
   age: 18
-# Inline form
-user: {name: 张三, age: 18}
+# Inline form (a key may appear only once per document):
+# user: {name: 张三, age: 18}
 
 # 2. Array / List
 hobby:
   - java
   - game
-# Inline form
-hobby: [java, game]
+# Inline form:
+# hobby: [java, game]
 
 # 3. Array of objects
 users:
@@ -1199,8 +1199,7 @@ users:
 name: 张三                    # String (sample name)
 age: 18                       # Number
 enabled: true                 # Boolean
-data: null                    # Null
-data: ~                       # Alternative null notation
+data: null                    # Null (~ is an alternative notation: data: ~)
 
 # 5. Quoting differences
 msg1: "Hello\nWorld"          # Double quotes interpret escapes
@@ -1217,7 +1216,8 @@ server:
   servlet:
     context-path: /api
   tomcat:
-    max-threads: 200
+    threads:
+      max: 200            # Replaces server.tomcat.max-threads (deprecated since Spring Boot 2.3)
     uri-encoding: UTF-8
 
 spring:
@@ -1363,7 +1363,7 @@ public class AppProperties {
 
 | Annotation | Purpose |
 | ---- | ---- |
-| `@Validated` | Enables validation of bound configuration |
+| `@Validated` | Enables validation of bound configuration (requires `spring-boot-starter-validation`) |
 | `@NotBlank` | Requires a nonblank string |
 | `@Min` / `@Max` | Constrain numeric ranges |
 
@@ -1471,7 +1471,7 @@ Environment-specific configuration lets the same code run with different setting
 
 **Multiple active profiles:** `spring.profiles.active=dev,local` activates comma-separated profiles. Their files are loaded in order, and later profiles override earlier ones for matching keys (local overrides dev here).
 
-```
+```text
 resources/
 ├── application.yml          # Shared settings and active profile
 ├── application-dev.yml      # Development
@@ -1580,7 +1580,7 @@ Closer to code defaults usually means lower priority
 
 #### Common Configuration File Locations, Highest First
 
-```
+```text
 1. ./config/application.yml            # config under the working directory
 2. ./application.yml                   # Working directory
 3. classpath:/config/application.yml   # config directory on the classpath
@@ -1670,9 +1670,9 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 
 ***
 
-## Appendix: Core Annotation Reference
+## VII. Core Annotation Reference
 
-### Startup and Configuration
+### 1. Startup and Configuration
 
 | Annotation | Purpose |
 | -------------------------- | ---------------------------------- |
@@ -1686,7 +1686,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | `@Import` | Imports configuration classes, ordinary classes, or selectors |
 | `@ImportResource` | Imports XML configuration |
 
-### Bean Declarations
+### 2. Bean Declarations
 
 | Annotation | Purpose |
 | ----------------- | ------------------------------------------ |
@@ -1702,7 +1702,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | `@Lazy` | Lazy initialization |
 | `@DependsOn` | Explicit initialization dependencies |
 
-### Dependency Injection
+### 3. Dependency Injection
 
 | Annotation | Purpose |
 | -------------------------- | ---------------------- |
@@ -1713,7 +1713,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | `@ConfigurationProperties` | Binds a group of configuration properties |
 | `@Validated` | Enables binding or method-parameter validation |
 
-### Lifecycle
+### 4. Lifecycle
 
 | Annotation or callback | Purpose |
 | ---------------- | ----------------- |
@@ -1724,7 +1724,7 @@ The usual progression is: **use defaults, adjust properties, replace selected be
 | `@Order` | Specifies ordering |
 | `@EventListener` | Handles application events |
 
-### Conditional Annotations
+### 5. Conditional Annotations
 
 | Annotation | Applies when |
 | ------------------------------ | ---------------------------- |

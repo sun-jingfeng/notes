@@ -198,7 +198,7 @@ public class Student {
     private String name;
     private int age;
 
-    // Without overriding toString, printing an object produces: ClassName@address
+    // Without overriding toString, printing an object produces: ClassName@hashCode (hexadecimal, not a memory address)
     // For example: Student@1b6d3586
 
     // Override toString
@@ -335,7 +335,7 @@ public class Dog extends Animal {
 
 ### 4. final Variables
 
-#### 4.1 final Fields
+#### 1. final Fields
 
 **Rule: A final field must be initialized and can be assigned only once. There are three initialization approaches:**
 
@@ -380,7 +380,7 @@ public class Demo {
 }
 ```
 
-#### 4.2 final Local Variables
+#### 2. final Local Variables
 
 ```java
 public void test() {
@@ -395,7 +395,7 @@ public void test() {
 }
 ```
 
-#### 4.3 final Reference Variables
+#### 3. final Reference Variables
 
 ```java
 public void test() {
@@ -413,7 +413,7 @@ public void test() {
 
 **Key point**: A `final` reference variable **cannot refer to a different object**, but **the object's contents can change**.
 
-#### 4.4 final Method Parameters
+#### 4. final Method Parameters
 
 ```java
 public void process(final String name, final int count) {
@@ -473,7 +473,7 @@ public class UserController {
 | **Method**     | Cannot be overridden           | `public final void sleep() { }`                      |
 | **Primitive variable** | Value cannot change           | `final int num = 10;`                                |
 | **Reference variable** | Reference cannot change (contents may change)   | `final int[] arr = {1,2,3}; arr[0] = 100; ✅`         |
-| **Field**   | Must be initialized at declaration or in a constructor | `private final UserService userService;` initialized in the constructor ✅ |
+| **Field**   | Must be initialized at declaration, in an initializer block, or in a constructor | `private final UserService userService;` initialized in the constructor ✅ |
 | **Method parameter**   | Parameter value cannot be reassigned        | `void process(final String name) { }`                |
 
 ***
@@ -752,9 +752,9 @@ public class Dog extends Animal implements Swimmable, Runnable {
 | Keyword   | abstract class | interface                  |
 | Fields  | May have ordinary variables        | Constants only (public static final) |
 | Constructors  | Yes              | No                         |
-| Concrete methods  | Allowed            | None before JDK 8; default methods from JDK 8 onward     |
+| Concrete methods  | Allowed            | None before JDK 8; default and static methods from JDK 8 onward     |
 | Inheritance/implementation | Single class inheritance            | Multiple interface implementation                        |
-| Design concept  | An is-a relationship   | A has-a capability            |
+| Design concept  | An is-a relationship   | A can-do capability (like-a)            |
 | Use case  | Shared attributes and behavior      | Define contracts and capabilities                    |
 
 ### 9. Usage Recommendations
@@ -875,11 +875,11 @@ if (a instanceof Dog d) {
 }
 
 // Pattern matching for switch in JDK 21+
-String result = switch (a) {
-    case Dog d -> "Dog: " + d.bark();
-    case Cat c -> "Cat: " + c.catchMouse();
-    default -> "Unknown animal";
-};
+switch (a) {
+    case Dog d -> d.bark();
+    case Cat c -> c.eat();
+    default -> System.out.println("Unknown animal");
+}
 ```
 
 ### 8. Uses of Polymorphism
@@ -1000,7 +1000,7 @@ class Child extends Parent {
 ```java
 public class JDBCUtils {
     static {
-        // Load a database driver (only needs to run once)
+        // Load a database driver once (unnecessary for JDBC 4.0+ drivers, which register automatically)
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -1083,7 +1083,7 @@ inner.show();
 ```java
 public class Outer {
     public void method() {
-        final int localVar = 100;  // Must be effectively final
+        final int localVar = 100;  // final (or effectively final)
 
         // Local inner class
         class LocalInner {
@@ -1498,14 +1498,14 @@ public class Test {
 Runnable r = () -> System.out.println("Running");
 
 // One parameter (parentheses may be omitted)
-Consumer<String> c = s -> System.out.println(s);
+Consumer<String> c1 = s -> System.out.println(s);
 // Equivalent to
-Consumer<String> c = (String s) -> { System.out.println(s); };
+Consumer<String> c2 = (String s) -> { System.out.println(s); };
 
 // Multiple parameters with a return value
-Comparator<Integer> comp = (a, b) -> a - b;
+Comparator<Integer> comp1 = (a, b) -> Integer.compare(a, b);
 // Equivalent to
-Comparator<Integer> comp = (Integer a, Integer b) -> { return a - b; };
+Comparator<Integer> comp2 = (Integer a, Integer b) -> { return Integer.compare(a, b); };
 ```
 
 ### 6. Variable Capture in Lambdas
@@ -1593,16 +1593,12 @@ public class MethodReferenceDemo {
         list.sort(String::compareTo);          // Method reference ✅
 
         // Scenario 3: Convert types
-        List<Integer> nums = list.stream()
-            .map(s -> s.length())          // Lambda
-            .map(String::length)           // Method reference ✅
-            .toList();
+        List<Integer> lengths1 = list.stream().map(s -> s.length()).toList();  // Lambda
+        List<Integer> lengths2 = list.stream().map(String::length).toList();   // Method reference ✅
 
         // Scenario 4: Construct objects
-        List<StringBuilder> builders = list.stream()
-            .map(s -> new StringBuilder(s))  // Lambda
-            .map(StringBuilder::new)          // Method reference ✅
-            .toList();
+        List<StringBuilder> b1 = list.stream().map(s -> new StringBuilder(s)).toList();  // Lambda
+        List<StringBuilder> b2 = list.stream().map(StringBuilder::new).toList();         // Method reference ✅
     }
 }
 ```
@@ -1664,7 +1660,7 @@ public class ThisDemo {
         │     ├── Method: cannot be overridden
         │     ├── Variable: value/reference cannot be reassigned
         │     ├── Parameter: value cannot be reassigned
-        │     └── Field: initialize at declaration or in a constructor
+        │     └── Field: initialize at declaration, in an initializer block, or in a constructor
         │
         ├── Abstract class: abstract
         │     ├── Cannot be instantiated
@@ -1673,7 +1669,7 @@ public class ThisDemo {
         │     └── Template method pattern
         │
         ├── Interface: interface
-        │     ├── Constants and abstract methods only
+        │     ├── Constants and abstract methods (before JDK 8)
         │     ├── A class may implement multiple interfaces
         │     ├── JDK 8+: default and static methods
         │     ├── JDK 9+: private methods

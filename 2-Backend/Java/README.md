@@ -4,7 +4,7 @@ Complete English translations of the 40 notes, following their existing chapter 
 
 Explanations, tables, comments, and diagram labels are in English. Some original Chinese names, character literals, date patterns, and sample query values are intentionally retained where examples or expected outputs depend on them.
 
-The Chinese originals are preserved in Git history at commit `26a0b25`. The examples retain their stated Java and framework versions; version-specific qualifications are included in the relevant chapters.
+The Chinese originals are preserved in Git history at commit `26a0b25`. The examples target Java 17+ and Spring Boot 3.x; version-specific qualifications are included in the relevant chapters.
 
 ## Part 1 — Java Basics
 

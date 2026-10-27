@@ -150,7 +150,7 @@ public class PreparedStatementDemo {
 
 ### 1.5 Transactions and Resource Management
 
-#### 1.5.1 Transactions
+#### 1. Transactions
 
 JDBC connections use auto-commit by default. Explicit transaction management provides atomicity across several statements:
 
@@ -198,7 +198,7 @@ public class TransactionDemo {
 | `commit()` | Commit the transaction |
 | `rollback()` | Roll back the transaction |
 
-#### 1.5.2 Resource Management
+#### 2. Resource Management
 
 Use **try-with-resources** to close resources automatically:
 
@@ -288,7 +288,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
 
 ### 2.2 Getting Started
 
-#### 2.2.1 Project Layout
+#### 1. Project Layout
 
     src/main/
     ├── java/com/example/
@@ -302,7 +302,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
         └── mapper/
             └── UserMapper.xml            # Optional XML mapper
 
-#### 2.2.2 Dependencies
+#### 2. Dependencies
 
 ```xml
 <dependencies>
@@ -310,7 +310,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
     <dependency>
         <groupId>org.mybatis.spring.boot</groupId>
         <artifactId>mybatis-spring-boot-starter</artifactId>
-        <version>3.0.3</version>
+        <version>3.0.5</version>
     </dependency>
 
     <!-- MySQL driver -->
@@ -331,12 +331,12 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
     <dependency>
         <groupId>com.github.pagehelper</groupId>
         <artifactId>pagehelper-spring-boot-starter</artifactId>
-        <version>2.1.0</version>
+        <version>2.1.1</version>
     </dependency>
 </dependencies>
 ```
 
-#### 2.2.3 Configuration
+#### 3. Configuration
 
 ```yaml
 spring:
@@ -354,7 +354,7 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # SQL logging
 ```
 
-#### 2.2.4 Application Class
+#### 4. Application Class
 
 ```java
 @SpringBootApplication
@@ -366,14 +366,14 @@ public class Application {
 }
 ```
 
-#### 2.2.5 Data Class
+#### 5. Data Class
 
 ```java
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements java.io.Serializable {
-    private static final long serialVersionUID = 1L; // Needed by the default read/write cache example below
+    private static final long serialVersionUID = 1L; // Needed when the second-level cache uses its default read/write mode
     private Integer id;
     private String name;
     private Integer age;
@@ -389,7 +389,7 @@ public class User implements java.io.Serializable {
 | `@AllArgsConstructor` | Generate an all-arguments constructor |
 | `@Builder` | Generate a builder API |
 
-#### 2.2.6 Unit Test
+#### 6. Unit Test
 
 ```java
 @SpringBootTest
@@ -410,7 +410,7 @@ class UserMapperTest {
 
 ### 2.3 Parameters
 
-#### 2.3.1 #{} vs ${}
+#### 1. #{} vs ${}
 
 | Placeholder | Behavior | Typical use |
 | ----- | --------------------- | ------------- |
@@ -439,7 +439,7 @@ public interface UserMapper {
 }
 ```
 
-#### 2.3.2 @Param
+#### 2. @Param
 
 With the `-parameters` compiler option enabled, MyBatis can use actual parameter names, so `@Param` can sometimes be omitted. Explicit `@Param` remains useful for readability and stable mappings.
 
@@ -465,7 +465,7 @@ List<User> selectByUserAndStatus(@Param("user") User user, @Param("status") Inte
 
 ### 2.4 SQL Mapping: Annotations and XML
 
-#### 2.4.1 Comparison
+#### 1. Comparison
 
 | Aspect | Annotations | XML |
 | ------ | ------------------- | ------------------ |
@@ -475,7 +475,7 @@ List<User> selectByUserAndStatus(@Param("user") User user, @Param("status") Inte
 | IDE support | Basic | Richer support with tools such as MybatisX |
 | Suggested use | Simple queries | More complex persistence logic |
 
-#### 2.4.2 Binding XML to an Interface
+#### 2. Binding XML to an Interface
 
 For XML mappers, observe these conventions and binding rules:
 
@@ -513,7 +513,7 @@ For XML mappers, observe these conventions and binding rules:
 </mapper>
 ```
 
-#### 2.4.3 Basic CRUD
+#### 3. Basic CRUD
 
 **Shared Mapper interface:**
 
@@ -578,7 +578,7 @@ public interface UserMapper {
 </mapper>
 ```
 
-#### 2.4.4 Returning Generated Keys
+#### 4. Returning Generated Keys
 
 Retrieve an auto-generated key after inserting a row.
 
@@ -606,7 +606,7 @@ userMapper.insert(user);
 System.out.println("Generated primary key: " + user.getId());
 ```
 
-#### 2.4.5 Result Mapping
+#### 5. Result Mapping
 
 Configure result mappings when database column names differ from Java property names.
 
@@ -649,9 +649,9 @@ User selectById(Integer id);
 </select>
 ```
 
-#### 2.4.6 Multi-Table Queries
+#### 6. Multi-Table Queries
 
-##### Single-Object Association (association)
+**Single-Object Association (association):**
 
 **Scenario:** Fetch a user and their department; each user belongs to one department.
 
@@ -712,7 +712,9 @@ public class Dept {
 </select>
 ```
 
-##### One-to-Many Association (collection)
+***
+
+**One-to-Many Association (collection):**
 
 **Scenario:** Fetch a department and its employees.
 
@@ -774,11 +776,11 @@ mybatis:
     aggressive-lazy-loading: false    # Disable aggressive loading
 ```
 
-#### 2.4.7 Dynamic SQL
+#### 7. Dynamic SQL
 
 MyBatis provides dynamic SQL scripting. XML is a natural fit; annotation-based statements can use `<script>` tags or SQL providers.
 
-##### Conditional Queries with if and where
+**Conditional Queries with if and where:**
 
 **Annotation form:**
 
@@ -815,7 +817,9 @@ List<User> selectByCondition(@Param("name") String name, @Param("age") Integer a
 
 > `<where>` adds `WHERE` when needed and removes a leading `AND`/`OR`.
 
-##### Conditional Updates with if and set
+***
+
+**Conditional Updates with if and set:**
 
 **Annotation form:**
 
@@ -846,7 +850,9 @@ int updateSelective(User user);
 
 > `<set>` adds `SET` and removes a trailing comma.
 
-##### choose / when / otherwise
+***
+
+**choose / when / otherwise:**
 
 Similar to Java switch-case:
 
@@ -863,7 +869,9 @@ Similar to Java switch-case:
 </select>
 ```
 
-##### trim
+***
+
+**trim:**
 
 Flexible prefix/suffix handling:
 
@@ -895,7 +903,9 @@ Flexible prefix/suffix handling:
 </update>
 ```
 
-##### bind
+***
+
+**bind:**
 
 Bind a variable in the dynamic SQL context, often for LIKE patterns:
 
@@ -908,7 +918,7 @@ Bind a variable in the dynamic SQL context, often for LIKE patterns:
 
 > Compared with `CONCAT('%', #{name}, '%')`, `<bind>` can express the pattern without relying on a database concatenation function.
 
-#### 2.4.8 Batch Operations with `<foreach>`
+#### 8. Batch Operations with `<foreach>`
 
 | Attribute | Purpose |
 | ------------ | --------- |
@@ -927,7 +937,7 @@ Bind a variable in the dynamic SQL context, often for LIKE patterns:
 | `Array`       | `array`               |
 | Named with `@Param` | The specified name |
 
-##### Batch Delete
+**Batch Delete:**
 
 **Annotation form:**
 
@@ -952,7 +962,9 @@ int deleteByIds(@Param("ids") List<Integer> ids);
 </delete>
 ```
 
-##### Batch Insert
+***
+
+**Batch Insert:**
 
 **Annotation form:**
 
@@ -977,7 +989,7 @@ int batchInsert(@Param("users") List<User> users);
 </insert>
 ```
 
-#### 2.4.9 Reusable SQL Fragments in XML
+#### 9. Reusable SQL Fragments in XML
 
 ```xml
 <!-- Define a fragment -->
@@ -993,7 +1005,7 @@ int batchInsert(@Param("users") List<User> users);
 </select>
 ```
 
-#### 2.4.10 Special Characters in XML
+#### 10. Special Characters in XML
 
 Escape XML special characters or use CDATA where appropriate:
 
@@ -1025,7 +1037,7 @@ Escape XML special characters or use CDATA where appropriate:
 
 > **Note:** Dynamic SQL tags such as `<if>` and `<where>` are treated as plain text inside CDATA, so keep those tags outside the CDATA section.
 
-#### 2.4.11 Troubleshooting
+#### 11. Troubleshooting
 
 | Error | Cause | Resolution |
 | --------------------------------------------- | ------------- | -------------------- |
@@ -1193,7 +1205,7 @@ The **second-level cache** is used more cautiously, especially in microservices,
 
 ### 2.6 Pagination with PageHelper
 
-#### 2.6.1 Basic Usage
+#### 1. Basic Usage
 
 **Add the dependency:**
 
@@ -1201,7 +1213,7 @@ The **second-level cache** is used more cautiously, especially in microservices,
 <dependency>
     <groupId>com.github.pagehelper</groupId>
     <artifactId>pagehelper-spring-boot-starter</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -1241,7 +1253,7 @@ System.out.println("Current page: " + pageInfo.getList());
 | `pageSize` | Page size |
 | `list` | Current page data |
 
-#### 2.6.2 How It Works
+#### 2. How It Works
 
 PageHelper uses the **MyBatis plugin/interceptor mechanism**:
 
@@ -1280,7 +1292,7 @@ SELECT COUNT(*) FROM user WHERE status = 1
 SELECT * FROM user WHERE status = 1 LIMIT 10, 10
 ```
 
-#### 2.6.3 Usage Notes
+#### 3. Usage Notes
 
 **1. Call startPage immediately before the intended query**
 
@@ -1356,7 +1368,7 @@ pagehelper:
   support-methods-arguments: true      # Allow pagination arguments on methods
 ```
 
-#### 2.6.4 Troubleshooting
+#### 4. Troubleshooting
 
 | Problem | Cause | Resolution |
 | --------- | -------------------- | -------------------------- |
@@ -1370,7 +1382,7 @@ pagehelper:
 
 ### 2.7 Special Type Mappings
 
-#### 2.7.1 Dates and Times
+#### 1. Dates and Times
 
 **Java/MySQL type correspondence:**
 
@@ -1379,11 +1391,11 @@ pagehelper:
 | `java.util.Date` | DATETIME/DATE | Legacy date/time type |
 | `java.sql.Date` | DATE | Date only |
 | `java.sql.Timestamp` | DATETIME | Date and time |
-| `LocalDate`          | DATE          | Java 8+ |
-| `LocalDateTime`      | DATETIME      | Java 8+ |
-| `LocalTime`          | TIME          | Java 8+ |
+| `LocalDate`          | DATE          | JDK 8+ |
+| `LocalDateTime`      | DATETIME      | JDK 8+ |
+| `LocalTime`          | TIME          | JDK 8+ |
 
-**Prefer Java 8 date/time types:**
+**Prefer the JDK 8 date/time types:**
 
 ```java
 @Data
@@ -1402,11 +1414,11 @@ public class User {
 ```yaml
 spring:
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
+    date-format: yyyy-MM-dd HH:mm:ss   # Applies to java.util.Date only, not LocalDate/LocalDateTime
     time-zone: Asia/Shanghai
 ```
 
-**Or specify formatting with annotations:**
+**For `java.time` types, specify formatting with annotations:**
 
 ```java
 @Data
@@ -1419,7 +1431,7 @@ public class User {
 }
 ```
 
-#### 2.7.2 Enums
+#### 2. Enums
 
 **Option 1: Default mapping by enum name**
 
@@ -1522,7 +1534,7 @@ mybatis:
 
 ### 2.8 Development Configuration
 
-#### 2.8.1 SQL Logging
+#### 1. SQL Logging
 
 ```yaml
 mybatis:
@@ -1540,13 +1552,13 @@ mybatis:
     ==> Parameters: 1(Integer)
     <==      Total: 1
 
-#### 2.8.2 SQL Completion in IDEA
+#### 2. SQL Completion in IDEA
 
 1. **Configure a data source:** `View → Tool Windows → Database` → add a MySQL connection.
 2. **Inject SQL language support:** Place the cursor in a SQL string → `Alt + Enter` → `Inject language` → MySQL.
 3. **Associate a data source:** `Alt + Enter` → `Language injection settings` → choose the data source.
 
-#### 2.8.3 MybatisX Plugin
+#### 3. MybatisX Plugin
 
 Install **MybatisX** from IDEA's plugin marketplace. Features include:
 
@@ -1621,6 +1633,8 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 ```
 
 > Spring Boot 2 uses `mybatis-plus-boot-starter`. MyBatis-Plus already includes MyBatis integration; ordinary Mapper/XML usage remains available without adding `mybatis-spring-boot-starter` again.
+
+> **Note**: since MyBatis-Plus 3.5.9, `PaginationInnerInterceptor` lives in the separate `mybatis-plus-jsqlparser` module; add that dependency when using a newer version with the pagination plugin.
 
 **Configuration: reuse Spring's data source settings and add MyBatis-Plus settings:**
 

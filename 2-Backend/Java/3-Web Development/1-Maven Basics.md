@@ -36,11 +36,13 @@
 
 **Step 2: Extract the archive and configure environment variables**
 
-```bash
-# Windows
+```text
+# Windows (System Properties → Environment Variables)
 MAVEN_HOME = C:\Program Files\apache-maven-3.9.6
-Add to Path: %MAVEN_HOME%\bin
+Path: add %MAVEN_HOME%\bin
+```
 
+```bash
 # macOS/Linux (~/.zshrc or ~/.bashrc)
 export MAVEN_HOME=/usr/local/apache-maven-3.9.6
 export PATH=$MAVEN_HOME/bin:$PATH
@@ -75,7 +77,7 @@ Edit `conf/settings.xml`:
 
 **Maven settings in IDEA:**
 
-`File → Settings → Build Tools → Maven`
+`File → Settings → Build, Execution, Deployment → Build Tools → Maven` (macOS: `IntelliJ IDEA → Settings`)
 
 | Setting | Description |
 | ------------------ | --------------- |
@@ -87,7 +89,7 @@ Edit `conf/settings.xml`:
 
 ### 3. Project Management
 
-#### 3.1 Creating a Project
+#### 1. Creating a Project
 
 **Using IDEA:**
 
@@ -101,10 +103,11 @@ Edit `conf/settings.xml`:
 mvn archetype:generate \
   -DgroupId=com.example \
   -DartifactId=my-app \
-  -DarchetypeArtifactId=maven-archetype-quickstart
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
 ```
 
-#### 3.2 Importing a Project
+#### 2. Importing a Project
 
 | Method | Steps |
 | -------- | -------------------------------------------------------- |
@@ -116,7 +119,7 @@ mvn archetype:generate \
 
 ### 4. Dependency Management
 
-#### 4.1 Maven Coordinates
+#### 1. Maven Coordinates
 
 **Coordinates** uniquely identify a dependency:
 
@@ -124,7 +127,7 @@ mvn archetype:generate \
 <dependency>
     <groupId>org.springframework</groupId>    <!-- Organization identifier -->
     <artifactId>spring-core</artifactId>      <!-- Artifact name -->
-    <version>5.3.20</version>                 <!-- Version -->
+    <version>6.2.19</version>                 <!-- Version -->
 </dependency>
 ```
 
@@ -136,28 +139,28 @@ mvn archetype:generate \
 
 **Finding coordinates:** [MVN Repository](https://mvnrepository.com/) or [Maven Central](https://search.maven.org/)
 
-#### 4.2 Declaring Dependencies
+#### 2. Declaring Dependencies
 
 ```xml
 <dependencies>
-    <!-- MySQL driver -->
+    <!-- MySQL driver (coordinates are com.mysql:mysql-connector-j since 8.0.31) -->
     <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>8.0.33</version>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>8.4.0</version>
     </dependency>
 
     <!-- JUnit 5 (test scope) -->
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>
-        <version>5.9.3</version>
+        <version>5.14.4</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
 ```
 
-#### 4.3 Dependency Scopes
+#### 3. Dependency Scopes
 
 | Scope | Application compilation | Test compilation | Application runtime | Transitive to consumers | Example |
 | --------------- | ---------- | -------- | ---------- | ------------ | -------------------- |
@@ -168,7 +171,7 @@ mvn archetype:generate \
 
 > **Note:** Scope determines when a dependency is available; it does not directly determine whether it is bundled into the artifact. An ordinary JAR does not include dependencies by default. WAR packaging, Spring Boot executable JARs, Shade, and other packaging plugins determine which dependencies to include.
 
-#### 4.4 Transitive Dependencies and Exclusions
+#### 4. Transitive Dependencies and Exclusions
 
 **Transitive dependencies:** If A depends on B and B depends on C, A can obtain C indirectly (transitivity depends on B's scope). For **version conflicts**, Maven uses **nearest definition wins** (the version on the shorter dependency path takes precedence), followed by **first declaration wins** when paths are equally long.
 
@@ -178,8 +181,9 @@ Use `<exclusions>` to exclude unwanted transitive dependencies:
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>5.3.20</version>
+    <version>6.2.19</version>
     <exclusions>
+        <!-- No version needed; usually excluded because a different version is declared directly -->
         <exclusion>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -192,7 +196,7 @@ Use `<exclusions>` to exclude unwanted transitive dependencies:
 
 ### 5. Build Lifecycles
 
-#### 5.1 The Three Lifecycles
+#### 1. The Three Lifecycles
 
 | Lifecycle | Purpose | Common phases |
 | ----------- | ---- | ---------------------------- |
@@ -200,7 +204,7 @@ Use `<exclusions>` to exclude unwanted transitive dependencies:
 | **default** | Main build process | compile, test, package, install |
 | **site** | Generate the project site | site |
 
-#### 5.2 The Default Lifecycle
+#### 2. The Default Lifecycle
 
     validate → compile → test → package → verify → install → deploy
                  ↓        ↓        ↓                  ↓
@@ -221,7 +225,7 @@ mvn package    # Automatically runs compile → test → package
 mvn install    # Automatically runs compile → test → package → install
 ```
 
-#### 5.3 Common Commands
+#### 3. Common Commands
 
 ```bash
 mvn clean              # Clean the target directory
@@ -240,7 +244,7 @@ mvn deploy                      # Publish to a remote repository (requires distr
 
 ### 1. JUnit 5 Basics
 
-#### 1.1 Getting Started
+#### 1. Getting Started
 
 **Add the dependency:**
 
@@ -248,7 +252,7 @@ mvn deploy                      # Publish to a remote repository (requires distr
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>5.9.3</version>
+    <version>5.14.4</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -284,7 +288,7 @@ public class CalculatorTest {
 *   IDEA: right-click the test class/method → Run
 *   Maven: `mvn test`
 
-#### 1.2 Assertion Methods
+#### 2. Assertion Methods
 
 ```java
 import static org.junit.jupiter.api.Assertions.*;
@@ -319,7 +323,7 @@ void testAssertions() {
 }
 ```
 
-#### 1.3 Common Annotations
+#### 3. Common Annotations
 
 | Annotation | Description |
 | -------------- | --------------- |
@@ -387,7 +391,7 @@ public class CalculatorTest {
 
 ### 2. Spring Boot Testing
 
-#### 2.1 Adding the Dependency
+#### 1. Adding the Dependency
 
 ```xml
 <dependency>
@@ -399,7 +403,7 @@ public class CalculatorTest {
 
 > **Includes:** JUnit 5, Mockito, AssertJ, and more; separate dependencies are unnecessary.
 
-#### 2.2 @SpringBootTest
+#### 2. @SpringBootTest
 
 `@SpringBootTest` starts a complete Spring application context for **integration testing**.
 
@@ -427,7 +431,7 @@ public class UserServiceTest {
 | `DEFINED_PORT` | Starts a real server on the configured port |
 | `NONE` | Does not create a web environment |
 
-#### 2.3 @MockBean
+#### 3. @MockBean
 
 Mock a dependency instead of invoking the real implementation:
 
@@ -456,7 +460,9 @@ public class OrderServiceTest {
 }
 ```
 
-#### 2.4 @WebMvcTest
+> **Note**: `@MockBean` is deprecated since Spring Boot 3.4 and removed in 4.0. On Spring Boot 3.4+ use Spring Framework's `@MockitoBean` (`org.springframework.test.context.bean.override.mockito.MockitoBean`), which works the same way.
+
+#### 4. @WebMvcTest
 
 Load only web-layer components to test a Controller:
 
@@ -481,7 +487,7 @@ public class UserControllerTest {
 }
 ```
 
-#### 2.5 @DataJpaTest
+#### 5. @DataJpaTest
 
 Load only JPA components to test a Repository:
 
@@ -500,7 +506,7 @@ public class UserRepositoryTest {
 }
 ```
 
-#### 2.6 Test Configuration
+#### 6. Test Configuration
 
 **Use test-specific configuration:**
 
@@ -514,13 +520,13 @@ public class UserServiceTest {
 
 For beans needed only in tests, define a `@TestConfiguration` class and import it with `@Import` on the test class.
 
-#### 2.7 Testing Annotation Summary
+#### 7. Testing Annotation Summary
 
 | Scenario | Annotation | Characteristics |
 | ------------- | ----------------- | ------------ |
 | Full integration test | `@SpringBootTest` | Loads the complete context |
 | Controller test | `@WebMvcTest` | Loads only the web layer |
 | Repository test | `@DataJpaTest` | Loads only the JPA layer |
-| Mock dependency | `@MockBean` | Replaces a bean in the container |
+| Mock dependency | `@MockBean` (`@MockitoBean` on Spring Boot 3.4+) | Replaces a bean in the container |
 | Select configuration | `@ActiveProfiles` | Activates the specified profile |
 | Test-only beans | `@TestConfiguration` + `@Import` | Configuration that applies only in tests |

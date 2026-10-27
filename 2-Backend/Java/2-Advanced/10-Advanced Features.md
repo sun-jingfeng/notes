@@ -374,7 +374,7 @@ Singleton.INSTANCE.doSomething();
                             │ Parent loader
     ┌───────────────────────┴──────────────────────────────────────┐
     │           Platform ClassLoader                               │
-    │           Loads platform modules (java.sql, java.xml, etc.)  │
+    │           Loads platform modules (java.sql, etc.)            │
     │           ⚠️ Replaces Extension ClassLoader                  │
     └───────────────────────┬──────────────────────────────────────┘
                             │ Parent loader
@@ -514,7 +514,8 @@ Some scenarios require departing from parent delegation:
 #### SPI Example: JDBC
 
 ```java
-// DriverManager is in rt.jar and loaded by Bootstrap ClassLoader
+// JDK 8: DriverManager is in rt.jar and loaded by Bootstrap ClassLoader
+// (JDK 9+: the java.sql module is loaded by Platform ClassLoader, still a parent of App ClassLoader)
 // But concrete database drivers (such as MySQL Driver) are on the classpath and loaded by App ClassLoader
 // This departs from parent delegation: a parent-loaded class must call a child-loaded class
 
@@ -546,17 +547,9 @@ public class MyClassLoader extends ClassLoader {
         }
     }
 
-    private byte[] loadClassData(String name) throws Exception {
+    private byte[] loadClassData(String name) throws IOException {
         String fileName = classPath + "/" + name.replace(".", "/") + ".class";
-        FileInputStream fis = new FileInputStream(fileName);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int len;
-        byte[] buffer = new byte[1024];
-        while ((len = fis.read(buffer)) != -1) {
-            baos.write(buffer, 0, len);
-        }
-        fis.close();
-        return baos.toByteArray();
+        return Files.readAllBytes(Paths.get(fileName));  // Read the whole class file
     }
 }
 
@@ -755,7 +748,7 @@ Reflection adds overhead compared with direct calls. Optimization options includ
 | Optimization | Description |
 | ------------------- | ------------------------------- |
 | **Cache reflection objects** | Cache Class, Method and Field objects to avoid repeated lookups |
-| **Use MethodHandle** | Available since Java 7+; performance approaches direct calls |
+| **Use MethodHandle** | Available since JDK 7; performance approaches direct calls |
 | **Disable access checks** | setAccessible(true) can improve performance |
 | **Consider code generation** | Use a bytecode-generation library for frequent calls |
 
@@ -785,7 +778,7 @@ public void goodExample(Object obj) throws Exception {
 }
 ```
 
-#### MethodHandle Example (Java 7+)
+#### MethodHandle Example (JDK 7+)
 
 ```java
 import java.lang.invoke.MethodHandle;
@@ -829,15 +822,15 @@ public class MethodHandleDemo {
 
 ***
 
-### 8. How Modules Affect Reflection (Java 9+)
+### 8. How Modules Affect Reflection (JDK 9+)
 
-Java 9's module system affects reflection as follows:
+The JDK 9 module system affects reflection as follows:
 
 | Effect | Description |
 | --------------- | ----------------------------------- |
 | **Nonpublic members inaccessible by default** | Nonpublic types in modules are not reflectively accessible by default |
 | **Explicit opening required** | Use opens in module-info.java to open a package |
-| **Illegal reflective access warnings** | Illegal reflective access produces warnings (later versions may reject it) |
+| **Strong encapsulation of JDK internals** | JDK 9–15 only warned about illegal reflective access; JDK 16 denies it by default and JDK 17+ always does (use `--add-opens` where unavoidable) |
 
 ```java
 // module-info.java
@@ -910,7 +903,7 @@ Meta-annotations are **annotations applied to other annotations**.
 | `@Retention` | Specifies retention (source, class file, runtime) |
 | `@Documented` | Includes the annotation in Javadoc |
 | `@Inherited` | Allows class annotations to be inherited by subclasses |
-| `@Repeatable` | Allows repeated use (Java 8+) |
+| `@Repeatable` | Allows repeated use (JDK 8+) |
 
 #### @Target: Annotation Locations
 
@@ -922,14 +915,14 @@ public @interface MyAnnotation {
 
 | ElementType | Description |
 | ---------------- | ---------------- |
-| `TYPE` | Class, interface, enum |
+| `TYPE` | Class, interface, enum, record |
 | `FIELD` | Field |
 | `METHOD` | Method |
 | `PARAMETER` | Method parameter |
 | `CONSTRUCTOR` | Constructor |
 | `LOCAL_VARIABLE` | Local variable |
-| `TYPE_PARAMETER` | Type parameter (Java 8+) |
-| `TYPE_USE` | Any type-use location (Java 8+) |
+| `TYPE_PARAMETER` | Type parameter (JDK 8+) |
+| `TYPE_USE` | Any type-use location (JDK 8+) |
 
 #### @Retention: Retention Policy
 
@@ -1002,7 +995,7 @@ public class Demo {
 
 ***
 
-### 6. Repeatable Annotations (Java 8+)
+### 6. Repeatable Annotations (JDK 8+)
 
 ```java
 // Define a repeatable annotation
@@ -1051,7 +1044,7 @@ public class Demo {
 
 ***
 
-### 7. TYPE\_USE Annotations (Java 8+)
+### 7. TYPE\_USE Annotations (JDK 8+)
 
 TYPE\_USE allows annotations at any type-use location:
 
@@ -1329,8 +1322,8 @@ proxy.add();
 | **Mechanism** | Interface-based; generates an interface implementation | Inheritance-based; generates a subclass of the target |
 | **Requirement** | Target must implement an interface | Target class must not be final |
 | **Creation performance** | Fast proxy creation | Slower creation (bytecode generation required) |
-| **Invocation performance** | Slightly slower | Fast (direct method calls) |
-| **Dependency** | Built into the JDK | Requires the cglib library |
+| **Invocation performance** | Comparable on modern JDKs (once noticeably slower) | Calls through generated code instead of reflection |
+| **Dependency** | Built into the JDK | Requires the cglib library (Spring ships its own repackaged copy) |
 | **Spring selection** | Spring Framework default when interfaces exist | Used without interfaces; Spring Boot 2.0+ uses it by default (`spring.aop.proxy-target-class=true`) |
 
 #### CGLIB Example (Dependency Required)
@@ -1344,7 +1337,10 @@ proxy.add();
 </dependency>
 ```
 
+> **Note**: the standalone cglib library is no longer maintained; on JDK 17+ it needs `--add-opens java.base/java.lang=ALL-UNNAMED`. Spring uses its own repackaged copy, and new code typically uses ByteBuddy.
+
 ```java
+import java.lang.reflect.Method;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -1500,13 +1496,13 @@ public class Demo {
         │     ├── Methods: getMethod(), getDeclaredMethod()
         │     ├── Override access checks: setAccessible(true)
         │     ├── Performance: cache reflection objects, MethodHandle
-        │     └── Modules: Java 9+ needs opens for reflective package access
+        │     └── Modules: JDK 9+ needs opens for reflective package access
         │
         ├── Annotations
         │     ├── Definition: @interface
         │     ├── Meta-annotations: @Target, @Retention, @Documented, @Inherited, @Repeatable
         │     ├── Read annotations: isAnnotationPresent(), getAnnotation()
-        │     ├── Java 8+: @Repeatable (repeated annotations), TYPE_USE
+        │     ├── JDK 8+: @Repeatable (repeated annotations), TYPE_USE
         │     └── Uses: configuration, validation, test frameworks
         │
         └── Dynamic proxies

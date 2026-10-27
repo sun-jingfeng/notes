@@ -45,11 +45,12 @@ public class Demo {
                 │
                 ├── RuntimeException (unchecked exceptions) — handling is optional
                 │       ├── NullPointerException (null pointer)
-                │       ├── ArrayIndexOutOfBoundsException (array index out of bounds)
+                │       ├── IndexOutOfBoundsException (index out of bounds)
+                │       │       └── ArrayIndexOutOfBoundsException (array index out of bounds)
                 │       ├── ClassCastException (invalid type cast)
-                │       ├── NumberFormatException (invalid number format)
                 │       ├── ArithmeticException (arithmetic error)
                 │       ├── IllegalArgumentException (invalid argument)
+                │       │       └── NumberFormatException (invalid number format)
                 │       ├── IllegalStateException (invalid state)
                 │       ├── UnsupportedOperationException (unsupported operation)
                 │       ├── ConcurrentModificationException (concurrent modification)
@@ -57,7 +58,7 @@ public class Demo {
                 │
                 └── Other Exception subclasses (checked exceptions) — must be handled or declared
                         ├── IOException (I/O error)
-                        ├── FileNotFoundException (file not found)
+                        │       └── FileNotFoundException (file not found)
                         ├── SQLException (SQL error)
                         ├── ParseException (parsing error)
                         ├── ClassNotFoundException (class not found)
@@ -89,7 +90,7 @@ public void test2() {
 
 ## III. Exception Handling Approaches
 
-### Approach 1: try-catch-finally
+### 1. try-catch-finally
 
 #### 1. Basic Syntax
 
@@ -237,13 +238,13 @@ try {
 // Case 2: a daemon thread is terminated
 // When all non-daemon threads finish, a daemon thread's finally may not execute
 
-// Case 3: a thread is forcibly terminated
-// For example, Thread.stop() (deprecated)
+// Case 3: the JVM process is killed (such as kill -9) or crashes
+// Case 4: the try block never finishes (an infinite loop or a deadlock)
 ```
 
 ***
 
-### Approach 2: Declare with throws
+### 2. Declare with throws
 
 #### 1. Basic Syntax
 
@@ -299,7 +300,7 @@ public static void method2() throws IOException {
 
 ***
 
-### Approach 3: try-with-resources (JDK 7+)
+### 3. try-with-resources (JDK 7+)
 
 #### 1. Automatic Resource Closing
 
@@ -348,8 +349,8 @@ try (
 
 ```java
 // Before JDK 9: resources must be declared inside try()
-FileInputStream fis = new FileInputStream("a.txt");
-try (FileInputStream fis2 = fis) {  // An additional variable is needed
+FileInputStream in = new FileInputStream("a.txt");
+try (FileInputStream in2 = in) {  // An additional variable is needed
     // Use the resource...
 }
 
@@ -684,7 +685,7 @@ public static void main(String[] args) {
 
 ## VII. Common Exception Methods
 
-### Throwable Methods
+### 1. Throwable Methods
 
 ```java
 try {
@@ -718,7 +719,7 @@ try {
 }
 ```
 
-### Exception Chaining Methods
+### 2. Exception Chaining Methods
 
 ```java
 try {
@@ -735,25 +736,36 @@ try {
 }
 ```
 
-### Suppressed Exceptions (JDK 7+)
+### 3. Suppressed Exceptions (JDK 7+)
 
 ```java
-// With try-with-resources, exceptions thrown by close() are suppressed
-try (MyResource res = new MyResource()) {
+// A resource whose close() fails
+class FailingResource implements AutoCloseable {
+    @Override
+    public void close() throws Exception {
+        throw new IOException("close() failed");
+    }
+}
+
+// With try-with-resources, an exception thrown by close() is suppressed
+// (attached to the primary exception instead of replacing it)
+try (FailingResource res = new FailingResource()) {
     throw new RuntimeException("Primary exception");
 } catch (Exception e) {
+    System.out.println(e.getMessage());  // Primary exception
+
     // 7. getSuppressed() - retrieve suppressed exceptions
     Throwable[] suppressed = e.getSuppressed();
     for (Throwable t : suppressed) {
-        System.out.println("Suppressed exception: " + t.getMessage());
+        System.out.println("Suppressed exception: " + t.getMessage());  // close() failed
     }
 
-    // 8. addSuppressed() - add a suppressed exception
+    // 8. addSuppressed() - add a suppressed exception manually
     e.addSuppressed(new IOException("Additional exception"));
 }
 ```
 
-### Method Quick Reference
+### 4. Method Quick Reference
 
 | Method | Return type | Description |
 | -------------------------- | -------------------- | ----------- |
@@ -806,13 +818,13 @@ int n = Integer.parseInt("abc");  // ❌ Not a number
 int result = 10 / 0;  // ❌ Division by zero
 
 // UnsupportedOperationException
-List<String> list = Arrays.asList("a", "b");
-list.add("c");  // ❌ Fixed-size list does not support adding elements
+List<String> fixed = Arrays.asList("a", "b");
+fixed.add("c");  // ❌ Fixed-size list does not support adding elements
 
 // ConcurrentModificationException
 List<String> list = new ArrayList<>(Arrays.asList("a", "b", "c"));
-for (String s : list) {
-    list.remove(s);  // ❌ Modification during iteration
+for (String item : list) {
+    list.remove(item);  // ❌ Modification during iteration
 }
 ```
 
@@ -952,26 +964,32 @@ class Parent {
     }
 }
 
-class Child extends Parent {
-    // ✅ May throw no exception
+// ✅ May throw no exception
+class Child1 extends Parent {
     @Override
     public void method() {
         // ...
     }
+}
 
-    // ✅ May throw the same exception
+// ✅ May throw the same exception
+class Child2 extends Parent {
     @Override
     public void method() throws IOException {
         // ...
     }
+}
 
-    // ✅ May throw a subclass exception
+// ✅ May throw a subclass exception
+class Child3 extends Parent {
     @Override
     public void method() throws FileNotFoundException {
         // ...
     }
+}
 
-    // ❌ Cannot throw a broader exception
+// ❌ Cannot throw a broader checked exception
+class Child4 extends Parent {
     @Override
     public void method() throws Exception {  // Compile-time error
         // ...
@@ -979,7 +997,7 @@ class Child extends Parent {
 }
 ```
 
-**Rule:** An overriding subclass method **cannot declare broader exceptions than the superclass method**.
+**Rule:** An overriding method **cannot declare broader checked exceptions than the overridden method**; unchecked exceptions are not restricted.
 
 ### 6. Validate Early to Avoid Exceptions
 
@@ -1029,7 +1047,7 @@ throw new IllegalArgumentException(
 
 ## X. Comprehensive Example
 
-### Example: User Registration
+### 1. User Registration
 
 ```java
 // 1. Custom exception
@@ -1148,7 +1166,7 @@ public class RegisterTest {
 
 ## XI. Quick Reference
 
-### Keywords
+### 1. Keywords
 
 | Keyword | Location | Purpose |
 | --------- | ------------ | ------------- |
@@ -1158,7 +1176,7 @@ public class RegisterTest {
 | `throw` | Inside a method body | Explicitly throws an exception object |
 | `throws` | In a method declaration | Declares exceptions the method may throw |
 
-### Exception Categories
+### 2. Exception Categories
 
 | Exception type | Superclass | Handling required? |
 | ---------------- | --------- | -------- |
@@ -1166,7 +1184,7 @@ public class RegisterTest {
 | RuntimeException | Exception | Optional |
 | Other Exception subclasses | Exception | **Required** |
 
-### Common Methods
+### 3. Common Methods
 
 | Method | Purpose |
 | ------------------- | --------- |
@@ -1177,7 +1195,7 @@ public class RegisterTest {
 | `getStackTrace()` | Retrieves the stack-trace element array |
 | `getSuppressed()` | Retrieves suppressed exceptions |
 
-### Choosing an Exception Handling Approach
+### 4. Choosing an Exception Handling Approach
 
 | Situation | Recommendation |
 | ------- | ------------------ |

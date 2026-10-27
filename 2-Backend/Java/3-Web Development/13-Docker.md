@@ -25,7 +25,7 @@ Docker is an open-source containerization platform that packages applications an
 
 **Architecture comparison:**
 
-```
+```text
 Virtual machine architecture:            Container architecture:
 ┌───────────┬───────────┬───────────┐    ┌───────────┬───────────┬───────────┐
 │   App A   │   App B   │   App C   │    │   App A   │   App B   │   App C   │
@@ -61,7 +61,7 @@ Virtual machine architecture:            Container architecture:
 
 Docker uses a **client/server architecture**:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                        Docker client                        │
 │  docker build  │  docker pull  │  docker run  │  ...        │
@@ -88,13 +88,13 @@ Docker uses a **client/server architecture**:
 
 Run this when upgrading or reinstalling; skip it for a first installation. When upgrading from older versions or third-party packages, uninstall the old packages first to avoid conflicts.
 
-Possible older package names: `docker`, `docker-engine`, `docker.io`, `containerd`, `runc`
+Conflicting package names on Ubuntu/Debian include `docker.io`, `docker-doc`, `docker-compose`, `docker-compose-v2`, `podman-docker`, `containerd`, and `runc`
 
 #### Ubuntu / Debian
 
 ```bash
-# Uninstall older versions (ignore "unable to locate" if they were never installed)
-sudo apt remove docker docker-engine docker.io containerd runc
+# Uninstall conflicting packages (ignore "unable to locate" if they were never installed)
+sudo apt remove docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc
 
 # Remove leftovers (optional)
 sudo apt autoremove
@@ -269,7 +269,7 @@ docker image prune -a           # Remove all images not used by containers
 
 Full image name format:
 
-```
+```text
 [registryAddress/]repositoryName[:tag]
 ```
 
@@ -302,12 +302,12 @@ docker images
 | Image | Description | Common tags |
 | --------- | --------------------------- | -------------------------- |
 | `nginx` | Web server | `latest`, `1.24`, `alpine` |
-| `mysql` | MySQL database | `8.0`, `5.7` |
-| `redis` | Redis cache | `7`, `6`, `alpine` |
+| `mysql` | MySQL database | `8.4`, `8.0` |
+| `redis` | Redis cache | `7`, `7-alpine` |
 | `eclipse-temurin` | Java runtime (replaces the deprecated `openjdk` image) | `21`, `17`, `17-jre` |
-| `node` | Node.js runtime | `20`, `18`, `alpine` |
+| `node` | Node.js runtime | `22`, `20`, `alpine` |
 | `python` | Python runtime | `3.12`, `3.11`, `slim` |
-| `ubuntu` | Ubuntu base image | `22.04`, `20.04` |
+| `ubuntu` | Ubuntu base image | `24.04`, `22.04` |
 | `alpine` | Ultra-lightweight Linux image (about 5MB) | `3.19`, `latest` |
 
 The `alpine` tag is based on Alpine Linux, producing smaller images suitable for production.
@@ -318,7 +318,7 @@ The `alpine` tag is based on Alpine Linux, producing smaller images suitable for
 
 ### 4.1 Container Lifecycle
 
-```
+```text
 Create ──► Run ──► Pause ──► Stop ──► Delete
             ▲        │        │
             └────────┴────────┘
@@ -562,7 +562,7 @@ A multi-stage build keeps build tools (Maven, source code, etc.) out of the fina
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 COPY . .
 EXPOSE 3000
 CMD ["node", "server.js"]
@@ -572,7 +572,8 @@ CMD ["node", "server.js"]
 
 ```dockerfile
 FROM nginx:alpine
-COPY <staticResourceDirectory>/ /usr/share/nginx/html/   # Such as dist or build
+# Copy the built static files (such as dist or build); Dockerfile comments must start a line
+COPY dist/ /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
@@ -619,7 +620,7 @@ RUN apt update && apt install -y \
 4. **Use the build cache:** Put infrequently changing instructions first
 5. **Use .dockerignore:** Exclude unnecessary files
 
-```
+```text
 # .dockerignore
 .git
 node_modules
@@ -684,7 +685,7 @@ docker run -d -v mydata:/var/lib/mysql mysql:8.0
 docker run -d -v /srv/my-app/mysql/data:/var/lib/mysql mysql:8.0
 
 # Read-only mount (configuration under the project's nginx directory, etc.)
-docker run -d -v /srv/my-app/nginx/conf.d/default.conf:/etc/nginx/nginx.conf:ro nginx
+docker run -d -v /srv/my-app/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro nginx
 
 # Multiple volumes (data under the project directory; logs may use /var/log)
 docker run -d \
@@ -697,7 +698,7 @@ docker run -d \
 
 Nginx and MySQL mount examples follow, with Redis covered briefly at the end. Organize host directories **by project**: create a directory named after each project under `/srv`, then service subdirectories such as `mysql/` and `nginx/` to isolate projects. Create these directories first; `/srv` usually requires root permission, so use `sudo mkdir`.
 
----
+***
 
 #### MySQL Mount Example
 
@@ -729,9 +730,9 @@ docker run -d \
   mysql:8.0
 ```
 
-`MYSQL_ROOT_PASSWORD` is required. `.sql` and `.sh` files under `/docker-entrypoint-initdb.d` run only on initial startup. Set the character set with `command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci`.
+`MYSQL_ROOT_PASSWORD` is required. `.sql` and `.sh` files under `/docker-entrypoint-initdb.d` run only on initial startup (when the data directory is empty). MySQL 8 already defaults to `utf8mb4`; to choose a collation, append `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci` after the image name (`command:` in Compose).
 
----
+***
 
 #### Nginx Mount Example
 
@@ -787,12 +788,12 @@ docker run -d \
 
 Mounting `conf.d` hides that directory in the image; the host must provide at least one `server` configuration. Static resources can use a read-only `:ro` mount.
 
----
+***
 
 #### Other Common Images
 
-- **Redis:** For persistence, mount a project data directory, such as `-v /srv/my-app/redis/data:/data`; optionally use `command: redis-server --appendonly yes`.
-- **Application images** (such as Node and OpenJDK): Define mounts in the Dockerfile or Compose as required by the project.
+- **Redis:** For persistence, mount a project data directory, such as `-v /srv/my-app/redis/data:/data`, and enable AOF with `redis-server --appendonly yes` after the image name (`command:` in Compose).
+- **Application images** (such as Node and eclipse-temurin): Define mounts in the Dockerfile or Compose as required by the project.
 
 ***
 
@@ -884,7 +885,7 @@ Docker Compose defines and runs multi-container Docker applications. Configure a
 
 ```bash
 # Optional, only if docker-compose-plugin is not installed
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
@@ -939,7 +940,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mydb?useSSL=false&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123456
-      - SPRING_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_HOST=redis   # Spring Boot 3 property spring.data.redis.host
     depends_on:
       mysql:
         condition: service_healthy
@@ -1115,7 +1116,7 @@ docker compose up -d --build
 
 This chapter covers two approaches: **step-by-step deployment** (useful for understanding the process or connecting existing MySQL/Nginx containers) and **Compose deployment** (same result; generally recommended).
 
----
+***
 
 ### 9.1 Step-by-Step Deployment
 
@@ -1123,7 +1124,7 @@ This chapter covers two approaches: **step-by-step deployment** (useful for unde
 
 If MySQL and Nginx do not exist yet, create them first with volume mounts for data and initialization scripts (for example, mount `/srv/<projectName>/mysql/init` to MySQL's `/docker-entrypoint-initdb.d/`). Scripts run automatically on initial startup, so the database need not be created manually.
 
-#### 9.1.1 Host Directories and Frontend
+#### 1. Host Directories and Frontend
 
 Create a project directory under `/srv` (for example, `/srv/my-app` for project `my-app`), then create subdirectories: `nginx/html` and `nginx/conf.d` for Nginx, and `mysql/data` and `mysql/init` for MySQL.
 
@@ -1134,7 +1135,7 @@ sudo mkdir -p /srv/my-app/nginx/html /srv/my-app/nginx/conf.d /srv/my-app/mysql/
 
 Build the frontend (for example, `npm run build`) to obtain a static resource directory such as dist, and copy its **contents** into the project's Nginx mount directory. Locally, run `cp -r frontendProject/dist/* /srv/my-app/nginx/html/`; to upload to a server, run `scp -r frontendProject/dist/* <username>@<hostIP>:/srv/my-app/nginx/html/`. If root is required, upload to the user's directory first, then use `sudo cp`.
 
-#### 9.1.2 Nginx Configuration
+#### 2. Nginx Configuration
 
 Create `nginx/conf.d/default.conf` under the project directory (such as `/srv/my-app/nginx/conf.d/default.conf`); set `proxy_pass` to the backend container or service name and port. The container's `root`, `/usr/share/nginx/html`, corresponds to the mounted host static resource directory (such as `/srv/my-app/nginx/html`).
 
@@ -1160,7 +1161,7 @@ server {
 }
 ```
 
-#### 9.1.3 Network and Backend
+#### 3. Network and Backend
 
 Order: create the network → connect MySQL → build the backend image → start the backend. Nginx must share the backend's network, with `proxy_pass` using the backend container or service name. When MySQL has an initialization-script directory mounted, scripts execute on initial startup without manual database creation.
 
@@ -1208,7 +1209,7 @@ Application data source: `jdbc:mysql://<mysqlContainerName>:3306/<databaseName>?
 docker network connect app-net nginx
 ```
 
-#### 9.1.4 Verification and Maintenance
+#### 4. Verification and Maintenance
 
 Visit `http://<hostIP>` for the frontend; `/api/xxx` forwards to the backend. For 404/502 responses, check whether the backend is running (`docker ps`), whether `proxy_pass` matches the backend container or service name, and whether the firewall allows ports 80/8080.
 
@@ -1218,13 +1219,13 @@ Visit `http://<hostIP>` for the frontend; `/api/xxx` forwards to the backend. Fo
 | Update the frontend | Replace files in the mounted directory (such as `/srv/my-app/nginx/html/`) |
 | Rebuild the backend | Run `docker build -t <backendImageName> .`, then `docker run` with the same network, container name, ports, and data-source database name |
 
----
+***
 
 ### 9.2 Deploying with Compose
 
 The result matches the step-by-step deployment: Nginx serves the frontend and forwards `/api` to the backend, which connects to MySQL. **Create a project directory** under `/srv` containing `docker-compose.yml` and subdirectories such as `nginx/`, `mysql/`, and `backend/`. One `docker-compose.yml` defines the network, MySQL, backend (including its build), and Nginx; one command builds the backend image and starts every service. Multiple projects use independent directories and Compose configurations. If direct host access to MySQL is required, the second project can map `3307:3306` to avoid conflicts.
 
-#### 9.2.1 Prepare Directories and Files
+#### 1. Prepare Directories and Files
 
 Create a project directory under `/srv` (for example, `/srv/my-app`), then service subdirectories containing the frontend, Nginx configuration, backend (Dockerfile and jar), and MySQL initialization scripts:
 
@@ -1248,7 +1249,7 @@ CMD ["java", "-jar", "app.jar"]
 If the jar and Dockerfile share a directory (no `target/`), replace `COPY target/*.jar app.jar` with `COPY *.jar app.jar`.
 - **MySQL initialization:** Place prepared SQL scripts (database/table creation and initial data) under the project's `mysql/init/`. Compose mounts this directory to `/docker-entrypoint-initdb.d/` for automatic execution on initial startup.
 
-#### 9.2.2 docker-compose.yml
+#### 2. docker-compose.yml
 
 Create `docker-compose.yml` in the **project directory** (`/srv/<projectName>/`, such as `/srv/my-app`) and replace placeholders such as `<databaseName>` and `<mysqlRootPassword>`. Mounts use **relative paths** (`./nginx/...`, `./mysql/...`) so the entire project can be moved or copied easily. The backend uses `build: ./backend` to build from its Dockerfile; `image` names the resulting image for reuse.
 
@@ -1302,9 +1303,9 @@ networks:
     driver: bridge
 ```
 
-The backend service name in Compose (such as `backend`) must match the hostname in Nginx's `proxy_pass`. Supply data-source settings through environment variables as above, or hardcode them in the application's configuration/image.
+The backend service name in Compose (such as `backend`) must match the hostname in Nginx's `proxy_pass`. Supply data-source settings through environment variables, as this Compose file does, or hardcode them in the application's configuration/image.
 
-#### 9.2.3 Start and Verify
+#### 3. Start and Verify
 
 Run the following from the **project directory** (`/srv/<projectName>/`, such as `/srv/my-app`). `--build` builds the backend image before starting:
 
@@ -1315,7 +1316,7 @@ docker compose up -d --build
 
 Visit `http://<hostIP>` for the frontend; `/api/xxx` forwards to the backend. For 404/502 responses, check `docker compose ps`, the correspondence between `proxy_pass` and the backend service name, and firewall ports 80/8080.
 
-#### 9.2.4 Routine Compose Maintenance
+#### 4. Routine Compose Maintenance
 
 All paths below are relative to the project directory (`/srv/<projectName>/`, such as `/srv/my-app`).
 
@@ -1344,7 +1345,7 @@ All paths below are relative to the project directory (`/srv/<projectName>/`, su
 
 Within the same Compose network, containers communicate using **service names**: Nacos at `nacos:8848`, MySQL at `mysql:3306`, and Redis at `redis:6379`. Use these hostnames in business-service configuration.
 
----
+***
 
 ### 10.1 Directory and Image Conventions
 
@@ -1352,7 +1353,7 @@ Create a project directory under `/srv` (such as `/srv/my-microservice`), then s
 
 **Example directory layout** (replace placeholder service names with actual module names):
 
-```
+```text
 /srv/<projectName>/
 ├── docker-compose.yml
 ├── mysql/
@@ -1380,7 +1381,7 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
----
+***
 
 ### 10.2 Example docker-compose.yml
 
@@ -1493,7 +1494,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<mysqlRootPassword>
-      - SPRING_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_HOST=redis
       - SPRING_CLOUD_NACOS_DISCOVERY_USERNAME=<nacosUsername>
       - SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD=<nacosPassword>
       - SPRING_CLOUD_NACOS_CONFIG_USERNAME=<nacosUsername>
@@ -1522,7 +1523,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<mysqlRootPassword>
-      - SPRING_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_HOST=redis
       - SPRING_CLOUD_NACOS_DISCOVERY_USERNAME=<nacosUsername>
       - SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD=<nacosPassword>
       - SPRING_CLOUD_NACOS_CONFIG_USERNAME=<nacosUsername>
@@ -1556,7 +1557,7 @@ volumes:
 - With authentication enabled in Nacos 2.5.2, explicitly configure `NACOS_AUTH_TOKEN` on the server (the Base64 encoding of a random key at least 32 bytes long). `NACOS_AUTH_IDENTITY_KEY/VALUE` identifies Nacos servers to one another; these are not Java client login credentials.
 - Each Java service configures its Nacos username/password separately through `spring.cloud.nacos.discovery.username/password` and `spring.cloud.nacos.config.username/password`, supplied here through the corresponding `SPRING_CLOUD_NACOS_*_USERNAME` / `*_PASSWORD` environment variables. Initialize the user in Nacos and grant the required permissions first. Clients do not configure the server identity key.
 
----
+***
 
 ### 10.3 Application Configuration Essentials
 
@@ -1573,7 +1574,7 @@ Microservices access one another by service name within the Compose network; do 
 
 **Approach 2:** Override all settings with environment variables (such as `SPRING_DATASOURCE_URL` and `SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR`) to reuse the same image across environments.
 
----
+***
 
 ### 10.4 Deployment Steps
 
@@ -1619,7 +1620,7 @@ docker compose down
 docker compose down -v
 ```
 
----
+***
 
 ### 10.5 Common Issues
 

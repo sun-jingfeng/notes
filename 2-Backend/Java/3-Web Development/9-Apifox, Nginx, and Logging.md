@@ -171,7 +171,7 @@
 
 #### Windows Installation
 
-    1. Download: http://nginx.org/en/download.html
+    1. Download: https://nginx.org/en/download.html
     2. Extract to any directory (avoid Chinese characters in the path)
     3. Directory structure:
        nginx/
@@ -767,7 +767,7 @@ logging:
 | `%d{pattern}` | Date and time | `2024-01-15 10:30:45.123` |
 | `%thread` | Thread name | `http-nio-8080-exec-1` |
 | `%-5level` | Log level | `INFO ` |
-| `%logger{n}` | Logger name | `c.e.c.UserController` |
+| `%logger{n}` | Logger name, abbreviated when longer than n characters | `c.e.c.UserController` (for a small n) |
 | `%msg` | Log message | `User query succeeded` |
 | `%n` | Line break | - |
 
@@ -775,10 +775,10 @@ logging:
 
 ### 3.6 Log Output Example
 
-    2024-01-15 10:30:45.123 [http-nio-8080-exec-1] INFO  c.e.controller.UserController - Query all users
-    2024-01-15 10:30:45.156 [http-nio-8080-exec-1] DEBUG c.e.mapper.UserMapper - ==>  Preparing: SELECT * FROM user
-    2024-01-15 10:30:45.178 [http-nio-8080-exec-1] DEBUG c.e.mapper.UserMapper - ==> Parameters:
-    2024-01-15 10:30:45.198 [http-nio-8080-exec-1] DEBUG c.e.mapper.UserMapper - <==      Total: 10
+    2024-01-15 10:30:45.123 [http-nio-8080-exec-1] INFO  com.example.controller.UserController - Query all users
+    2024-01-15 10:30:45.156 [http-nio-8080-exec-1] DEBUG com.example.mapper.UserMapper.selectAll - ==>  Preparing: SELECT * FROM user
+    2024-01-15 10:30:45.178 [http-nio-8080-exec-1] DEBUG com.example.mapper.UserMapper.selectAll - ==> Parameters:
+    2024-01-15 10:30:45.198 [http-nio-8080-exec-1] DEBUG com.example.mapper.UserMapper.selectAll - <==      Total: 10
 
 ***
 

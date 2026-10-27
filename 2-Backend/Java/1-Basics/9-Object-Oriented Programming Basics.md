@@ -136,7 +136,7 @@ System.out.println(p1.equals(p2));  // false (not overridden)
 | **Heap**        | Objects created with new and their fields        | No change       |
 | **Method area** | Class metadata (structure, method bytecode) and runtime constant pools | Implemented as **Metaspace**; static variables and the string pool are on the heap (JDK 7+) |
 
-**JDK 8+ change**: The method area moved from JVM memory to **Metaspace**, which uses native memory and is no longer limited by the JVM heap size.
+**JDK 8+ change**: HotSpot replaced the permanent generation (PermGen) with **Metaspace**, which stores class metadata in native memory; its size is limited by available memory or `-XX:MaxMetaspaceSize`, not by `-XX:MaxPermSize`.
 
 ### 2. Memory Diagram for One Object
 
@@ -569,15 +569,15 @@ Lombok is a Java library that uses **annotations** to generate boilerplate such 
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
-    <version>1.18.30</version>
+    <version>1.18.48</version>  <!-- Use a release that supports your JDK version -->
     <scope>provided</scope>
 </dependency>
 ```
 
 **IDEA configuration**:
 
-1.  Install the Lombok plugin: `Settings → Plugins → search for Lombok → Install`
-2.  Enable annotation processing: `Settings → Build → Compiler → Annotation Processors → Enable`
+1.  Lombok plugin: bundled with IntelliJ IDEA 2020.3+; for older versions, `Settings → Plugins → search for Lombok → Install`
+2.  Enable annotation processing: `Settings → Build, Execution, Deployment → Compiler → Annotation Processors → Enable annotation processing`
 
 ### 3. Common Annotations
 
@@ -922,15 +922,14 @@ public class Demo {
 
 ```java
 public class JDBCUtils {
-    private static Connection conn;
+    private static final Properties PROPS = new Properties();
 
-    // Static initializer: load a database driver (only needs to run once)
+    // Static initializer: load configuration once, when the class is loaded
     static {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection(url, user, password);
-        } catch (Exception e) {
-            e.printStackTrace();
+        try (InputStream in = JDBCUtils.class.getClassLoader().getResourceAsStream("jdbc.properties")) {
+            PROPS.load(in);
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);  // Fail fast if configuration cannot load
         }
     }
 }
@@ -939,18 +938,17 @@ public class JDBCUtils {
 ### 8. Static Imports
 
 ```java
-// Ordinary import
-import java.lang.Math;
+// Without a static import (java.lang is imported automatically)
 double result = Math.sqrt(16);
 double pi = Math.PI;
 
-// Static import: import static members directly
-import static java.lang.Math.sqrt;
-import static java.lang.Math.PI;
-import static java.lang.Math.*;  // Import all static members
+// Static imports, placed at the top of the file:
+// import static java.lang.Math.sqrt;
+// import static java.lang.Math.PI;
+// import static java.lang.Math.*;  // Import all static members
 
-double result = sqrt(16);  // Use directly without the class name
-double pi = PI;
+double result2 = sqrt(16);  // Use directly without the class name
+double pi2 = PI;
 ```
 
 ### 9. Designing a Utility Class
@@ -1034,14 +1032,14 @@ int capacity = ArrayUtils.DEFAULT_CAPACITY;
 
 ### 4. Where Modifiers Apply
 
-| Modifier         |  Class  | Field | Method | Constructor | Local variable |
+| Modifier         |  Top-level class  | Field | Method | Constructor | Local variable |
 | ----------- | :-: | :--: | :--: | :--: | :--: |
 | `public`    |  ✅  |   ✅  |   ✅  |   ✅  |   ❌  |
 | `protected` |  ❌  |   ✅  |   ✅  |   ✅  |   ❌  |
 | `(default)`      |  ✅  |   ✅  |   ✅  |   ✅  |   ❌  |
 | `private`   |  ❌  |   ✅  |   ✅  |   ✅  |   ❌  |
 
-**Note**: A top-level class can be `public` or have default access; it cannot be `private` or `protected`.
+**Note**: A top-level class can be `public` or have default access; it cannot be `private` or `protected` (nested classes can use all four access levels).
 
 ***
 

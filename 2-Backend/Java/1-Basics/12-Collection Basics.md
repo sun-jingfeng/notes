@@ -91,17 +91,17 @@ list.add(new Object());
 // Retrieving an element requires an explicit cast, which is error-prone
 
 // ========== With generics (recommended) ==========
-ArrayList<String> list = new ArrayList<>();  // Diamond syntax in JDK 7+
-list.add("Hello");
-// list.add(123);  // ❌ Compile error: only String elements are allowed
-String s = list.get(0);  // No cast required
+ArrayList<String> typedList = new ArrayList<>();  // Diamond syntax in JDK 7+
+typedList.add("Hello");
+// typedList.add(123);  // ❌ Compile error: only String elements are allowed
+String s = typedList.get(0);  // No cast required
 ```
 
 ### 3. Points to Remember About Generics
 
 ```java
 // 1. Type arguments must be reference types, not primitive types
-ArrayList<int> list1 = new ArrayList<>();     // ❌ Incorrect
+// ArrayList<int> list1 = new ArrayList<>();  // ❌ Incorrect
 ArrayList<Integer> list2 = new ArrayList<>(); // ✅ Correct
 
 // 2. Wrapper classes corresponding to primitive types
@@ -176,7 +176,7 @@ Map<String, Integer> treeMap = new TreeMap<>();       // Sorted by key
 
 ### 1. Common ArrayList Methods
 
-#### 1.1 Add, Remove, Update, and Retrieve
+#### 1. Add, Remove, Update, and Retrieve
 
 | Method                    | Description             | Return value     |
 | --------------------- | -------------- | ------- |
@@ -210,7 +210,7 @@ String old = list.set(0, "钱七");  // Replace index 0; returns the previous va
 String name = list.get(0);  // Get index 0; returns "钱七"
 ```
 
-#### 1.2 Bulk Operations
+#### 2. Bulk Operations
 
 | Method                                | Description           |
 | --------------------------------- | ------------ |
@@ -237,7 +237,7 @@ list1.addAll(1, Arrays.asList("X", "Y"));
 System.out.println(list1);  // [A, X, Y, B, C, D]
 ```
 
-#### 1.3 Other Common Methods
+#### 3. Other Common Methods
 
 | Method                          | Description          |
 | --------------------------- | ----------- |
@@ -277,7 +277,7 @@ list.clear();
 System.out.println(list.isEmpty());  // true
 ```
 
-#### 1.4 Sorting
+#### 4. Sorting
 
 ```java
 ArrayList<Integer> nums = new ArrayList<>();
@@ -297,7 +297,7 @@ System.out.println(nums);  // [5, 4, 3, 1, 1]
 // Option 2: list.sort() (JDK 8+)
 nums.sort(null);  // Natural order (ascending)
 nums.sort(Comparator.reverseOrder());  // Descending order
-nums.sort((a, b) -> b - a);  // Descending order using a lambda
+nums.sort((a, b) -> Integer.compare(b, a));  // Descending order using a lambda
 
 // Sort objects
 ArrayList<Student> students = new ArrayList<>();
@@ -306,14 +306,14 @@ students.add(new Student("李四", 20));
 students.add(new Student("王五", 16));
 
 // Sort by age in ascending order
-students.sort((s1, s2) -> s1.getAge() - s2.getAge());
+students.sort((s1, s2) -> Integer.compare(s1.getAge(), s2.getAge()));
 // Or
 students.sort(Comparator.comparingInt(Student::getAge));
 ```
 
 ### 2. Iterating Over Collections
 
-#### 2.1 Basic for Loop (List Only)
+#### 1. Basic for Loop (List Only)
 
 ```java
 ArrayList<String> list = new ArrayList<>();
@@ -327,7 +327,7 @@ for (int i = 0; i < list.size(); i++) {
 }
 ```
 
-#### 2.2 Enhanced for Loop (Recommended)
+#### 2. Enhanced for Loop (Recommended)
 
 ```java
 for (String name : list) {
@@ -335,7 +335,7 @@ for (String name : list) {
 }
 ```
 
-#### 2.3 Iterator
+#### 3. Iterator
 
 ```java
 import java.util.Iterator;
@@ -347,7 +347,7 @@ while (it.hasNext()) {
 }
 ```
 
-#### 2.4 Lambda Expressions (Java 8+)
+#### 4. Lambda Expressions (JDK 8+)
 
 ```java
 // forEach + Lambda
@@ -361,7 +361,7 @@ IntStream.range(0, list.size())
     .forEach(i -> System.out.println(i + ": " + list.get(i)));
 ```
 
-#### 2.5 Streams (Java 8+)
+#### 5. Streams (JDK 8+)
 
 ```java
 // Basic iteration
@@ -415,7 +415,7 @@ list.removeIf("李四"::equals);
 
 ## IV. Collection Exercises
 
-### Exercise 1: Store Student Objects
+### 1. Store Student Objects
 
 ```java
 // ========== Student class ==========
@@ -463,7 +463,7 @@ public class Test {
 }
 ```
 
-### Exercise 2: Enter Student Details from the Keyboard
+### 2. Enter Student Details from the Keyboard
 
 ```java
 import java.util.ArrayList;
@@ -503,7 +503,7 @@ public class Test {
 }
 ```
 
-### Exercise 3: Search and Count
+### 3. Search and Count
 
 ```java
 public class Test {
@@ -544,7 +544,7 @@ public class Test {
 }
 ```
 
-### Exercise 4: Sort
+### 4. Sort
 
 ```java
 public class Test {
@@ -604,7 +604,7 @@ public class Test {
 }
 ```
 
-### Exercise 5: Remove Duplicates
+### 5. Remove Duplicates
 
 ```java
 public class Test {
@@ -636,7 +636,7 @@ public class Test {
 }
 ```
 
-### Exercise 6: Collections as Method Parameters and Return Values
+### 6. Collections as Method Parameters and Return Values
 
 ```java
 public class Test {
@@ -685,7 +685,7 @@ public class Test {
 }
 ```
 
-### Exercise 7: Shuffling and Random Selection
+### 7. Shuffling and Random Selection
 
 ```java
 public class Test {
@@ -719,7 +719,7 @@ public class Test {
 
 ## V. Common Collection Methods Quick Reference
 
-### ArrayList Methods
+### 1. ArrayList Methods
 
 | Method                    | Description            |
 | --------------------- | ------------- |
@@ -740,7 +740,7 @@ public class Test {
 | `clear()`             | Clear            |
 | `toArray()`           | Convert to an array         |
 
-### The Collections Utility Class
+### 2. The Collections Utility Class
 
 | Method                                  | Description         |
 | ----------------------------------- | ---------- |
@@ -752,7 +752,7 @@ public class Test {
 | `Collections.frequency(list, e)`    | Count occurrences     |
 | `Collections.binarySearch(list, e)` | Binary search (must sort first) |
 
-### Iteration Approaches Compared
+### 3. Iteration Approaches Compared
 
 | Approach      | Syntax                                      | Use case  |
 | ------- | --------------------------------------- | ----- |
@@ -762,7 +762,7 @@ public class Test {
 | forEach | `list.forEach(lambda)`                  | Functional programming |
 | Stream  | `list.stream().forEach()`               | Chained operations  |
 
-### Creation Approaches Compared
+### 4. Creation Approaches Compared
 
 | Approach                           | Mutability      | Version       |
 | ---------------------------- | -------- | -------- |

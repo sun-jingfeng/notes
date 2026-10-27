@@ -11,17 +11,17 @@ A **starter** is a core Spring Boot feature that groups related dependencies, si
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>5.3.23</version>
+    <version>6.2.19</version>
 </dependency>
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-web</artifactId>
-    <version>5.3.23</version>
+    <version>6.2.19</version>
 </dependency>
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>2.13.4</version>
+    <version>2.19.4</version>
 </dependency>
 <!-- Tomcat, Validation, and other dependencies are also needed... -->
 
@@ -81,7 +81,7 @@ A **starter** is a core Spring Boot feature that groups related dependencies, si
 
 Consider the dependency tree for `spring-boot-starter-web`:
 
-```
+```text
 spring-boot-starter-web
 ├── spring-boot-starter           # Core starter
 │   ├── spring-boot               # Spring Boot core
@@ -103,7 +103,7 @@ spring-boot-starter-web
 
 A starter usually contains little or no implementation code; it is primarily a **dependency aggregator**:
 
-```
+```text
 Starter = pom.xml (dependency aggregation) + optional auto-configuration
 ```
 
@@ -111,7 +111,7 @@ Typical separation:
 - **starter module:** A POM that groups related dependencies.
 - **autoconfigure module:** Auto-configuration classes and conditional configuration.
 
-```
+```text
 spring-boot-starter-web           → Dependency aggregation (POM)
 spring-boot-autoconfigure         → Auto-configuration classes such as WebMvcAutoConfiguration
 ```
@@ -141,7 +141,7 @@ In IDEA, open the `Maven` tool window → `Dependencies` to inspect the tree.
 
 **Auto-configuration** is a central part of Spring Boot's convention-over-configuration approach.
 
-```
+```text
 ┌────────────────┐     ┌─────────────────────┐     ┌───────────────┐     ┌───────────────┐
 │ Dependencies   │ ──▶ │ Auto-configuration  │ ──▶ │ Create beans  │ ──▶ │ Ready to use  │
 │ (Starter)      │     │ (Check conditions)  │     │               │     │               │
@@ -223,7 +223,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector {
 
 File: `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
 
-```
+```text
 # One fully qualified configuration class name per line
 org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
@@ -298,7 +298,7 @@ public @interface ConditionalOnClass {
 }
 ```
 
-An evaluator implements the `Condition` interface:
+An evaluator implements the `Condition` interface (simplified sketch; the real `OnClassCondition` is more elaborate):
 
 ```java
 public class OnClassCondition implements Condition {
@@ -395,7 +395,7 @@ spring:
 
 Auto-configuration follows a user-configuration-first principle:
 
-```
+```text
 User-defined bean       → Takes precedence; the matching default backs off
 User-defined properties → Override configurable default values
 No explicit settings    → Use auto-configuration defaults
@@ -434,7 +434,7 @@ debug: true
 
 Startup then prints the condition evaluation report:
 
-```
+```text
 ============================
 CONDITIONS EVALUATION REPORT
 ============================
@@ -495,7 +495,7 @@ spring:
 
 ### 2.9 Auto-configuration Sequence
 
-```
+```text
 ┌───────────────────────────────────────────────────────────────────────────┐
 │ Spring Boot startup                                                       │
 └───────────────────────────────────────────────────────────────────────────┘
@@ -546,11 +546,11 @@ spring:
 
 ### 3.2 Project Structure and Development Process
 
-#### 3.2.1 Project Structure
+#### 1. Project Structure
 
 A complete custom starter typically contains two modules:
 
-```
+```text
 xxx-spring-boot-starter-parent/
 │
 ├── xxx-spring-boot-starter-autoconfigure/   # Auto-configuration and implementation
@@ -576,11 +576,11 @@ xxx-spring-boot-starter-parent/
 
 > 💡 A simple starter may combine these modules into one.
 
-#### 3.2.2 Development Steps
+#### 2. Development Steps
 
 | Step | Task | Key detail |
 | ---- | ----------------------- | ------------------------------------------------------- |
-| 1 | Create the autoconfigure module | Depend on `spring-boot-autoconfigure` |
+| 1 | Create the autoconfigure module | Depend on `spring-boot-autoconfigure` (or `spring-boot-starter`, which includes it) |
 | 2 | Define configuration properties | `@ConfigurationProperties(prefix = "xxx")` |
 | 3 | Implement the service | Inject properties through its constructor |
 | 4 | Define auto-configuration | `@AutoConfiguration` + `@EnableConfigurationProperties` |
@@ -610,7 +610,7 @@ xxx-spring-boot-starter-parent/
 
 Spring Boot discovers your auto-configuration through this file:
 
-```
+```text
 Path: src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
 Contents: one fully qualified configuration class name per line
 ```
@@ -625,7 +625,7 @@ The application depends on the starter, which depends on the autoconfigure modul
 
 The autoconfigure module's `.imports` file lists configuration class names. At startup:
 
-```
+```text
 @SpringBootApplication
     ↓
 @EnableAutoConfiguration
@@ -692,7 +692,7 @@ Its POM groups the autoconfigure module and other dependencies, such as a cloud 
 
 Create a Maven project with this layout:
 
-```
+```text
 sms-spring-boot-starter/
 ├── pom.xml
 └── src/main/
@@ -724,7 +724,8 @@ sms-spring-boot-starter/
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <spring-boot.version>3.2.0</spring-boot.version>
+        <spring-boot.version>3.5.16</spring-boot.version>
+        <lombok.version>1.18.48</lombok.version>
     </properties>
 
     <!-- No Spring Boot parent: configure the Java compiler explicitly -->
@@ -733,16 +734,31 @@ sms-spring-boot-starter/
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.14.1</version>
+                <configuration>
+                    <!-- JDK 23+ runs annotation processors only when configured explicitly; Lombok goes first -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${spring-boot.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <dependencies>
-        <!-- Required: auto-configuration support -->
+        <!-- Required: spring-boot-starter brings spring-boot-autoconfigure plus logging (SLF4J for @Slf4j) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
 
@@ -758,7 +774,7 @@ sms-spring-boot-starter/
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
@@ -858,7 +874,7 @@ public class SmsAutoConfiguration {
 
 Create `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
 
-```
+```text
 com.example.sms.autoconfigure.SmsAutoConfiguration
 ```
 
@@ -911,7 +927,7 @@ public class DemoController {
 
 #### Complete File List
 
-```
+```text
 sms-spring-boot-starter/
 ├── pom.xml                                          ← Step 2
 └── src/main/
@@ -936,31 +952,15 @@ sms-spring-boot-starter/
 | Mark optional dependencies | Use `<optional>true</optional>` for nonessential dependencies |
 | Choose sensible defaults | Make the feature usable with minimal configuration |
 | Use clear package boundaries | Put auto-configuration in a dedicated package such as `xxx.autoconfigure` |
-| Use lite configuration | `@Configuration(proxyBeanMethods = false)` avoids configuration proxy overhead |
+| Use lite configuration | `@Configuration(proxyBeanMethods = false)` avoids configuration proxy overhead (`@AutoConfiguration` already applies it) |
 | State version compatibility | Document the supported Spring Boot versions |
 | Provide documentation | Explain configuration and usage in a README |
 
 ***
 
-## Appendix
+## IV. Appendix
 
-### A. Topic Index
-
-| Topic | Section | Description |
-| ---------------- | ---- | -------------------------------------------------------------- |
-| Starter concept | 1.1 | Dependency aggregation |
-| Starter names | 1.2 | Official `spring-boot-starter-*` and third-party `*-spring-boot-starter` |
-| Auto-configuration trigger | 2.2 | `@EnableAutoConfiguration` → `AutoConfigurationImportSelector` |
-| Conditional annotations | 2.4 | `@ConditionalOnClass`, `@ConditionalOnMissingBean`, and others |
-| Overriding defaults | 2.6 | User-defined beans take precedence |
-| Configuration report | 2.7 | `debug: true` |
-| Excluding configurations | 2.8 | `exclude` attributes or configuration properties |
-| Development process | 3.2 | Eight-step workflow |
-| Core mechanisms | 3.3 | Annotations and runtime flow |
-| Practical example | 3.4 | Complete SMS starter code |
-| Best practices | 3.5 | Ten development recommendations |
-
-### B. Auto-configuration Annotation Reference
+### 1. Auto-configuration Annotation Reference
 
 #### Configuration Annotations
 
@@ -998,7 +998,7 @@ sms-spring-boot-starter/
 | 3.x / 2.7+       | `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` |
 | Before 2.7 | `META-INF/spring.factories` (legacy auto-configuration registration) |
 
-### C. Troubleshooting
+### 2. Troubleshooting
 
 | Problem | Cause | Resolution |
 | ------------------------------ | -------------------------------------------- | -------------------------------- |
@@ -1009,9 +1009,9 @@ sms-spring-boot-starter/
 | Boot 3.x does not load the configuration | Legacy `spring.factories` registration | Use the `.imports` file |
 | `NoClassDefFoundError` at startup | A referenced conditional class is absent | Use the `name` attribute with a class-name string where appropriate |
 
-### D. Custom Starter Checklist
+### 3. Custom Starter Checklist
 
-- [ ] `pom.xml` includes `spring-boot-autoconfigure`
+- [ ] `pom.xml` includes `spring-boot-autoconfigure` (directly or through `spring-boot-starter`)
 - [ ] `XxxProperties` uses `@ConfigurationProperties(prefix = "xxx")`
 - [ ] `XxxAutoConfiguration` uses `@AutoConfiguration`
 - [ ] `@EnableConfigurationProperties` enables property binding

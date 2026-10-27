@@ -59,11 +59,11 @@ I/O (Input/Output) transfers data between a program and external resources (file
         BufferedOutputStream              BufferedWriter
 
         Serialization streams:            Conversion streams:
-        ObjectInputStream                InputStreamReader
-        ObjectOutputStream               OutputStreamWriter
+        ObjectInputStream                 InputStreamReader
+        ObjectOutputStream                OutputStreamWriter
 
         Print streams:                    Print streams:
-        PrintStream                      PrintWriter
+        PrintStream                       PrintWriter
 
 ***
 
@@ -111,12 +111,12 @@ import java.io.FileOutputStream;
 
 ```java
 // 1. Overwrite (default)
-FileOutputStream fos = new FileOutputStream("a.txt");
-FileOutputStream fos = new FileOutputStream(new File("a.txt"));
+FileOutputStream fos1 = new FileOutputStream("a.txt");
+FileOutputStream fos2 = new FileOutputStream(new File("a.txt"));
 
 // 2. Append
-FileOutputStream fos = new FileOutputStream("a.txt", true);
-FileOutputStream fos = new FileOutputStream(new File("a.txt"), true);
+FileOutputStream fos3 = new FileOutputStream("a.txt", true);
+FileOutputStream fos4 = new FileOutputStream(new File("a.txt"), true);
 ```
 
 | Parameter | Description |
@@ -144,7 +144,7 @@ String str = "Hello World";
 fos.write(str.getBytes());
 
 // Write using a specified encoding
-fos.write(str.getBytes("UTF-8"));
+fos.write(str.getBytes(StandardCharsets.UTF_8));
 
 // Newline
 fos.write("\r\n".getBytes());  // Windows newline
@@ -240,10 +240,10 @@ import java.io.FileInputStream;
 
 ```java
 // Create from a path
-FileInputStream fis = new FileInputStream("a.txt");
+FileInputStream fis1 = new FileInputStream("a.txt");
 
 // Create from a File object
-FileInputStream fis = new FileInputStream(new File("a.txt"));
+FileInputStream fis2 = new FileInputStream(new File("a.txt"));
 ```
 
 ***
@@ -258,13 +258,13 @@ int b = fis.read();
 byte[] buffer = new byte[1024];
 int len = fis.read(buffer);
 
-// Read all bytes (Java 9+)
+// Read all bytes (JDK 9+)
 byte[] allBytes = fis.readAllBytes();
 
 // Skip a specified number of bytes
 long skipped = fis.skip(10);
 
-// Get the number of available bytes in the file
+// Estimate the bytes readable without blocking (for a file: the remaining bytes)
 int available = fis.available();
 
 // Close the stream (required)
@@ -308,11 +308,13 @@ try (FileInputStream fis = new FileInputStream("a.txt")) {
 } catch (IOException e) {
     e.printStackTrace();
 }
+
+// Note: a multibyte character split across two reads is garbled; read text with a character stream
 ```
 
 ***
 
-#### Approach 3: Read Everything at Once (Java 9+)
+#### Approach 3: Read Everything at Once (JDK 9+)
 
 ```java
 try (FileInputStream fis = new FileInputStream("a.txt")) {
@@ -346,7 +348,9 @@ try (FileInputStream fis = new FileInputStream("a.txt")) {
     e.printStackTrace();
 }
 
-// Note: suitable only for small files; large files can exhaust memory
+// Note: suitable only for small files; large files can exhaust memory.
+// available() is only an estimate and one read() call is not guaranteed to fill the array;
+// prefer readAllBytes() (JDK 9+) or Files.readAllBytes().
 ```
 
 ***
@@ -427,14 +431,14 @@ import java.io.FileReader;
 ### 2. Constructors
 
 ```java
-// Create from a path (default encoding)
-FileReader fr = new FileReader("a.txt");
+// Create from a path (default charset: UTF-8 since JDK 18; platform-dependent before)
+FileReader fr1 = new FileReader("a.txt");
 
 // Create from a File object
-FileReader fr = new FileReader(new File("a.txt"));
+FileReader fr2 = new FileReader(new File("a.txt"));
 
 // Specify an encoding (JDK 11+)
-FileReader fr = new FileReader("a.txt", Charset.forName("UTF-8"));
+FileReader fr3 = new FileReader("a.txt", StandardCharsets.UTF_8);
 ```
 
 ***
@@ -537,14 +541,14 @@ import java.io.FileWriter;
 
 ```java
 // Overwrite (default)
-FileWriter fw = new FileWriter("a.txt");
-FileWriter fw = new FileWriter(new File("a.txt"));
+FileWriter fw1 = new FileWriter("a.txt");
+FileWriter fw2 = new FileWriter(new File("a.txt"));
 
 // Append
-FileWriter fw = new FileWriter("a.txt", true);
+FileWriter fw3 = new FileWriter("a.txt", true);
 
 // Specify an encoding (JDK 11+)
-FileWriter fw = new FileWriter("a.txt", Charset.forName("UTF-8"));
+FileWriter fw4 = new FileWriter("a.txt", StandardCharsets.UTF_8);
 ```
 
 ***
@@ -835,7 +839,7 @@ public class BufferedWriterDemo {
 ### 6. Ordinary vs Buffered Stream Performance
 
 ```java
-// Test: copy a 100 MB file
+// Test: copy a 100 MB file (illustrative timings; actual results vary by hardware and OS cache)
 // Ordinary stream (1 byte per call): approximately 500 seconds
 // Ordinary stream (1024 bytes per call): approximately 0.5 seconds
 // Buffered stream (1 byte per call): approximately 1.5 seconds
@@ -1150,7 +1154,7 @@ public class RedirectDemo {
 
 ***
 
-## XII. The Files Utility Class (Java 7+)
+## XII. The Files Utility Class (JDK 7+)
 
 ### 1. What Is Files?
 
@@ -1169,6 +1173,7 @@ import java.nio.file.Paths;
 ```java
 import java.nio.file.*;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class FilesReadDemo {
     public static void main(String[] args) throws Exception {
@@ -1182,11 +1187,13 @@ public class FilesReadDemo {
         List<String> lines = Files.readAllLines(path);
         lines.forEach(System.out::println);
 
-        // 3. Read as a string (Java 11+)
+        // 3. Read as a string (JDK 11+)
         String text = Files.readString(path);
 
-        // 4. Read as a stream (recommended for large files)
-        Files.lines(path).forEach(System.out::println);
+        // 4. Read as a stream (recommended for large files; the stream holds an open file, so close it)
+        try (Stream<String> stream = Files.lines(path)) {
+            stream.forEach(System.out::println);
+        }
     }
 }
 ```
@@ -1215,7 +1222,7 @@ public class FilesWriteDemo {
         Files.write(path, "Appended content".getBytes(),
             StandardOpenOption.APPEND);
 
-        // 4. Write a string (Java 11+)
+        // 4. Write a string (JDK 11+)
         Files.writeString(path, "Hello World");
     }
 }
@@ -1234,28 +1241,28 @@ public class FilesOperationDemo {
         Path target = Paths.get("target.txt");
         Path dir = Paths.get("test/a/b/c");
 
-        // 1. Copy a file
-        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-
-        // 2. Move/rename a file
-        Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
-
-        // 3. Delete a file
-        Files.delete(source);
-        Files.deleteIfExists(source);  // No exception if absent
-
-        // 4. Create a directory
+        // 1. Create a directory
         Files.createDirectories(dir);  // Create nested directories
 
-        // 5. Test file attributes
-        boolean exists = Files.exists(source);
-        boolean isDir = Files.isDirectory(source);
-        boolean isFile = Files.isRegularFile(source);
-        boolean readable = Files.isReadable(source);
-        boolean writable = Files.isWritable(source);
+        // 2. Copy a file
+        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 
-        // 6. Get file size
-        long size = Files.size(source);
+        // 3. Test file attributes
+        boolean exists = Files.exists(target);
+        boolean isDir = Files.isDirectory(target);
+        boolean isFile = Files.isRegularFile(target);
+        boolean readable = Files.isReadable(target);
+        boolean writable = Files.isWritable(target);
+
+        // 4. Get file size
+        long size = Files.size(target);
+
+        // 5. Move/rename a file (replaces target; source no longer exists afterward)
+        Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+
+        // 6. Delete a file
+        Files.delete(target);          // Throws NoSuchFileException if absent
+        Files.deleteIfExists(target);  // No exception if absent
     }
 }
 ```
@@ -1267,23 +1274,30 @@ public class FilesOperationDemo {
 ```java
 import java.nio.file.*;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 public class FilesWalkDemo {
     public static void main(String[] args) throws IOException {
         Path dir = Paths.get(".");
 
+        // The streams hold open directory handles, so close them with try-with-resources
+
         // 1. Traverse a directory (one level)
-        Files.list(dir).forEach(System.out::println);
+        try (Stream<Path> stream = Files.list(dir)) {
+            stream.forEach(System.out::println);
+        }
 
         // 2. Traverse a directory recursively
-        Files.walk(dir)
-            .filter(Files::isRegularFile)  // Files only
-            .forEach(System.out::println);
+        try (Stream<Path> stream = Files.walk(dir)) {
+            stream.filter(Files::isRegularFile)  // Files only
+                  .forEach(System.out::println);
+        }
 
         // 3. Find files
-        Files.walk(dir)
-            .filter(p -> p.toString().endsWith(".java"))
-            .forEach(System.out::println);
+        try (Stream<Path> stream = Files.walk(dir)) {
+            stream.filter(p -> p.toString().endsWith(".java"))
+                  .forEach(System.out::println);
+        }
     }
 }
 ```
@@ -1296,11 +1310,11 @@ public class FilesWalkDemo {
 | --------------------------- | ----------------- |
 | `readAllBytes(Path)` | Reads all bytes |
 | `readAllLines(Path)` | Reads all lines |
-| `readString(Path)` | Reads as a string (Java 11+) |
+| `readString(Path)` | Reads as a string (JDK 11+) |
 | `lines(Path)` | Reads as a Stream (recommended for large files) |
 | `write(Path, byte[])` | Writes a byte array |
 | `write(Path, Iterable)` | Writes multiple lines |
-| `writeString(Path, String)` | Writes a string (Java 11+) |
+| `writeString(Path, String)` | Writes a string (JDK 11+) |
 | `copy(Path, Path)` | Copies a file |
 | `move(Path, Path)` | Moves/renames a file |
 | `delete(Path)` | Deletes a file |
@@ -1470,6 +1484,8 @@ public class PropertiesClasspathDemo {
         try (InputStream is = PropertiesClasspathDemo.class.getClassLoader()
                 .getResourceAsStream("config.properties")) {
 
+            // load(InputStream) decodes ISO-8859-1; for non-ASCII values, wrap it:
+            // props.load(new InputStreamReader(is, StandardCharsets.UTF_8));
             props.load(is);
 
             String username = props.getProperty("username");
@@ -1514,7 +1530,7 @@ Official website: <https://hutool.cn/>
 <dependency>
     <groupId>cn.hutool</groupId>
     <artifactId>hutool-all</artifactId>
-    <version>5.8.25</version>
+    <version>5.8.48</version>
 </dependency>
 ```
 
@@ -1577,7 +1593,8 @@ String str2 = StrUtil.format("{}年{}月{}日", 2024, 1, 7);  // "2024年1月7�
 StrUtil.trim("  abc  ");  // "abc"
 
 // 4. Split a string
-String[] arr = StrUtil.split("a,b,c", ",");
+List<String> parts = StrUtil.split("a,b,c", ",");  // [a, b, c]
+String[] arr = StrUtil.splitToArray("a,b,c", ",");  // Array form
 
 // 5. Extract a substring
 String sub = StrUtil.sub("Hello", 0, 3);  // "Hel"
@@ -1652,7 +1669,8 @@ String objectId = IdUtil.objectId();  // MongoDB ObjectId
 
 // 3. Encryption/decryption utilities (SecureUtil)
 String md5 = SecureUtil.md5("123456");  // MD5 hashing
-String sha256 = SecureUtil.sha256("123456");  // SHA256 hashing
+String sha256 = SecureUtil.sha256("123456");  // SHA-256 hashing
+// Note: plain MD5/SHA-256 is unsuitable for storing passwords; use BCrypt or a similar slow hash
 
 // 4. JSON operations (JSONUtil)
 String json = JSONUtil.toJsonStr(obj);  // Object to JSON
@@ -1707,7 +1725,7 @@ User user = JSONUtil.toBean(json, User.class);  // JSON to object
 
 ## XVII. Quick Reference
 
-### I/O Stream Categories
+### 1. I/O Stream Categories
 
 | Stream type | Input | Output | Description |
 | --------- | ------------------- | ------------------------- | ------ |
@@ -1719,7 +1737,7 @@ User user = JSONUtil.toBean(json, User.class);  // JSON to object
 | **Serialization stream** | ObjectInputStream | ObjectOutputStream | Object persistence |
 | **Print stream** | - | PrintStream / PrintWriter | Convenient output |
 
-### Common Methods
+### 2. Common Methods
 
 | Class | Reading methods | Writing methods | Special methods |
 | ------------------ | ------------------------- | --------------------------- | ---------------- |
@@ -1730,15 +1748,15 @@ User user = JSONUtil.toBean(json, User.class);  // JSON to object
 | `BufferedReader`   | `read()` / `read(char[])` | -                           | `readLine()`     |
 | `BufferedWriter`   | -                         | `write()`                   | `newLine()`      |
 
-### Files Utility Class
+### 3. Files Utility Class
 
 | Method | Description |
 | ------------------------------ | ---------------- |
 | `Files.readAllBytes(path)` | Reads all bytes |
 | `Files.readAllLines(path)` | Reads all lines |
-| `Files.readString(path)` | Reads as a string (Java 11+) |
+| `Files.readString(path)` | Reads as a string (JDK 11+) |
 | `Files.write(path, bytes)` | Writes bytes |
-| `Files.writeString(path, str)` | Writes a string (Java 11+) |
+| `Files.writeString(path, str)` | Writes a string (JDK 11+) |
 | `Files.copy(src, dest)` | Copies a file |
 | `Files.delete(path)` | Deletes a file |
 | `Files.walk(dir)` | Traverses a directory recursively |

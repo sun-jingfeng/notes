@@ -50,17 +50,17 @@
 
 #### Request Format
 
-    ┌───────────────────────────────────────────┐
-    │ Request line  POST /api/users HTTP/1.1    │
-    ├───────────────────────────────────────────┤
-    │ Headers       Host: localhost:8080        │
-    │          Content-Type: application/json   │
-    │          Authorization: Bearer token...   │
-    ├───────────────────────────────────────────┤
-    │ Blank line                                │
-    ├───────────────────────────────────────────┤
-    │ Body          {"name": "张三", "age": 20} │
-    └───────────────────────────────────────────┘
+    ┌──────────────────────────────────────────────────┐
+    │ Request line  POST /api/users HTTP/1.1           │
+    ├──────────────────────────────────────────────────┤
+    │ Headers       Host: localhost:8080               │
+    │               Content-Type: application/json     │
+    │               Authorization: Bearer token...     │
+    ├──────────────────────────────────────────────────┤
+    │ Blank line                                       │
+    ├──────────────────────────────────────────────────┤
+    │ Body          {"name": "张三", "age": 20}        │
+    └──────────────────────────────────────────────────┘
 
 #### HTTP Methods
 
@@ -78,7 +78,7 @@
     │ Status line   HTTP/1.1 200 OK                              │
     ├────────────────────────────────────────────────────────────┤
     │ Headers       Content-Type: application/json;charset=UTF-8 │
-    │          Content-Length: 56                                │
+    │               Content-Length: 56                           │
     ├────────────────────────────────────────────────────────────┤
     │ Blank line                                                 │
     ├────────────────────────────────────────────────────────────┤
@@ -243,6 +243,8 @@ public String getUser(String name, Integer age) {
 }
 ```
 
+> 💡 Binding by method parameter name (here, and for `@RequestParam`/`@PathVariable` without an explicit name) requires compiling with `-parameters`. `spring-boot-starter-parent` configures it; since Spring Framework 6.1, Spring no longer falls back to debug information.
+
 #### @RequestParam
 
 ```java
@@ -254,8 +256,8 @@ public String getUser(
     return "Name: " + name + ", age: " + age;
 }
 
-// Receive repeated values: GET /user?ids=1&ids=2&ids=3
-@GetMapping("/user")
+// Receive repeated values: GET /users?ids=1&ids=2&ids=3
+@GetMapping("/users")
 public String getUsers(@RequestParam List<Long> ids) {
     return "User IDs: " + ids;
 }
@@ -473,16 +475,20 @@ public class OrderDTO {
 }
 ```
 
+> 💡 `timezone` affects zone-based values such as `java.util.Date`; a `LocalDateTime` carries no zone and is formatted as-is.
+
 **Global date format configuration:**
 
 ```yaml
 spring:
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
+    date-format: yyyy-MM-dd HH:mm:ss   # Applies to java.util.Date only
     time-zone: Asia/Shanghai
     serialization:
       write-dates-as-timestamps: false
 ```
+
+> **Note**: `spring.jackson.date-format` does not affect `java.time` types such as `LocalDateTime`. Format those with `@JsonFormat` or register serializers through a `Jackson2ObjectMapperBuilderCustomizer` bean.
 
 ***
 
@@ -688,7 +694,7 @@ public PageResult<User> page(UserQuery query) {
 
 ### 4.5 Example Responses
 
-```json
+```jsonc
 // Success without data
 {
     "code": 1,
@@ -861,9 +867,9 @@ public Result<Void> update(@PathVariable Long id,
 
 ***
 
-## Appendix: Annotation Reference
+## VI. Annotation Reference
 
-### Controllers and Request Mapping
+### 1. Controllers and Request Mapping
 
 | Annotation | Purpose |
 | ----------------- | ---------------------------------------------- |
@@ -876,7 +882,7 @@ public Result<Void> update(@PathVariable Long id,
 | `@DeleteMapping` | DELETE requests |
 | `@ResponseBody` | Write the method result to the response body |
 
-### Parameter Binding
+### 2. Parameter Binding
 
 | Annotation | Purpose |
 | ----------------- | -------------------------- |
@@ -888,7 +894,7 @@ public Result<Void> update(@PathVariable Long id,
 | `@DateTimeFormat` | Request parameter date conversion |
 | `@JsonFormat` | JSON date formatting for requests/responses |
 
-### Validation
+### 3. Validation
 
 | Annotation | Purpose |
 | ----------------------- | ---------------------------- |
@@ -903,7 +909,7 @@ public Result<Void> update(@PathVariable Long id,
 | `@Pattern(regexp)` | Regular-expression match |
 | `@Past` / `@Future` | Past/future date |
 
-### Lombok
+### 4. Lombok
 
 | Annotation | Purpose |
 | -------------------------- | ------------------------------ |

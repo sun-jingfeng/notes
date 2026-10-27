@@ -1,11 +1,3 @@
-# Advanced Maven
-
-> **Chapter contents:** Multi-module design and development, inheritance and aggregation, and private repositories
->
-> **Goals:** Learn to design and build Maven multi-module projects, centrally manage dependency versions, and use private repositories for team collaboration.
-
----
-
 ## I. Multi-Module Design and Development
 
 ### 1.1 What Is a Multi-Module Project?
@@ -29,11 +21,11 @@ As business requirements grow, so does the codebase. Keeping all code in one pro
 
 Three common approaches depend on the project's size and complexity:
 
-#### 1.3.1 Split by Layer (Recommended for Small and Medium Projects)
+#### 1. Split by Layer (Recommended for Small and Medium Projects)
 
 Use MVC architectural layers for a clear, familiar structure:
 
-```
+```text
 myapp-parent/
 ├── myapp-common/     # Data classes (Entity, DTO, VO)
 ├── myapp-utils/      # Utility classes
@@ -42,11 +34,11 @@ myapp-parent/
 └── myapp-web/        # Web layer (Controllers and application entry point)
 ```
 
-#### 1.3.2 Split by Business Capability (Large Projects/Microservices)
+#### 2. Split by Business Capability (Large Projects/Microservices)
 
 Divide the project by business capability so that each module is cohesive:
 
-```
+```text
 project-parent/
 ├── project-common/   # Shared module
 ├── project-user/     # Users
@@ -54,11 +46,11 @@ project-parent/
 └── project-payment/  # Payments
 ```
 
-#### 1.3.3 Combine Both Approaches (Large Monoliths)
+#### 3. Combine Both Approaches (Large Monoliths)
 
 Split by business capability first, then subdivide each capability by layer:
 
-```
+```text
 project-parent/
 ├── project-common/
 │   ├── common-pojo/
@@ -74,7 +66,7 @@ project-parent/
 
 **Core rule: Higher layers depend on lower layers; lower layers must not depend on higher layers.** Keep dependencies one-way to avoid cycles.
 
-```
+```text
 ┌────────────────┐
 │   myapp-web    │  ← Controllers and application entry point
 └───────┬────────┘
@@ -113,11 +105,11 @@ Thus, although `myapp-web` declares only a dependency on `myapp-service`, it can
 
 ### 1.7 Things to Watch For
 
-#### 1.7.1 Use a Consistent Package Prefix
+#### 1. Use a Consistent Package Prefix
 
 Use a common package prefix, such as `com.example`, across modules to simplify Spring Boot component scanning.
 
-#### 1.7.2 Component Scanning
+#### 2. Component Scanning
 
 By default, Spring Boot scans the package containing the application class and its subpackages. Configure scanning explicitly when other modules use different packages:
 
@@ -128,7 +120,7 @@ By default, Spring Boot scans the package containing the application class and i
 public class MyApplication { ... }
 ```
 
-#### 1.7.3 Dependency Version Conflicts
+#### 3. Dependency Version Conflicts
 
 When modules introduce different versions of a dependency, Maven uses the nearest definition. Prefer managing versions centrally in the parent's `<dependencyManagement>`.
 
@@ -147,11 +139,11 @@ You can also exclude conflicting dependencies with `<exclusions>`:
 </dependency>
 ```
 
-#### 1.7.4 Build Order
+#### 4. Build Order
 
 Dependencies must be built before the modules that use them. Run `mvn clean install` from the parent module so Maven can determine the order.
 
----
+***
 
 ## II. Inheritance and Aggregation
 
@@ -159,17 +151,17 @@ Inheritance centralizes **configuration**; aggregation coordinates **builds**. P
 
 ### 2.1 Inheritance
 
-#### 2.1.1 Concept
+#### 1. Concept
 
 Child modules inherit configuration through `<parent>`, avoiding duplication. The parent typically contains shared configuration rather than business code.
 
-#### 2.1.2 Three Benefits of Inheritance
+#### 2. Three Benefits of Inheritance
 
 1. **Consistent versions:** All child modules use the same dependency versions, reducing conflicts.
 2. **Simpler configuration:** Define shared configuration once in the parent.
 3. **Easier maintenance:** Update a dependency version in one place.
 
-#### 2.1.3 Inheritable Configuration
+#### 3. Inheritable Configuration
 
 | Configuration | Description |
 | ----------------------- | -------------------------- |
@@ -182,7 +174,7 @@ Child modules inherit configuration through `<parent>`, avoiding duplication. Th
 
 > **Note:** `artifactId` is not inherited. Each module must define its own.
 
-#### 2.1.4 `<dependencies>` vs `<dependencyManagement>` (Core Concept)
+#### 4. `<dependencies>` vs `<dependencyManagement>` (Core Concept)
 
 This distinction is central to inheritance. **Understand it before studying the configuration examples.**
 
@@ -198,7 +190,7 @@ This distinction is central to inheritance. **Understand it before studying the 
 > - Dependencies used by every module, such as Lombok → `<dependencies>`
 > - Dependencies used by selected modules, such as MyBatis → `<dependencyManagement>`
 
-#### 2.1.5 Three Packaging Types
+#### 5. Three Packaging Types
 
 | Type | Description | Typical use |
 | ------- | ------------------------------------------------ | -------------------------- |
@@ -208,7 +200,7 @@ This distinction is central to inheritance. **Understand it before studying the 
 
 > The default `<packaging>` is `jar`. **Parent modules must use `pom`.**
 
-#### 2.1.6 Configuring the Parent Module
+#### 6. Configuring the Parent Module
 
 The parent's `pom.xml` has five main parts:
 
@@ -230,8 +222,8 @@ Maven lets you define custom values in `<properties>` and reference them elsewhe
 ```xml
 <properties>
     <java.version>17</java.version>
-    <spring-boot.version>3.2.10</spring-boot.version>
-    <mybatis.version>3.0.3</mybatis.version>
+    <spring-boot.version>3.5.16</spring-boot.version>
+    <mybatis.version>3.0.5</mybatis.version>
     <myapp.version>1.0.0</myapp.version>
 </properties>
 ```
@@ -242,7 +234,7 @@ Maven lets you define custom values in `<properties>` and reference them elsewhe
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
     <artifactId>mybatis-spring-boot-starter</artifactId>
-    <version>${mybatis.version}</version>  <!-- Property reference; resolves to 3.0.3 -->
+    <version>${mybatis.version}</version>  <!-- Property reference; resolves to 3.0.5 -->
 </dependency>
 ```
 
@@ -317,7 +309,7 @@ Maven lets you define custom values in `<properties>` and reference them elsewhe
 </build>
 ```
 
-#### 2.1.7 Configuring Child Modules
+#### 7. Configuring Child Modules
 
 A child declares its parent with `<parent>`. `<relativePath>` specifies the relative path to the parent's `pom.xml`.
 
@@ -364,18 +356,18 @@ A child declares its parent with `<parent>`. `<relativePath>` specifies the rela
 | The child's own `<version>` alongside `<artifactId>` | Yes | Inherited when omitted; an identical explicit version may trigger an IDE hint |
 | A dependency's `<version>` in `<dependencies>` | Sometimes | Can be omitted if the parent's `<dependencyManagement>` supplies it |
 
-#### 2.1.8 What Is a BOM (Bill of Materials)?
+#### 8. What Is a BOM (Bill of Materials)?
 
 A **BOM (Bill of Materials)** is a Maven POM used to **manage dependency versions without adding the dependencies themselves**.
 
 Think of it as a version catalog:
-- Its `<dependencyManagement>` entries say, for example, "If you use spring-boot-starter-web, use version 3.2.10."
+- Its `<dependencyManagement>` entries say, for example, "If you use spring-boot-starter-web, use version 3.5.16."
 - It **does not** add those dependencies to your project; it specifies which versions to use.
 - When you declare a managed dependency in `<dependencies>`, you **can omit its version** and use the catalog's version.
 
 Spring's `spring-boot-dependencies` is a BOM. Importing it brings Spring Boot's dependency version catalog into your project.
 
-#### 2.1.9 Two Ways to Use Spring Boot's Parent Configuration
+#### 9. Two Ways to Use Spring Boot's Parent Configuration
 
 **Option 1: Direct inheritance** (common in single-module projects)
 
@@ -383,7 +375,7 @@ Spring's `spring-boot-dependencies` is a BOM. Importing it brings Spring Boot's 
 <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.10</version>
+    <version>3.5.16</version>
 </parent>
 ```
 
@@ -398,7 +390,7 @@ If the project already has a custom parent such as `myapp-parent`, import the BO
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-dependencies</artifactId>
-            <version>3.2.10</version>
+            <version>3.5.16</version>
             <type>pom</type>       <!-- Import a POM, not a JAR -->
             <scope>import</scope>  <!-- Merge this POM's dependencyManagement -->
         </dependency>
@@ -412,21 +404,21 @@ If the project already has a custom parent such as `myapp-parent`, import the BO
 | Suitable when | A single module or parent can inherit from Spring Boot | The project must retain its own parent POM |
 | Result | Dependency versions plus Spring Boot parent plugin configuration | Dependency version management only, without the other parent configuration |
 
----
+***
 
 ### 2.2 Aggregation
 
-#### 2.2.1 Concept
+#### 1. Concept
 
 Aggregation groups modules using `<modules>` in a parent/aggregator project. The aggregator knows its child modules and can apply a Maven command to the entire group.
 
-#### 2.2.2 Benefits of Aggregation
+#### 2. Benefits of Aggregation
 
 1. **One-command builds:** Build every module with `mvn clean install`.
 2. **Automatic ordering:** Maven determines build order from dependencies.
 3. **Central overview:** See all project modules in one place.
 
-#### 2.2.3 Configuring Aggregation
+#### 3. Configuring Aggregation
 
 ```xml
 <project>
@@ -444,26 +436,27 @@ Aggregation groups modules using `<modules>` in a parent/aggregator project. The
 </project>
 ```
 
-#### 2.2.4 Building an Aggregate Project
+#### 4. Building an Aggregate Project
 
 ```bash
 cd myapp-parent
 mvn clean install
 ```
 
-Maven prints the build order automatically (Reactor Build Order):
+Maven prints the build order automatically (Reactor Build Order). The parent POM comes first because every child inherits from it:
 
-```
+```text
 [INFO] Reactor Build Order:
-[INFO] myapp-common        [jar]
-[INFO] myapp-utils       [jar]
-[INFO] myapp-dao      [jar]
-[INFO] myapp-service     [jar]
-[INFO] myapp-web         [jar]
-[INFO] myapp-parent      [pom]
+[INFO]
+[INFO] myapp-parent                                   [pom]
+[INFO] myapp-common                                   [jar]
+[INFO] myapp-utils                                    [jar]
+[INFO] myapp-dao                                      [jar]
+[INFO] myapp-service                                  [jar]
+[INFO] myapp-web                                      [jar]
 ```
 
-#### 2.2.5 Building Selected Modules
+#### 5. Building Selected Modules
 
 ```bash
 # Build only the specified module
@@ -476,7 +469,7 @@ mvn clean install -pl myapp-service -am
 mvn clean install -pl myapp-dao -amd
 ```
 
----
+***
 
 ### 2.3 Inheritance vs Aggregation
 
@@ -489,7 +482,7 @@ mvn clean install -pl myapp-dao -amd
 
 > **Real projects commonly combine inheritance and aggregation:** the parent provides shared configuration and coordinates the build.
 
----
+***
 
 ## III. Private Repositories
 
@@ -511,7 +504,7 @@ A private Maven repository server runs on an organization's network, between dev
 
 ### 3.3 Repository Types
 
-```
+```text
 ┌────────────────────────────────────────┐
 │            Nexus repository            │
 ├────────────────────────────────────────┤
@@ -542,7 +535,7 @@ A private Maven repository server runs on an organization's network, between dev
 
 **Version progression:**
 
-```
+```text
 1.0.0-SNAPSHOT → Development → 1.0.0 → Release → 1.1.0-SNAPSHOT → ...
 ```
 
@@ -554,7 +547,7 @@ A private Maven repository server runs on an organization's network, between dev
 
 ### 3.6 Installing Nexus
 
-```bash
+```text
 # Directory layout after downloading and extracting
 nexus-3.x.x/
 ├── bin/nexus          # Startup script
@@ -563,25 +556,28 @@ nexus-3.x.x/
 sonatype-work/nexus3/
 ├── admin.password     # Initial administrator password
 └── blobs/             # Repository data
+```
 
-# Startup commands
+```bash
+# Startup commands (run inside nexus-3.x.x/)
 ./bin/nexus start      # Run in the background
 ./bin/nexus run        # Run in the foreground for debugging
 ./bin/nexus stop       # Stop
 
 # Open: http://localhost:8081
-# Username: admin; initial password: see admin.password
+# Username: admin; initial password: see admin.password (changed on first login)
 ```
 
 ### 3.7 Configuring Maven to Use a Private Repository
 
-#### 3.7.1 settings.xml
+#### 1. settings.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
     <!-- Server authentication (used for deploy) -->
     <servers>
+        <!-- Example credentials; mvn -ep (encrypt password) can encrypt the stored password -->
         <server>
             <id>maven-releases</id>
             <username>admin</username>
@@ -624,7 +620,9 @@ sonatype-work/nexus3/
 </settings>
 ```
 
-#### 3.7.2 pom.xml (Publishing)
+> **Note**: Maven 3.8.1+ blocks plain-HTTP repositories that are not on localhost (the built-in `maven-default-http-blocker` mirror). In practice, serve the repository manager over HTTPS; the HTTP URLs here only illustrate a LAN setup.
+
+#### 2. pom.xml (Publishing)
 
 ```xml
 <distributionManagement>
@@ -652,7 +650,7 @@ Maven chooses the target repository based on the version:
 
 ### 3.9 Dependency Download Flow
 
-```
+```text
 Local repository → Private repository group → Maven Central
              ↓
         Cache on the private server
@@ -669,13 +667,13 @@ Local repository → Private repository group → Maven Central
 | **Connection timed out** | Network problem | Check the server address, port, and firewall |
 | **SNAPSHOT does not update** | Restricted update policy | Force an update with `mvn install -U` |
 
----
+***
 
 ## IV. Practical Example: Building a Multi-Module Project
 
 ### 4.1 Project Layout
 
-```
+```text
 myapp-parent/
 ├── pom.xml              # Parent (inheritance and aggregation)
 ├── myapp-common/        # Data classes
@@ -714,8 +712,8 @@ myapp-parent/
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <spring-boot.version>3.2.10</spring-boot.version>
-        <mybatis.version>3.0.3</mybatis.version>
+        <spring-boot.version>3.5.16</spring-boot.version>
+        <mybatis.version>3.0.5</mybatis.version>
         <myapp.version>1.0.0</myapp.version>
     </properties>
 
@@ -726,7 +724,17 @@ myapp-parent/
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
+                    <version>3.14.1</version>
+                    <configuration>
+                        <!-- JDK 23+ no longer runs annotation processors found on the classpath implicitly;
+                             list Lombok explicitly (the version comes from dependencyManagement) -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
@@ -872,7 +880,7 @@ mvn spring-boot:run         # Run the application
 java -jar target/myapp-web-1.0.0.jar
 ```
 
----
+***
 
 ## V. Summary
 

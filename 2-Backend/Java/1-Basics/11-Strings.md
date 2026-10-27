@@ -100,7 +100,7 @@ System.out.println(s1 == s4);  // true (intern returns the pooled reference)
 
 ### 6. Comparing Strings
 
-#### 6.1 == vs. equals()
+#### 1. == vs. equals()
 
 ```java
 String s1 = "Hello";
@@ -116,7 +116,7 @@ System.out.println(s1.equals(s2)); // true
 System.out.println(s1.equals(s3)); // true (identical contents)
 ```
 
-#### 6.2 Comparison Methods
+#### 2. Comparison Methods
 
 | Method                      | Description             |
 | ----------------------- | -------------- |
@@ -144,7 +144,7 @@ System.out.println(s3.compareTo(s1));        // Negative (A < H)
 
 ### 7. Common String Methods
 
-#### 7.1 Accessing Content
+#### 1. Accessing Content
 
 | Method                              | Description               | Example                                |
 | ------------------------------- | ---------------- | --------------------------------- |
@@ -169,7 +169,7 @@ System.out.println(s.substring(0, 5));    // Hello
 System.out.println(s.indexOf("Java"));    // -1
 ```
 
-#### 7.2 Testing Strings
+#### 2. Testing Strings
 
 | Method                          | Description                | Version      |
 | --------------------------- | ----------------- | ------- |
@@ -199,13 +199,13 @@ System.out.println("12345".matches("\\d+")); // true (digits only)
 System.out.println("abc".matches("[a-z]+")); // true (lowercase letters only)
 ```
 
-#### 7.3 Transformations
+#### 3. Transformations
 
 | Method                         | Description              | Version      |
 | -------------------------- | --------------- | ------- |
 | `toUpperCase()`            | Convert to uppercase             |         |
 | `toLowerCase()`            | Convert to lowercase             |         |
-| `trim()`                   | Remove leading and trailing spaces          |         |
+| `trim()`                   | Remove leading and trailing characters ≤ U+0020 (spaces, tabs, newlines, etc.) |         |
 | `strip()`                  | Remove leading and trailing whitespace (including full-width spaces) | JDK 11+ |
 | `stripLeading()`           | Remove leading whitespace          | JDK 11+ |
 | `stripTrailing()`          | Remove trailing whitespace          | JDK 11+ |
@@ -248,7 +248,7 @@ System.out.println("Ha".repeat(3));          // "HaHaHa"
 System.out.println("-".repeat(10));          // "----------"
 ```
 
-#### 7.4 Static Methods
+#### 4. Static Methods
 
 | Method                                 | Description         | Version     |
 | ---------------------------------- | ---------- | ------ |
@@ -281,7 +281,7 @@ String s10 = String.format("%05d", 42);  // "00042" (pad with zeros to 5 digits)
 // %% - percent sign
 ```
 
-#### 7.5 New Methods in JDK 11+
+#### 5. New Methods in JDK 11+
 
 ```java
 // lines(): split into a Stream of lines
@@ -401,7 +401,7 @@ StringBuilder sb3 = new StringBuilder("Hello");
 
 ### 4. Common StringBuilder Methods
 
-#### 4.1 Core Methods
+#### 1. Core Methods
 
 | Method                                        | Description               | Return value          |
 | ----------------------------------------- | ---------------- | ------------ |
@@ -413,7 +413,7 @@ StringBuilder sb3 = new StringBuilder("Hello");
 | `reverse()`                               | Reverse the string            | Returns this object         |
 | `toString()`                              | Convert to String       | String       |
 
-#### 4.2 Code Examples
+#### 2. Code Examples
 
 ```java
 StringBuilder sb = new StringBuilder();
@@ -457,7 +457,7 @@ System.out.println(sb3);  // olleH
 String s = sb3.toString();
 ```
 
-#### 4.3 Inspection and Modification Methods
+#### 3. Inspection and Modification Methods
 
 | Method                              | Description          |
 | ------------------------------- | ----------- |
@@ -503,7 +503,7 @@ for (int i = 0; i < 100000; i++) {
 }
 long end1 = System.currentTimeMillis();
 System.out.println("String time: " + (end1 - start1) + "ms");
-// Time: about 10000+ ms
+// Time: varies by machine; often several seconds
 
 // ========== StringBuilder concatenation (efficient) ==========
 long start2 = System.currentTimeMillis();
@@ -514,10 +514,10 @@ for (int i = 0; i < 100000; i++) {
 String result = sb.toString();
 long end2 = System.currentTimeMillis();
 System.out.println("StringBuilder time: " + (end2 - start2) + "ms");
-// Time: about 5–10 ms
+// Time: typically a few milliseconds
 ```
 
-**Conclusion**: StringBuilder concatenation is **over 1000 times faster** than String concatenation!
+**Conclusion**: In a loop, StringBuilder concatenation is typically **orders of magnitude faster** than repeated String concatenation.
 
 ***
 
@@ -750,7 +750,7 @@ String s = sb.toString();
 
 ## VIII. Common Methods Quick Reference
 
-### String Methods
+### 1. String Methods
 
 | Method                       | Description       | Version      |
 | ------------------------ | -------- | ------- |
@@ -778,7 +778,7 @@ String s = sb.toString();
 | `String.join()`          | Join strings    | JDK 8+  |
 | `String.format()`        | Format      |         |
 
-### StringBuilder Methods
+### 2. StringBuilder Methods
 
 | Method                       | Description        |
 | ------------------------ | --------- |

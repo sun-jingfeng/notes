@@ -50,7 +50,7 @@
 
 ## II. Ways to Start Threads in Java
 
-### 1. Approach 1: Extend Thread
+### 1. Extend Thread
 
 ```java
 // 1. Define a class extending Thread
@@ -89,7 +89,7 @@ public class Demo {
 
 ***
 
-### 2. Approach 2: Implement Runnable (Recommended)
+### 2. Implement Runnable (Recommended)
 
 ```java
 // 1. Define a class implementing Runnable
@@ -138,7 +138,7 @@ new Thread(() -> {
 
 ***
 
-### 3. Approach 3: Implement Callable (Supports a Return Value)
+### 3. Implement Callable (Supports a Return Value)
 
 ```java
 import java.util.concurrent.Callable;
@@ -376,7 +376,7 @@ Java threads have **six states**, defined in the `Thread.State` enum:
     │   NEW   │── start() ──→│      RUNNABLE       │── run() ends ─→│ TERMINATED │
     └─────────┘              │  (ready / running)  │                └────────────┘
                              └────┬───────────┬────┘
-             wait()/join()/park() │           │ notify()/unpark()
+             wait()/join()/park() │           ↑ notify()/unpark()
                  sleep(n)/wait(n) │           │ timeout/interrupt
                                   ↓           │
                              ┌────┴───────────┴────┐
@@ -402,13 +402,13 @@ Thread t = new Thread(() -> {});
 System.out.println(t.getState());  // NEW
 
 t.start();
-System.out.println(t.getState());  // RUNNABLE
+System.out.println(t.getState());  // RUNNABLE (typically; an empty task may already have finished)
 
 // ... Thread finishes
 System.out.println(t.getState());  // TERMINATED
 ```
 
-> 💡 **Note**: Java's thread-state enum has no separate **RUNNING** state. Both running and ready threads are classified as `RUNNABLE`.
+> 💡 **Note**: Java's thread-state enum has no separate **RUNNING** state. Both running and ready threads are classified as `RUNNABLE`. A thread woken from `wait()` by `notify()` must reacquire the monitor first, so it briefly passes through `BLOCKED` before returning to `RUNNABLE`.
 
 ***
 
@@ -996,7 +996,7 @@ pool4.schedule(() -> {
 
 | Method | Return value | Exception handling | Argument type |
 | --------------------------- | ------ | ------------ | ------------------- |
-| `execute(Runnable)` | None | Thrown directly | Runnable only |
+| `execute(Runnable)` | None | Thrown in the worker thread (handled by its uncaught-exception handler) | Runnable only |
 | `submit(Runnable/Callable)` | Future | Captured in the Future | Runnable or Callable |
 
 ```java
@@ -1086,7 +1086,7 @@ Pools created by `Executors` carry risks:
 *   `newFixedThreadPool` and `newSingleThreadExecutor`: effectively unbounded task queues may cause OOM.
 *   `newCachedThreadPool`: unbounded thread creation may cause OOM.
 
-**Alibaba Development Guidelines**: **Do not create thread pools with Executors; prefer ThreadPoolExecutor.**
+**Alibaba Java Coding Guidelines**: **Do not create thread pools with Executors; prefer ThreadPoolExecutor.**
 
 ***
 
@@ -1210,16 +1210,16 @@ public class Demo {
 
 ```java
 // Default: throw an exception
-new ThreadPoolExecutor.AbortPolicy()
+RejectedExecutionHandler abort = new ThreadPoolExecutor.AbortPolicy();
 
 // Run in the caller's thread
-new ThreadPoolExecutor.CallerRunsPolicy()
+RejectedExecutionHandler callerRuns = new ThreadPoolExecutor.CallerRunsPolicy();
 
 // Discard directly
-new ThreadPoolExecutor.DiscardPolicy()
+RejectedExecutionHandler discard = new ThreadPoolExecutor.DiscardPolicy();
 
 // Discard the oldest task
-new ThreadPoolExecutor.DiscardOldestPolicy()
+RejectedExecutionHandler discardOldest = new ThreadPoolExecutor.DiscardOldestPolicy();
 ```
 
 ***
@@ -1235,13 +1235,13 @@ new ThreadPoolExecutor.DiscardOldestPolicy()
 
 ```java
 // Bounded queue (recommended)
-new ArrayBlockingQueue<>(100)
+BlockingQueue<Runnable> bounded = new ArrayBlockingQueue<>(100);
 
 // Unbounded queue (use cautiously; may cause OOM)
-new LinkedBlockingQueue<>()
+BlockingQueue<Runnable> unbounded = new LinkedBlockingQueue<>();
 
 // Synchronous queue (direct handoff to a thread)
-new SynchronousQueue<>()
+BlockingQueue<Runnable> handoff = new SynchronousQueue<>();
 ```
 
 ***
@@ -1318,11 +1318,12 @@ public class ExecutorConfig {
         executor.setMaxPoolSize(16);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("task-");
-        executor.initialize();
         return executor;
     }
 }
 ```
+
+> 💡 Spring initializes a `ThreadPoolTaskExecutor` returned from a `@Bean` method through `afterPropertiesSet()`, so calling `initialize()` there is unnecessary. Call `initialize()` only when the executor is created outside the container.
 
 Three things happen in this code:
 
@@ -1348,7 +1349,6 @@ public class ExecutorConfig {
     public ThreadPoolTaskExecutor computeExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(8);
-        executor.initialize();
         return executor;
     }
 
@@ -1356,7 +1356,6 @@ public class ExecutorConfig {
     public ThreadPoolTaskExecutor ioExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(16);
-        executor.initialize();
         return executor;
     }
 }
@@ -1580,7 +1579,7 @@ public class Demo {
 
 `ThreadLocal` provides **an independent variable copy per thread**, isolating threads. Each thread accesses its own copy without interfering with others.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Main memory                                                │
 │  ┌─────────────────────────────────────────────────────┐    │
@@ -1656,7 +1655,7 @@ public class ThreadLocalDemo {
 
 ```java
 // Approach 1: override initialValue()
-ThreadLocal<Integer> count = new ThreadLocal<>() {
+ThreadLocal<Integer> count1 = new ThreadLocal<>() {
     @Override
     protected Integer initialValue() {
         return 0;
@@ -1664,10 +1663,10 @@ ThreadLocal<Integer> count = new ThreadLocal<>() {
 };
 
 // Approach 2: use withInitial() (recommended; more concise)
-ThreadLocal<Integer> count = ThreadLocal.withInitial(() -> 0);
+ThreadLocal<Integer> count2 = ThreadLocal.withInitial(() -> 0);
 
 // Usage
-System.out.println(count.get());  // 0 (initial value returned before set)
+System.out.println(count2.get());  // 0 (initial value returned before set)
 ```
 
 ***
@@ -1678,7 +1677,7 @@ System.out.println(count.get());  // 0 (initial value returned before set)
 
 Each Thread maintains a `ThreadLocalMap` containing all of that thread's ThreadLocal variables:
 
-```
+```text
 Thread object
     └── ThreadLocalMap (similar to HashMap)
             ├── Entry(ThreadLocal<?> key, Object value)
@@ -1737,7 +1736,7 @@ static class Entry extends WeakReference<ThreadLocal<?>> {
 
 **Problem Scenario:**
 
-```
+```text
 ThreadLocal object ←── weak reference ── Entry.key
                               Entry.value ──→ actual data (strong reference)
 

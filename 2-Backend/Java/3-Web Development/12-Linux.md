@@ -19,7 +19,7 @@ Linux is an open-source, Unix-like operating system kernel first released by Lin
 | Distribution | Characteristics | Use cases |
 | ------------------------ | ------------------------ | ---------------------- |
 | **Ubuntu** | Easy to use, active community, extensive documentation | Beginners, development, servers |
-| **CentOS / Rocky Linux** | Stable, enterprise-grade, long-term support | Production servers |
+| **CentOS / Rocky Linux** | Stable, enterprise-grade, long-term support (CentOS Linux reached end of life in 2024; Rocky Linux and AlmaLinux are RHEL-compatible successors) | Production servers |
 | **Debian** | Stable, clean, long history | Servers, base images |
 | **Alpine** | Extremely lightweight (about 5MB) | Docker container base images |
 | **Arch Linux** | Rolling releases, highly customizable | Advanced users, learning |
@@ -28,7 +28,7 @@ Linux is an open-source, Unix-like operating system kernel first released by Lin
 
 Linux uses a tree-like directory structure, with everything starting at the root directory `/`:
 
-```
+```text
 /
 ├── bin         # Basic commands (ls, cp, mv, etc.)
 ├── boot        # Boot files (kernel, bootloader)
@@ -62,7 +62,7 @@ ssh username@serverIP
 ssh -p 2222 username@serverIP
 
 # Log in with a key
-ssh -i ~/.ssh/id_rsa username@serverIP
+ssh -i ~/.ssh/id_ed25519 username@serverIP
 ```
 
 Common SSH clients:
@@ -125,7 +125,7 @@ cp file1.txt file2.txt  # Both file1.txt and file2.txt are arguments
 
 ### 2.2 Directory and File Operations
 
-#### 2.2.1 Changing Directories
+#### 1. Changing Directories
 
 ```bash
 cd /home/user      # Change to the specified directory
@@ -135,7 +135,7 @@ cd -               # Return to the previous directory
 pwd                # Show the current directory's absolute path
 ```
 
-#### 2.2.2 Listing Directory Contents
+#### 2. Listing Directory Contents
 
 ```bash
 ls                 # List the current directory's contents
@@ -147,7 +147,7 @@ ls -lt             # Sort by modification time (newest first)
 
 Example output explained:
 
-```
+```text
 -rw-r--r--  1 user group  4096 Jan 29 10:00 file.txt
 │└──┬───┘  │  │    │      │         │        └── Filename
 │   │      │  │    │      │         └── Modification time
@@ -159,7 +159,7 @@ Example output explained:
 └── File type (-: regular file, d: directory, l: link)
 ```
 
-#### 2.2.3 Creating Directories and Files
+#### 3. Creating Directories and Files
 
 ```bash
 mkdir dirname           # Create a directory
@@ -167,7 +167,7 @@ mkdir -p a/b/c          # Create nested directories recursively
 touch file.txt          # Create an empty file (or update its timestamps)
 ```
 
-#### 2.2.4 Copying, Moving, and Deleting
+#### 4. Copying, Moving, and Deleting
 
 ```bash
 # Copy
@@ -203,7 +203,7 @@ more file.txt           # View page by page (forward only)
 
 ### 2.4 Editing Files
 
-#### 2.4.1 vi/vim Editor
+#### 1. vi/vim Editor
 
 vim is Linux's most commonly used text editor, with three modes:
 
@@ -238,7 +238,7 @@ G                       # Jump to the end of the file
 :set nu                 # Show line numbers
 ```
 
-#### 2.4.2 nano Editor
+#### 2. nano Editor
 
 A simpler editor than vim, suitable for beginners:
 
@@ -274,7 +274,7 @@ which java                         # Show the path of the java command
 
 ### 2.6 Permission Management
 
-#### 2.6.1 Understanding Permissions
+#### 1. Understanding Permissions
 
 Linux file permissions have three groups: **owner (u)**, **group (g)**, and **others (o)**. Each group has three permission types:
 
@@ -284,7 +284,7 @@ Linux file permissions have three groups: **owner (u)**, **group (g)**, and **ot
 | Write | w | 2 | Modify contents | Create/delete files |
 | Execute | x | 1 | Run a program | Enter the directory |
 
-#### 2.6.2 Changing Permissions
+#### 2. Changing Permissions
 
 ```bash
 # chmod: change permissions
@@ -299,7 +299,7 @@ chown user:group file.txt        # Change both owner and group
 chown -R user:group dirname      # Change recursively
 ```
 
-#### 2.6.3 Users and Groups (Brief Overview)
+#### 3. Users and Groups (Brief Overview)
 
 ```bash
 whoami                  # Current username
@@ -464,8 +464,8 @@ apt show nginx
 When installing software from a third-party repository (such as Docker CE or Node.js), first remove old versions from the system repository to avoid conflicts:
 
 ```bash
-# Example: remove older versions before installing Docker CE
-sudo apt remove docker docker-engine docker.io containerd runc
+# Example: remove conflicting packages before installing Docker CE
+sudo apt remove docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc
 sudo apt autoremove
 ```
 
@@ -544,7 +544,7 @@ sudo tar -xzvf jdk-17_linux-x64.tar.gz -C /opt
 # 3. Configure environment variables
 sudo nano /etc/profile.d/java.sh
 
-# Add the following:
+# Add the following (adjust the path to the extracted directory name, such as /opt/jdk-17.0.x):
 export JAVA_HOME=/opt/jdk-17
 export PATH=$PATH:$JAVA_HOME/bin
 
@@ -642,7 +642,7 @@ You can also upload graphically using SFTP clients such as Royal TSX or FileZill
 
 ### 4.3 Deploying a Spring Boot Project
 
-#### 4.3.1 Run the jar Directly
+#### 1. Run the jar Directly
 
 If the project resides in a directory requiring root to create, such as `/srv/app`, use `sudo chown runtimeUser:group /srv/app` so the application user can write logs and create temporary files.
 
@@ -660,7 +660,7 @@ nohup java -jar app.jar --spring.profiles.active=prod > app.log 2>&1 &
 nohup java -jar app.jar --server.port=8080 > app.log 2>&1 &
 ```
 
-#### 4.3.2 Manage with Scripts
+#### 2. Manage with Scripts
 
 Create the startup script `start.sh`:
 

@@ -84,7 +84,7 @@ Starting with **2025.3**, IntelliJ IDEA uses a unified distribution instead of s
     3. Click "+" → Add JDK
     4. Select the JDK installation directory
 
-    Option 3: Download a JDK (IDEA 2020.3+)
+    Option 3: Download a JDK (IDEA 2020.1+)
     1. New Project → JDK dropdown
     2. Select "Download JDK..."
     3. Choose a version and vendor (Eclipse Temurin is recommended)
@@ -189,7 +189,7 @@ public class HelloWorld {
 | Action       | Windows            | macOS             |
 | -------- | ------------------ | ----------------- |
 | **Line comment** | `Ctrl + /`         | `Cmd + /`         |
-| **Block comment** | `Ctrl + Shift + /` | `Cmd + Shift + /` |
+| **Block comment** | `Ctrl + Shift + /` | `Cmd + Option + /` |
 | **Documentation comment** | `/** + Enter`      | `/** + Enter`     |
 
 ### 3. Running and Debugging
@@ -259,9 +259,9 @@ public class HelloWorld {
 | -------- | ------------------ | ------------------ |
 | **View documentation** | `Ctrl + Q`         | `Ctrl + J` or `F1`  |
 | **Parameter information** | `Ctrl + P`         | `Cmd + P`          |
-| **View source** | `Ctrl + Shift + I` | `Cmd + Y`          |
+| **Jump to source** | `F4` | `Cmd + ↓` |
 | **Error description** | `Ctrl + F1`        | `Cmd + F1`         |
-| **Quick definition** | `Ctrl + Shift + I` | `Option + Space`   |
+| **Quick definition** | `Ctrl + Shift + I` | `Option + Space` or `Cmd + Y` |
 | **Type information** | `Ctrl + Shift + P` | `Ctrl + Shift + P` |
 
 ### 8. Multiple Carets
@@ -284,7 +284,7 @@ public class HelloWorld {
 | Abbreviation      | Generated code                                         | Description      |
 | ------- | -------------------------------------------- | ------- |
 | `psvm`  | `public static void main(String[] args) { }` | Main method     |
-| `main`  | `public static void main(String[] args) { }` | Main method (same as above) |
+| `main`  | `public static void main(String[] args) { }` | Main method (same as `psvm`) |
 | `sout`  | `System.out.println();`                      | Output statement    |
 | `soutv` | `System.out.println("variableName = " + variableName);`        | Print a variable    |
 | `soutp` | `System.out.println("methodName parameters");`               | Print method parameters  |
@@ -297,7 +297,7 @@ public class HelloWorld {
 | Abbreviation     | Generated code                                                            | Description        |
 | ------ | --------------------------------------------------------------- | --------- |
 | `fori` | `for (int i = 0; i < ; i++) { }`                                | Basic for loop    |
-| `forr` | `for (int i = length - 1; i >= 0; i--) { }`                     | Reverse for loop    |
+| `ritar` | `for (int i = array.length - 1; i >= 0; i--) { }` | Iterate over an array in reverse |
 | `iter` | `for (Type item : collection) { }`                              | Enhanced for loop    |
 | `itar` | `for (int i = 0; i < array.length; i++) { }`                    | Iterate over an array      |
 | `itco` | `for (Iterator it = collection.iterator(); it.hasNext(); ) { }` | Iterate using an iterator     |
@@ -311,8 +311,6 @@ public class HelloWorld {
 | `inn`  | `if (var != null) { }`         | Non-null check               |
 | `inst` | `if (obj instanceof Type) { }` | Type check               |
 | `thr`  | `throw new `                   | Throw an exception               |
-| `tryc` | `try { } catch { }`            | try-catch          |
-| `tryr` | `try () { } catch { }`         | try-with-resources |
 
 ### 4. Other Common Templates
 
@@ -327,7 +325,7 @@ public class HelloWorld {
 | `lazy` | Lazy-initialization singleton pattern                                     | Lazy singleton     |
 | `toar` | `collection.toArray(new Type[0])`           | Convert to an array      |
 
-**Usage**: Type the abbreviation and press `Tab`
+**Usage**: Type the abbreviation and press `Tab`. For try-catch or try-with-resources, select the code and use **Surround With** (`Ctrl + Alt + T` / `Cmd + Option + T`).
 
 ***
 
@@ -472,8 +470,8 @@ When code contains an error or warning, press `Alt + Enter` for quick fixes:
 ArrayList<String> list = new ArrayList<>();
 
 // Place the caret on ArrayList and press Alt + Enter
-// Select "Import class" to import it automatically
-import java.util.ArrayList;
+// Select "Import class"; IDEA adds this line at the top of the file:
+// import java.util.ArrayList;
 ```
 
 ***
@@ -576,7 +574,7 @@ for (int i = 0; i < 100; i++) {
 | ----- | ----- |
 | 🟢 Green | Added file  |
 | 🔵 Blue | Modified file |
-| 🟤 Gray | Deleted file |
+| ⚪ Gray | Deleted file |
 | 🔴 Red | Untracked file |
 
 ***
@@ -595,8 +593,8 @@ for (int i = 0; i < 100; i++) {
     com.company.project.module
 
     Examples:
-    com.itheima.demo
-    com.alibaba.taobao.order
+    com.example.demo
+    com.example.shop.order
 
 ### 3. Project Structure Settings
 
@@ -748,7 +746,7 @@ for (int i = 0; i < 100; i++) {
 
 ## XIV. Summary
 
-### Essential Shortcuts to Memorize
+### 1. Essential Shortcuts to Memorize
 
 | Action        | Windows          | macOS              |
 | --------- | ---------------- | ------------------ |
@@ -766,7 +764,7 @@ for (int i = 0; i < 100; i++) {
 | **Commit**    | `Ctrl + K`       | `Cmd + K`          |
 | **Line comment**  | `Ctrl + /`       | `Cmd + /`          |
 
-### Common Code Templates
+### 2. Common Code Templates
 
 | Abbreviation      | Generated content    |
 | ------- | ------- |

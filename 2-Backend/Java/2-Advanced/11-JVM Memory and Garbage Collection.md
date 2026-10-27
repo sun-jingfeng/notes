@@ -34,7 +34,7 @@ Excessively deep recursion keeps pushing frames and causes `StackOverflowError`.
 
 The JVM's largest memory area and the main focus of GC. Generational layout:
 
-```
+```text
 Heap
 ├── Young generation: approximately 1/3 of the heap
 │   ├── Eden (approximately 8/10)
@@ -48,7 +48,7 @@ Object promotion process:
 1. New objects are allocated in **Eden**.
 2. Objects surviving Minor GC move to **S0** or **S1**, increasing their age by 1.
 3. Objects reach the **old generation** when their age reaches the threshold (default 15) or Survivor space cannot hold them.
-4. Large objects exceeding `-XX:PretenureSizeThreshold` go directly to the old generation.
+4. Large objects exceeding `-XX:PretenureSizeThreshold` go directly to the old generation (Serial/ParNew only; G1 places very large objects in dedicated humongous regions).
 
 #### Method Area / Metaspace
 
@@ -67,7 +67,7 @@ The runtime constant pool belongs to the JVM specification's **method area** and
 
 **Reachability analysis (GC roots)**: searches outward from GC roots; unreachable objects are garbage. Java uses this approach.
 
-GC roots include objects referenced by JVM stacks, static variables/constants in the method area, and native methods on native method stacks.
+GC roots include objects referenced from JVM stack frames (local variables and parameters), class static fields and constants (part of the method area in the JVM specification's model; stored with the `Class` object on the heap in HotSpot JDK 7+), JNI references from native method stacks, and objects held as synchronization locks.
 
 ***
 
@@ -99,9 +99,9 @@ Reference strength determines how objects survive GC pressure:
 SoftReference<byte[]> cache = new SoftReference<>(new byte[1024 * 1024]);
 byte[] data = cache.get();  // May be null (already reclaimed by GC)
 
-// Weak-reference example: use a ReferenceQueue to detect reclamation
+// Weak-reference example (a ReferenceQueue can additionally report when it is cleared)
 WeakReference<Object> weak = new WeakReference<>(new Object());
-// After the next GC, weak.get() returns null
+// No strong reference remains, so after the next GC weak.get() returns null
 ```
 
 > Root cause of `ThreadLocal` memory leaks: `ThreadLocalMap` keys are weak references and may be reclaimed, but values are strongly referenced. Once the key is reclaimed, the value becomes inaccessible while still occupying memory; call `remove()` explicitly to clean it up.
@@ -129,9 +129,9 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 | **Serial** | Young + old | Copying / mark-compact | STW throughout | Single-threaded | Client-mode default |
 | **Parallel (Scavenge + Old)** | Young + old | Copying / mark-compact | STW throughout | Multithreaded | JDK 8 Server default |
 | **CMS** | Old | Mark-sweep | Initial/remark STW; concurrent marking | Concurrent marking + sweeping | Removed in JDK 14 |
-| **G1** | Entire heap (regions) | Mark-compact | Predictable pause target (`-XX:MaxGCPauseMillis`) | Mixed | Default since JDK 9 |
+| **G1** | Entire heap (regions) | Copying between regions (evacuation); compacting overall | Predictable pause target (`-XX:MaxGCPauseMillis`) | Mixed | Default since JDK 9 |
 | **ZGC** | Entire heap | Colored pointers + load barriers | Almost entirely concurrent (< 1 ms) | Almost entirely concurrent | GA since JDK 15 |
-| **Shenandoah** | Entire heap | Brooks pointers | Similar magnitude to ZGC | Almost entirely concurrent | JDK 12+ (OpenJDK) |
+| **Shenandoah** | Entire heap | Concurrent compaction with load-reference barriers | Similar magnitude to ZGC | Almost entirely concurrent | JDK 12+ (production-ready since JDK 15) |
 
 ***
 
@@ -181,7 +181,7 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 - Pauses do not grow with heap size, are typically < 1 ms, and support terabyte-scale heaps.
 - Concurrent GC threads continuously consume CPU; overall throughput is slightly below Parallel / G1.
 - Suited to extremely latency-sensitive workloads: financial trading, real-time recommendations, large-model inference services.
-- ZGC became GA in JDK 15; the improved generational ZGC was introduced in JDK 21.
+- ZGC became GA in JDK 15; generational ZGC arrived in JDK 21, became the default mode in JDK 23 and the only mode in JDK 24.
 - Enable with `-XX:+UseZGC`.
 
 ***
@@ -202,6 +202,8 @@ Default collectors by JDK version:
 |----------|---------|
 | JDK 8 | Parallel GC |
 | JDK 9 – present | G1 GC |
+
+> **Note**: on a machine or container with fewer than 2 CPUs or less than 1792 MB of memory, the JVM treats the host as a client-class machine and selects Serial GC instead.
 
 ***
 
@@ -244,8 +246,10 @@ Approach 1: configure JVM startup options to dump automatically on OOM (recommen
 java -XX:+HeapDumpOnOutOfMemoryError \
      -XX:HeapDumpPath=/dumps/heap.hprof \
      -jar app.jar
+```
 
-# Pass through JAVA_OPTS in Docker Compose
+```yaml
+# Docker Compose: pass the options through JAVA_OPTS
 environment:
   - JAVA_OPTS=-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps/heap.hprof
 volumes:
@@ -271,7 +275,7 @@ Open the `.hprof` file in MAT (Eclipse Memory Analyzer) or VisualVM:
 
 ```bash
 jstat -gcutil <pid> 1000
-# Sample output:
+# Sample output (abridged):
 #   S0     S1     E      O      M     YGC  YGCT  FGC  FGCT
 #  0.00  80.12  60.23  94.87  95.01    5  0.18    2  0.42
 # O (old generation) keeps rising and does not drop after Full GC → possible memory leak
@@ -294,8 +298,8 @@ jstat -gcutil <pid> 1000
 | **jmap** | Bundled with the JDK | Inspects heap information; exports `.hprof` dumps |
 | **jstat** | Bundled with the JDK | Monitors GC counts/times and memory-region utilization percentages |
 | **jstack** | Bundled with the JDK | Dumps all thread stacks; diagnoses deadlocks, thread leaks and 100% CPU |
-| **VisualVM** | Bundled with the JDK | Visual CPU/heap/thread monitoring; opens `.hprof` files |
-| **MAT** | Eclipse plugin | Heap-dump analysis; automatic leak detection and Leak Suspects reports |
+| **VisualVM** | Bundled with JDK 6–8 (`jvisualvm`); a separate download since JDK 9 | Visual CPU/heap/thread monitoring; opens `.hprof` files |
+| **MAT** | Eclipse project (standalone app or plugin) | Heap-dump analysis; automatic leak detection and Leak Suspects reports |
 | **Arthas** | Alibaba open source | Attaches without restart; watches method arguments/return values live |
 
 **Common Commands:**

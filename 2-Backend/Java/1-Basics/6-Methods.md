@@ -921,14 +921,14 @@ String.valueOf(new char[]{'a', 'b'});  // char[] → String
 
 ```java
 // Without overloading, different names are needed
-public static int addInt(int a, int b) { }
-public static double addDouble(double a, double b) { }
-public static int addThreeInt(int a, int b, int c) { }
+public static int addInt(int a, int b) { return a + b; }
+public static double addDouble(double a, double b) { return a + b; }
+public static int addThreeInt(int a, int b, int c) { return a + b + c; }
 
 // Overloading uses one common name and is more concise
-public static int add(int a, int b) { }
-public static double add(double a, double b) { }
-public static int add(int a, int b, int c) { }
+public static int add(int a, int b) { return a + b; }
+public static double add(double a, double b) { return a + b; }
+public static int add(int a, int b, int c) { return a + b + c; }
 
 // Callers remember only add; the compiler selects the matching method
 ```
@@ -985,8 +985,8 @@ public static void method() {
 ```java
 // Recursive implementation
 public static int factorial(int n) {
-    // Base case
-    if (n == 1) {
+    // Base case (0! = 1! = 1)
+    if (n <= 1) {
         return 1;
     }
     // Recurrence: n! = n × (n-1)!
@@ -1054,7 +1054,7 @@ System.out.println(sum(100));  // 5050
 
 // Recursive approach
 public static int factorialRecursive(int n) {
-    if (n == 1) return 1;
+    if (n <= 1) return 1;
     return n * factorialRecursive(n - 1);
 }
 
@@ -1136,8 +1136,8 @@ Varargs, introduced in JDK 5, let a method receive **a variable number** of argu
 **Syntax**: `DataType...` (three dots after the type)
 
 ```java
-public static int add(int... nums) {
-    // nums is an array
+public static void show(int... nums) {
+    // nums is an int[] array
 }
 ```
 
@@ -1230,7 +1230,7 @@ show(arr);            // 10 20 30
 
 ### 6. Considerations
 
-#### 6.1 The Varargs Parameter Must Come Last
+#### 1. The Varargs Parameter Must Come Last
 
 ```java
 // ✅ Correct: varargs comes last
@@ -1238,10 +1238,10 @@ public static void method(String name, int... nums) { }
 
 // ❌ Incorrect: varargs is not last
 public static void method(int... nums, String name) { }
-// Compile error: Vararg parameter must be the last in the list
+// Compile error: varargs parameter must be the last parameter
 ```
 
-#### 6.2 Only One Varargs Parameter per Method
+#### 2. Only One Varargs Parameter per Method
 
 ```java
 // ✅ Correct: one varargs parameter
@@ -1252,7 +1252,7 @@ public static void method(int... nums, String... strs) { }
 // Compile error
 ```
 
-#### 6.3 No Arguments Produces an Empty Array, Not null
+#### 3. No Arguments Produces an Empty Array, Not null
 
 ```java
 public static void test(int... nums) {
@@ -1310,8 +1310,8 @@ List<String> list = Arrays.asList("A", "B", "C");
 String s = String.format("Name: %s, age: %d", "张三", 18);
 
 // Collections.addAll(): add in bulk
-List<String> list = new ArrayList<>();
-Collections.addAll(list, "A", "B", "C");
+List<String> list2 = new ArrayList<>();
+Collections.addAll(list2, "A", "B", "C");
 
 // System.out.printf(): formatted output
 System.out.printf("Name: %s, age: %d%n", "张三", 18);
@@ -1356,7 +1356,7 @@ modifiers ReturnType methodName(ParameterType parameter1, ParameterType paramete
 | ---- | -------------- | ---------- |
 | Direct call | `methodName();`       | void methods    |
 | Assignment | `variable = methodName();`  | Methods returning a value (recommended) |
-| Output | `sout(methodName());` | Methods returning a value     |
+| Output | `System.out.println(methodName());` | Methods returning a value     |
 
 ### 4. Parameter Passing Rules
 
@@ -1381,7 +1381,7 @@ modifiers ReturnType methodName(ParameterType parameter1, ParameterType paramete
 
 | Element   | Description        | Example (factorial)                 |
 | ---- | --------- | ---------------------- |
-| Base case | When to stop    | `if (n == 1) return 1` |
+| Base case | When to stop    | `if (n <= 1) return 1` |
 | Recurrence relation | Reduce a large problem to smaller ones | `n * factorial(n-1)`   |
 
 ### 7. Varargs Rules

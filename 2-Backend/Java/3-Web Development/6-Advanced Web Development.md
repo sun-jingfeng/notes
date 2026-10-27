@@ -262,6 +262,8 @@ public class GlobalExceptionHandler {
 
 > 💡 **HTTP status codes:** These examples return HTTP 200 and distinguish outcomes using the code field. To return an appropriate HTTP error status, use mechanisms such as `@ResponseStatus(HttpStatus.BAD_REQUEST)`.
 
+> **Note**: `ConstraintViolationException` comes from method validation on a controller annotated with `@Validated`. Since Spring Framework 6.1, Spring MVC also validates constrained controller parameters natively; without `@Validated` on the class it raises `HandlerMethodValidationException`, which needs its own handler.
+
 ***
 
 ### 2.4 Exception Handler Matching
@@ -707,6 +709,8 @@ public void process() {
 }
 
 // ✅ Invoke through an injected proxy
+// (@Lazy injects a lazy proxy; Spring Boot 2.6+ rejects circular references, including eager self-injection)
+@Lazy
 @Autowired
 private UserService self;
 
@@ -776,7 +780,7 @@ file:
 
 ```java
 @PostMapping("/upload")
-public Result<String> upload(@RequestParam("file") MultipartFile file) {
+public Result<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
     if (file.isEmpty()) {
         return Result.error("File must not be empty");
     }
@@ -795,7 +799,11 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 ```java
 @GetMapping("/download/{filename}")
 public ResponseEntity<Resource> download(@PathVariable String filename) throws IOException {
-    Path path = Paths.get(uploadPath).resolve(filename);
+    Path base = Paths.get(uploadPath).toAbsolutePath().normalize();
+    Path path = base.resolve(filename).normalize();
+    if (!path.startsWith(base)) {
+        return ResponseEntity.badRequest().build();  // Block path traversal such as ../
+    }
     Resource resource = new UrlResource(path.toUri());
 
     return ResponseEntity.ok()
@@ -932,16 +940,16 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 
 ***
 
-## Appendix: Annotation Reference
+## VI. Annotation Reference
 
-### Exception Handling
+### 1. Exception Handling
 
 | Annotation | Purpose |
 | ----------------------- | -------------- |
 | `@RestControllerAdvice` | Global Controller exception handling |
 | `@ExceptionHandler` | Exception-handler method |
 
-### Transactions
+### 2. Transactions
 
 | Annotation/attribute | Purpose |
 | ---------------- | ------------ |
@@ -951,7 +959,7 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 | `readOnly` | Read-only transaction hint |
 | `timeout` | Transaction timeout |
 
-### Filters and Interceptors
+### 3. Filters and Interceptors
 
 | Annotation/class | Purpose |
 | ------------------------ | --------------------- |
@@ -960,7 +968,7 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 | `FilterRegistrationBean` | Explicit filter registration |
 | `@CrossOrigin` | CORS configuration |
 
-### Validation
+### 4. Validation
 
 | Annotation | Purpose |
 | ----------------------- | --------------------- |
@@ -973,7 +981,7 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 | `@Pattern` | Regular-expression constraint |
 | `@Email` | Email format |
 
-### Serialization
+### 5. Serialization
 
 | Annotation | Purpose |
 | --------------- | ---------------- |
@@ -981,7 +989,7 @@ public Result<String> upload(@RequestParam("file") MultipartFile file) {
 | `@JsonIgnore` | Exclude a property from serialization |
 | `@JsonProperty` | Specify the JSON property name |
 
-### Lombok
+### 6. Lombok
 
 | Annotation | Purpose |
 | -------------------------- | ---------------------- |

@@ -48,7 +48,7 @@ Math.sqrt(16);      // 4.0
 Math.cbrt(27);      // 3.0
 
 // Exponential (e to the power of x)
-Math.exp(1);        // 2.718281828459045 (e to the power of 1)
+Math.exp(1);        // 2.7182818284590455 (e to the power of 1; differs from Math.E in the last digit)
 
 // Natural logarithm (base e)
 Math.log(Math.E);   // 1.0
@@ -78,8 +78,8 @@ Math.round(3.5);    // 4
 Math.round(-3.5);   // -3 (note: -3.5 rounds to -3)
 
 // Convert to an integer (truncate the fractional part)
-(int) 3.9;          // 3
-(int) -3.9;         // -3
+int t1 = (int) 3.9;   // 3
+int t2 = (int) -3.9;  // -3
 ```
 
 ***
@@ -94,7 +94,7 @@ Math.sin(Math.PI / 2);  // 1.0
 Math.cos(0);            // 1.0
 
 // Tangent
-Math.tan(Math.PI / 4);  // Approximately 1.0
+Math.tan(Math.PI / 4);  // 0.9999999999999999 (approximately 1.0)
 
 // Convert degrees to radians
 double radians = Math.toRadians(90);  // 1.5707963267948966
@@ -169,7 +169,7 @@ System.out.println("Hello");  // Print with a newline
 System.out.print("Hello");    // Print without a newline
 System.out.printf("Age: %d", 18);  // Formatted output
 
-// Standard error output (red)
+// Standard error output (shown in red in most IDE consoles)
 System.err.println("Error");
 
 // Standard input
@@ -210,7 +210,7 @@ System.arraycopy(src, 0, dest, 0, 5);
 // dest = {1, 2, 3, 4, 5}
 
 System.arraycopy(src, 1, dest, 2, 3);
-// dest = {0, 0, 2, 3, 4}
+// dest = {1, 2, 2, 3, 4} (indices 2–4 overwritten with src[1..3]; indices 0–1 keep their earlier values)
 ```
 
 ***
@@ -785,11 +785,11 @@ Arrays.sort(arr2, 0, 3);  // [1, 3, 4, 1, 5, 9] (only the first 3 elements are s
 
 // Custom sorting of object arrays
 String[] names = {"Tom", "Jerry", "Alice"};
-Arrays.sort(names, (a, b) -> a.length() - b.length());  // Sort by length
+Arrays.sort(names, (a, b) -> Integer.compare(a.length(), b.length()));  // Sort by length
 
 // Descending sort (requires a wrapper array)
 Integer[] nums = {3, 1, 4, 1, 5, 9};
-Arrays.sort(nums, (a, b) -> b - a);  // [9, 5, 4, 3, 1, 1]
+Arrays.sort(nums, (a, b) -> Integer.compare(b, a));  // [9, 5, 4, 3, 1, 1]
 
 // Parallel sort (faster for large arrays, JDK 8+)
 int[] bigArr = new int[1000000];
@@ -928,7 +928,7 @@ import java.util.Date;
 ```java
 // 1. Get the current time
 Date now = new Date();
-System.out.println(now);  // Sun Jan 07 2024 12:30:45
+System.out.println(now);  // Sun Jan 07 12:30:45 CST 2024
 
 // 2. Create from a millisecond value
 Date date = new Date(1704067200000L);
@@ -979,7 +979,7 @@ String str = sdf.format(now);  // "2024-01-07 12:30:45"
 ```java
 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-// Parse: String → Date
+// Parse: String → Date (throws the checked ParseException on invalid input)
 Date date = sdf.parse("2024-01-07 12:30:45");
 ```
 
@@ -998,7 +998,7 @@ Date date = sdf.parse("2024-01-07 12:30:45");
 | `mm` | Minute | 30 |
 | `ss` | Second | 45 |
 | `SSS` | Millisecond | 123 |
-| `E` | Day of week | Sunday |
+| `E` / `EEEE` | Day of week (short / full name) | Sun / Sunday |
 | `a` | AM/PM | PM |
 
 ```java
@@ -1147,7 +1147,7 @@ LocalDateTime dt = LocalDateTime.now();
 
 // 1. Use a predefined format
 String str1 = dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-// 2024-01-07T12:30:45
+// 2024-01-07T12:30:45.123 (the fraction is printed only when non-zero)
 
 // 2. Custom format
 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -1309,7 +1309,7 @@ LocalDateTime dt2 = LocalDateTime.of(2024, 1, 1, 12, 30, 45);
 Duration duration = Duration.between(dt1, dt2);
 System.out.println(duration.toHours());    // 12
 System.out.println(duration.toMinutes());  // 750
-System.out.println(duration.toSeconds());  // 45045
+System.out.println(duration.toSeconds());  // 45045 (JDK 9+; use getSeconds() on JDK 8)
 System.out.println(duration.toDays());     // 0
 ```
 

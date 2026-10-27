@@ -488,7 +488,7 @@ Redis has four common deployment modes, progressing from standalone to clusters 
 
 A single Redis instance without redundancy. Deployment is simplest and performance is good (memory access and I/O multiplexing), but there is a single point of failure: if Redis goes down, the cache becomes completely unavailable, so services need a fallback to the data source or degraded behavior.
 
-```
+```text
 [Client] → [Single Redis instance]
 ```
 
@@ -498,7 +498,7 @@ Suitable for development/testing, low-concurrency internal systems, and projects
 
 One **primary (Master)** handles writes; one or more **replicas** asynchronously synchronize its data and can serve reads (read/write separation).
 
-```
+```text
 [Client writes] → [Master]
                      ↓ Asynchronous synchronization
 [Client reads] → [Replica 1]
@@ -520,7 +520,7 @@ replicaof 192.168.1.10 6379
 
 Building on primary-replica replication, **≥3 Sentinel processes** (an odd number for majority voting) monitor node health, automatically fail over after primary failure, and notify clients of the new primary's address.
 
-```
+```text
 [Sentinel 1]  [Sentinel 2]  [Sentinel 3]
        ↓              ↓              ↓
     [Master] ←→ [Replica 1] ←→ [Replica 2]
@@ -528,7 +528,7 @@ Building on primary-replica replication, **≥3 Sentinel processes** (an odd num
 
 **Failover process:**
 1. A Sentinel finds the primary unresponsive → Marks it **subjectively down (SDOWN)**.
-2. More than half of the Sentinels confirm → Marks it **objectively down (ODOWN)**.
+2. Once the configured quorum of Sentinels agrees → Marks it **objectively down (ODOWN)**; the failover itself still needs a majority of Sentinels to elect a leader.
 3. Sentinels elect a leader to perform failover: promote a replica, redirect other replicas to the new primary, and notify clients.
 
 Clients connect to Sentinel addresses instead of directly to Redis; Sentinel supplies the current primary's address.
@@ -563,7 +563,7 @@ Suitable for medium-scale production environments needing automatic HA with writ
 
 Redis Cluster distributes data across multiple **primaries**, with **16384 slots** assigned using `CRC16(key) % 16384`. Each primary can have replicas for HA.
 
-```
+```text
 [Master A: slot 0–5460]  [Master B: slot 5461–10922]  [Master C: slot 10923–16383]
        ↓                           ↓                            ↓
   [Replica A]                 [Replica B]                  [Replica C]
@@ -604,6 +604,7 @@ Suitable for high-traffic workloads whose data or write volume exceeds one machi
 | Small/medium production requiring automatic failover | Sentinel |
 | Read-heavy workloads needing only read scaling | Primary-replica replication (optionally with Sentinel) |
 | Large datasets/high write volume requiring horizontal scaling | Cluster |
+
 ***
 
 ## V. Using Redis in Java
@@ -689,6 +690,8 @@ public class RedisConfig {
 }
 ```
 
+> **Note**: `new GenericJackson2JsonRedisSerializer()` creates its own `ObjectMapper` without the JSR-310 module, so values with `LocalDateTime` fields fail to serialize. For such types, pass an `ObjectMapper` that registers `JavaTimeModule` and enables default typing.
+
 ### 5.2 RedisTemplate Operations
 
 `RedisTemplate<K, V>` is Spring's Redis **facade**. It obtains connections from `RedisConnectionFactory`, exposes type-specific `*Operations` through `opsForValue()`, `opsForHash()`, etc., and uses configured serializers to convert Java objects to/from byte arrays. Keys are generally String; values may be Object with JSON or another serializer. For strings only, use `StringRedisTemplate` directly.
@@ -727,8 +730,8 @@ Boolean success = ops.setIfAbsent("lock", "1", 30, TimeUnit.SECONDS);
 Object value = ops.get("name");
 
 // Increment
-Long count = ops.increment("counter");
-Long count = ops.increment("counter", 10);
+Long count1 = ops.increment("counter");
+Long count2 = ops.increment("counter", 10);
 
 // Set multiple values
 Map<String, Object> map = new HashMap<>();
@@ -790,11 +793,11 @@ List<Object> tasks = ops.range("tasks", 0, -1);
 Long size = ops.size("tasks");
 
 // Pop
-Object task = ops.leftPop("tasks");
-Object task = ops.rightPop("tasks");
+Object first = ops.leftPop("tasks");
+Object last = ops.rightPop("tasks");
 
 // Blocking pop
-Object task = ops.leftPop("tasks", 10, TimeUnit.SECONDS);
+Object next = ops.leftPop("tasks", 10, TimeUnit.SECONDS);
 ```
 
 #### Set Operations
@@ -842,13 +845,13 @@ Double score = ops.score("leaderboard", "player1");
 Long rank = ops.rank("leaderboard", "player1");
 
 // Get rank (descending)
-Long rank = ops.reverseRank("leaderboard", "player1");
+Long reverseRank = ops.reverseRank("leaderboard", "player1");
 
 // Get a rank range (descending)
 Set<Object> top3 = ops.reverseRange("leaderboard", 0, 2);
 
 // Get elements with scores
-Set<ZSetOperations.TypedTuple<Object>> top3 =
+Set<ZSetOperations.TypedTuple<Object>> top3WithScores =
     ops.reverseRangeWithScores("leaderboard", 0, 2);
 
 // Increment a score
@@ -1114,8 +1117,10 @@ By default, Redis clients send commands individually, each requiring a complete 
 Avoid too many commands in one pipeline (preferably no more than 500), as large response bodies also affect performance. Pipeline commands execute in order but **are not atomic**; use Lua scripts or transactions when atomicity is required.
 
 ```java
+// StringRedisTemplate passes a StringRedisConnection to the callback (a plain RedisTemplate does not)
+
 // Batch writes (pipeline)
-List<Object> results = redisTemplate.executePipelined(
+List<Object> results = stringRedisTemplate.executePipelined(
     (RedisCallback<Object>) connection -> {
         StringRedisConnection conn = (StringRedisConnection) connection;
         for (int i = 1; i <= 100; i++) {
@@ -1127,7 +1132,7 @@ List<Object> results = redisTemplate.executePipelined(
 
 // Batch queries (pipeline)
 List<String> keys = List.of("user:1", "user:2", "user:3");
-List<Object> values = redisTemplate.executePipelined(
+List<Object> values = stringRedisTemplate.executePipelined(
     (RedisCallback<Object>) connection -> {
         StringRedisConnection conn = (StringRedisConnection) connection;
         keys.forEach(conn::get);
@@ -1221,7 +1226,7 @@ spring:
 
 #### 2. Configure a Local Cache Implementation
 
-If the application only needs an in-process cache on one machine, switch Spring Cache to **Caffeine**. It does not depend on Redis and suits small hot objects, read-only configuration, dictionary data, etc.
+If the application only needs an in-process cache on one machine, switch Spring Cache to **Caffeine** (add the `com.github.ben-manes.caffeine:caffeine` dependency). It does not depend on Redis and suits small hot objects, read-only configuration, dictionary data, etc.
 
 ```yaml
 spring:
@@ -1346,7 +1351,7 @@ Distributed locks provide **mutual exclusion across processes/instances**. Java'
 
 **Release** requires checking ownership by value, then DEL. A race exists between these steps: the lock may expire and be acquired by someone else before DEL, which would delete their lock. A **Lua script** must combine both steps into one atomic operation.
 
-```
+```text
 Acquire: SET lock:key <uniqueUUID> NX EX 30 → Write only if absent and set expiration atomically
 Release: Execute Lua atomically → GET and compare the value → DEL only if owned by this caller; otherwise do nothing
 ```
@@ -1355,7 +1360,7 @@ Release: Execute Lua atomically → GET and compare the value → DEL only if ow
 
 Generate a unique lock value for every acquisition (usually a `UUID`), or release cannot distinguish the caller's lock from another owner's:
 
-```
+```text
 Thread A acquires the lock, value = "A-uuid", TTL = 30s
 Thread A's business operation takes too long; the lock expires
 Thread B acquires the lock, value = "B-uuid"
@@ -1470,6 +1475,7 @@ spring:
 ```
 
 ```java
+// The starter can also build RedissonClient from spring.data.redis; this explicit bean replaces that default
 @Configuration
 public class RedissonConfig {
     @Bean
@@ -1611,7 +1617,7 @@ public class BloomFilterService {
     @PostConstruct
     public void init() {
         RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter(BLOOM_KEY);
-        // Expected elements: 1 million; false-positive rate: 0.01%
+        // Expected elements: 1 million; false-positive rate: 0.1%
         bloomFilter.tryInit(1_000_000L, 0.001);
         // Warm up by adding all user IDs from the database
         userMapper.selectAllIds().forEach(bloomFilter::add);
@@ -1708,7 +1714,7 @@ public User getUserById(Long id) {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        return getUserById(id); // Recursive retry
+        return getUserById(id); // Recursive retry (bound the number of retries in production)
     }
 }
 ```
@@ -1853,9 +1859,14 @@ public class UserService {
     @Transactional
     public void updateUser(User user) {
         userMapper.updateById(user);                                      // 1. Update the database
-        stringRedisTemplate.delete("user:" + user.getId());               // 2. Delete the Redis entry
-        stringRedisTemplate.convertAndSend(EVICT_CHANNEL,                 // 3. Broadcast invalidation
-            String.valueOf(user.getId()));
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                stringRedisTemplate.delete("user:" + user.getId());       // 2. Delete the Redis entry after commit
+                stringRedisTemplate.convertAndSend(EVICT_CHANNEL,         // 3. Broadcast invalidation
+                        String.valueOf(user.getId()));
+            }
+        });
     }
 }
 
@@ -1908,7 +1919,7 @@ Concurrent reads of immutable shared data (such as static JSON) do not require t
 
 Use **business prefixes** and **hierarchy** for batch management, troubleshooting, and isolation by business area or type. Avoid collisions between business domains and keep keys reasonably short and readable. A common format is "businessName:dataType:dataIdentifier", optionally prefixed with a version or environment.
 
-```
+```text
 businessName:dataType:dataIdentifier
 
 Examples:
@@ -1959,7 +1970,7 @@ appendfsync everysec
 slowlog-log-slower-than 10000
 slowlog-max-len 128
 
-# Disable dangerous commands
+# Disable dangerous commands (Redis 6+ can also restrict them with ACL rules such as -flushall)
 rename-command FLUSHALL ""
 rename-command FLUSHDB ""
 rename-command KEYS ""

@@ -13,8 +13,8 @@
 
 | Feature | Session | JWT | OAuth 2.0 |
 | ------------ | ------- | ---------- | ---------- |
-| **State** | Stateful | Stateless | Stateless |
-| **Storage** | Server | Client | Client |
+| **State** | Stateful | Stateless | Depends on token type (JWT or opaque token) |
+| **Storage** | Server | Client | Client holds tokens; authorization server keeps grants |
 | **Distributed systems** | Requires sharing | Inherently supported | Inherently supported |
 | **Explicit invalidation** | Easy | Requires a blocklist | Implementation-dependent |
 | **Use cases** | Traditional web | APIs/mobile clients | Third-party login |
@@ -484,7 +484,7 @@ public class AuthService {
 
         // 1. Check whether the account is locked
         if (loginAttemptService.isLocked(username)) {
-            throw new BusinessException("Account is locked; please try again in 15 minutes");
+            throw new BusinessException("Account is locked; please try again later (within 15 minutes)");
         }
 
         // 2. Validate CAPTCHA (required after 3 or more failures)
@@ -819,9 +819,15 @@ public class AuthFilter implements Filter {
         try {
             UserContext.setUserId(jwtUtils.getUserId(token));
             UserContext.setUsername(jwtUtils.getUsername(token));
-            chain.doFilter(request, response);
         } catch (Exception e) {
+            UserContext.clear();
             sendError(res, HttpServletResponse.SC_UNAUTHORIZED, "Token is invalid or expired");
+            return;
+        }
+
+        // 7. Continue the chain outside the token try block so downstream exceptions are not reported as 401
+        try {
+            chain.doFilter(request, response);
         } finally {
             UserContext.clear();
         }
@@ -1950,9 +1956,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        chain.doFilter(request, response);
-        // Clear after the request to prevent data contamination when threads are reused
-        SecurityContextHolder.clearContext();
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            // Clear after the request to prevent data contamination when threads are reused
+            SecurityContextHolder.clearContext();
+        }
     }
 
     private String extractToken(HttpServletRequest request) {
@@ -1965,6 +1974,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 }
 ```
 
+> 💡 As a `@Component`, this filter is also registered with the servlet container by Spring Boot. `OncePerRequestFilter` prevents it from running twice per request; alternatively, disable the extra registration with a `FilterRegistrationBean` whose `setEnabled(false)` is called.
+
 ### 8.5 SecurityConfig Configuration
 
 ```java
@@ -1974,6 +1985,7 @@ import com.example.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -1981,6 +1993,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -2001,6 +2014,8 @@ public class SecurityConfig {
                 .requestMatchers("/auth/login", "/auth/refresh", "/captcha/**").permitAll()
                 .anyRequest().authenticated()
             )
+            // Without form login or HTTP Basic, unauthenticated requests would get 403; return 401 instead
+            .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             // Insert the JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -2075,7 +2090,7 @@ public class UserController {
 
 ### 8.7 Complete Authentication Chain
 
-```
+```text
 HTTP request
   → JwtAuthenticationFilter
       ├─ Parse token → Verify signature → Check blocklist
@@ -2090,6 +2105,8 @@ HTTP request
                   └─ Fail → Throw AccessDeniedException → Return 403
 ```
 
+> **Note**: a global `@ExceptionHandler(Exception.class)` also catches `AccessDeniedException` thrown by `@PreAuthorize`, turning the denial into a generic error. Add a dedicated `AccessDeniedException` handler that returns 403 (or rethrow it so Spring Security handles it).
+
 **Equivalences with the custom approach:**
 
 | Custom approach | Spring Security approach |
@@ -2101,11 +2118,11 @@ HTTP request
 
 ***
 
-## Appendix A: Annotation Reference
+## IX. Annotation Reference
 
 | Annotation | Source | Description |
 | -------------------------- | -------------------- | -------------------------------------------- |
-| `@PostConstruct` | Jakarta | Run after bean initialization |
+| `@PostConstruct` | Jakarta | Initialization callback that runs after dependency injection |
 | `@RequiredArgsConstructor` | Lombok | Generate a constructor for final fields |
 | `@Slf4j` | Lombok | Generate the log logger object |
 | `@Aspect` | Spring AOP | Declare an aspect class |
@@ -2129,7 +2146,7 @@ HTTP request
 
 ***
 
-## Appendix B: Troubleshooting
+## X. Troubleshooting
 
 | Problem | Possible cause | Solution |
 | -------------------------- | -------------------------------------- | ------------------------------------- |
@@ -2141,10 +2158,12 @@ HTTP request
 | **Redis connection timeout** | Configuration or network issue | Check Redis configuration and connection pool settings |
 | **Inaccurate token expiration** | Server clocks out of sync | Synchronize server clocks with NTP |
 | **`@PreAuthorize` has no effect** | Configuration class lacks `@EnableMethodSecurity` | Add that annotation to `SecurityConfig` |
+| **Permission denial returns a generic error instead of 403** | The global `Exception` handler catches `AccessDeniedException` | Handle `AccessDeniedException` separately and return 403 |
+| **Unauthenticated requests return 403 instead of 401** | No authentication entry point is configured | Configure `HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)` |
 
 ***
 
-## Appendix C: Example Project Structure
+## XI. Example Project Structure
 
     src/main/java/com/example/
     ├── annotation/          # Custom annotations

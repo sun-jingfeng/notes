@@ -32,17 +32,18 @@
                                       │
                 ┌─────────────────────┼─────────────────────┐
                 │                     │                     │
-             HashMap               TreeMap            LinkedHashMap
-           (unordered)            (sorted)          (insertion order)
+             HashMap               TreeMap              Hashtable
+           (unordered)            (sorted)        (thread-safe, legacy)
                 │
-           Hashtable (thread-safe, legacy)
+          LinkedHashMap
+        (insertion order)
 
 ### 3. Collection vs Map
 
 | Comparison | Collection | Map |
 | ------ | ----------------- | ------------ |
-| **Structure** | Individual elements | Key-value pairs |
-| **Elements** | Individual objects | Key-value pairs |
+| **Structure** | Single-value collection | Two-value collection (key → value) |
+| **Elements** | Individual objects | Key-value pairs (`Map.Entry`) |
 | **Duplicates** | List allows duplicates; Set does not | Keys must be unique |
 | **Inheritance** | Extends Iterable | Does not extend Iterable |
 
@@ -264,7 +265,7 @@ for (String s : c) {
 
 **Note**: Do not structurally modify the collection (add or remove elements) during enhanced for iteration.
 
-### 4. Lambda forEach Iteration (Java 8+)
+### 4. Lambda forEach Iteration (JDK 8+)
 
 ```java
 Collection<String> c = new ArrayList<>();
@@ -312,7 +313,7 @@ list.forEach(System.out::println);
 
 ### 3. Code Examples
 
-#### 3.1 object::instanceMethod
+#### 1. object::instanceMethod
 
 ```java
 // Lambda
@@ -322,7 +323,7 @@ list.forEach(s -> System.out.println(s));
 list.forEach(System.out::println);
 ```
 
-#### 3.2 Class::staticMethod
+#### 2. Class::staticMethod
 
 ```java
 // Lambda
@@ -332,7 +333,7 @@ list.stream().map(s -> Integer.parseInt(s));
 list.stream().map(Integer::parseInt);
 ```
 
-#### 3.3 Class::instanceMethod
+#### 3. Class::instanceMethod
 
 ```java
 // Lambda
@@ -349,7 +350,7 @@ list.sort((s1, s2) -> s1.compareTo(s2));
 list.sort(String::compareTo);
 ```
 
-#### 3.4 Constructor References
+#### 4. Constructor References
 
 ```java
 // Lambda
@@ -484,15 +485,15 @@ list.add("cherry");
 list.sort(String::compareTo);  // Natural ordering
 System.out.println(list);  // [apple, banana, cherry]
 
-list.sort(Comparator.comparing(String::length));  // Sort by length
-list.sort(Comparator.reverseOrder());  // Reverse order
+list.sort(Comparator.comparing(String::length));  // Sort by length: [apple, banana, cherry]
+list.sort(Comparator.reverseOrder());  // Reverse order: [cherry, banana, apple]
 
 // replaceAll: replace every element (JDK 8+)
 list.replaceAll(String::toUpperCase);
-System.out.println(list);  // [APPLE, BANANA, CHERRY]
+System.out.println(list);  // [CHERRY, BANANA, APPLE]
 
 list.replaceAll(s -> s + "!");
-System.out.println(list);  // [APPLE!, BANANA!, CHERRY!]
+System.out.println(list);  // [CHERRY!, BANANA!, APPLE!]
 ```
 
 ### 5. Factory Methods in JDK 9+
@@ -580,7 +581,7 @@ while (it3.hasNext()) {
     String s = it3.next();
     if ("B".equals(s)) {
         it3.add("X");  // Add X after B
-        it3.set("Y");  // ❌ Cannot call set immediately after add
+        // it3.set("Y");  // ❌ IllegalStateException: set() cannot follow add() directly
     }
 }
 System.out.println(list);  // [A, B, X, C]
@@ -594,14 +595,14 @@ System.out.println(list);  // [A, B, X, C]
 
 #### Characteristic: Last In, First Out (LIFO)
 
-    Push onto stack        Pop from stack
+    Push onto stack    Pop from stack
         ↓                  ↑
     ┌───────┐          ┌───────┐
-    │   C   │ ← top        │       │
+    │   C   │ ← top    │       │
     ├───────┤          ├───────┤
-    │   B   │              │   B   │ ← new top
+    │   B   │          │   B   │ ← new top
     ├───────┤          ├───────┤
-    │   A   │ ← bottom     │   A   │ ← bottom
+    │   A   │ ← bottom │   A   │ ← bottom
     └───────┘          └───────┘
 
 #### Use Cases
@@ -616,22 +617,22 @@ System.out.println(list);  // [A, B, X, C]
 
 #### Characteristic: First In, First Out (FIFO)
 
-    Enqueue (offer)                   Dequeue (poll)
-        ↓                                  ↓
+    Enqueue (offer)
+        ↓
     ┌───────┬───────┬───────┬───────┐
-    │   D   │   C   │   B   │   A   │ →
+    │   D   │   C   │   B   │   A   │ → Dequeue (poll)
     └───────┴───────┴───────┴───────┘
-      Tail                       Head
+      Tail                    Head
 
 #### Double-Ended Queue (Deque)
 
-    addFirst/offerFirst              addLast/offerLast
-            ↓                                ↓
-        ┌───────┬───────┬───────┬───────┐
-        │   A   │   B   │   C   │   D   │
-        └───────┴───────┴───────┴───────┘
-            ↑                                ↑
-    removeFirst/pollFirst          removeLast/pollLast
+    addFirst/offerFirst            addLast/offerLast
+             ↓                             ↓
+        ┌─────────┬─────────┬─────────┬─────────┐
+        │    A    │    B    │    C    │    D    │
+        └─────────┴─────────┴─────────┴─────────┘
+             ↑                             ↑
+    removeFirst/pollFirst         removeLast/pollLast
 
 #### Use Cases
 
@@ -700,11 +701,11 @@ System.out.println(list);  // [A, B, X, C]
     └─ Nodes have one of two colors: red or black
 
     Example:
-            5 (black)
-           / \
-         3 (red) 8 (red)
-         / \
-      1 (black) 4 (black)
+                5 (black)
+               /         \
+          3 (red)       8 (black)
+          /     \
+    1 (black)  4 (black)
 
 ### 6. Comparing Data Structures
 
@@ -717,6 +718,8 @@ System.out.println(list);  // [A, B, X, C]
 | **Insert in middle** | O(n), slow | O(n)\* | O(log n) |
 | **Remove** | O(n), slow | O(1)\* | O(log n) |
 | **Memory** | Contiguous, fixed | Scattered, flexible | Scattered |
+
+> **Note**: \* Array tail insertion is amortized O(1) (an occasional resize copies the array). For a linked list, inserting or removing is O(1) once the node is reached, but reaching it by index or value takes O(n).
 
 ***
 
@@ -737,7 +740,7 @@ System.out.println(list);  // [A, B, X, C]
 #### Constructors and Capacity Management
 
 ```java
-// Default initial capacity: 10
+// Default capacity: 10 (the backing array is allocated lazily on the first add)
 ArrayList<String> list1 = new ArrayList<>();
 
 // Specify the initial capacity (avoid frequent resizing)
@@ -790,7 +793,7 @@ public class LinkedList<E>
     implements List<E>, Deque<E>, Cloneable, Serializable
 ```
 
-#### Specific Methods (List Operations)
+#### Head and Tail Methods
 
 | Method | Description |
 | --------------- | ------ |
@@ -879,7 +882,7 @@ public class LinkedListDemo {
 | ---- | ------------ |
 | Internal structure | Doubly linked list |
 | Lookup speed | Slow (O(n)) |
-| Insertion/removal speed | Fast (O(1)) |
+| Insertion/removal speed | Fast at the ends (O(1)) |
 | Thread safety | Not thread-safe |
 | Use case | Frequent insertions/removals, few lookups; stacks/queues |
 
@@ -895,6 +898,8 @@ public class LinkedListDemo {
 | **Memory use** | Lower | Higher (stores pointers) |
 | **Implemented interfaces** | List | List, Deque, Queue |
 | **Use case** | Frequent lookups | Frequent insertions/removals, stacks/queues |
+
+> **Note**: \* Reaching the middle position takes O(n); only the link update itself is O(1).
 
 **Conclusion**: Use **ArrayList** in most situations (lookups are more common, and modern CPUs handle contiguous memory more efficiently).
 
@@ -925,16 +930,16 @@ Deque<String> stack3 = new ArrayDeque<>();  // Better performance
 
 ```java
 // Without generics (unsafe)
-ArrayList list = new ArrayList();
-list.add("Hello");
-list.add(123);  // Any type can be added
-String s = (String) list.get(1);  // ❌ Runtime error: ClassCastException
+ArrayList rawList = new ArrayList();
+rawList.add("Hello");
+rawList.add(123);  // Any type can be added
+String s1 = (String) rawList.get(1);  // ❌ Runtime error: ClassCastException
 
 // With generics (safe)
 ArrayList<String> list = new ArrayList<>();
 list.add("Hello");
 // list.add(123);  // ❌ Error detected at compile time
-String s = list.get(0);  // No explicit cast needed
+String s2 = list.get(0);  // No explicit cast needed
 ```
 
 ### 2. Benefits of Generics
@@ -1063,7 +1068,7 @@ public class GenericContainer<T> implements Container<T> {
 
 ### 6. Generic Wildcards
 
-#### 6.1 Unbounded Wildcard `<?>`
+#### 1. Unbounded Wildcard `<?>`
 
 ```java
 // Accepts collections with any element type
@@ -1080,7 +1085,7 @@ printList(strings);  // ✅
 printList(numbers);  // ✅
 ```
 
-#### 6.2 Upper-Bounded Wildcard `<? extends T>`
+#### 2. Upper-Bounded Wildcard `<? extends T>`
 
 ```java
 // Accepts only collections of Number or its subclasses
@@ -1104,7 +1109,7 @@ Number n = nums.get(0);  // ✅ Can read
 // nums.add(1);  // ❌ Cannot write (compile-time error)
 ```
 
-#### 6.3 Lower-Bounded Wildcard `<? super T>`
+#### 3. Lower-Bounded Wildcard `<? super T>`
 
 ```java
 // Accepts only collections of Integer or its supertypes
@@ -1159,9 +1164,9 @@ public static <T> void copy(List<? super T> dest, List<? extends T> src) {
 List<String> strings = new ArrayList<>();
 List<Integer> numbers = new ArrayList<>();
 
-// After compilation (type erasure)
-List strings = new ArrayList();
-List numbers = new ArrayList();
+// After compilation (type erasure), both behave like raw types:
+// List strings = new ArrayList();
+// List numbers = new ArrayList();
 
 // Consequently, generic type arguments cannot be distinguished at runtime
 System.out.println(strings.getClass() == numbers.getClass());  // true
@@ -1174,34 +1179,35 @@ System.out.println(strings.getClass() == numbers.getClass());  // true
 
 ```java
 // 1. Primitive types cannot be used
-List<int> list;  // ❌
-List<Integer> list;  // ✅
+// List<int> list1;  // ❌
+List<Integer> list2;  // ✅
 
 // 2. Generic arrays cannot be created
-T[] arr = new T[10];  // ❌
+// T[] arr = new T[10];  // ❌
 
 // 3. Type parameters cannot be instantiated
-T obj = new T();  // ❌
+// T obj = new T();  // ❌
 
 // 4. Type parameters cannot be used in a static context
 public class Box<T> {
-    private static T data;  // ❌
+    // private static T shared;  // ❌
     private T data;  // ✅
 }
 
-// 5. Cannot use instanceof
-if (obj instanceof List<String>) { }  // ❌
+// 5. instanceof cannot test a parameterized type (the type argument is erased)
+Object obj = new ArrayList<String>();
+// if (obj instanceof List<String>) { }  // ❌ Compile error
 if (obj instanceof List<?>) { }  // ✅
 
-// 6. Cannot catch or throw generic exception types
-class MyException<T> extends Exception { }  // ❌
+// 6. Generic classes cannot extend Throwable, so generic exceptions cannot be thrown or caught
+// class MyException<T> extends Exception { }  // ❌ Compile error
 ```
 
 ***
 
 ## IX. Quick Reference
 
-### Collection Methods
+### 1. Collection Methods
 
 | Method | Description |
 | --------------------- | ----------- |
@@ -1215,7 +1221,7 @@ class MyException<T> extends Exception { }  // ❌
 | `stream()` | Returns a Stream |
 | `removeIf(Predicate)` | Removes by condition |
 
-### List-Specific Methods
+### 2. List-Specific Methods
 
 | Method | Description |
 | --------------------------- | ------------ |
@@ -1228,7 +1234,7 @@ class MyException<T> extends Exception { }  // ❌
 | `sort(Comparator)` | Sorts (JDK 8+) |
 | `replaceAll(UnaryOperator)` | Replaces every element (JDK 8+) |
 
-### LinkedList-Specific Methods
+### 3. LinkedList-Specific Methods
 
 | Method | Description |
 | ------------------------ | ----- |
@@ -1238,7 +1244,7 @@ class MyException<T> extends Exception { }  // ❌
 | `push/pop` | Stack operations |
 | `offer/poll/peek` | Queue operations |
 
-### Generic Wildcards
+### 4. Generic Wildcards
 
 | Wildcard | Meaning | Read/write |
 | --------------- | ------ | -- |
@@ -1246,7 +1252,7 @@ class MyException<T> extends Exception { }  // ❌
 | `<? extends T>` | T and its subtypes | Read-only |
 | `<? super T>` | T and its supertypes | Writable |
 
-### Choosing a Data Structure
+### 5. Choosing a Data Structure
 
 | Scenario | Recommendation |
 | ------- | ----------------------- |
@@ -1255,4 +1261,4 @@ class MyException<T> extends Exception { }  // ❌
 | Frequent operations at the head | LinkedList |
 | A stack is needed | LinkedList / ArrayDeque |
 | A queue is needed | LinkedList / ArrayDeque |
-| Thread safety | CopyOnWriteArrayList |
+| Thread safety | CopyOnWriteArrayList (read-heavy) / `Collections.synchronizedList` |

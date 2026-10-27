@@ -112,6 +112,7 @@ boolean canExecute = file.canExecute();
 #### Information Methods
 
 ```java
+// Results are shown with /; on Windows, File normalizes the separators to \
 File file = new File("D:/test/../test/a.txt");
 
 // Get the filename
@@ -152,11 +153,11 @@ System.out.println("Total space: " + totalSpace / 1024 / 1024 / 1024 + " GB");
 
 // Get free disk space (bytes)
 long freeSpace = disk.getFreeSpace();
-System.out.println("Available space: " + freeSpace / 1024 / 1024 / 1024 + " GB");
+System.out.println("Free space: " + freeSpace / 1024 / 1024 / 1024 + " GB");
 
 // Get usable disk space (accounts for permissions; recommended)
 long usableSpace = disk.getUsableSpace();
-System.out.println("Available space: " + usableSpace / 1024 / 1024 / 1024 + " GB");
+System.out.println("Usable space: " + usableSpace / 1024 / 1024 / 1024 + " GB");
 
 // Get all filesystem roots
 File[] roots = File.listRoots();
@@ -245,7 +246,7 @@ File newFile = new File("D:/test/b.txt");
 // Rename within the same directory
 boolean renamed = oldFile.renameTo(newFile);
 
-// Move to another directory
+// Move to another directory (a separate case: a.txt must still exist)
 File movedFile = new File("D:/other/a.txt");
 boolean moved = oldFile.renameTo(movedFile);  // Move and rename together
 // Note: moves across partitions may fail; prefer Files.move()
@@ -498,8 +499,8 @@ public static int sum(int n) {
 
 ```java
 public static int factorial(int n) {
-    // Base case
-    if (n == 1) {
+    // Base case (also covers 0! = 1)
+    if (n <= 1) {
         return 1;
     }
     // Recursive case
@@ -553,8 +554,8 @@ public static int factorial(int n) {
 // n! = n * (n-1)!
 
 public static int factorial(int n) {
-    // Base case
-    if (n == 1) {
+    // Base case (also covers 0! = 1)
+    if (n <= 1) {
         return 1;
     }
     // Recursive case
@@ -564,6 +565,7 @@ public static int factorial(int n) {
 // Test
 System.out.println(factorial(5));  // 120
 System.out.println(factorial(10)); // 3628800
+// Note: int overflows for n > 12; use long or BigInteger for larger values
 ```
 
 ***
@@ -707,6 +709,8 @@ public static boolean deleteDir(File dir) {
 // Test: delete D:/test
 deleteDir(new File("D:/test"));
 ```
+
+> **Note**: `File` follows symbolic links, so a link to a directory outside the tree would have the target's contents deleted as well. `Files.walkFileTree()` (NIO) does not follow links by default and is safer for recursive deletion.
 
 ***
 
@@ -901,13 +905,13 @@ Tail recursion means **the recursive call is the method's final operation**, wit
 ```java
 // ❌ Ordinary recursion: computation (multiplication) remains after the recursive call
 public static int factorial(int n) {
-    if (n == 1) return 1;
+    if (n <= 1) return 1;
     return n * factorial(n - 1);  // Still needs to multiply by n after recursion
 }
 
 // ✅ Tail recursion: the recursive call is the final operation
 public static int factorialTail(int n, int result) {
-    if (n == 1) return result;
+    if (n <= 1) return result;
     return factorialTail(n - 1, n * result);  // Recursive call is the final operation
 }
 
@@ -919,7 +923,7 @@ factorialTail(5, 1);  // 120
 
 #### Advantages of Tail Recursion
 
-```java
+```text
 // Ordinary recursion: each call must save state, so the stack keeps growing
 factorial(5)
     → 5 * factorial(4)  // Must remember to multiply by 5
@@ -969,7 +973,7 @@ sumTail(100, 0);  // 5050
 | **Performance** | Lower (method-call overhead) | Higher |
 | **Memory use** | Higher (stack space) | Lower |
 | **Use cases** | Tree structures, divide and conquer | Simple iteration |
-| **Risk** | Stack overflow | None |
+| **Risk** | Stack overflow | No stack-overflow risk |
 
 **Recommendations:**
 
@@ -983,7 +987,7 @@ sumTail(100, 0);  // 5050
 
 | Scenario | Recurrence | Base case |
 | -------- | ------------------------ | ----------------- |
-| **Factorial** | `f(n) = n * f(n-1)` | `f(1) = 1` |
+| **Factorial** | `f(n) = n * f(n-1)` | `f(0) = f(1) = 1` |
 | **Cumulative sum** | `f(n) = n + f(n-1)` | `f(1) = 1` |
 | **Fibonacci** | `f(n) = f(n-1) + f(n-2)` | `f(1) = f(2) = 1` |
 | **Traverse directory** | Recurse for each subdirectory | Return when not a directory |
@@ -995,7 +999,7 @@ sumTail(100, 0);  // 5050
 
 ## III. Comprehensive Example
 
-### Example: File Management Utility
+### 1. File Management Utility
 
 ```java
 import java.io.*;
@@ -1235,7 +1239,7 @@ public class FileUtils {
 
 ## IV. Quick Reference
 
-### File
+### 1. File
 
 | Method | Purpose | Return type |
 | -------------------- | -------- | ------- |
@@ -1256,11 +1260,11 @@ public class FileUtils {
 | `listFiles()` | Gets directory contents | File\[] |
 | `toPath()` | Converts to Path | Path |
 
-### Recursion
+### 2. Recursion
 
 | Component | Description | Example |
 | -------- | --------- | ----------------------- |
-| **Base case** | Exit condition that stops recursion | `if (n == 1) return 1;` |
+| **Base case** | Exit condition that stops recursion | `if (n <= 1) return 1;` |
 | **Recursive case** | Decomposes the problem into subproblems | `return n * f(n-1);` |
 
 | Consideration | Description |
@@ -1271,11 +1275,11 @@ public class FileUtils {
 | Avoid repeated computation | Optimize with caching |
 | Consider tail recursion | Pass the accumulated result as an argument |
 
-### Common Recursive Scenarios
+### 3. Common Recursive Scenarios
 
 | Scenario | Recurrence | Base case |
 | ---- | ------------------------ | ----------------- |
-| Factorial | `f(n) = n * f(n-1)` | `f(1) = 1` |
+| Factorial | `f(n) = n * f(n-1)` | `f(0) = f(1) = 1` |
 | Cumulative sum | `f(n) = n + f(n-1)` | `f(1) = 1` |
 | Fibonacci | `f(n) = f(n-1) + f(n-2)` | `f(1) = f(2) = 1` |
 | Traverse directory | Recurse into subdirectories | Return when not a directory |

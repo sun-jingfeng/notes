@@ -118,6 +118,8 @@ try (Stream<String> lines = Files.lines(Paths.get("data.txt"))) {
 // Specify the encoding
 try (Stream<String> lines = Files.lines(Paths.get("data.txt"), StandardCharsets.UTF_8)) {
     long count = lines.filter(line -> line.contains("Java")).count();
+} catch (IOException e) {
+    e.printStackTrace();
 }
 ```
 
@@ -405,7 +407,7 @@ list.stream()
 
 // Custom ordering (descending)
 list.stream()
-    .sorted((a, b) -> b - a)
+    .sorted((a, b) -> Integer.compare(b, a))
     .forEach(System.out::println);  // 9, 8, 5, 3, 2, 1
 
 // Use Comparator
@@ -557,7 +559,7 @@ Map<String, Integer> result5 = list.stream()
         name -> name,           // key
         name -> name.length()   // value
     ));
-// {张无忌=3, 赵敏=2, 张三丰=3, 周芷若=3}
+// {张三丰=3, 赵敏=2, 周芷若=3, 张无忌=3} (HashMap order)
 
 // Collect into a Map (handle duplicate keys)
 Map<Integer, String> result6 = list.stream()
@@ -566,6 +568,7 @@ Map<Integer, String> result6 = list.stream()
         name -> name,      // value
         (v1, v2) -> v1     // Keep the first value for duplicate keys
     ));
+// {2=赵敏, 3=张无忌}
 ```
 
 ### 4. toList() (JDK 16+)
@@ -578,7 +581,7 @@ List<String> result = list.stream()
     .filter(s -> s.length() > 0)
     .toList();  // Returns an immutable List
 
-// Equivalent to
+// Similar to the following (but toUnmodifiableList() rejects null elements; toList() allows them)
 List<String> result2 = list.stream()
     .filter(s -> s.length() > 0)
     .collect(Collectors.toUnmodifiableList());
@@ -633,11 +636,10 @@ String result = words.stream()
     .reduce("", (a, b) -> a + b);
 System.out.println(result);  // Hello World
 
-// More complex reduction: calculate the total price
-List<Order> orders = getOrders();
-BigDecimal total = orders.stream()
-    .map(Order::getAmount)
-    .reduce(BigDecimal.ZERO, BigDecimal::add);
+// Sum BigDecimal amounts
+List<BigDecimal> prices = List.of(new BigDecimal("19.99"), new BigDecimal("5.01"));
+BigDecimal total = prices.stream()
+    .reduce(BigDecimal.ZERO, BigDecimal::add);  // 25.00
 ```
 
 ### 7. min / max: Minimum and Maximum
@@ -736,7 +738,7 @@ result.ifPresentOrElse(
 // Get the value or a default
 Integer value1 = result.orElse(0);
 Integer value2 = result.orElseGet(() -> calculateDefault());
-Integer value3 = result.orElseThrow();  // Throws NoSuchElementException when no value is present
+Integer value3 = result.orElseThrow();  // JDK 10+: throws NoSuchElementException when no value is present
 Integer value4 = result.orElseThrow(() -> new RuntimeException("Not found"));
 
 // Transform
@@ -849,11 +851,11 @@ List<Student> students = Arrays.asList(
 // Group by gender
 Map<String, List<Student>> byGender = students.stream()
     .collect(Collectors.groupingBy(Student::getGender));
-// {男=[张三, 李四], 女=[王五, 赵六]}
+// {女=[王五, 赵六], 男=[张三, 李四]} (assuming Student.toString() returns the name)
 
 // Group by age range
 Map<String, List<Student>> byAge = students.stream()
-    .collect(Collectors.groupingBy(s -> s.getAge() >= 20 ? "Adult" : "Minor"));
+    .collect(Collectors.groupingBy(s -> s.getAge() >= 20 ? "20 and over" : "Under 20"));
 
 // Count within each group
 Map<String, Long> countByGender = students.stream()
@@ -861,7 +863,7 @@ Map<String, Long> countByGender = students.stream()
         Student::getGender,
         Collectors.counting()
     ));
-// {男=2, 女=2}
+// {女=2, 男=2}
 
 // Sum within each group
 Map<String, Integer> sumByGender = students.stream()
@@ -876,7 +878,7 @@ Map<String, List<String>> namesByGender = students.stream()
         Student::getGender,
         Collectors.mapping(Student::getName, Collectors.toList())
     ));
-// {男=[张三, 李四], 女=[王五, 赵六]}
+// {女=[王五, 赵六], 男=[张三, 李四]}
 
 // Multilevel grouping
 Map<String, Map<String, List<Student>>> multiGroup = students.stream()
@@ -970,7 +972,7 @@ boolean isParallel = parallelStream1.isParallel();
 // Process a large dataset with a parallel stream
 long start = System.currentTimeMillis();
 
-long sum = LongStream.rangeClosed(1, 10_000_000_000L)
+long sum = LongStream.rangeClosed(1, 1_000_000_000L)  // Sum: 500000000500000000
     .parallel()  // Parallel processing
     .sum();
 
@@ -1010,8 +1012,8 @@ List<String> result = list.parallelStream()
 
 ```java
 // ❌ Incorrect: modify a shared variable (not thread-safe)
-List<Integer> result = new ArrayList<>();
-list.parallelStream().forEach(n -> result.add(n));  // Data may be lost
+List<Integer> unsafeResult = new ArrayList<>();
+list.parallelStream().forEach(n -> unsafeResult.add(n));  // Data may be lost or an exception thrown
 
 // ✅ Correct: use collect
 List<Integer> result = list.parallelStream().collect(Collectors.toList());
@@ -1038,7 +1040,7 @@ long count = list.parallelStream().count();
 
 ## X. Practical Examples
 
-### Example 1: Filtering and Statistics
+### 1. Filtering and Statistics
 
 ```java
 List<Student> students = Arrays.asList(
@@ -1088,7 +1090,7 @@ Map<String, Long> gradeCount = students.stream()
     ));
 ```
 
-### Example 2: Data Processing
+### 2. Data Processing
 
 ```java
 List<String> words = Arrays.asList("Hello", "World", "Java", "Stream", "API");
@@ -1122,7 +1124,7 @@ Set<Character> chars = words.stream()
     .collect(Collectors.toSet());
 ```
 
-### Example 3: Grouped Statistics
+### 3. Grouped Statistics
 
 ```java
 List<Order> orders = getOrders();

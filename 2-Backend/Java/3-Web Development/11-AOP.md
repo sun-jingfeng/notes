@@ -190,17 +190,17 @@ Complete attribute lists for advice annotations:
 | `@Pointcut` | `value` | String | Yes | Pointcut expression (default attribute; its name can be omitted) |
 | `@Pointcut` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@Before` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
-| `@Before` | `argNames` | String | No | Same as above |
+| `@Before` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@After` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
-| `@After` | `argNames` | String | No | Same as above |
+| `@After` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@AfterReturning` | `value` / `pointcut` | String | Yes | Pointcut expression (aliases; choose one; use `pointcut` when specifying other attributes) |
 | `@AfterReturning` | `returning` | String | No | Advice parameter receiving the return value; its type must be compatible with the target method's return type |
-| `@AfterReturning` | `argNames` | String | No | Same as above |
+| `@AfterReturning` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@AfterThrowing` | `value` / `pointcut` | String | Yes | Pointcut expression (aliases; choose one; use `pointcut` when specifying other attributes) |
 | `@AfterThrowing` | `throwing` | String | No | Advice parameter receiving the exception; its type must be compatible with the exception thrown by the target method |
-| `@AfterThrowing` | `argNames` | String | No | Same as above |
+| `@AfterThrowing` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 | `@Around` | `value` | String | Yes | Pointcut expression or reference to a defined pointcut method |
-| `@Around` | `argNames` | String | No | Same as above |
+| `@Around` | `argNames` | String | No | Comma-separated parameter names for argument binding |
 
 > 💡 `value` is the default attribute of advice annotations, so its name can be omitted when used alone: `@Before("pointcut()")` is equivalent to `@Before(value = "pointcut()")`.
 >
@@ -380,9 +380,9 @@ Advice argument binding involves two filtering stages. Both can prevent advice f
 | -------- | -------- | ---------------- |
 | Expression in `pointcut`/`value` (such as `@annotation(x)` or `args(y)`) | **Static matching at startup**, determined when the proxy is created | The target method is **not intercepted at all**; the proxy does not intervene |
 | Type of the parameter bound by `returning = "x"` | **Dynamic filtering at runtime**, checked on each method call | The target method **has been intercepted**, but this advice is skipped |
-| Type of the parameter bound by `throwing = "x"` | **Dynamic filtering at runtime**, checked on each method call | Same as above |
+| Type of the parameter bound by `throwing = "x"` | **Dynamic filtering at runtime**, checked on each method call | The target method **has been intercepted**, but this advice is skipped |
 
-```
+```text
 Target method is called
       │
       ▼
@@ -474,7 +474,7 @@ public Object around(ProceedingJoinPoint pjp, OperationLog operationLog) throws 
 
 **Syntax:**
 
-```
+```text
 execution(accessModifier? returnType packageName.className.?methodName(parameters) throws exception?)
 ```
 
@@ -617,7 +617,7 @@ Combine pointcuts with `&&`, `||`, and `!`:
 @Pointcut("within(com.example.service.UserService)")
 ```
 
-> 💡 `within` matches the **statically declared type**. With JDK dynamic proxies (the target class implements an interface), the proxy type differs from the target type, so `within(TargetClass)` may not work; use `target(TargetClass)` instead. Spring Boot defaults to CGLIB proxies, where this is generally not an issue.
+> 💡 `within` matches the type that declares the advised method, evaluated against the target class, so it works with both proxy types. The related `this(Type)` designator matches the **proxy object**: with a JDK dynamic proxy (interface-based), the proxy is not an instance of the target class, so `this(TargetClass)` does not match; use `target(TargetClass)` instead. Spring Boot defaults to CGLIB proxies, where both match.
 
 **bean:** Match by Spring bean name; specific to Spring AOP (not supported by AspectJ):
 
@@ -633,7 +633,7 @@ Combine pointcuts with `&&`, `||`, and `!`:
 
 | Scenario | Recommended expression |
 | ---- | ---------- |
-| Intercept all methods in a package/subpackages | `within(com.example.service..)` |
+| Intercept all methods in a package/subpackages | `within(com.example.service..*)` |
 | Filter precisely by return type and parameter signature | `execution(...)` |
 | Intercept by bean name (Spring environment) | `bean(*Service)` |
 
@@ -1125,7 +1125,7 @@ spring:
 
 The core is `java.lang.reflect.Proxy` + `InvocationHandler`. At runtime, Spring generates a proxy class implementing the target interface. Method calls are forwarded to `InvocationHandler.invoke()`, which applies aspect logic and then invokes the target method through reflection.
 
-```
+```text
 Caller → Proxy object (implements the same interface)
             ↓
         InvocationHandler.invoke()
@@ -1153,7 +1153,7 @@ Proxy.newProxyInstance(
 
 CGLIB (Code Generation Library) manipulates bytecode directly through ASM at runtime to generate a subclass of the target class. The subclass overrides non-`final` methods, inserts aspect logic into those overrides, and calls `super.xxx()` to execute the original method.
 
-```
+```text
 Caller → Proxy subclass (extends the target class)
             ↓
         Overridden method (MethodInterceptor.intercept())
@@ -1182,7 +1182,7 @@ Spring AOP is proxy-based and has these inherent limitations:
 
 Proxy objects are created during the `BeanPostProcessor.postProcessAfterInitialization()` stage of the bean lifecycle. `AbstractAutoProxyCreator` scans aspects and wraps target beans.
 
-```
+```text
 Bean instantiation → Property injection → Initialization (@PostConstruct) → BeanPostProcessor → Create proxy (AOP)
 ```
 
@@ -1221,6 +1221,7 @@ public class UserService {
 @Service
 public class UserService {
 
+    @Lazy       // Inject a lazy proxy; Spring Boot 2.6+ rejects eager self-injection as a circular reference
     @Autowired
     private UserService self;  // Inject the proxy object
 
@@ -1322,13 +1323,13 @@ public class SysLogService {
 }
 ```
 
-> 💡 `@Async` also relies on Spring proxies, so direct self-invocation has no effect. Exceptions from asynchronous methods do not propagate to the caller and must be caught and handled within the method.
+> 💡 `@Async` also relies on Spring proxies, so direct self-invocation has no effect. Exceptions from asynchronous methods do not reach the caller directly: for `void` methods they go to an `AsyncUncaughtExceptionHandler` (which logs them by default), and for `Future`/`CompletableFuture` return types they surface through the returned future.
 
 ***
 
-## Appendix: AOP Quick Reference
+## VII. AOP Quick Reference
 
-### Core Annotations
+### 1. Core Annotations
 
 | Annotation | Description |
 | ----------------- | ---------------------------------- |
@@ -1341,7 +1342,7 @@ public class SysLogService {
 | `@Around` | Around advice |
 | `@Order` | Set aspect execution order (lower numbers run first) |
 
-### Pointcut Expressions
+### 2. Pointcut Expressions
 
 | Expression type | Description | Example |
 | --------------- | ---------------------------- | -------------------------------------- |
@@ -1354,7 +1355,7 @@ public class SysLogService {
 | `target` | Match target objects of a specified type | `target(com.example.service.UserService)` |
 | `args` | Match method argument types | `args(Long, String)` |
 
-### execution Wildcards
+### 3. execution Wildcards
 
 | Symbol | Description |
 | ------ | ---------------------------------------- |

@@ -12,7 +12,7 @@
 
 | Comparison | List | Set |
 | ---- | -------------------- | -------------------- |
-| Ordering | Ordered | Unordered (except LinkedHashSet) |
+| Ordering | Ordered | Unordered (LinkedHashSet keeps insertion order; TreeSet sorts) |
 | Duplicates | Allowed | Not allowed |
 | Indexing | Indexed | Not indexed |
 | Common implementations | ArrayList, LinkedList | HashSet, TreeSet |
@@ -83,7 +83,7 @@ public class HashSetDemo {
 
 ### 3. How Hash Tables Work
 
-#### 3.1 JDK 7: Array + Linked Lists
+#### 1. JDK 7: Array + Linked Lists
 
     ┌───┬───┬───┬───┬───┬───┬───┬───┐
     │ 0 │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │  ← array
@@ -95,9 +95,9 @@ public class HashSetDemo {
       ↓       ↓
      [C]     [E]  ← linked lists (for hash collisions)
 
-#### 3.2 JDK 8: Array + Linked Lists + Red-Black Trees
+#### 2. JDK 8: Array + Linked Lists + Red-Black Trees
 
-    When a list has > 8 nodes and the array length is >= 64, the list becomes a red-black tree
+    When a list grows beyond 8 nodes and the array length is >= 64, the list becomes a red-black tree
 
     ┌───┬───┬───┬───┬───┬───┬───┬───┐
     │ 0 │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │
@@ -106,7 +106,7 @@ public class HashSetDemo {
       ↓       ↓           ↓
      List   List        Red-black tree (list length > 8)
 
-#### 3.3 Initial Capacity and Load Factor
+#### 3. Initial Capacity and Load Factor
 
 ```java
 // Default initial capacity: 16
@@ -142,13 +142,18 @@ Set<String> set2 = new HashSet<>(32, 0.75f);
 // 1. Calculate the element's hashCode
 // 2. Calculate its storage location from the hashCode
 // 3. If that location is empty, store the element directly
-// 4. Otherwise, compare using equals
+// 4. Otherwise, compare with each element in that bucket (hash first, then equals)
 //    - equals returns true: duplicate; do not store
 //    - equals returns false: not a duplicate; store in the linked list/red-black tree
 
 public class Student {
     private String name;
     private int age;
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
 
     // Must override hashCode and equals
     @Override
@@ -271,7 +276,7 @@ public class LinkedHashSetDemo {
 | **Internal structure** | Red-black tree (self-balancing binary search tree) |
 | **Ordered** | Elements follow natural ordering or a comparator |
 | **No duplicates** | Relies on compareTo() or a Comparator |
-| **Disallows null** | Cannot store null values |
+| **Disallows null** | Cannot store null (natural ordering throws NullPointerException) |
 
 ### 2. Basic Usage
 
@@ -302,10 +307,15 @@ public class Student implements Comparable<Student> {
     private String name;
     private int age;
 
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
     @Override
     public int compareTo(Student o) {
         // Sort by age in ascending order
-        int result = this.age - o.age;
+        int result = Integer.compare(this.age, o.age);
         // Break age ties by name (to ensure uniqueness)
         return result == 0 ? this.name.compareTo(o.name) : result;
     }
@@ -322,10 +332,10 @@ set.add(new Student("王五", 18));
 ### 4. Ordering with a Comparator
 
 ```java
-// Approach 2: pass a Comparator when creating the TreeSet
+// Approach 2: pass a Comparator when creating the TreeSet (Student provides getAge() and getName())
 Set<Student> set = new TreeSet<>((s1, s2) -> {
     // Sort by age in descending order
-    int result = s2.getAge() - s1.getAge();
+    int result = Integer.compare(s2.getAge(), s1.getAge());
     return result == 0 ? s1.getName().compareTo(s2.getName()) : result;
 });
 
@@ -457,7 +467,7 @@ public class CollectionsDemo {
         System.out.println(list);  // [9, 8, 5, 3, 2, 1]
 
         // Custom sorting
-        Collections.sort(list, (a, b) -> b - a);
+        Collections.sort(list, (a, b) -> Integer.compare(b, a));
 
         // ========== Reverse ==========
         Collections.reverse(list);
@@ -474,7 +484,7 @@ public class CollectionsDemo {
 
         // ========== Binary search (sort first) ==========
         int index = Collections.binarySearch(list, 5);
-        System.out.println(index);  // Returns the index
+        System.out.println(index);  // 3
 
         // ========== Swap ==========
         Collections.swap(list, 0, 1);  // Swap elements at indices 0 and 1
@@ -523,10 +533,10 @@ boolean noCommon1 = Collections.disjoint(list1, list2);  // true (no intersectio
 boolean noCommon2 = Collections.disjoint(list1, list3);  // false (intersection exists)
 ```
 
-### 5. Creating Immutable Collections
+### 5. Creating Unmodifiable Collections
 
 ```java
-// Create immutable collections (wrapping existing collections)
+// Create unmodifiable views (read-only wrappers; later changes to the backing collection remain visible)
 List<String> list = new ArrayList<>(Arrays.asList("A", "B", "C"));
 List<String> unmodifiable = Collections.unmodifiableList(list);
 // unmodifiable.add("D");  // ❌ Throws UnsupportedOperationException
@@ -663,9 +673,9 @@ public class MapDemo {
         map.remove("王五", 100);  // Removal fails (value does not match)
 
         // ========== Query ==========
-        Integer age = map.get("张三");  // 25 (returns null if absent)
-        boolean hasKey = map.containsKey("张三");  // true
-        boolean hasValue = map.containsValue(25);  // true
+        Integer age = map.get("王五");  // 22 (returns null if the key is absent)
+        boolean hasKey = map.containsKey("张三");  // false (removed by remove("张三", 25))
+        boolean hasValue = map.containsValue(22);  // true
 
         // ========== Get all keys/values ==========
         Set<String> keys = map.keySet();
@@ -699,7 +709,7 @@ map.put("张三", 18);
 
 // Key absent: add and return null
 Integer result1 = map.putIfAbsent("李四", 20);  // null
-System.out.println(map);  // {张三=18, 李四=20}
+System.out.println(map);  // {李四=20, 张三=18}
 
 // Key exists: do not add; return the existing value
 Integer result2 = map.putIfAbsent("张三", 25);  // 18
@@ -717,17 +727,18 @@ if (!map.containsKey("fruits")) {
 }
 map.get("fruits").add("apple");
 
-// Using computeIfAbsent
-map.computeIfAbsent("fruits", k -> new ArrayList<>()).add("apple");
-map.computeIfAbsent("fruits", k -> new ArrayList<>()).add("banana");
-System.out.println(map);  // {fruits=[apple, banana]}
+// Using computeIfAbsent (same effect in one line)
+map.computeIfAbsent("fruits", k -> new ArrayList<>()).add("banana");  // Key exists: reuse its list
+map.computeIfAbsent("drinks", k -> new ArrayList<>()).add("tea");     // Key absent: create a list first
+System.out.println(map);  // {fruits=[apple, banana], drinks=[tea]}
 
-// Common use: grouping
-Map<String, Integer> wordCount = new HashMap<>();
+// Common use: grouping (words by first letter)
+List<String> words = List.of("apple", "avocado", "banana", "blueberry", "cherry");
+Map<Character, List<String>> groups = new HashMap<>();
 for (String word : words) {
-    wordCount.computeIfAbsent(word, k -> 0);
-    wordCount.put(word, wordCount.get(word) + 1);
+    groups.computeIfAbsent(word.charAt(0), k -> new ArrayList<>()).add(word);
 }
+System.out.println(groups);  // {a=[apple, avocado], b=[banana, blueberry], c=[cherry]}
 ```
 
 ### 4. computeIfPresent: Compute and Update When Present
@@ -778,7 +789,7 @@ map.merge("张三", 10, Integer::sum);  // 18 + 10 = 28
 // Key absent: insert directly
 map.merge("李四", 20, Integer::sum);  // 20
 
-System.out.println(map);  // {张三=28, 李四=20}
+System.out.println(map);  // {李四=20, 张三=28}
 
 // Common use: count word occurrences
 Map<String, Integer> wordCount = new HashMap<>();
@@ -831,7 +842,7 @@ map.forEach((key, value) -> {
 
 ## IX. Three Ways to Iterate Over a Map
 
-### 1. Approach 1: keySet()
+### 1. keySet()
 
 ```java
 Map<String, Integer> map = new HashMap<>();
@@ -847,7 +858,7 @@ for (String key : keys) {
 }
 ```
 
-### 2. Approach 2: entrySet() (Recommended)
+### 2. entrySet() (Recommended)
 
 ```java
 // Get all key-value entry objects (Entry)
@@ -859,7 +870,7 @@ for (Map.Entry<String, Integer> entry : entries) {
 }
 ```
 
-### 3. Approach 3: forEach() (Java 8+)
+### 3. forEach() (JDK 8+)
 
 ```java
 // Lambda expression
@@ -877,7 +888,7 @@ map.forEach((k, v) -> System.out.println(k + " = " + v));
 | ------------ | ----------- | ----------- | ----- |
 | **keySet** | Simple code | Requires a second lookup (less efficient) | ⭐⭐⭐ |
 | **entrySet** | Efficient; obtains key and value together | Slightly more complex code | ⭐⭐⭐⭐⭐ |
-| **forEach** | Most concise code | Requires Java 8+ | ⭐⭐⭐⭐⭐ |
+| **forEach** | Most concise code | Requires JDK 8+ | ⭐⭐⭐⭐⭐ |
 
 ***
 
@@ -885,17 +896,17 @@ map.forEach((k, v) -> System.out.println(k + " = " + v));
 
 ### 1. HashMap
 
-#### 1.1 Characteristics
+#### 1. Characteristics
 
 | Characteristic | Description |
 | ----------- | ------------------------ |
 | **Internal structure** | Hash table (array + linked lists + red-black trees) |
 | **Unordered** | Does not guarantee insertion/retrieval order |
 | **Unique keys** | Relies on hashCode() and equals() |
-| **Allows null** | Both keys and values may be null |
+| **Allows null** | One null key; any number of null values |
 | **Not thread-safe** | Multithreaded use requires synchronization |
 
-#### 1.2 Initial Capacity and Load Factor
+#### 2. Initial Capacity and Load Factor
 
 ```java
 // Default initial capacity: 16
@@ -907,9 +918,12 @@ Map<String, Integer> map = new HashMap<>(64);
 
 // Specify both initial capacity and load factor
 Map<String, Integer> map2 = new HashMap<>(64, 0.75f);
+
+// JDK 19+: size the map for an expected element count (the capacity is calculated automatically)
+Map<String, Integer> map3 = HashMap.newHashMap(50);
 ```
 
-#### 1.3 Internal Implementation
+#### 3. Internal Implementation
 
 **Data structure**: array (buckets) + linked lists + red-black trees (JDK 1.8+)
 
@@ -920,7 +934,7 @@ Map<String, Integer> map2 = new HashMap<>(64, 0.75f);
       │           │
       ↓           ↓
      [A]→[C]    [B]          ← linked lists (for hash collisions)
-                              List length ≥ 8 and array length ≥ 64 → convert to a red-black tree
+                              List length > 8 and array length ≥ 64 → convert to a red-black tree
 
 **Core `put` process**:
 
@@ -929,14 +943,15 @@ Map<String, Integer> map2 = new HashMap<>(64, 0.75f);
 3. If the slot is empty, store directly; otherwise, traverse the linked list/red-black tree:
    - Same key (`equals` returns true) → overwrite the old value
    - Different key → append to the linked list's tail (tail insertion in JDK 1.8)
+4. After insertion, if the element count exceeds the resize threshold, resize the array.
 
 **Conversion Between Linked Lists and Red-Black Trees**:
 
 | Trigger | Conversion |
 | --- | --- |
-| List length ≥ 8 **and** array length ≥ 64 | Linked list → red-black tree |
-| Red-black tree node count ≤ 6 | Red-black tree → linked list |
-| List length ≥ 8 but array length < 64 | Resize; do not convert to a tree |
+| List length > 8 **and** array length ≥ 64 | Linked list → red-black tree |
+| Tree node count ≤ 6 when a resize splits the bin | Red-black tree → linked list |
+| List length > 8 but array length < 64 | Resize; do not convert to a tree |
 
 **Resizing**:
 
@@ -959,13 +974,18 @@ static final int hash(Object key) {
 }
 ```
 
-#### 1.4 Custom Objects as Keys
+#### 4. Custom Objects as Keys
 
 ```java
 // Custom objects used as keys must override hashCode and equals
 public class Student {
     private String name;
     private int age;
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
 
     @Override
     public int hashCode() {
@@ -992,7 +1012,7 @@ System.out.println(map.size());  // 1
 
 ### 2. LinkedHashMap
 
-#### 2.1 Characteristics
+#### 1. Characteristics
 
 | Characteristic | Description |
 | -------- | ------------------------ |
@@ -1000,7 +1020,7 @@ System.out.println(map.size());  // 1
 | **Ordered** | Retrieval order matches insertion order |
 | **Unique keys** | Relies on hashCode() and equals() |
 
-#### 2.2 Basic Usage
+#### 2. Basic Usage
 
 ```java
 Map<String, Integer> map = new LinkedHashMap<>();
@@ -1015,7 +1035,7 @@ map.forEach((k, v) -> System.out.println(k + " = " + v));
 // 王五 = 22
 ```
 
-#### 2.3 Access-Order Mode
+#### 3. Access-Order Mode
 
 ```java
 // Default: insertion order
@@ -1035,7 +1055,7 @@ System.out.println(map2.keySet());  // [B, C, A] (A moves to the end)
 
 ### 3. TreeMap
 
-#### 3.1 Characteristics
+#### 1. Characteristics
 
 | Characteristic | Description |
 | -------------- | --------------------------- |
@@ -1044,7 +1064,7 @@ System.out.println(map2.keySet());  // [B, C, A] (A moves to the end)
 | **Unique keys** | Relies on compareTo() or a Comparator |
 | **Disallows null keys** | Keys cannot be null |
 
-#### 3.2 Basic Usage
+#### 2. Basic Usage
 
 ```java
 // Natural ordering (keys must implement Comparable)
@@ -1056,13 +1076,13 @@ map.put(2, "二");
 System.out.println(map);  // {1=一, 2=二, 3=三} (sorted by key)
 ```
 
-#### 3.3 Custom Ordering
+#### 3. Custom Ordering
 
 ```java
 // Comparator ordering
 Map<String, Integer> map = new TreeMap<>((s1, s2) -> {
     // Sort by string length
-    int result = s1.length() - s2.length();
+    int result = Integer.compare(s1.length(), s2.length());
     return result == 0 ? s1.compareTo(s2) : result;
 });
 
@@ -1072,7 +1092,7 @@ map.put("abcd", 3);
 // Result: {ab=2, abc=1, abcd=3}
 ```
 
-#### 3.4 Navigation Methods
+#### 4. Navigation Methods
 
 ```java
 TreeMap<Integer, String> map = new TreeMap<>();
@@ -1135,7 +1155,7 @@ Map<String, Integer> map = new Hashtable<>();
 1. **Empty bucket**: uses CAS (Compare And Swap) for lock-free insertion, avoiding locking overhead.
 2. **Nonempty bucket**: uses `synchronized` to lock the bucket's head node, affecting only that bucket; other buckets can be accessed in parallel.
 
-```
+```text
 Concurrent put illustration:
 
 Thread A → put("a",1) → maps to bucket[2] → synchronized(bucket[2])
@@ -1180,7 +1200,7 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 
 ## XI. Quick Reference
 
-### Set Methods
+### 1. Set Methods
 
 | Method | Description |
 | -------------- | -------- |
@@ -1193,7 +1213,7 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 | `retainAll(c)` | Keeps the intersection |
 | `removeAll(c)` | Removes the intersection (difference) |
 
-### TreeSet Navigation Methods
+### 2. TreeSet Navigation Methods
 
 | Method | Description |
 | ------------ | ---------- |
@@ -1204,7 +1224,7 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 | `higher(e)` | Smallest element > e |
 | `lower(e)` | Largest element < e |
 
-### Map Methods
+### 3. Map Methods
 
 | Method | Description |
 | -------------------------- | -------- |
@@ -1220,7 +1240,7 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 | `computeIfAbsent(k, func)` | Computes and adds when absent |
 | `merge(k, v, func)` | Merges values |
 
-### Selection Guide
+### 4. Selection Guide
 
 | Scenario | Recommendation |
 | ---------- | ----------------- |

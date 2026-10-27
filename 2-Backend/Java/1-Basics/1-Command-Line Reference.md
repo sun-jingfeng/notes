@@ -339,8 +339,8 @@ ps aux | grep java  # Find Java processes
 ps -ef  # Show all processes in another format
 
 top  # View processes in real time; q to quit
-top -o cpu  # Sort by CPU usage
-top -o mem  # Sort by memory usage
+top -o cpu  # Sort by CPU usage (macOS; Linux: top -o %CPU)
+top -o mem  # Sort by memory usage (macOS; Linux: top -o %MEM)
 htop  # More user-friendly top (requires installation)
 
 kill PID  # Terminate a process with SIGTERM
@@ -452,7 +452,7 @@ wget -r URL  # Download recursively
 lsof -i :port
 netstat -an | grep port
 
-# Mac firewall: manage through System Preferences
+# Mac firewall: manage through System Settings (System Preferences on older macOS)
 # Or use pfctl
 
 # Linux firewall
@@ -577,10 +577,10 @@ ssh -p port username@IP  # Specify the port
 ssh -i keyFile username@IP  # Use a key
 
 # SSH keys
-ssh-keygen  # Generate a key pair
-ssh-keygen -t rsa -b 4096 -C "your-email"   # Specify key type and bit count
+ssh-keygen -t ed25519 -C "your-email"   # Generate an Ed25519 key pair (recommended)
+ssh-keygen -t rsa -b 4096 -C "your-email"   # RSA alternative for older servers
 ssh-copy-id username@IP  # Copy the public key to the server
-cat ~/.ssh/id_rsa.pub  # View the public key
+cat ~/.ssh/id_ed25519.pub  # View the public key (id_rsa.pub for RSA)
 
 # File transfer
 scp localFile username@IP:remotePath  # Upload a file
@@ -620,12 +620,12 @@ docker exec -it containerID /bin/bash  # Open a shell in a container
 docker logs containerID  # View logs
 docker logs -f containerID  # Follow logs in real time
 
-# Docker Compose
-docker-compose up  # Start services
-docker-compose up -d  # Start in the background
-docker-compose down  # Stop and remove
-docker-compose ps  # Show status
-docker-compose logs  # View logs
+# Docker Compose (V2 plugin; the legacy standalone binary is docker-compose)
+docker compose up  # Start services
+docker compose up -d  # Start in the background
+docker compose down  # Stop and remove
+docker compose ps  # Show status
+docker compose logs  # View logs
 
 # Cleanup
 docker system prune  # Remove unused data
@@ -652,7 +652,7 @@ java HelloWorld.java  # Run a source file directly (JDK 11+)
 # Compiler options
 javac -d bin src/*.java  # Write compiled output to bin
 javac -encoding UTF-8 *.java  # Specify the encoding
-javac -source 11 -target 11 *.java  # Specify the version
+javac --release 11 *.java  # Compile for a target Java version (JDK 9+; preferred over -source/-target)
 
 # Runtime options
 java -cp bin com.example.Main  # Specify the classpath
@@ -689,7 +689,7 @@ jstat -gcutil <pid> 1000  # GC percentage statistics: S0/S1/E/O/M utilization
 
 # Visual tools
 jconsole  # Graphical monitoring (JMX)
-jvisualvm  # Visual performance analysis: CPU, heap, threads, heap dumps
+visualvm  # Visual performance analysis: CPU, heap, threads, heap dumps (separate download since JDK 9; jvisualvm in JDK 8)
 
 # Other tools
 jshell  # Interactive programming (JDK 9+)
@@ -765,7 +765,7 @@ echo $JAVA_HOME
 echo $PATH
 echo $CLASSPATH
 env  # Show all environment variables
-printenv  # Same as above
+printenv  # Same as env
 
 # Temporary settings
 export JAVA_HOME=/path/to/jdk
@@ -831,8 +831,8 @@ file_count=`ls | wc -l`  # Backtick syntax (not recommended)
 $0  # Script name
 $1, $2, ...  # Positional parameters
 $#  # Number of arguments
-$@  # All arguments as separate strings
-$*  # All arguments as a single string
+$@  # All arguments; "$@" keeps each argument as a separate string
+$*  # All arguments; "$*" joins them into a single string
 $?  # Exit status of the previous command
 $$  # Current process PID
 
@@ -905,7 +905,7 @@ for i in {1..10}; do  # Range
     echo $i
 done
 
-for i in {1..10..2}; do  # Step of 2
+for i in {1..10..2}; do  # Step of 2 (bash 4+ or zsh)
     echo $i
 done
 
@@ -925,11 +925,12 @@ while [ $count -le 5 ]; do
 done
 
 # Read each line in a file
-while read line; do
-    echo $line
+while IFS= read -r line; do  # Preserve leading spaces and backslashes
+    echo "$line"
 done < file.txt
 
 # until loop: execute while the condition is false
+count=1
 until [ $count -gt 5 ]; do
     echo $count
     ((count++))
@@ -1051,7 +1052,7 @@ netstat -ano            :: Show network connections
 netstat -ano | findstr :8080   :: Show port usage
 
 :: Service management
-net start               :: List services
+net start               :: List running services
 net start serviceName   :: Start a service
 net stop serviceName    :: Stop a service
 sc query                :: Query service status
@@ -1105,9 +1106,9 @@ $env:Path -split ';'  # Display PATH entries on separate lines
 
 ***
 
-## Appendix: Command Quick Reference
+## IX. Command Quick Reference
 
-### File Operations
+### 1. File Operations
 
 | Command          | Action          |
 | ----------- | ----------- |
@@ -1125,7 +1126,7 @@ $env:Path -split ';'  # Display PATH entries on separate lines
 | `chmod`     | Change permissions        |
 | `chown`     | Change owner       |
 
-### Text Processing
+### 2. Text Processing
 
 | Command     | Action       |
 | ------ | -------- |
@@ -1138,7 +1139,7 @@ $env:Path -split ';'  # Display PATH entries on separate lines
 | `awk`  | Process text     |
 | `sed`  | Stream editing      |
 
-### System Administration
+### 3. System Administration
 
 | Command         | Action          |
 | ---------- | ----------- |
@@ -1149,7 +1150,7 @@ $env:Path -split ';'  # Display PATH entries on separate lines
 | `du -sh`   | Directory size        |
 | `free -h`  | Memory usage (Linux) |
 
-### Networking Commands
+### 4. Networking Commands
 
 | Command            | Action        |
 | ------------- | --------- |
@@ -1161,7 +1162,7 @@ $env:Path -split ';'  # Display PATH entries on separate lines
 | `netstat -an` | Network connections      |
 | `lsof -i :port` | Inspect ports (Mac) |
 
-### Common Development Commands
+### 5. Common Development Commands
 
 | Command                  | Action        |
 | ------------------- | --------- |

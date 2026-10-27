@@ -186,7 +186,7 @@ a--;  // a = 11
 --a;  // a = 10
 
 // Used in an expression: they differ!
-int a = 10;
+a = 10;
 int b = a++;  // Assign first, then increment
 // b = 10, a = 11
 
@@ -314,12 +314,12 @@ byte b3 = (byte) big3;  // b3 = 0
 // 3. long → float may lose precision
 long l = 123456789012345L;
 float f = l;
-System.out.println(f);  // 1.23456789E14 (precision loss)
+System.out.println(f);  // 1.2345679E14 (stored as 123456788103168: precision lost)
 
 // 4. int → float may also lose precision
 int i = 123456789;
 float f2 = i;
-System.out.println(f2);  // 1.23456792E8 (precision loss)
+System.out.println(f2);  // 1.2345679E8 (stored as 123456792; JDK 18 and earlier print 1.23456792E8)
 ```
 
 ### 4. Conversion in Expressions
@@ -339,7 +339,7 @@ double result = i + d;  // int + double = double
 
 // 3. Constant optimization (compile-time evaluation)
 byte b = 10 + 20;  // ✅ The compiler knows 10+20=30 fits in byte
-byte b5 = 100 + 100;  // ❌ 200 is outside the byte range
+// byte b5 = 100 + 100;  // ❌ 200 is outside the byte range
 
 // 4. final constants are also optimized
 final int x = 10;
@@ -472,8 +472,7 @@ if (Math.abs(a - b) < epsilon) {
     System.out.println("Equal");
 }
 
-// Solution 2: Use BigDecimal
-import java.math.BigDecimal;
+// Solution 2: Use BigDecimal (import java.math.BigDecimal)
 BigDecimal bd1 = new BigDecimal("0.1").add(new BigDecimal("0.2"));
 BigDecimal bd2 = new BigDecimal("0.3");
 System.out.println(bd1.compareTo(bd2) == 0);  // true
@@ -483,8 +482,8 @@ System.out.println(bd1.compareTo(bd2) == 0);  // true
 
 ```java
 // 1. Distinguish = from ==
-int a = 10;    // Assignment
-a == 10;       // Comparison
+int a = 10;                 // Assignment
+boolean same = (a == 10);   // Comparison
 
 // 2. Relational operators produce boolean results
 boolean flag = (10 > 5);  // true
@@ -492,7 +491,7 @@ boolean flag = (10 > 5);  // true
 // 3. Comparisons cannot be chained as in mathematics
 int x = 5;
 // if (1 < x < 10)  // ❌ Incorrect!
-if (x > 1 && x < 10)  // ✅ Correct
+if (x > 1 && x < 10) { }  // ✅ Correct
 
 // 4. Reference-type comparisons
 String s1 = new String("hello");
@@ -675,7 +674,7 @@ System.out.println(5 << 1);   // 10 (5 * 2^1)
 System.out.println(5 << 2);   // 20 (5 * 2^2)
 System.out.println(5 << 3);   // 40 (5 * 2^3)
 
-// >>: equivalent to dividing by 2^n (preserves the sign bit)
+// >>: equivalent to dividing by 2^n (preserves the sign bit; negative odd values round toward negative infinity, e.g. -7 >> 1 = -4 while -7 / 2 = -3)
 System.out.println(20 >> 1);  // 10 (20 / 2^1)
 System.out.println(20 >> 2);  // 5 (20 / 2^2)
 System.out.println(-20 >> 2); // -5 (preserves the negative sign)
@@ -875,15 +874,15 @@ var v = (true) ? 1 : 2.0;  // v has type double
 
 ```java
 // ❌ Not recommended: relying on precedence is hard to read
-int result = a + b * c > d && e || f;
+boolean result1 = a + b * c > d && e || f;  // e and f are boolean
 
 // ✅ Recommended: make precedence explicit with parentheses
-int result = ((a + (b * c)) > d) && e || f;
+boolean result2 = (((a + (b * c)) > d) && e) || f;
 
 // Or split into several lines
 int temp = a + b * c;
 boolean compare = temp > d;
-boolean result = compare && e || f;
+boolean result3 = compare && e || f;
 ```
 
 ***
@@ -965,10 +964,11 @@ String s1 = sc.next();
 // Input: hello world
 // s1 = "hello" (world remains in the buffer)
 
-// nextLine(): stops at Enter
+// nextLine(): reads the rest of the current line, up to Enter
+// (called right after next() above, it would return the leftover " world")
 System.out.print("Enter text: ");
 String s2 = sc.nextLine();
-// Input: hello world
+// Input on a new line: hello world
 // s2 = "hello world"
 ```
 
@@ -988,18 +988,18 @@ System.out.println("Name: " + name);  // The name is empty
 
 // Solution 1: Call nextLine() once more to consume the newline
 System.out.print("Enter age: ");
-int age = sc.nextInt();
+int age1 = sc.nextInt();
 sc.nextLine();  // Consume the newline
 
 System.out.print("Enter name: ");
-String name = sc.nextLine();
+String name1 = sc.nextLine();
 
 // Solution 2: Use nextLine() throughout, then convert types
 System.out.print("Enter age: ");
-int age = Integer.parseInt(sc.nextLine());
+int age2 = Integer.parseInt(sc.nextLine());
 
 System.out.print("Enter name: ");
-String name = sc.nextLine();
+String name2 = sc.nextLine();
 ```
 
 ### 6. Checking Input with hasNextXxx()
@@ -1019,7 +1019,7 @@ if (sc.hasNextInt()) {
 }
 
 // Read in a loop until input ends
-System.out.println("Enter several integers (Ctrl+D to finish): ");
+System.out.println("Enter several integers (Ctrl+D to finish; Ctrl+Z then Enter on Windows): ");
 while (sc.hasNextInt()) {
     int n = sc.nextInt();
     System.out.println("Read: " + n);
@@ -1170,7 +1170,7 @@ public class CalculatorDemo {
 
 ## XII. Combined Example
 
-### Example: Student Score Management
+### 1. Student Score Management
 
 ```java
 import java.util.Scanner;
@@ -1231,7 +1231,7 @@ public class StudentScore {
 
 ## XIII. Quick Reference
 
-### Arithmetic Operators
+### 1. Arithmetic Operators
 
 | Operator | Description       | Note         |
 | --- | -------- | ---------- |
@@ -1241,7 +1241,7 @@ public class StudentScore {
 | `/` | Division       | Integer division discards the fraction   |
 | `%` | Remainder       | Result has the dividend's sign |
 
-### Increment and Decrement
+### 2. Increment and Decrement
 
 | Form    | Description      |
 | ----- | ------- |
@@ -1250,7 +1250,7 @@ public class StudentScore {
 | `--a` | Decrement, then use |
 | `a--` | Use, then decrement |
 
-### Assignment Operators
+### 3. Assignment Operators
 
 | Operator  | Equivalent to         | Characteristic   |
 | ---- | ----------- | ---- |
@@ -1260,7 +1260,7 @@ public class StudentScore {
 | `/=` | `a = a / b` | Includes a cast |
 | `%=` | `a = a % b` | Includes a cast |
 
-### Logical Operators
+### 4. Logical Operators
 
 | Operator    | Description  | Behavior           |
 | ------ | --- | ------------ |
@@ -1268,7 +1268,7 @@ public class StudentScore {
 | `\|\|` | Short-circuit OR | Left true → skip right  |
 | `!`    | NOT   | Negation           |
 
-### Bitwise Operators
+### 5. Bitwise Operators
 
 | Operator   | Description      | Use           |
 | ----- | ------- | ------------ |
@@ -1280,7 +1280,7 @@ public class StudentScore {
 | `>>`  | Signed right shift | Divide by 2^n       |
 | `>>>` | Unsigned right shift | Fill high-order bits with 0         |
 
-### Scanner Methods
+### 6. Scanner Methods
 
 | Method             | Description          |
 | -------------- | ----------- |
@@ -1290,7 +1290,7 @@ public class StudentScore {
 | `nextLine()`   | Read a line (stops at Enter)  |
 | `hasNextInt()` | Check whether integer input is available   |
 
-### Type Conversion
+### 7. Type Conversion
 
 | Conversion | Direction  | Syntax      | Risk   |
 | ---- | --- | ------- | ---- |

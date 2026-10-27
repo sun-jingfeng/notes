@@ -142,10 +142,10 @@ if (a > b) {
 }
 
 // Ternary form (more concise)
-int max = a > b ? a : b;
+int max2 = a > b ? a : b;
 
 // Nested ternary (maximum of three numbers)
-int max = a > b ? (a > c ? a : c) : (b > c ? b : c);
+int max3 = a > b ? (a > c ? a : c) : (b > c ? b : c);
 
 // Note: a ternary expression must produce a value; it cannot execute statements
 // a > b ? System.out.println("a is larger") : System.out.println("b is larger");  ❌ Incorrect
@@ -278,11 +278,12 @@ switch (day) {
 
 ```java
 // Types supported by the switch expression:
-// byte, short, int, char
+// byte, short, int, char (and their wrappers Byte, Short, Integer, Character)
 // String (JDK 7+)
 // enum (JDK 5+)
 
-// ❌ Unsupported: long, float, double, boolean
+// ❌ Unsupported in a classic switch: long, float, double, boolean
+// (JDK 21+ pattern-matching switch accepts any reference type)
 
 int num = 1;        // ✅
 char c = 'A';       // ✅
@@ -426,9 +427,9 @@ String result = switch (obj) {
 System.out.println(result);  // String: Hello
 
 // Conditional pattern matching (guards)
-Object obj = 15;
+Object obj2 = 15;
 
-String result = switch (obj) {
+String result2 = switch (obj2) {
     case Integer i when i > 10 -> "Integer greater than 10";
     case Integer i -> "Integer less than or equal to 10";
     case String s -> "String";
@@ -588,9 +589,9 @@ for (int i = 0; i <= 10; i += 2) {
 
 ```java
 // Omit initialization (declared outside)
-int i = 0;
-for (; i < 5; i++) {
-    System.out.println(i);
+int k = 0;
+for (; k < 5; k++) {
+    System.out.println(k);
 }
 
 // Omit update (performed in the body)
@@ -690,10 +691,7 @@ while (num <= 100) {
 }
 System.out.println("sum = " + sum);
 
-// Number guessing game
-import java.util.Scanner;
-import java.util.Random;
-
+// Number guessing game (import java.util.Scanner and java.util.Random)
 Scanner sc = new Scanner(System.in);
 Random random = new Random();
 int target = random.nextInt(100) + 1;  // 1-100
@@ -821,7 +819,7 @@ do {
 | Initialization location    | Inside the loop header   | Outside the loop   | Outside the loop       |
 | Variable scope    | Inside the loop    | Outside the loop    | Outside the loop        |
 
-### Converting Between Loop Types
+### 1. Converting Between Loop Types
 
 ```java
 // Print 1 through 5
@@ -1165,6 +1163,7 @@ public class GuessNumber {
 #### Example 2: Generate a Verification Code
 
 ```java
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class VerifyCode {
@@ -1264,7 +1263,7 @@ public class Shuffle {
 
 ## XI. Quick Reference
 
-### Control Flow Categories
+### 1. Control Flow Categories
 
 | Type | Keywords                     | Purpose   |
 | -- | ----------------------- | ---- |
@@ -1272,7 +1271,7 @@ public class Shuffle {
 | Loops | for, while, do-while    | Repeated execution |
 | Jumps | break, continue, return | Control execution flow |
 
-### Loop Comparison
+### 2. Loop Comparison
 
 | Feature   | for           | while     | do-while      |
 | ---- | ------------- | --------- | ------------- |
@@ -1280,7 +1279,7 @@ public class Shuffle {
 | Minimum iterations | 0            | 0        | 1            |
 | Use case   | Known count          | Unknown count      | At least once          |
 
-### Jump Statements Compared
+### 3. Jump Statements Compared
 
 | Statement       | Effect   | Scope   |
 | -------- | ---- | ---- |
@@ -1288,7 +1287,7 @@ public class Shuffle {
 | continue | Skip current iteration | Current loop |
 | return   | End method | Entire method |
 
-### switch Features by Version
+### 4. switch Features by Version
 
 | Version     | Feature                   |
 | ------ | -------------------- |
@@ -1296,7 +1295,7 @@ public class Shuffle {
 | JDK 14 | Arrow syntax, switch expressions, yield |
 | JDK 21 | Pattern matching and guards            |
 
-### Common Random Operations
+### 5. Common Random Operations
 
 ```java
 // Random class
@@ -1308,19 +1307,19 @@ r.nextDouble();     // [0.0, 1.0)
 r.nextBoolean();    // true/false
 
 // General formula: [min, max]
-r.nextInt(max - min + 1) + min
+int v1 = r.nextInt(max - min + 1) + min;
 
 // Math.random()
-(int)(Math.random() * n)  // [0, n)
+int v2 = (int) (Math.random() * n);  // [0, n)
 
 // ThreadLocalRandom (recommended for multithreading)
-ThreadLocalRandom.current().nextInt(10, 20)
+int v3 = ThreadLocalRandom.current().nextInt(10, 20);  // [10, 20)
 
 // SecureRandom (security use cases)
-new SecureRandom().nextInt(100)
+int v4 = new SecureRandom().nextInt(100);  // [0, 100)
 ```
 
-### Debugging Shortcuts
+### 6. Debugging Shortcuts
 
 | Shortcut      | Purpose              |
 | -------- | --------------- |
