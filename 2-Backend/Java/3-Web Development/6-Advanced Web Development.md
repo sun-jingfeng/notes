@@ -175,11 +175,11 @@ public class GlobalExceptionHandler { }
 @Getter
 public class BusinessException extends RuntimeException {
 
-    private Integer code;
+    private final Integer code;
 
     public BusinessException(String message) {
         super(message);
-        this.code = 0;
+        this.code = ResultCode.BUSINESS_ERROR.getCode();    // Default business code
     }
 
     public BusinessException(Integer code, String message) {
@@ -248,7 +248,7 @@ public class GlobalExceptionHandler {
     // Handle oversized uploads
     @ExceptionHandler
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        return Result.error("File exceeds the size limit");
+        return Result.error(ResultCode.PARAM_ERROR, "File exceeds the size limit");
     }
 
     // Fallback handler
@@ -782,7 +782,7 @@ file:
 @PostMapping("/upload")
 public Result<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
     if (file.isEmpty()) {
-        return Result.error("File must not be empty");
+        return Result.error(ResultCode.PARAM_ERROR, "File must not be empty");
     }
 
     String original = file.getOriginalFilename();

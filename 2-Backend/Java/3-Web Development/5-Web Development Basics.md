@@ -524,6 +524,7 @@ public enum ResultCode {
     // General errors: 1001-1999
     PARAM_ERROR(1001, "Invalid parameters"),
     PARAM_VALID_ERROR(1002, "Parameter validation failed"),
+    TOO_MANY_REQUESTS(1003, "Too many requests; please try again later"),
 
     // User errors: 2001-2999
     USER_NOT_FOUND(2001, "User not found"),
@@ -535,9 +536,10 @@ public enum ResultCode {
     TOKEN_EXPIRED(3002, "Login has expired"),
     ACCESS_DENIED(3003, "Access denied"),
 
-    // Business errors: 4001-4999
-    STOCK_NOT_ENOUGH(4001, "Insufficient stock"),
-    ORDER_NOT_FOUND(4002, "Order not found"),
+    // Business errors: 4000-4999
+    BUSINESS_ERROR(4000, "Business operation failed"),    // Default for message-only business exceptions
+    DATA_NOT_FOUND(4001, "Data not found"),
+    OPERATION_NOT_ALLOWED(4002, "Operation not allowed in the current state"),
 
     // System errors: 9001-9999
     SYSTEM_ERROR(9999, "Service busy; please try again later");
@@ -607,7 +609,7 @@ public class Result<T> {
 // Basic usage
 return Result.success();
 return Result.success(user);
-return Result.error("Operation failed");
+return Result.error("Operation failed");    // Message only; code defaults to SYSTEM_ERROR
 
 // Use an error code
 return Result.error(ResultCode.USER_NOT_FOUND);

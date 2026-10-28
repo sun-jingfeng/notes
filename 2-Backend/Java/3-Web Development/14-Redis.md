@@ -1095,13 +1095,14 @@ public class ApiController {
     @Autowired
     private RateLimitService rateLimitService;
 
-    public Result getData(HttpServletRequest request) {
+    @GetMapping("/data")
+    public Result<Object> getData(HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         String key = "rate_limit:" + ip;
 
         // At most 10 requests per minute
         if (!rateLimitService.isAllowed(key, 10, 60)) {
-            return Result.error("Too many requests; please try again later");
+            return Result.error(ResultCode.TOO_MANY_REQUESTS);
         }
 
         // Normal business logic

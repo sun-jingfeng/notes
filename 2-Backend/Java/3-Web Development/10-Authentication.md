@@ -28,9 +28,9 @@
 1.  Obtain the request URL
 2.  Check whether it is an allowlisted path (such as `/login`) → If so, allow it through
 3.  Obtain the token from the request header
-4.  Check whether the token exists → Return 401 if missing
-5.  Check whether the token is blocklisted → Return 401 if so
-6.  Parse and validate the token → Return 401 on failure
+4.  Check whether the token exists → Reject as unauthorized if missing
+5.  Check whether the token is blocklisted → Reject as unauthorized if so
+6.  Parse and validate the token → Reject as unauthorized on failure
 7.  Set the user context and allow the request through
 
 ***
@@ -39,10 +39,46 @@
 
 ### 2.1 Unified Response Format
 
+Responses carry business codes from `ResultCode` rather than HTTP status codes; the HTTP status stays 200 and the client checks `code`. Only the codes used for authentication are listed:
+
 ```java
 package com.example.common;
 
-import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public enum ResultCode {
+
+    SUCCESS(1, "Operation succeeded"),
+
+    // General errors: 1001-1999
+    PARAM_VALID_ERROR(1002, "Parameter validation failed"),
+    TOO_MANY_REQUESTS(1003, "Too many requests; please try again later"),
+
+    // User errors: 2001-2999
+    USER_NOT_FOUND(2001, "User not found"),
+    USERNAME_OR_PASSWORD_ERROR(2003, "Incorrect username or password"),
+
+    // Authentication errors: 3001-3999
+    UNAUTHORIZED(3001, "Please log in first"),
+    ACCESS_DENIED(3003, "Access denied"),
+
+    // Business errors: 4000-4999
+    BUSINESS_ERROR(4000, "Business operation failed"),
+
+    // System errors: 9001-9999
+    SYSTEM_ERROR(9999, "Service busy; please try again later");
+
+    private final Integer code;
+    private final String msg;
+}
+```
+
+```java
+package com.example.common;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -52,44 +88,52 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Result<T> {
 
-    private Integer code;
-    private String message;
-    private T data;
+    private Integer code;    // Business code from ResultCode
+    private String msg;      // Message
+    private T data;          // Response data
 
     // ==================== Success responses ====================
 
     public static <T> Result<T> success() {
-        return new Result<>(HttpServletResponse.SC_OK, "Operation succeeded", null);
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
     }
 
     public static <T> Result<T> success(T data) {
-        return new Result<>(HttpServletResponse.SC_OK, "Operation succeeded", data);
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data);
     }
 
-    public static <T> Result<T> success(String message, T data) {
-        return new Result<>(HttpServletResponse.SC_OK, message, data);
+    public static <T> Result<T> success(String msg, T data) {
+        return new Result<>(ResultCode.SUCCESS.getCode(), msg, data);
     }
 
     // ==================== Error responses ====================
 
-    public static <T> Result<T> error(String message) {
-        return new Result<>(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message, null);
+    public static <T> Result<T> error(String msg) {
+        return new Result<>(ResultCode.SYSTEM_ERROR.getCode(), msg, null);
     }
 
-    public static <T> Result<T> error(Integer code, String message) {
-        return new Result<>(code, message, null);
+    public static <T> Result<T> error(Integer code, String msg) {
+        return new Result<>(code, msg, null);
+    }
+
+    public static <T> Result<T> error(ResultCode resultCode) {
+        return new Result<>(resultCode.getCode(), resultCode.getMsg(), null);
+    }
+
+    public static <T> Result<T> error(ResultCode resultCode, String msg) {
+        return new Result<>(resultCode.getCode(), msg, null);
     }
 }
 ```
 
 ### 2.2 Business Exception Classes
 
-The project defines two exception types: `BusinessException` represents business logic errors (such as incorrect credentials or a disabled account), carries a custom HTTP status code, and is returned consistently by the global handler. `AuthenticationException` is specifically for authentication failures (not logged in or an invalid token); its meaning aligns with authentication failures in Spring Security, and the global handler always maps it to a 401 response. Separating the two keeps business exceptions distinct from authentication failures and prevents authentication exceptions from being confused with 500 errors.
+The project defines two exception types: `BusinessException` represents business logic errors (such as incorrect credentials or a disabled account), carries a `ResultCode` business code (`BUSINESS_ERROR` when only a message is given), and is returned consistently by the global handler. `AuthenticationException` is specifically for authentication failures (not logged in or an invalid token); its meaning aligns with authentication failures in Spring Security, and the global handler always maps it to `ResultCode.UNAUTHORIZED`. Separating the two keeps business exceptions distinct from authentication failures and prevents authentication failures from being reported as system errors.
 
 ```java
 package com.example.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.example.common.ResultCode;
 import lombok.Getter;
 
 @Getter
@@ -99,12 +143,17 @@ public class BusinessException extends RuntimeException {
 
     public BusinessException(String message) {
         super(message);
-        this.code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        this.code = ResultCode.BUSINESS_ERROR.getCode();
     }
 
     public BusinessException(Integer code, String message) {
         super(message);
         this.code = code;
+    }
+
+    public BusinessException(ResultCode resultCode) {
+        super(resultCode.getMsg());
+        this.code = resultCode.getCode();
     }
 }
 ```
@@ -129,7 +178,7 @@ public class AuthenticationException extends RuntimeException {
 package com.example.exception;
 
 import com.example.common.Result;
-import jakarta.servlet.http.HttpServletResponse;
+import com.example.common.ResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -155,7 +204,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public Result<Void> handleAuthException(AuthenticationException e) {
         log.warn("Authentication exception: {}", e.getMessage());
-        return Result.error(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+        return Result.error(ResultCode.UNAUTHORIZED, e.getMessage());
     }
 
     /**
@@ -167,7 +216,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .findFirst()
                 .orElse("Parameter validation failed");
-        return Result.error(HttpServletResponse.SC_BAD_REQUEST, message);
+        return Result.error(ResultCode.PARAM_VALID_ERROR, message);
     }
 
     /**
@@ -176,7 +225,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
         log.error("System exception: ", e);
-        return Result.error("The system is busy; please try again later");
+        return Result.error(ResultCode.SYSTEM_ERROR);
     }
 }
 ```
@@ -454,13 +503,14 @@ public class LoginResponse {
 ```java
 package com.example.service;
 
+import com.example.common.ResultCode;
 import com.example.dto.LoginRequest;
 import com.example.dto.LoginResponse;
 import com.example.entity.User;
+import com.example.exception.AuthenticationException;
 import com.example.exception.BusinessException;
 import com.example.repository.UserRepository;
 import com.example.utils.JwtUtils;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -503,7 +553,8 @@ public class AuthService {
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             loginAttemptService.recordFailure(username);
             int remaining = loginAttemptService.getRemainingAttempts(username);
-            throw new BusinessException("Incorrect username or password; remaining attempts: " + remaining);
+            throw new BusinessException(ResultCode.USERNAME_OR_PASSWORD_ERROR.getCode(),
+                    "Incorrect username or password; remaining attempts: " + remaining);
         }
 
         // 4. Check account status
@@ -524,13 +575,13 @@ public class AuthService {
     public LoginResponse refresh(String refreshToken) {
         // 1. Validate purpose, signature, and expiration; reject revoked refresh tokens
         if (!jwtUtils.validateRefreshToken(refreshToken) || blacklistService.contains(refreshToken)) {
-            throw new BusinessException(HttpServletResponse.SC_UNAUTHORIZED, "Refresh token is invalid or expired");
+            throw new AuthenticationException("Refresh token is invalid or expired");
         }
 
         // 2. Get user information
         Long userId = jwtUtils.getUserId(refreshToken);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("User does not exist"));
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
 
         // 3. Check account status
         if (user.getStatus() != 1) {
@@ -749,6 +800,7 @@ public class UserContext {
 package com.example.filter;
 
 import com.example.common.Result;
+import com.example.common.ResultCode;
 import com.example.context.UserContext;
 import com.example.service.TokenBlacklistService;
 import com.example.utils.JwtUtils;
@@ -799,19 +851,19 @@ public class AuthFilter implements Filter {
         // 3. Obtain and validate the token
         String token = extractToken(req);
         if (token == null) {
-            sendError(res, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in");
+            sendError(res, "Not logged in");
             return;
         }
 
         // 4. Check the blocklist
         if (blacklistService.contains(token)) {
-            sendError(res, HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated; please log in again");
+            sendError(res, "Token has been invalidated; please log in again");
             return;
         }
 
         // 5. Business endpoints accept only access tokens
         if (!jwtUtils.validateAccessToken(token)) {
-            sendError(res, HttpServletResponse.SC_UNAUTHORIZED, "Access token is invalid or expired");
+            sendError(res, "Access token is invalid or expired");
             return;
         }
 
@@ -821,11 +873,11 @@ public class AuthFilter implements Filter {
             UserContext.setUsername(jwtUtils.getUsername(token));
         } catch (Exception e) {
             UserContext.clear();
-            sendError(res, HttpServletResponse.SC_UNAUTHORIZED, "Token is invalid or expired");
+            sendError(res, "Token is invalid or expired");
             return;
         }
 
-        // 7. Continue the chain outside the token try block so downstream exceptions are not reported as 401
+        // 7. Continue the chain outside the token try block so downstream exceptions are not reported as authentication failures
         try {
             chain.doFilter(request, response);
         } finally {
@@ -845,10 +897,10 @@ public class AuthFilter implements Filter {
         return null;
     }
 
-    private void sendError(HttpServletResponse response, int code, String message)
-            throws IOException {
+    private void sendError(HttpServletResponse response, String message) throws IOException {
+        // The filter runs before Spring MVC, so it writes the same Result body as the global handler itself
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(Result.error(code, message)));
+        response.getWriter().write(objectMapper.writeValueAsString(Result.error(ResultCode.UNAUTHORIZED, message)));
     }
 }
 ```
@@ -1128,7 +1180,7 @@ public class UserService {
     /** Change the password */
     public void changePassword(Long userId, String oldPwd, String newPwd) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("User does not exist"));
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(oldPwd, user.getPassword())) {
             throw new BusinessException("Incorrect current password");
@@ -1393,6 +1445,7 @@ Use two Redis keys: `sms:code:{phone}` stores the verification code (TTL: 5 minu
 ```java
 package com.example.service;
 
+import com.example.common.ResultCode;
 import com.example.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -1418,7 +1471,8 @@ public class SmsService {
     public void send(String phone) {
         // 1. Check the send rate (once every 60 seconds)
         if (Boolean.TRUE.equals(redisTemplate.hasKey(LIMIT_PREFIX + phone))) {
-            throw new BusinessException("Too many requests; please try again in 60 seconds");
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(),
+                    "Too many requests; please try again in 60 seconds");
         }
 
         // 2. Generate a 6-digit code (SecureRandom provides unpredictable randomness)
@@ -1574,11 +1628,11 @@ package com.example.aspect;
 
 import com.example.annotation.Logical;
 import com.example.annotation.RequirePermission;
+import com.example.common.ResultCode;
 import com.example.context.UserContext;
 import com.example.exception.AuthenticationException;
 import com.example.exception.BusinessException;
 import com.example.service.PermissionService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -1617,7 +1671,7 @@ public class PermissionAspect {
         }
 
         if (!hasPermission) {
-            throw new BusinessException(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            throw new BusinessException(ResultCode.ACCESS_DENIED);
         }
     }
 }
@@ -2151,7 +2205,7 @@ HTTP request
 | Problem | Possible cause | Solution |
 | -------------------------- | -------------------------------------- | ------------------------------------- |
 | **Cannot parse token** | Inconsistent keys | Use the same key for generation and parsing |
-| **Cross-origin request returns 401** | OPTIONS preflight is intercepted | Allow OPTIONS in the Filter/Interceptor |
+| **Cross-origin request is rejected as unauthorized** | OPTIONS preflight is intercepted | Allow OPTIONS in the Filter/Interceptor |
 | **ThreadLocal memory leak** | Context not cleared after request | Call clear() in afterCompletion |
 | **Permission changes do not take effect** | Cache not updated | Clear the relevant caches when permissions change |
 | **BCrypt result differs each time** | Normal behavior (random salt) | Verify with matches(), not direct comparison |
