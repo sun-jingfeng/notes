@@ -361,7 +361,7 @@ Singleton.INSTANCE.doSomething();
                             │ Parent loader
     ┌───────────────────────┴───────────────────────────────────┐
     │           Application ClassLoader                         │
-    │           Loads classpath classes (our own classes)       │
+    │           Loads classpath classes (application code)      │
     └───────────────────────────────────────────────────────────┘
 
 #### JDK 9 and Later (Module System)

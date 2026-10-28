@@ -241,7 +241,7 @@ A **starter** groups related dependencies to simplify dependency management.
 
 ### 2.3 How Auto-configuration Works
 
-**Auto-configuration** configures Spring based on available dependencies, reducing the amount of configuration you write manually.
+**Auto-configuration** configures Spring based on available dependencies, reducing manual configuration.
 
 The key idea is: **Spring Boot evaluates conditions before deciding whether to register a default bean.**
 
@@ -249,7 +249,7 @@ The key idea is: **Spring Boot evaluates conditions before deciding whether to r
 | -------- | ---- |
 | **Required dependencies are present** | The classes needed for the feature must be on the classpath |
 | **Conditions match** | Property, bean, application-type, and other conditions must pass |
-| **No user-defined equivalent** | Default configuration typically backs off when you define the corresponding bean |
+| **No user-defined equivalent** | Default configuration typically backs off when the application defines the corresponding bean |
 
 #### Core Mechanism
 
@@ -296,7 +296,7 @@ Prefer user-defined equivalent beans when provided
 | ---- | ---- |
 | **Auto-configuration is conditional** | It relies on `@Conditional...` annotations |
 | **It supplies defaults** | Its purpose is to reduce configuration, while allowing customization |
-| **User configuration takes precedence** | Defining your own bean prevents many corresponding defaults from being created |
+| **User configuration takes precedence** | An application-defined bean prevents many corresponding defaults from being created |
 
 #### Common Conditional Annotations
 
@@ -458,7 +458,7 @@ A **bean** is an object managed by the Spring container, which creates it, injec
 
 | Scenario | Approach | Explanation |
 | -------------------- | ------------ | ---------------------------- |
-| Your own class | `@Component` | Annotate a class within the component scan |
+| Application class | `@Component` | Annotate a class within the component scan |
 | A class from a dependency | `@Bean` | Register it explicitly in a configuration class |
 | Custom initialization | `@Bean` | Set properties before returning the instance |
 
@@ -507,7 +507,7 @@ private UserService userService;
 `@Configuration` declares a **configuration class** whose `@Bean` methods register beans with the container.
 
 **Use cases:**
-- **Third-party classes:** When you cannot add `@Component` to their source and they are outside the default scan, register them with `@Bean`.
+- **Third-party classes:** When their source cannot carry `@Component` and they are outside the default scan, register them with `@Bean`.
 - **Custom initialization:** Configure an instance before returning it.
 - **Grouped configuration:** Keep related bean definitions in one configuration class.
 
@@ -775,7 +775,7 @@ private UserService userService;
 
 #### Injecting a Collection of Beans
 
-You can inject several implementations at once instead of selecting just one:
+Several implementations can be injected at once instead of selecting just one:
 
 ```java
 @Service
@@ -1670,7 +1670,7 @@ An auto-configuration that does not apply usually has an unmet condition rather 
 | ------ | -------- |
 | **Required dependency** | The intended starter was excluded or versions do not match |
 | **Required property** | A feature requires an explicit enabling property |
-| **User-defined bean** | Your own bean caused the default to back off |
+| **User-defined bean** | An application-defined bean caused the default to back off |
 | **Application type** | The configuration applies only to servlet or reactive web applications |
 
 Useful diagnostic commands:

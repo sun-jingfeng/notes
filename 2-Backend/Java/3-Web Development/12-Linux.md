@@ -558,7 +558,7 @@ java -version
 ### 3.6 Installing MySQL
 
 ```bash
-# Ubuntu
+# Ubuntu (26.04 ships MySQL 8.4 LTS; 24.04 ships 8.0, which reached end of life in April 2026)
 sudo apt update
 sudo apt install mysql-server
 
@@ -569,9 +569,11 @@ sudo systemctl enable mysql     # Enable startup at boot
 # Security configuration
 sudo mysql_secure_installation
 
-# Log in
-sudo mysql -u root -p
+# Log in (Ubuntu's root account uses socket authentication, so no password is needed)
+sudo mysql
 ```
+
+> 💡 On Ubuntu 24.04 and on Debian (whose repositories ship MariaDB instead), install MySQL 8.4 from the official MySQL APT repository (<https://dev.mysql.com/downloads/repo/apt/>).
 
 ### 3.7 Installing Nginx
 
@@ -638,7 +640,7 @@ scp target/app.jar username@serverIP:/srv/app/
 scp user@server:/remote/file local_path
 ```
 
-You can also upload graphically using SFTP clients such as Royal TSX or FileZilla. Production environments commonly keep applications in `/srv/appName` or `/opt`. Create the directory as root, then run `chown runtimeUser:group /srv/appName` so the application user can write logs and update configuration.
+SFTP clients such as Royal TSX or FileZilla provide graphical uploads. Production environments commonly keep applications in `/srv/appName` or `/opt`. Create the directory as root, then run `chown runtimeUser:group /srv/appName` so the application user can write logs and update configuration.
 
 ### 4.3 Deploying a Spring Boot Project
 

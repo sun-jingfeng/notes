@@ -43,7 +43,7 @@ if (condition) {
 }
 ```
 
-**Example:**
+The block runs only when the condition holds:
 
 ```java
 int age = 18;
@@ -62,7 +62,7 @@ if (condition) {
 }
 ```
 
-**Example:**
+Exactly one of the two branches runs:
 
 ```java
 int age = 16;
@@ -87,7 +87,7 @@ if (condition1) {
 }
 ```
 
-**Example:**
+Conditions are checked from top to bottom, and only the first matching branch runs:
 
 ```java
 int score = 85;
@@ -463,7 +463,7 @@ String result2 = switch (obj2) {
 
 ### 1. What Is Debugging?
 
-Debugging is the process of **finding and fixing code errors**. It allows you to:
+Debugging is the process of **finding and fixing code errors**. A debugger can:
 
 *   Execute code line by line
 *   Inspect variable values

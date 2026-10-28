@@ -745,7 +745,7 @@ System.out.println(list);                  // [X, Z, A, B]
     ├─ Automatically balances; does not degenerate into a linked list
     └─ Nodes have one of two colors: red or black
 
-    Example:
+    A valid red-black tree:
                 5 (black)
                /         \
           3 (red)       8 (black)

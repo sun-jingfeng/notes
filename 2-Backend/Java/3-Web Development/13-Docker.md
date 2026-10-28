@@ -1040,7 +1040,7 @@ volumes:
 
 ### 8.5 Docker Compose Commands
 
-The following uses the **V2 plugin** `docker compose` (replace with `docker-compose` for standalone):
+The commands use the **V2 plugin** `docker compose` (replace with `docker-compose` for standalone):
 
 ```bash
 # Start all services in the background

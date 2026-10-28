@@ -98,7 +98,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
 | **Performance** | Essentially the same | Essentially the same |
 | **Recommended use** | Enterprise production | Learning, development, and open-source projects |
 
-> **Version check (2026-10-26)**: Java 25 is the latest LTS release. "Oracle JDK 17+ is free" is too broad: different update releases may use different licenses, so check the exact version downloaded and your use case. See the [Oracle Java SE Support and Licensing Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html).
+> **Version check (2026-10-26)**: Java 25 is the latest LTS release. "Oracle JDK 17+ is free" is too broad: different update releases may use different licenses, so check the license of the exact version downloaded against the intended use. See the [Oracle Java SE Support and Licensing Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html).
 
 ### 3. Common JDK Distributions
 
@@ -398,7 +398,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 25)
 
 ***
 
-## V. Your First Java Program: HelloWorld
+## V. First Java Program: HelloWorld
 
 ### 1. Write the Code
 

@@ -1015,7 +1015,7 @@ String result = future.get();  // Retrieve the return value
 **Conclusion**:
 
 *   Use `execute()` when only execution matters, not the result.
-*   Use `submit()` when you need the task result, exception or completion status.
+*   Use `submit()` when the caller needs the task result, exception, or completion status.
 
 ### 6. Retrieving Results from Pool Tasks
 

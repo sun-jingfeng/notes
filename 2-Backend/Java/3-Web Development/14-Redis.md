@@ -1461,13 +1461,36 @@ Redisson is a Redis-based Java client with complete distributed synchronization 
 
 #### Dependency
 
+The starter bundles the `redisson-spring-data-xx` module for the newest Spring Boot release (`redisson-spring-data-41` in Redisson 4.8). Projects on an older Spring Boot release exclude it and add the matching module:
+
+| Spring Boot | Spring Data Redis | Redisson module |
+| --- | --- | --- |
+| **3.4.x** | 3.4.x | `redisson-spring-data-34` |
+| **3.5.x** | 3.5.x | `redisson-spring-data-35` |
+| **4.0.x** | 4.0.x | `redisson-spring-data-40` |
+| **4.1.x** | 4.1.x | `redisson-spring-data-41` (bundled) |
+
 ```xml
+<!-- Spring Boot 3.5: replace the bundled Boot 4.1 module with redisson-spring-data-35 -->
 <dependency>
     <groupId>org.redisson</groupId>
     <artifactId>redisson-spring-boot-starter</artifactId>
-    <version>3.27.0</version>
+    <version>4.8.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-41</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.redisson</groupId>
+    <artifactId>redisson-spring-data-35</artifactId>
+    <version>4.8.0</version>
 </dependency>
 ```
+
+> 💡 On Spring Boot 4.1, the starter alone is enough. Redisson 4.0 (December 2025) removed several deprecated APIs and moved credentials, SSL, and TCP settings from the per-mode server configs to `Config`; 3.x-style calls such as `useSingleServer().setPassword(...)` still compile but are deprecated.
 
 #### Configuration
 
@@ -1481,15 +1504,16 @@ spring:
 ```
 
 ```java
-// The starter can also build RedissonClient from spring.data.redis; this explicit bean replaces that default
+// The starter builds RedissonClient from spring.data.redis automatically;
+// an explicit bean replaces that default when more settings are needed
 @Configuration
 public class RedissonConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
+        config.setPassword("yourpassword");   // Redisson 4: credentials are set on Config
         config.useSingleServer()
-              .setAddress("redis://localhost:6379")
-              .setPassword("yourpassword");
+              .setAddress("redis://localhost:6379");
         return Redisson.create(config);
     }
 }
@@ -1951,7 +1975,7 @@ rate:limit:192.168.1.1  # Rate-limit counter
 
 ### 8.10 Production Configuration Recommendations
 
-The following covers security (bind address, password, dangerous commands), resources (maxmemory, eviction), persistence, and observability (AOF, slowlog). Adjust it to machine capacity and business requirements.
+A production `redis.conf` covers security (bind address, password, dangerous commands), resources (maxmemory, eviction), persistence, and observability (AOF, slowlog). Adjust the values to machine capacity and business requirements.
 
 ```properties
 # Recommended redis.conf production settings

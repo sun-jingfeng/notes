@@ -733,7 +733,7 @@ DataType[][] arrayName = new DataType[][]{{elements}, {elements}, {elements}};
 DataType[][] arrayName = {{elements}, {elements}, {elements}};
 ```
 
-**Example:**
+Both forms create the same 3 × 3 array:
 
 ```java
 // Static initialization
@@ -757,7 +757,7 @@ DataType[][] arrayName = new DataType[rowCount][columnCount];
 DataType[][] arrayName = new DataType[rowCount][];
 ```
 
-**Example:**
+A rectangular array allocates every row at once; a ragged array allocates each row separately:
 
 ```java
 // Rectangular array: 3 rows, 4 columns

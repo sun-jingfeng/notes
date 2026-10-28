@@ -124,7 +124,7 @@ public class MyApplication { ... }
 
 When modules introduce different versions of a dependency, Maven uses the nearest definition. Prefer managing versions centrally in the parent's `<dependencyManagement>`.
 
-You can also exclude conflicting dependencies with `<exclusions>`:
+Conflicting dependencies can also be excluded with `<exclusions>`:
 
 ```xml
 <dependency>
@@ -215,7 +215,7 @@ The parent's `pom.xml` has five main parts:
 
 **2. Properties (Custom Configuration Values)**
 
-Maven lets you define custom values in `<properties>` and reference them elsewhere in the POM with `${propertyName}`.
+Custom values defined in `<properties>` can be referenced elsewhere in the POM with `${propertyName}`.
 
 **Definition:** Within `<properties>`, each element's name is the property name and its content is the property value.
 
@@ -361,11 +361,11 @@ A child declares its parent with `<parent>`. `<relativePath>` specifies the rela
 A **BOM (Bill of Materials)** is a Maven POM used to **manage dependency versions without adding the dependencies themselves**.
 
 Think of it as a version catalog:
-- Its `<dependencyManagement>` entries say, for example, "If you use spring-boot-starter-web, use version 3.5.16."
-- It **does not** add those dependencies to your project; it specifies which versions to use.
-- When you declare a managed dependency in `<dependencies>`, you **can omit its version** and use the catalog's version.
+- Its `<dependencyManagement>` entries say, for example, "spring-boot-starter-web uses version 3.5.16."
+- It **does not** add those dependencies to the project; it specifies which versions to use.
+- A managed dependency declared in `<dependencies>` **can omit its version** and use the catalog's version.
 
-Spring's `spring-boot-dependencies` is a BOM. Importing it brings Spring Boot's dependency version catalog into your project.
+Spring's `spring-boot-dependencies` is a BOM. Importing it brings Spring Boot's dependency version catalog into the project.
 
 #### 9. Two Ways to Use Spring Boot's Parent Configuration
 
@@ -379,9 +379,9 @@ Spring's `spring-boot-dependencies` is a BOM. Importing it brings Spring Boot's 
 </parent>
 ```
 
-**Option 2: Import the BOM** (when using your own parent; Maven supports only one parent)
+**Option 2: Import the BOM** (when the project has its own parent; Maven supports only one parent)
 
-If the project already has a custom parent such as `myapp-parent`, import the BOM: retain your own parent and import Spring Boot's dependency version management.
+If the project already has a custom parent such as `myapp-parent`, keep that parent and import Spring Boot's dependency version management as a BOM.
 
 ```xml
 <!-- In your myapp-parent pom.xml -->

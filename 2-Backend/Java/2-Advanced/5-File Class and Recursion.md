@@ -939,7 +939,7 @@ factorialTail(5, 1)
                     → 120
 ```
 
-**Note:** Java currently does not support tail-recursion optimization, but understanding it helps you write better code.
+**Note:** Java does not perform tail-call optimization, so a tail-recursive method still uses one stack frame per call. The accumulator form converts directly into a loop, which is the reliable fix for deep recursion.
 
 ***
 

@@ -346,7 +346,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
     <dependency>
         <groupId>com.github.pagehelper</groupId>
         <artifactId>pagehelper-spring-boot-starter</artifactId>
-        <version>2.1.1</version>
+        <version>2.1.1</version>   <!-- 2.1.x for Spring Boot 3; 4.x for Spring Boot 4 -->
     </dependency>
 </dependencies>
 ```
@@ -432,7 +432,7 @@ class UserMapperTest {
 | `#{}` | Binds a value through a prepared-statement parameter | ✅ Ordinary values (recommended) |
 | `${}` | Inserts text directly, with SQL injection risk | ⚠️ Dynamic identifiers or ordering, after allowlist validation |
 
-**Example:**
+**Comparison in a mapper:**
 
 ```java
 @Mapper
@@ -1091,7 +1091,7 @@ The first-level cache belongs to a `SqlSession`. Repeating the same query in tha
 | **No intervening cache clear** | Explicit clearing removes reusable entries |
 | **No invalidating write** | Inserts, updates, and deletes normally clear the local cache |
 
-**Example:**
+**Verifying a first-level cache hit:**
 
 ```java
 @Test
@@ -1150,7 +1150,7 @@ mybatis:
 </mapper>
 ```
 
-**Example:**
+**Verifying a second-level cache hit across sessions:**
 
 ```java
 @Test
@@ -1228,7 +1228,7 @@ The **second-level cache** is used more cautiously, especially in microservices,
 <dependency>
     <groupId>com.github.pagehelper</groupId>
     <artifactId>pagehelper-spring-boot-starter</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.1</version>   <!-- 2.1.x for Spring Boot 3; 4.x for Spring Boot 4 -->
 </dependency>
 ```
 

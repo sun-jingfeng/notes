@@ -834,7 +834,7 @@ public void addResourceHandlers(ResourceHandlerRegistry registry) {
 <dependency>
     <groupId>com.aliyun.oss</groupId>
     <artifactId>aliyun-sdk-oss</artifactId>
-    <version>3.17.4</version>
+    <version>3.18.5</version>
 </dependency>
 ```
 

@@ -21,7 +21,7 @@ A **starter** is a core Spring Boot feature that groups related dependencies, si
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>2.19.4</version>
+    <version>2.21.4</version>
 </dependency>
 <!-- Tomcat, Validation, and other dependencies are also needed... -->
 
@@ -614,7 +614,7 @@ xxx-spring-boot-starter-parent/
 
 #### Registration File
 
-Spring Boot discovers your auto-configuration through this file:
+Spring Boot discovers custom auto-configuration through this file:
 
 ```text
 Path: src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
@@ -663,7 +663,7 @@ sms:
 private SmsService smsService;
 ```
 
-#### Files You Need to Provide
+#### Required Files
 
 | File | Purpose |
 | ---- | ---- |
@@ -676,7 +676,7 @@ private SmsService smsService;
 
 **Why use `@ConditionalOnMissingBean`?**
 
-It gives user-defined beans priority. If the application defines its own SmsService, your auto-configuration backs off.
+It gives user-defined beans priority. If the application defines its own SmsService, the starter's auto-configuration backs off.
 
 **Why use `@ConditionalOnProperty`?**
 

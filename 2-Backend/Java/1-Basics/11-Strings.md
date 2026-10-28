@@ -720,7 +720,7 @@ String s = new String("abc");
 // 2. Then create a String object on the heap
 ```
 
-### 4. What Should You Use for Concatenation in a Loop?
+### 4. Choosing a Concatenation Approach in Loops
 
 ```java
 // ❌ Incorrect

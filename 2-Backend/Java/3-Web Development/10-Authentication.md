@@ -256,18 +256,18 @@ A JWT consists of three parts separated by `.`, all Base64URL-encoded (encoding 
 <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-api</artifactId>
-    <version>0.12.5</version>
+    <version>0.13.0</version>
 </dependency>
 <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-impl</artifactId>
-    <version>0.12.5</version>
+    <version>0.13.0</version>
     <scope>runtime</scope>
 </dependency>
 <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-jackson</artifactId>
-    <version>0.12.5</version>
+    <version>0.13.0</version>
     <scope>runtime</scope>
 </dependency>
 
@@ -1862,7 +1862,7 @@ public interface PermissionMapper {
 | **User loading** | Manually query the database and populate UserContext | Implement `UserDetailsService` for the framework to load users |
 | **Filter implementation** | Extend any Filter and manually decide whether to allow requests | Extend `OncePerRequestFilter` and populate SecurityContext |
 | **External dependencies** | No additional dependencies | `spring-boot-starter-security` |
-| **Flexibility** | High; fully under your control | Moderate; requires understanding the Spring Security filter chain |
+| **Flexibility** | High; every step is custom code | Moderate; requires understanding the Spring Security filter chain |
 | **Suitable scenarios** | Small projects or existing authentication systems | Medium/large projects needing standardized security configuration |
 
 ### 8.2 Maven Dependency

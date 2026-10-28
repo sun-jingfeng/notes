@@ -11,27 +11,41 @@ MySQL is a widely used open-source **relational database management system (RDBM
 
 ### 1.2 Installation
 
+#### Version Choice
+
+MySQL publishes two release tracks:
+
+| Track | Current versions | Support | Use |
+| --- | --- | --- | --- |
+| **LTS (Long-Term Support)** | **8.4** (until April 2032), **9.7** (until April 2034) | Bug and security fixes only; no new features | Production and learning (the examples use 8.4) |
+| **Innovation** | 26.x (26.10 in October 2026) | Only until the next Innovation release, about every three months | Trying new features |
+
+> **Note**: MySQL 8.0 reached end of life in April 2026; move existing 8.0 installations to 8.4.
+
 #### Windows
 
-**Option 1: Official installer (recommended)**
+**Option 1: MSI package (recommended)**
 
-1.  Visit <https://dev.mysql.com/downloads/mysql/>
-2.  Download MySQL Installer
-3.  Select **Developer Default** or **Server only**
-4.  Set the root password
-5.  The installer registers a Windows service
+1.  Visit <https://dev.mysql.com/downloads/mysql/>, select version **8.4 LTS**, and download the **Windows (x86, 64-bit), MSI Installer** package
+2.  Run the MSI; it installs the server plus **MySQL Configurator** and offers to start the Configurator when it finishes
+3.  In MySQL Configurator, keep port 3306 on **Type and Networking**, set the root password on **Accounts and Roles**, and keep the Windows service on **Windows Service** (named `MySQL84` by default, following the `MySQLXY` pattern)
+4.  Apply the configuration; the server does not start until it is configured
+
+> 💡 The older **MySQL Installer** (with setup types such as "Developer Default") installs only MySQL 5.7 and 8.0. MySQL 8.1 and later ship as a server MSI that bundles MySQL Configurator instead.
 
 ***
 
-**Option 2: Install from an archive**
+**Option 2: Install from a ZIP archive**
 
-Basic `my.ini` configuration:
+The archive also bundles `bin\mysql-configurator.exe`; without it, the server is set up manually.
+
+Basic `my.ini` configuration (placed in the extracted directory):
 
 ```ini
 [mysqld]
 port=3306
-basedir=D:/mysql-8.0.xx
-datadir=D:/mysql-8.0.xx/data
+basedir=D:/mysql-8.4.xx
+datadir=D:/mysql-8.4.xx/data
 max_connections=200
 character-set-server=utf8mb4
 
@@ -39,15 +53,17 @@ character-set-server=utf8mb4
 default-character-set=utf8mb4
 ```
 
-```bash
-# Initialize the database
-mysqld --initialize-insecure --user=mysql
+```powershell
+# Run in an Administrator terminal from the bin directory
 
-# Register the Windows service
-mysqld --install MySQL
+# Initialize the data directory with an empty root password
+mysqld --initialize-insecure --console
+
+# Register the Windows service (same name an MSI install uses)
+mysqld --install MySQL84
 
 # Start the service
-net start MySQL
+net start MySQL84
 
 # Log in (press Enter at the empty-password prompt), then change the password inside the mysql client
 mysql -u root -p
@@ -57,28 +73,33 @@ mysql -u root -p
 #### macOS / Linux
 
 ```bash
-# macOS (Homebrew)
-brew install mysql
-brew services start mysql
+# macOS (Homebrew): the mysql formula tracks the newest Innovation release, so install the LTS formula
+brew install mysql@8.4
+brew services start mysql@8.4
+# mysql@8.4 is keg-only (not linked into PATH); the prefix is /usr/local on Intel Macs
+echo 'export PATH="/opt/homebrew/opt/mysql@8.4/bin:$PATH"' >> ~/.zshrc
 
-# Linux (Ubuntu/Debian)
+# Linux (Ubuntu): Ubuntu 26.04 ships 8.4; Ubuntu 24.04 ships 8.0
 sudo apt update
 sudo apt install mysql-server
 sudo systemctl start mysql
 sudo systemctl enable mysql
+# Ubuntu's root account uses socket authentication: log in with sudo mysql
 
 # Security configuration
 mysql_secure_installation
 ```
 
+> 💡 Debian's own repositories ship MariaDB as `default-mysql-server`. On Debian, and on Ubuntu releases that ship 8.0, MySQL 8.4 comes from the official **MySQL APT repository** (<https://dev.mysql.com/downloads/repo/apt/>).
+
 #### Common Service Commands
 
-| Action | Windows | Linux with systemd |
-| ---- | ----------------- | ------------------------------ |
-| Start | `net start mysql` | `sudo systemctl start mysql` |
-| Stop | `net stop mysql` | `sudo systemctl stop mysql` |
-| Restart | Stop, then start | `sudo systemctl restart mysql` |
-| Status | `sc query mysql` | `sudo systemctl status mysql` |
+| Action | Windows | macOS (Homebrew) | Linux with systemd |
+| ---- | ----------------- | ----------------- | ------------------------------ |
+| Start | `net start MySQL84` | `brew services start mysql@8.4` | `sudo systemctl start mysql` |
+| Stop | `net stop MySQL84` | `brew services stop mysql@8.4` | `sudo systemctl stop mysql` |
+| Restart | Stop, then start | `brew services restart mysql@8.4` | `sudo systemctl restart mysql` |
+| Status | `sc query MySQL84` | `brew services info mysql@8.4` | `sudo systemctl status mysql` |
 
 #### Connecting to MySQL
 
@@ -94,12 +115,12 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 
 | Tool | Characteristics | Pricing |
 | ------------------- | ---------------- | -------- |
-| **Navicat** | Extensive features and a graphical interface | Paid |
-| **DataGrip** | JetBrains database IDE | Paid; educational licenses available |
+| **Navicat** | Extensive features and a graphical interface | Paid editions; free **Premium Lite** edition with core features |
+| **DataGrip** | JetBrains database IDE | Free for non-commercial use (since October 2025); paid for commercial use |
 | **DBeaver** | Open-source community edition; supports many databases | Free community edition |
 | **MySQL Workbench** | Official MySQL tool | Free |
 
-**Suggested choices:** DBeaver for learning; Navicat or DataGrip for professional use.
+**Suggested choices:** DBeaver or DataGrip (non-commercial license) for learning; DataGrip or Navicat for professional use.
 
 ### 1.4 Data Model
 
@@ -563,7 +584,7 @@ For `INDEX idx_abc (a, b, c)`:
 | `ORDER BY b`, index `(a, b)` | Usually no | The leading column is not fixed |
 | `WHERE a > 1 ORDER BY b`, index `(a, b)` | Usually limited | The range on a prevents a globally ordered scan by b alone |
 
-**Example:**
+A composite index on `(status, create_time, id)` serves both the filter and the sort:
 
 ```sql
 -- Composite index already defined
@@ -1382,7 +1403,7 @@ For example, create this composite index:
 ALTER TABLE order_info ADD INDEX idx_supplier_id_id (supplier_id, id);
 ```
 
-The following query can then be optimized more effectively:
+This query then filters, sorts, and reads `id` from the index alone (a covering index):
 
 ```sql
 SELECT id

@@ -8,7 +8,7 @@ Object-oriented programming (OOP) is a programming approach **centered on object
 
 | Approach     | Focus    | Way of thinking          | Example                   |
 | -------- | ----- | ------------- | -------------------- |
-| **Procedural** | Steps and procedures | Do everything yourself; focus on how each step works | Cook yourself: buy ingredients → wash → chop → cook → plate  |
+| **Procedural** | Steps and procedures | Perform every step directly; focus on how each step works | Cooking at home: buy ingredients → wash → chop → cook → plate  |
 | **Object-oriented** | Objects and responsibilities | Find objects and ask them to perform actions     | Order delivery: find a restaurant (object) and call its "deliver food" operation |
 
 ### 3. Three Core OOP Features
@@ -37,7 +37,7 @@ Object-oriented programming (OOP) is a programming approach **centered on object
 | Concept             | Description                 | Real-world analogy   |
 | -------------- | ------------------ | ------ |
 | **Class**   | An object's template or blueprint, describing shared characteristics and behavior | A car's design blueprint |
-| **Object** | A concrete instance of a class; an actual individual entity     | The car you drive |
+| **Object** | A concrete instance of a class; an actual individual entity     | A specific car built from that blueprint |
 
 **Relationship**: A class is an abstract concept, while an object is a concrete entity. Define a class first, then create objects.
 
@@ -369,11 +369,11 @@ public class Person {
 | ------ | ----------------------- |
 | Default constructor   | No constructors declared → a no-argument constructor is provided     |
 | Replacement rule   | **Once a parameterized constructor is declared, no no-argument constructor is provided automatically** |
-| Recommended practice   | **Write a no-argument constructor explicitly, whether or not you use it**    |
+| Recommended practice   | **Declare a no-argument constructor explicitly, even when no code calls it yet**    |
 | Overloading   | Multiple constructors are allowed if their parameters differ       |
 | this() | Must be the first statement in JDK 17/21; circular calls are forbidden |
 
-> **Version note**: Starting with JDK 25, permitted statements such as argument validation may precede `this(...)` / `super(...)`. Early construction context restrictions apply: you cannot read the current instance's fields or call its instance methods before that invocation. Putting the constructor invocation first remains valid.
+> **Version note**: Starting with JDK 25, permitted statements such as argument validation may precede `this(...)` / `super(...)`. Early construction context restrictions apply: code before that invocation cannot read the current instance's fields or call its instance methods. Putting the constructor invocation first remains valid.
 
 ***
 

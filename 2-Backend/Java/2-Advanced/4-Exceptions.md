@@ -529,7 +529,7 @@ class ServiceException extends RuntimeException {
 
 ### 1. Why Custom Exceptions Are Needed
 
-*   JDK exceptions may not express the specific business errors you need.
+*   JDK exceptions may not express specific business errors.
 *   They make exception information clearer and more meaningful.
 
 ### 2. Steps to Define a Custom Exception
