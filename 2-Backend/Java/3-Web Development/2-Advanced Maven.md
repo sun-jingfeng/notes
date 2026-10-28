@@ -882,9 +882,9 @@ java -jar target/myapp-web-1.0.0.jar
 
 ***
 
-## V. Summary
+## V. Quick Reference
 
-### 5.1 Quick Reference
+### 5.1 Configuration and Commands
 
 | Topic | Core configuration | Common command |
 | ---------- | ------------------------------------ | ------------------- |

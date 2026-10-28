@@ -1005,7 +1005,7 @@ Date date = sdf.parse("2024-01-07 12:30:45");
 // Common patterns
 SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");  // 2024-01-07
 SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");  // 2024/01/07 12:30:45
-SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy年MM月dd日");  // 2024年01月07日
+SimpleDateFormat sdf3 = new SimpleDateFormat("MMM d, yyyy", Locale.US);  // Jan 7, 2024 (month names depend on the locale)
 ```
 
 ***
@@ -1176,7 +1176,7 @@ LocalDateTime dt = LocalDateTime.parse("2024-01-07 12:30:45", formatter);
 // Common patterns
 DateTimeFormatter f1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 DateTimeFormatter f2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-DateTimeFormatter f3 = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH时mm分ss秒");
+DateTimeFormatter f3 = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' HH:mm", Locale.US);  // Sunday, January 7, 2024 at 12:30 (quoted text is literal)
 DateTimeFormatter f4 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 ```
 

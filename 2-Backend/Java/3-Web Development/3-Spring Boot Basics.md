@@ -7,7 +7,7 @@
 | Feature | Description |
 | ---------- | ----------------------------------------------- |
 | Rapid setup | Starters simplify dependency and build configuration |
-| Embedded servers | Embedded Tomcat, Jetty, or Undertow removes the need to deploy a WAR |
+| Embedded servers | Embedded Tomcat or Jetty removes the need to deploy a WAR |
 | Auto-configuration | Automatically configures Spring and third-party libraries where possible |
 | No XML required | Favors Java configuration over extensive XML configuration |
 | Production features | Provides monitoring, health checks, externalized configuration, and more |
@@ -18,7 +18,7 @@
 | -------- | -------------------- | ---------------------- |
 | **Complex dependencies** | Select and maintain dependency sets and versions manually | Starters group dependencies; Spring Boot manages their versions |
 | **Extensive configuration** | Write substantial XML or Java configuration | Auto-configuration supplies default beans and behavior |
-| **Cumbersome startup** | Build a WAR and deploy it to an external container | Embedded Tomcat/Jetty/Undertow starts from a main method |
+| **Cumbersome startup** | Build a WAR and deploy it to an external container | Embedded Tomcat/Jetty starts from a main method |
 | **Scattered environment settings** | Settings are spread across code, XML, and server arguments | Externalized configuration and profiles provide consistent management |
 | **Limited operational support** | Assemble health checks, metrics, and information endpoints manually | Integrate capabilities such as Actuator directly |
 
@@ -142,6 +142,47 @@ src/main/resources
 
 ***
 
+### 1.4 Versions and Spring Boot 4
+
+The examples use **Spring Boot 3.5** (`3.5.16`). Spring Boot 4.0, released in November 2025, moved to Spring Framework 7 and Jakarta EE 11.
+
+| Line | Released | Open-source support ends | Notes |
+| --------- | -------- | ------------------------ | ----------------------------------------------------------- |
+| **3.5.x** | 2025-05 | 2026-06-30 | Last 3.x line; commercial support runs until 2032-06-30 |
+| **4.0.x** | 2025-11 | 2026-12-31 | First Spring Framework 7 line |
+| **4.1.x** | 2026-06 | 2027-07-31 | Current line; 4.2 is scheduled for 2026-11 |
+
+| Aspect | Spring Boot 3.5 | Spring Boot 4.x |
+| ---------------------- | ----------------------------------- | ------------------------------------------------------------ |
+| **Java** | 17+ | 17+ (the latest LTS is recommended) |
+| **Spring Framework** | 6.2 | 7.x |
+| **Jakarta EE / Servlet** | 10 / 6.0 | 11 / 6.1 |
+| **Jackson** | 2.x (`com.fasterxml.jackson`) | 3.x (`tools.jackson`; annotations keep `com.fasterxml.jackson.annotation`) |
+| **Embedded servers** | Tomcat 10.1, Jetty 12, Undertow | Tomcat 11, Jetty 12.1 (Undertow removed) |
+| **Null-safety annotations** | Spring's `@Nullable` | JSpecify (`org.jspecify.annotations.Nullable`) |
+
+**Changes that affect everyday code:**
+
+| Area | Spring Boot 3.5 | Spring Boot 4.x |
+| ------------------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| **Web MVC starter** | `spring-boot-starter-web` | `spring-boot-starter-webmvc` (the old name still works but is deprecated) |
+| **AOP starter** | `spring-boot-starter-aop` | `spring-boot-starter-aspectj` |
+| **OAuth2 starters** | `spring-boot-starter-oauth2-resource-server` / `-oauth2-client` | `spring-boot-starter-security-oauth2-resource-server` / `-security-oauth2-client` |
+| **Test starters** | `spring-boot-starter-test` | One per technology, such as `spring-boot-starter-webmvc-test` (each includes `spring-boot-starter-test`) |
+| **Mocking beans** | `@MockBean` (deprecated since 3.4) | Removed; use `@MockitoBean` / `@MockitoSpyBean` |
+| **`TestRestTemplate`** | Provided by `@SpringBootTest` with a web environment | Add `@AutoConfigureTestRestTemplate`, or use the new `RestTestClient` |
+| **JSON customization** | `ObjectMapper` bean, `Jackson2ObjectMapperBuilderCustomizer` | `JsonMapper` bean, `JsonMapperBuilderCustomizer`; `spring.jackson.read.*` → `spring.jackson.json.read.*` |
+| **Synchronous HTTP client** | `RestTemplate` (maintenance mode) or `RestClient` | `RestClient`; Spring plans to deprecate `RestTemplate` formally in Framework 7.1 and remove it in 8.0 |
+
+**Migration path:**
+
+1. Upgrade to the latest 3.5.x and remove every use of deprecated APIs (4.0 deletes them).
+2. Optionally add `spring-boot-starter-classic` and `spring-boot-starter-test-classic`, which restore the old all-in-one classpath while imports are fixed; replace them with specific starters afterward.
+3. Add `spring-boot-properties-migrator` at runtime to report renamed properties at startup; remove it when done.
+4. Rename starters, move Jackson imports to `tools.jackson`, and upgrade companion projects: Spring Cloud 2025.1.x, `mybatis-spring-boot-starter` 4.x, and `mybatis-plus-spring-boot4-starter` for MyBatis-Plus.
+
+***
+
 ## II. Core Mechanisms
 
 ### 2.1 Understanding @SpringBootApplication
@@ -179,7 +220,7 @@ A **starter** groups related dependencies to simplify dependency management.
 
 | Common starter | Purpose |
 | ------------------------------ | --------------- |
-| `spring-boot-starter-web` | Web development |
+| `spring-boot-starter-web` | Web development (`spring-boot-starter-webmvc` in Spring Boot 4) |
 | `spring-boot-starter-data-jpa` | JPA data access |
 | `spring-boot-starter-data-redis` | Redis integration |
 | `spring-boot-starter-test` | Testing support |
@@ -321,7 +362,7 @@ public class DataSourceAutoConfiguration {
 
 ***
 
-**Switching servers**, for example to Undertow:
+**Switching servers**, for example to Jetty:
 
 ```xml
 <dependency>
@@ -336,7 +377,7 @@ public class DataSourceAutoConfiguration {
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-undertow</artifactId>
+    <artifactId>spring-boot-starter-jetty</artifactId>
 </dependency>
 ```
 
@@ -845,7 +886,7 @@ public class UserService { }
 // Specify multiple dependencies
 @Service
 @DependsOn({"dataSource", "cacheManager"})
-public class OrderService { }
+public class DemoService { }
 ```
 
 **Use cases:**
@@ -1176,10 +1217,10 @@ spring:
 ```yaml
 # 1. Object / Map
 user:
-  name: 张三
+  name: Alice
   age: 18
 # Inline form (a key may appear only once per document):
-# user: {name: 张三, age: 18}
+# user: {name: Alice, age: 18}
 
 # 2. Array / List
 hobby:
@@ -1190,13 +1231,13 @@ hobby:
 
 # 3. Array of objects
 users:
-  - name: 张三
+  - name: Alice
     age: 18
-  - name: 李四
+  - name: Bob
     age: 20
 
 # 4. Scalars (simple values)
-name: 张三                    # String (sample name)
+name: Alice                    # String (sample name)
 age: 18                       # Number
 enabled: true                 # Boolean
 data: null                    # Null (~ is an alternative notation: data: ~)
@@ -1289,7 +1330,7 @@ app:
   name: MyApp
   version: 1.0.0
   author:
-    name: 张三
+    name: Alice
     email: test@example.com
   servers:
     - host: server1.example.com

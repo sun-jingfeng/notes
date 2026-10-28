@@ -126,18 +126,18 @@ int num = list.get(0);  // Auto-unboxing: Integer → int
 import java.util.*;
 
 // ========== Arrays.asList() (fixed size) ==========
-List<String> list1 = Arrays.asList("张三", "李四", "王五");
-// list1.add("赵六");  // ❌ Adding/removing elements is not allowed
-list1.set(0, "钱七");  // ✅ Replacing an element is allowed
+List<String> list1 = Arrays.asList("Alice", "Bob", "Carol");
+// list1.add("Dave");  // ❌ Adding/removing elements is not allowed
+list1.set(0, "Eve");  // ✅ Replacing an element is allowed
 
 // Convert to a mutable ArrayList
 ArrayList<String> list2 = new ArrayList<>(Arrays.asList("A", "B", "C"));
 list2.add("D");  // ✅ Adding elements is allowed
 
 // ========== List.of() (JDK 9+, immutable) ==========
-List<String> list3 = List.of("张三", "李四", "王五");
-// list3.add("赵六");  // ❌ Immutable: cannot modify
-// list3.set(0, "钱七");  // ❌ Immutable
+List<String> list3 = List.of("Alice", "Bob", "Carol");
+// list3.add("Dave");  // ❌ Immutable: cannot modify
+// list3.set(0, "Eve");  // ❌ Immutable
 
 // Convert to a mutable ArrayList
 ArrayList<String> list4 = new ArrayList<>(List.of("A", "B", "C"));
@@ -147,7 +147,7 @@ ArrayList<String> list4 = new ArrayList<>(List.of("A", "B", "C"));
 Set<String> set = Set.of("A", "B", "C");  // JDK 9+, immutable
 
 // Map
-Map<String, Integer> map = Map.of("张三", 18, "李四", 20);  // JDK 9+, immutable
+Map<String, Integer> map = Map.of("Alice", 18, "Bob", 20);  // JDK 9+, immutable
 ```
 
 ### 5. Creating Other Common Collections
@@ -191,23 +191,23 @@ Map<String, Integer> treeMap = new TreeMap<>();       // Sorted by key
 ArrayList<String> list = new ArrayList<>();
 
 // ========== Add ==========
-list.add("张三");           // Append to the end
-list.add("李四");
-list.add("王五");
-list.add(1, "赵六");        // Insert at index 1
-// Result: [张三, 赵六, 李四, 王五]
+list.add("Alice");           // Append to the end
+list.add("Bob");
+list.add("Carol");
+list.add(1, "Dave");        // Insert at index 1
+// Result: [Alice, Dave, Bob, Carol]
 
 // ========== Remove ==========
-String removed = list.remove(0);  // Remove index 0; returns "张三"
-boolean success = list.remove("李四");  // Remove "李四"; returns true
-// Result: [赵六, 王五]
+String removed = list.remove(0);  // Remove index 0; returns "Alice"
+boolean success = list.remove("Bob");  // Remove "Bob"; returns true
+// Result: [Dave, Carol]
 
 // ========== Update ==========
-String old = list.set(0, "钱七");  // Replace index 0; returns the previous value "赵六"
-// Result: [钱七, 王五]
+String old = list.set(0, "Eve");  // Replace index 0; returns the previous value "Dave"
+// Result: [Eve, Carol]
 
 // ========== Retrieve ==========
-String name = list.get(0);  // Get index 0; returns "钱七"
+String name = list.get(0);  // Get index 0; returns "Eve"
 ```
 
 #### 2. Bulk Operations
@@ -252,20 +252,20 @@ System.out.println(list1);  // [A, X, Y, B, C, D]
 
 ```java
 ArrayList<String> list = new ArrayList<>();
-list.add("张三");
-list.add("李四");
-list.add("王五");
-list.add("李四");
+list.add("Alice");
+list.add("Bob");
+list.add("Carol");
+list.add("Bob");
 
 // ========== Common operations ==========
 int size = list.size();              // 4
 boolean empty = list.isEmpty();       // false
-boolean has = list.contains("张三");  // true
-int first = list.indexOf("李四");     // 1
-int last = list.lastIndexOf("李四");  // 3
+boolean has = list.contains("Alice");  // true
+int first = list.indexOf("Bob");     // 1
+int last = list.lastIndexOf("Bob");  // 3
 
 // ========== Get a sublist ==========
-List<String> sub = list.subList(1, 3);  // [李四, 王五]
+List<String> sub = list.subList(1, 3);  // [Bob, Carol]
 // Note: subList returns a view; changes affect the original list
 
 // ========== Convert to an array ==========
@@ -301,9 +301,9 @@ nums.sort((a, b) -> Integer.compare(b, a));  // Descending order using a lambda
 
 // Sort objects
 ArrayList<Student> students = new ArrayList<>();
-students.add(new Student("张三", 18));
-students.add(new Student("李四", 20));
-students.add(new Student("王五", 16));
+students.add(new Student("Alice", 18));
+students.add(new Student("Bob", 20));
+students.add(new Student("Carol", 16));
 
 // Sort by age in ascending order
 students.sort((s1, s2) -> Integer.compare(s1.getAge(), s2.getAge()));
@@ -317,9 +317,9 @@ students.sort(Comparator.comparingInt(Student::getAge));
 
 ```java
 ArrayList<String> list = new ArrayList<>();
-list.add("张三");
-list.add("李四");
-list.add("王五");
+list.add("Alice");
+list.add("Bob");
+list.add("Carol");
 
 for (int i = 0; i < list.size(); i++) {
     String name = list.get(i);
@@ -369,7 +369,7 @@ list.stream().forEach(System.out::println);
 
 // Iterate after filtering
 list.stream()
-    .filter(name -> name.startsWith("张"))
+    .filter(name -> name.startsWith("A"))
     .forEach(System.out::println);
 ```
 
@@ -377,14 +377,14 @@ list.stream()
 
 ```java
 ArrayList<String> list = new ArrayList<>();
-list.add("张三");
-list.add("李四");
-list.add("李四");
-list.add("王五");
+list.add("Alice");
+list.add("Bob");
+list.add("Bob");
+list.add("Carol");
 
 // ❌ Incorrect: do not remove directly during an enhanced for loop
 for (String name : list) {
-    if ("李四".equals(name)) {
+    if ("Bob".equals(name)) {
         list.remove(name);  // Throws ConcurrentModificationException
     }
 }
@@ -393,22 +393,22 @@ for (String name : list) {
 Iterator<String> it = list.iterator();
 while (it.hasNext()) {
     String name = it.next();
-    if ("李四".equals(name)) {
+    if ("Bob".equals(name)) {
         it.remove();  // Use the iterator's remove method
     }
 }
 
 // ✅ Correct option 2: Iterate backwards and remove
 for (int i = list.size() - 1; i >= 0; i--) {
-    if ("李四".equals(list.get(i))) {
+    if ("Bob".equals(list.get(i))) {
         list.remove(i);
     }
 }
 
 // ✅ Correct option 3: removeIf (JDK 8+, recommended)
-list.removeIf(name -> "李四".equals(name));
+list.removeIf(name -> "Bob".equals(name));
 // Or
-list.removeIf("李四"::equals);
+list.removeIf("Bob"::equals);
 ```
 
 ***
@@ -448,9 +448,9 @@ public class Test {
         ArrayList<Student> list = new ArrayList<>();
 
         // Add students
-        list.add(new Student("张三", 18));
-        list.add(new Student("李四", 19));
-        list.add(new Student("王五", 20));
+        list.add(new Student("Alice", 18));
+        list.add(new Student("Bob", 19));
+        list.add(new Student("Carol", 20));
 
         // Iterate
         for (Student s : list) {
@@ -509,14 +509,14 @@ public class Test {
 public class Test {
     public static void main(String[] args) {
         ArrayList<String> list = new ArrayList<>();
-        list.add("张三");
-        list.add("李四");
-        list.add("张三");
-        list.add("王五");
-        list.add("张三");
+        list.add("Alice");
+        list.add("Bob");
+        list.add("Alice");
+        list.add("Carol");
+        list.add("Alice");
 
         // Check whether an element exists
-        String target = "李四";
+        String target = "Bob";
         if (list.contains(target)) {
             int index = list.indexOf(target);
             System.out.println(target + " is at index " + index);
@@ -527,19 +527,19 @@ public class Test {
         // Count occurrences (option 1: loop)
         int count = 0;
         for (String name : list) {
-            if ("张三".equals(name)) {
+            if ("Alice".equals(name)) {
                 count++;
             }
         }
-        System.out.println("张三 occurs " + count + " times");  // 3
+        System.out.println("Alice occurs " + count + " times");  // 3
 
         // Count occurrences (option 2: Collections.frequency)
-        int freq = Collections.frequency(list, "张三");
-        System.out.println("张三 occurs " + freq + " times");  // 3
+        int freq = Collections.frequency(list, "Alice");
+        System.out.println("Alice occurs " + freq + " times");  // 3
 
         // Count occurrences (option 3: Stream)
-        long streamCount = list.stream().filter("张三"::equals).count();
-        System.out.println("张三 occurs " + streamCount + " times");  // 3
+        long streamCount = list.stream().filter("Alice"::equals).count();
+        System.out.println("Alice occurs " + streamCount + " times");  // 3
     }
 }
 ```
@@ -567,31 +567,31 @@ public class Test {
 
         // ========== Sort strings ==========
         ArrayList<String> names = new ArrayList<>();
-        names.add("张三丰");
-        names.add("张无忌");
-        names.add("赵敏");
-        names.add("小昭");
+        names.add("Jack");
+        names.add("John");
+        names.add("Amy");
+        names.add("Tom");
 
-        // Sort by length
+        // Sort by length (a stable sort keeps the original order of equal lengths)
         names.sort(Comparator.comparingInt(String::length));
-        System.out.println("By length: " + names);  // [赵敏, 小昭, 张三丰, 张无忌]
+        System.out.println("By length: " + names);  // [Amy, Tom, Jack, John]
 
-        // Sort Chinese names by pinyin
-        names.sort(Collator.getInstance(Locale.CHINESE));
-        System.out.println("By pinyin: " + names);
+        // Locale-aware alphabetical order (Collator applies the locale's rules for case and accents)
+        names.sort(Collator.getInstance(Locale.ENGLISH));
+        System.out.println("Alphabetical: " + names);  // [Amy, Jack, John, Tom]
 
         // ========== Sort objects ==========
         ArrayList<Student> students = new ArrayList<>();
-        students.add(new Student("张三", 20));
-        students.add(new Student("李四", 18));
-        students.add(new Student("王五", 22));
+        students.add(new Student("Alice", 20));
+        students.add(new Student("Bob", 18));
+        students.add(new Student("Carol", 22));
 
         // Sort by age in ascending order
         students.sort(Comparator.comparingInt(Student::getAge));
         students.forEach(s -> System.out.println(s.getName() + ": " + s.getAge()));
-        // 李四: 18
-        // 张三: 20
-        // 王五: 22
+        // Bob: 18
+        // Alice: 20
+        // Carol: 22
 
         // Sort by age in descending order
         students.sort(Comparator.comparingInt(Student::getAge).reversed());
@@ -610,11 +610,11 @@ public class Test {
 public class Test {
     public static void main(String[] args) {
         ArrayList<String> list = new ArrayList<>();
-        list.add("张三");
-        list.add("李四");
-        list.add("张三");
-        list.add("王五");
-        list.add("李四");
+        list.add("Alice");
+        list.add("Bob");
+        list.add("Alice");
+        list.add("Carol");
+        list.add("Bob");
 
         // Option 1: Build a new collection (preserves order)
         ArrayList<String> newList = new ArrayList<>();
@@ -623,15 +623,15 @@ public class Test {
                 newList.add(name);
             }
         }
-        System.out.println(newList);  // [张三, 李四, 王五]
+        System.out.println(newList);  // [Alice, Bob, Carol]
 
         // Option 2: Use LinkedHashSet (preserves order; more concise)
         ArrayList<String> result = new ArrayList<>(new LinkedHashSet<>(list));
-        System.out.println(result);  // [张三, 李四, 王五]
+        System.out.println(result);  // [Alice, Bob, Carol]
 
         // Option 3: Use Stream (JDK 8+)
         List<String> distinct = list.stream().distinct().collect(Collectors.toList());
-        System.out.println(distinct);  // [张三, 李四, 王五]
+        System.out.println(distinct);  // [Alice, Bob, Carol]
     }
 }
 ```

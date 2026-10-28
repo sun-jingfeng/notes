@@ -110,7 +110,7 @@ Spring AOP provides **syntax support** for AspectJ annotations (`@Aspect`, `@Poi
 </dependency>
 ```
 
-> 💡 Spring Boot enables AOP automatically; no extra configuration is needed.
+> 💡 Spring Boot enables AOP automatically; no extra configuration is needed. Spring Boot 4 renames the starter `spring-boot-starter-aspectj`; it is needed only for `@Aspect` classes, because Spring's own proxies for `@Transactional` and `@Async` work without it.
 
 ***
 
@@ -837,6 +837,8 @@ public class OperationLogAspect {
 }
 ```
 
+> 💡 The `ObjectMapper` injected here is Jackson 2 (`com.fasterxml.jackson.databind`), which Spring Boot 3.x auto-configures. Spring Boot 4 auto-configures Jackson 3 instead: inject `tools.jackson.databind.json.JsonMapper`; `writeValueAsString()` works the same, and Jackson 3 exceptions are unchecked.
+
 **Usage example:**
 
 ```java
@@ -1002,10 +1004,10 @@ public class IdempotentAspect {
 **Usage example:**
 
 ```java
-@PostMapping("/orders")
-@Idempotent(prefix = "order:create", expireSeconds = 10, message = "Order is being processed; please do not submit again")
-public Result<Long> createOrder(@RequestBody @Valid OrderDTO dto) {
-    return Result.success(orderService.create(dto));
+@PostMapping("/demo")
+@Idempotent(prefix = "demo:create", expireSeconds = 10, message = "The request is being processed; please do not submit again")
+public Result<Long> create(@RequestBody @Valid DemoDTO dto) {
+    return Result.success(demoService.create(dto));
 }
 ```
 

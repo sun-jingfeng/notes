@@ -1011,7 +1011,7 @@ import java.io.*;
 
 public class SerializeDemo {
     public static void main(String[] args) {
-        User user = new User("张三", 18, "123456");
+        User user = new User("Alice", 18, "123456");
 
         try (ObjectOutputStream oos = new ObjectOutputStream(
                 new FileOutputStream("user.dat"))) {
@@ -1040,7 +1040,7 @@ public class DeserializeDemo {
 
             User user = (User) ois.readObject();
             System.out.println("Deserialization succeeded: " + user);
-            // Output: User{name='张三', age=18, password='null'}
+            // Output: User{name='Alice', age=18, password='null'}
             // password is transient and is not serialized
 
         } catch (IOException | ClassNotFoundException e) {
@@ -1092,7 +1092,7 @@ public class PrintStreamDemo {
 
             ps.print("World");    // Print without a newline
 
-            ps.printf("Name: %s, age: %d%n", "张三", 18);  // Formatted printing
+            ps.printf("Name: %s, age: %d%n", "Alice", 18);  // Formatted printing
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -1115,7 +1115,7 @@ public class PrintWriterDemo {
 
             pw.println("Hello");
             pw.println("World");
-            pw.println("你好，世界");
+            pw.println("Hello, world");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -1587,7 +1587,7 @@ StrUtil.isNotBlank("abc");  // true
 
 // 2. Format a string
 String str = StrUtil.format("Hello, {}!", "World");  // "Hello, World!"
-String str2 = StrUtil.format("{}年{}月{}日", 2024, 1, 7);  // "2024年1月7日"
+String str2 = StrUtil.format("{}-{}-{}", 2024, 1, 7);  // "2024-1-7"
 
 // 3. Trim whitespace
 StrUtil.trim("  abc  ");  // "abc"
@@ -1679,51 +1679,7 @@ User user = JSONUtil.toBean(json, User.class);  // JSON to object
 
 ***
 
-## XVI. I/O Stream Summary Mind Map
-
-    Java I/O streams
-        │
-        ├── Basic concepts
-        │     ├── Input streams: read data (external resource → program)
-        │     ├── Output streams: write data (program → external resource)
-        │     ├── Byte streams: byte-oriented; all file types
-        │     └── Character streams: character-oriented; text files
-        │
-        ├── Byte streams
-        │     ├── FileInputStream / FileOutputStream (basic streams)
-        │     ├── BufferedInputStream / BufferedOutputStream (buffered streams)
-        │     ├── ObjectInputStream / ObjectOutputStream (serialization streams)
-        │     └── PrintStream (print stream)
-        │
-        ├── Character streams
-        │     ├── FileReader / FileWriter (basic streams)
-        │     ├── BufferedReader / BufferedWriter (buffered streams)
-        │     │     ├── readLine(): read one line
-        │     │     └── newLine(): write a newline
-        │     ├── InputStreamReader / OutputStreamWriter (conversion streams)
-        │     └── PrintWriter (print stream)
-        │
-        ├── NIO utilities
-        │     └── Files
-        │           ├── readAllBytes() / readAllLines() / readString()
-        │           ├── write() / writeString()
-        │           ├── copy() / move() / delete()
-        │           └── walk() / list()
-        │
-        ├── Properties
-        │     ├── setProperty() / getProperty()
-        │     └── load() / store()
-        │
-        └── Recommendations
-              ├── Text files → character streams + buffering
-              ├── Binary files → byte streams + buffering
-              ├── Specified encoding → conversion streams
-              ├── Simple operations → Files utility class
-              └── Resource closing → try-with-resources
-
-***
-
-## XVII. Quick Reference
+## XVI. Quick Reference
 
 ### 1. I/O Stream Categories
 

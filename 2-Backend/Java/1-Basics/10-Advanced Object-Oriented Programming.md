@@ -209,8 +209,8 @@ public class Student {
 }
 
 // Usage
-Student s = new Student("张三", 18);
-System.out.println(s);  // Student{name='张三', age=18}
+Student s = new Student("Alice", 18);
+System.out.println(s);  // Student{name='Alice', age=18}
 ```
 
 ### 4. The equals() Method
@@ -405,9 +405,9 @@ public void test() {
     arr[0] = 100;  // ✅ Can change the contents
 
     // final object reference
-    final User user = new User("张三");
-    // user = new User("李四");  ❌ Cannot change the reference
-    user.setName("李四");  // ✅ Can change the object's fields
+    final User user = new User("Alice");
+    // user = new User("Bob");  ❌ Cannot change the reference
+    user.setName("Bob");  // ✅ Can change the object's fields
 }
 ```
 
@@ -448,12 +448,12 @@ public static final String DEFAULT_NAME = "Unknown";
 public class UserController {
     // ✅ final fields + constructor injection (recommended for Spring)
     private final UserService userService;
-    private final OrderService orderService;
+    private final RoleService roleService;
 
     // @Autowired can be omitted (Spring 4.3+, when there is only one constructor)
-    public UserController(UserService userService, OrderService orderService) {
+    public UserController(UserService userService, RoleService roleService) {
         this.userService = userService;
-        this.orderService = orderService;
+        this.roleService = roleService;
     }
 }
 ```
@@ -1311,7 +1311,7 @@ System.out.println(biFunc.apply("Hello", "World"));  // 10
 // BiConsumer: two arguments, no return value
 BiConsumer<String, Integer> biConsumer = (name, age) ->
     System.out.println(name + ": " + age);
-biConsumer.accept("张三", 18);  // 张三: 18
+biConsumer.accept("Alice", 18);  // Alice: 18
 
 // BiPredicate: two arguments, returns boolean
 BiPredicate<String, Integer> biPredicate = (s, n) -> s.length() > n;
@@ -1515,7 +1515,7 @@ A lambda may access external variables, but captured variables must be **effecti
 ```java
 public void method() {
     int count = 10;  // Effectively final (never reassigned)
-    String name = "张三";
+    String name = "Alice";
 
     Runnable r = () -> {
         System.out.println(count);  // ✅ Accessible
@@ -1637,82 +1637,242 @@ public class ThisDemo {
 
 ***
 
-## XI. Summary Mind Map
+## XI. Records (JDK 16+)
 
-    Advanced Object-Oriented Programming
-        │
-        ├── Inheritance: extends
-        │     ├── Single and multilevel inheritance
-        │     ├── Method overriding: @Override
-        │     │     ├── Return type may be a subtype (covariant return)
-        │     │     └── Cannot declare broader exceptions
-        │     ├── super accesses the superclass
-        │     └── super() and this() are mutually exclusive
-        │
-        ├── Object class
-        │     ├── Root of all classes
-        │     ├── Override toString()
-        │     ├── Override equals() + hashCode()
-        │     └── clone(): shallow and deep copying
-        │
-        ├── final keyword
-        │     ├── Class: cannot be subclassed
-        │     ├── Method: cannot be overridden
-        │     ├── Variable: value/reference cannot be reassigned
-        │     ├── Parameter: value cannot be reassigned
-        │     └── Field: initialize at declaration, in an initializer block, or in a constructor
-        │
-        ├── Abstract class: abstract
-        │     ├── Cannot be instantiated
-        │     ├── May have abstract and concrete methods
-        │     ├── Subclasses must override abstract methods
-        │     └── Template method pattern
-        │
-        ├── Interface: interface
-        │     ├── Constants and abstract methods (before JDK 8)
-        │     ├── A class may implement multiple interfaces
-        │     ├── JDK 8+: default and static methods
-        │     ├── JDK 9+: private methods
-        │     ├── Default method conflicts: InterfaceName.super.method()
-        │     └── Marker interfaces: Serializable, Cloneable
-        │
-        ├── Polymorphism
-        │     ├── Superclass reference to a subclass instance
-        │     ├── Compile-time check: left-hand type; runtime dispatch: right-hand type
-        │     ├── Type check: instanceof
-        │     └── Pattern matching in JDK 16+
-        │
-        ├── Code blocks
-        │     ├── Static initializer: runs once when the class loads
-        │     ├── Instance initializer: runs before each object's constructor body
-        │     └── Order: parent static → child static → parent instance initializer → parent constructor → child instance initializer → child constructor
-        │
-        ├── Inner classes
-        │     ├── Member inner class: Outer.this accesses the enclosing instance
-        │     ├── Static nested class: directly accesses only static members
-        │     ├── Local inner class: captured variables must be effectively final
-        │     └── Anonymous inner class (key topic)
-        │
-        ├── Functional interfaces
-        │     ├── Interface with exactly one abstract method
-        │     ├── @FunctionalInterface annotation
-        │     ├── Required for lambda expressions
-        │     ├── Four core interfaces:
-        │     │     ├── Consumer: consumes (argument, no return value)
-        │     │     ├── Supplier: supplies (no arguments, returns a value)
-        │     │     ├── Function: transforms (argument and return value)
-        │     │     └── Predicate: tests (returns boolean)
-        │     ├── Bi family: BiConsumer, BiFunction, BiPredicate
-        │     └── Operator family: UnaryOperator, BinaryOperator
-        │
-        └── Lambda expressions
-              ├── Simplify anonymous inner classes for functional interfaces
-              ├── Syntax: (parameters) -> { body }
-              ├── Omit parameter types, parentheses, and return where allowed
-              ├── Variable capture: must be effectively final
-              ├── Method references:
-              │     ├── Static method: ClassName::methodName
-              │     ├── Instance method: object::methodName
-              │     ├── Instance method through a class: ClassName::methodName
-              │     └── Constructor: ClassName::new
-              └── this refers to the enclosing instance (unlike an anonymous inner class)
+### 1. What Is a Record?
+
+A **record** is a concise class declaration for an immutable data carrier: declare the components once, and the compiler generates the fields, the constructor, the accessors, `equals()`, `hashCode()`, and `toString()`.
+
+**Core idea:** a record's state is its whole API, so it replaces boilerplate data classes.
+
+| Trait | Description |
+| ------------------- | ------------------------------------------------------------ |
+| **Concise** | One line replaces a class with fields, a constructor, getters, `equals`/`hashCode`/`toString` |
+| **Immutable** | Each component becomes a `private final` field; there are no setters |
+| **Final** | A record is implicitly `final` and implicitly extends `java.lang.Record` |
+| **Interfaces** | A record can implement interfaces |
+| **Value semantics** | `equals()` and `hashCode()` compare all components |
+
+### 2. Defining and Using a Record
+
+```java
+// Declares a record with two components: x and y
+public record Point(int x, int y) { }
+
+Point p = new Point(3, 4);
+System.out.println(p.x());                       // 3 (the accessor is x(), not getX())
+System.out.println(p);                           // Point[x=3, y=4]
+System.out.println(p.equals(new Point(3, 4)));   // true (compares components)
+```
+
+| Generated member | For `record Point(int x, int y)` |
+| ------------------------- | -------------------------------------------- |
+| **Fields** | `private final int x;` and `private final int y;` |
+| **Canonical constructor** | `Point(int x, int y)` |
+| **Accessors** | `x()` and `y()` |
+| **`equals()` / `hashCode()`** | Based on all components |
+| **`toString()`** | `Point[x=3, y=4]` |
+
+### 3. Compact Constructors and Methods
+
+A **compact constructor** omits the parameter list. It validates or normalizes the arguments, and the fields are assigned automatically after its body runs.
+
+```java
+public record User(String name, int age) {
+
+    // Compact constructor: validate and normalize before the fields are assigned
+    public User {
+        Objects.requireNonNull(name, "name must not be null");
+        if (age < 0) {
+            throw new IllegalArgumentException("age must not be negative");
+        }
+        name = name.strip();    // Reassigns the parameter; the field receives the new value
+    }
+
+    // Any other constructor must delegate to the canonical constructor
+    public User(String name) {
+        this(name, 0);
+    }
+
+    // Instance and static methods are allowed
+    public boolean isAdult() {
+        return age >= 18;
+    }
+
+    public static User guest() {
+        return new User("guest", 0);
+    }
+}
+
+System.out.println(new User("  Alice ", 20));  // User[name=Alice, age=20]
+System.out.println(new User("Bob").isAdult()); // false
+```
+
+Records are only **shallowly immutable**: a mutable component such as a `List` can still be changed through its reference. Copy it in the compact constructor:
+
+```java
+public record Team(String name, List<String> members) {
+    public Team {
+        members = List.copyOf(members);   // ✅ Unmodifiable copy; later changes to the source list do not leak in
+    }
+}
+```
+
+### 4. Restrictions
+
+| Allowed | Not allowed |
+| ------------------------------------------------ | ------------------------------------------------- |
+| Static fields, static methods, instance methods | Instance fields other than the components |
+| Implementing interfaces | `extends` another class |
+| Nested types and annotations on components | Assigning component fields after construction |
+| Overriding accessors, `equals()`, `toString()` | Subclassing a record (it is implicitly `final`) |
+
+### 5. Records vs. Lombok
+
+| Aspect | `record` | Lombok `@Value` | Lombok `@Data` |
+| ------------------- | ----------------------- | --------------------------- | ------------------------- |
+| **Mechanism** | Language feature (JDK 16+) | Annotation processor | Annotation processor |
+| **Mutability** | Immutable | Immutable | Mutable (setters) |
+| **Accessor names** | `name()` | `getName()` | `getName()` / `setName()` |
+| **Inheritance** | Cannot extend a class | Final class | Can extend a class |
+| **Typical use** | DTOs, value objects, query results | Immutable classes that need JavaBean getters | Mutable beans and entities |
+
+| Scenario | Fit |
+| ------------------------------------------ | ------------------------------------------------------------ |
+| **DTOs and API request/response bodies** | ✅ Jackson (2.12+) and Spring MVC bind records directly |
+| **Returning several values from a method** | ✅ `record MinMax(int min, int max)` |
+| **Map keys and set elements** | ✅ Value-based `equals()` / `hashCode()` |
+| **`@ConfigurationProperties` classes** | ✅ Spring Boot binds through the canonical constructor |
+| **JPA entities** | ❌ JPA needs a no-argument constructor, mutable state, and proxyable classes |
+
+***
+
+## XII. Sealed Classes (JDK 17+)
+
+### 1. What Is a Sealed Class?
+
+A **sealed class or interface** restricts which classes may extend or implement it by listing them after `permits`.
+
+**Core idea:** the hierarchy is closed, so the compiler knows every possible subtype.
+
+| Modifier on a permitted subclass | Meaning |
+| ------------ | ------------------------------------------------------ |
+| `final` | Cannot be extended further (records and enums are implicitly final) |
+| `sealed` | Restricts its own subclasses with another `permits` list |
+| `non-sealed` | Reopens the hierarchy; any class may extend it |
+
+### 2. Defining a Sealed Hierarchy
+
+```java
+public sealed interface Shape permits Circle, Square, Rectangle { }
+
+public record Circle(double radius) implements Shape { }    // Records are implicitly final
+public record Square(double side) implements Shape { }
+
+public non-sealed class Rectangle implements Shape {        // Any class may extend Rectangle
+    private final double width;
+    private final double height;
+
+    public Rectangle(double width, double height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    public double width() { return width; }
+    public double height() { return height; }
+}
+```
+
+| Rule | Description |
+| -------------------- | ------------------------------------------------------------ |
+| **Location** | Permitted subclasses must be in the same module, or in the same package when the code is in the unnamed module |
+| **Direct subtypes** | Each permitted class must directly extend or implement the sealed type |
+| **Modifier required** | Each permitted class must be `final`, `sealed`, or `non-sealed` |
+| **Omitting `permits`** | Allowed when all subclasses are declared in the same source file |
+
+### 3. Exhaustive switch
+
+Because the compiler knows all permitted subtypes, a `switch` over a sealed type needs no `default` branch:
+
+```java
+static double area(Shape shape) {
+    return switch (shape) {
+        case Circle c    -> Math.PI * c.radius() * c.radius();
+        case Square s    -> s.side() * s.side();
+        case Rectangle r -> r.width() * r.height();
+        // No default: adding a new permitted subtype makes this switch fail to compile until it is handled
+    };
+}
+```
+
+| Approach | Adding a new subtype |
+| ---------------------------------- | -------------------------------------------- |
+| Open hierarchy + `default` branch | Compiles silently; the new type falls into `default` |
+| Sealed hierarchy without `default` | ✅ Compile error at every switch that misses the new type |
+
+***
+
+## XIII. Record Patterns (JDK 21+)
+
+### 1. Deconstructing Records
+
+A **record pattern** tests an object's type and extracts its components in one step. It works in `instanceof` and `switch`, and patterns can be nested.
+
+```java
+record Point(int x, int y) { }
+record Line(Point start, Point end) { }
+
+Object obj = new Point(3, 4);
+
+// instanceof with a record pattern
+if (obj instanceof Point(int x, int y)) {
+    System.out.println(x + y);   // 7
+}
+
+// switch with record patterns, guards, and nesting
+static String describe(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) when x == y -> "Point on the diagonal";
+        case Point(var x, var y)             -> "Point " + x + "," + y;   // var infers the component type
+        case Line(Point(var x1, var y1), Point(var x2, var y2)) ->
+                "Line from " + x1 + "," + y1 + " to " + x2 + "," + y2;
+        default -> "Other";
+    };
+}
+
+describe(new Point(2, 2));                              // Point on the diagonal
+describe(new Line(new Point(0, 0), new Point(1, 2)));   // Line from 0,0 to 1,2
+```
+
+### 2. Unnamed Variables and Patterns (JDK 22+)
+
+The underscore `_` marks a variable or pattern component that is required by the syntax but never used:
+
+```java
+// Unnamed pattern: match a Line but ignore its end point
+static String startOf(Object obj) {
+    return switch (obj) {
+        case Line(Point start, _) -> "Starts at " + start;
+        default -> "Not a line";
+    };
+}
+
+startOf(new Line(new Point(0, 0), new Point(1, 2)));   // "Starts at Point[x=0, y=0]"
+
+// Unnamed variable in a catch block
+try {
+    Integer.parseInt(input);
+} catch (NumberFormatException _) {
+    System.out.println("Not a number");
+}
+```
+
+### 3. Pattern Matching Features by Version
+
+| Feature | Final in | Example |
+| ---------------------------------- | -------------------- | ---------------------------------- |
+| **`instanceof` type patterns** | JDK 16 | `obj instanceof String s` |
+| **switch type patterns, `when` guards** | JDK 21 | `case Integer i when i > 0 ->` |
+| **Record patterns** | JDK 21 | `case Point(int x, int y) ->` |
+| **Unnamed variables and patterns** | JDK 22 | `case Point(int x, _) ->` |
+| **Primitive types in patterns** | Not final (preview in JDK 23–27) | `case int i when i > 0 ->` |

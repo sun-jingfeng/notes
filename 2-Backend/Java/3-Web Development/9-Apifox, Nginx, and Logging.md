@@ -70,10 +70,10 @@
     ├───────────────┼───────────────────────────────────┤
     │  page         │  1                                │
     │  size         │  10                               │
-    │  name         │  张三                              │
+    │  name         │  Alice                            │
     └───────────────┴───────────────────────────────────┘
 
-    Actual request: GET /api/users?page=1&size=10&name=张三
+    Actual request: GET /api/users?page=1&size=10&name=Alice
 
 #### POST Request Example (JSON)
 
@@ -86,9 +86,9 @@
 
     ┌─ Body (raw - JSON) ───────────────────────────────┐
     │  {                                                │
-    │      "name": "张三",                               │
+    │      "name": "Alice",                             │
     │      "age": 20,                                   │
-    │      "email": "zhangsan@example.com",             │
+    │      "email": "alice@example.com",                │
     │      "deptId": 1                                  │
     │  }                                                │
     └───────────────────────────────────────────────────┘
@@ -651,7 +651,7 @@ try {
 | --------- | --------- | ----------- |
 | **TRACE** | Extremely detailed diagnostics | Every iteration of a loop |
 | **DEBUG** | Development and debugging information | Method arguments, SQL statements |
-| **INFO** | Key points in business workflows | User login, order creation |
+| **INFO** | Key points in business workflows | User login, record creation |
 | **WARN** | Potential issues | Invalid parameters, retries |
 | **ERROR** | Program errors | Caught exceptions, business operation failures |
 
@@ -787,28 +787,28 @@ logging:
 ```java
 @Slf4j
 @Service
-public class OrderService {
+public class DemoService {
 
-    public Order createOrder(OrderDTO dto) {
+    public DemoEntity create(DemoDTO dto) {
         // ✅ Method entry: log key parameters
-        log.info("Start creating order, user ID: {}", dto.getUserId());
+        log.info("Start creating record, user ID: {}", dto.getUserId());
 
         // ✅ Debugging information
-        log.debug("Detailed order parameters: {}", dto);
+        log.debug("Detailed request parameters: {}", dto);
 
         // ✅ Business warning
-        if (dto.getQuantity() > 100) {
-            log.warn("Abnormal order quantity: {}", dto.getQuantity());
+        if (dto.getItems().size() > 100) {
+            log.warn("Unusually large batch: {} items", dto.getItems().size());
         }
 
         try {
-            // Business logic...
-            log.info("Order created successfully, order number: {}", order.getOrderNo());
-            return order;
+            DemoEntity entity = doCreate(dto);   // Business logic
+            log.info("Record created successfully, ID: {}", entity.getId());
+            return entity;
         } catch (Exception e) {
             // ✅ Exception handling: log the error information and stack trace
-            log.error("Failed to create order: {}", e.getMessage(), e);
-            throw new BusinessException("Order creation failed");
+            log.error("Failed to create record: {}", e.getMessage(), e);
+            throw new BusinessException("Record creation failed");
         }
     }
 }
@@ -833,13 +833,3 @@ logging:
       max-file-size: 100MB
       max-history: 30
 ```
-
-***
-
-## IV. Summary
-
-| Tool/technology | Purpose | Core features |
-| ----------- | -------- | --------------- |
-| **Apifox** | API testing tool | Send requests, debug APIs, generate documentation |
-| **Nginx** | Web server | Static resources, reverse proxy, load balancing |
-| **Logback** | Logging framework | Record program execution information for troubleshooting |

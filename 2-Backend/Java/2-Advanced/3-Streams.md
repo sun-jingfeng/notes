@@ -7,25 +7,25 @@
 ### 2. Traditional Approach vs Streams
 
 ```java
-// Requirement: select people whose surname is "张" and whose name has length 3
+// Requirement: select names that start with "J" and have length 4
 
-List<String> list = Arrays.asList("张无忌", "赵敏", "张三丰", "周芷若", "张翠山", "小昭");
+List<String> list = Arrays.asList("John", "Amy", "Jack", "Emma", "Jane", "Tom");
 
 // ========== Traditional approach: verbose code ==========
 List<String> result1 = new ArrayList<>();
 for (String name : list) {
-    if (name.startsWith("张") && name.length() == 3) {
+    if (name.startsWith("J") && name.length() == 4) {
         result1.add(name);
     }
 }
-System.out.println(result1);  // [张无忌, 张三丰, 张翠山]
+System.out.println(result1);  // [John, Jack, Jane]
 
 // ========== Stream approach: concise code ==========
 List<String> result2 = list.stream()
-    .filter(name -> name.startsWith("张"))
-    .filter(name -> name.length() == 3)
+    .filter(name -> name.startsWith("J"))
+    .filter(name -> name.length() == 4)
     .collect(Collectors.toList());
-System.out.println(result2);  // [张无忌, 张三丰, 张翠山]
+System.out.println(result2);  // [John, Jack, Jane]
 ```
 
 ### 3. Stream Characteristics
@@ -72,9 +72,9 @@ Stream<String> stream2 = set.stream();
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
-map.put("李四", 20);
-map.put("王五", 22);
+map.put("Alice", 18);
+map.put("Bob", 20);
+map.put("Carol", 22);
 
 // Stream the keys
 Stream<String> keyStream = map.keySet().stream();
@@ -266,6 +266,8 @@ List<Integer> intList2 = IntStream.of(1, 2, 3)
 | `peek(Consumer)` | Inspects elements (for debugging) | JDK 8 |
 | `takeWhile(Predicate)` | Takes while the condition holds | JDK 9 |
 | `dropWhile(Predicate)` | Skips while the condition holds | JDK 9 |
+| `mapMulti(BiConsumer)` | Replaces each element with zero or more elements | JDK 16 |
+| `gather(Gatherer)` | Custom intermediate operation (windows, running totals, etc.) | JDK 24 |
 
 ### 3. Terminal Operations
 
@@ -345,9 +347,9 @@ OptionalDouble avg = list.stream()
     .average();
 
 // Sum values from a list of objects
-List<Order> orders = getOrders();
-double totalAmount = orders.stream()
-    .mapToDouble(Order::getAmount)
+List<Employee> employees = getEmployees();
+double totalSalary = employees.stream()
+    .mapToDouble(Employee::getSalary)
     .sum();
 ```
 
@@ -372,10 +374,10 @@ words.stream()
     .flatMap(word -> Arrays.stream(word.split("")))
     .forEach(System.out::print);  // HelloWorld
 
-// Scenario: a one-to-many relationship
-List<Order> orders = getOrders();
-List<OrderItem> allItems = orders.stream()
-    .flatMap(order -> order.getItems().stream())
+// Scenario: a one-to-many relationship (each department has a list of employees)
+List<Department> departments = getDepartments();
+List<Employee> allEmployees = departments.stream()
+    .flatMap(dept -> dept.getEmployees().stream())
     .collect(Collectors.toList());
 ```
 
@@ -416,10 +418,10 @@ list.stream()
     .forEach(System.out::println);  // 9, 8, 5, 3, 2, 1
 
 // Sort objects
-List<String> names = Arrays.asList("张三丰", "张无忌", "赵敏", "小昭");
+List<String> names = Arrays.asList("Jack", "John", "Amy", "Tom");
 names.stream()
     .sorted(Comparator.comparingInt(String::length))
-    .forEach(System.out::println);  // 赵敏, 小昭, 张三丰, 张无忌
+    .forEach(System.out::println);  // Amy, Tom, Jack, John
 
 // Sort by multiple fields
 List<User> users = getUsers();
@@ -497,6 +499,40 @@ List<Integer> result = list.stream()
 // Note: peek is primarily for debugging; do not use it to modify element state
 ```
 
+### 10. gather: Custom Intermediate Operations (JDK 24+)
+
+**`gather()`** applies a **gatherer**, an intermediate operation that can keep state, emit any number of elements per input, or stop early. The `Gatherers` class provides ready-made gatherers for operations that are awkward with `map` and `filter`:
+
+```java
+// Fixed-size windows: [[1, 2], [3, 4], [5]]
+List<List<Integer>> fixed = Stream.of(1, 2, 3, 4, 5)
+    .gather(Gatherers.windowFixed(2))
+    .toList();
+
+// Sliding windows: [[1, 2], [2, 3], [3, 4]]
+List<List<Integer>> sliding = Stream.of(1, 2, 3, 4)
+    .gather(Gatherers.windowSliding(2))
+    .toList();
+
+// Running total (scan emits every intermediate result): [1, 3, 6, 10]
+List<Integer> running = Stream.of(1, 2, 3, 4)
+    .gather(Gatherers.scan(() -> 0, Integer::sum))
+    .toList();
+
+// Concurrent mapping on virtual threads, at most 2 at a time, preserving order: [A, B, C]
+List<String> upper = Stream.of("a", "b", "c")
+    .gather(Gatherers.mapConcurrent(2, String::toUpperCase))
+    .toList();
+```
+
+| Gatherer | Description |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `Gatherers.windowFixed(n)` | Groups elements into lists of `n` (the last may be shorter) |
+| `Gatherers.windowSliding(n)` | Overlapping windows of `n` elements |
+| `Gatherers.scan(init, fn)` | Emits each running accumulation |
+| `Gatherers.fold(init, fn)` | Emits only the final accumulation (one element) |
+| `Gatherers.mapConcurrent(max, fn)` | Applies `fn` on virtual threads with at most `max` running at once |
+
 ***
 
 ## VI. Terminal Operations in Detail
@@ -534,16 +570,16 @@ System.out.println(count);  // 2
 ### 3. collect: Collecting into Collections
 
 ```java
-List<String> list = Arrays.asList("张无忌", "赵敏", "张三丰", "周芷若");
+List<String> list = Arrays.asList("John", "Amy", "Jack", "Emma");
 
 // Collect into a List
 List<String> result1 = list.stream()
-    .filter(name -> name.startsWith("张"))
+    .filter(name -> name.startsWith("J"))
     .collect(Collectors.toList());
 
 // Collect into a Set
 Set<String> result2 = list.stream()
-    .filter(name -> name.startsWith("张"))
+    .filter(name -> name.startsWith("J"))
     .collect(Collectors.toSet());
 
 // Collect into a specific collection type
@@ -559,7 +595,7 @@ Map<String, Integer> result5 = list.stream()
         name -> name,           // key
         name -> name.length()   // value
     ));
-// {张三丰=3, 赵敏=2, 周芷若=3, 张无忌=3} (HashMap order)
+// {John=4, Amy=3, Jack=4, Emma=4} (HashMap order)
 
 // Collect into a Map (handle duplicate keys)
 Map<Integer, String> result6 = list.stream()
@@ -568,7 +604,7 @@ Map<Integer, String> result6 = list.stream()
         name -> name,      // value
         (v1, v2) -> v1     // Keep the first value for duplicate keys
     ));
-// {2=赵敏, 3=张无忌}
+// {3=Amy, 4=John}
 ```
 
 ### 4. toList() (JDK 16+)
@@ -660,10 +696,10 @@ Optional<Integer> min2 = list.stream().min(Comparator.naturalOrder());
 Optional<Integer> max2 = list.stream().max(Comparator.naturalOrder());
 
 // Minimum/maximum objects
-List<String> names = Arrays.asList("张三丰", "张无忌", "赵敏");
+List<String> names = Arrays.asList("Jack", "John", "Amy");
 Optional<String> longest = names.stream()
     .max(Comparator.comparingInt(String::length));
-System.out.println(longest.orElse(""));  // 张三丰
+System.out.println(longest.orElse(""));  // Jack (the first of the longest names)
 ```
 
 ### 8. findFirst / findAny: Finding Elements
@@ -786,16 +822,16 @@ class User {
 ### 1. Common Collection Methods
 
 ```java
-List<String> list = Arrays.asList("张无忌", "赵敏", "张三丰", "周芷若", "张翠山");
+List<String> list = Arrays.asList("John", "Amy", "Jack", "Emma", "Jane");
 
 // toList: collect into a List
 List<String> result1 = list.stream()
-    .filter(name -> name.startsWith("张"))
+    .filter(name -> name.startsWith("J"))
     .collect(Collectors.toList());
 
 // toSet: collect into a Set
 Set<String> result2 = list.stream()
-    .filter(name -> name.startsWith("张"))
+    .filter(name -> name.startsWith("J"))
     .collect(Collectors.toSet());
 
 // toCollection: collect into a specified collection type
@@ -805,12 +841,12 @@ TreeSet<String> result3 = list.stream()
 // joining: concatenate strings
 String result4 = list.stream()
     .collect(Collectors.joining(", "));
-// 张无忌, 赵敏, 张三丰, 周芷若, 张翠山
+// John, Amy, Jack, Emma, Jane
 
 // joining: with a prefix and suffix
 String result5 = list.stream()
     .collect(Collectors.joining(", ", "[", "]"));
-// [张无忌, 赵敏, 张三丰, 周芷若, 张翠山]
+// [John, Amy, Jack, Emma, Jane]
 ```
 
 ### 2. Statistical Methods
@@ -842,16 +878,16 @@ System.out.println(stats);
 
 ```java
 List<Student> students = Arrays.asList(
-    new Student("张三", 18, "男"),
-    new Student("李四", 20, "男"),
-    new Student("王五", 19, "女"),
-    new Student("赵六", 21, "女")
+    new Student("Alice", 18, "female"),
+    new Student("Bob", 20, "male"),
+    new Student("Carol", 19, "female"),
+    new Student("Dave", 21, "male")
 );
 
 // Group by gender
 Map<String, List<Student>> byGender = students.stream()
     .collect(Collectors.groupingBy(Student::getGender));
-// {女=[王五, 赵六], 男=[张三, 李四]} (assuming Student.toString() returns the name)
+// {female=[Alice, Carol], male=[Bob, Dave]} (assuming Student.toString() returns the name)
 
 // Group by age range
 Map<String, List<Student>> byAge = students.stream()
@@ -863,7 +899,7 @@ Map<String, Long> countByGender = students.stream()
         Student::getGender,
         Collectors.counting()
     ));
-// {女=2, 男=2}
+// {female=2, male=2}
 
 // Sum within each group
 Map<String, Integer> sumByGender = students.stream()
@@ -878,7 +914,7 @@ Map<String, List<String>> namesByGender = students.stream()
         Student::getGender,
         Collectors.mapping(Student::getName, Collectors.toList())
     ));
-// {女=[王五, 赵六], 男=[张三, 李四]}
+// {female=[Alice, Carol], male=[Bob, Dave]}
 
 // Multilevel grouping
 Map<String, Map<String, List<Student>>> multiGroup = students.stream()
@@ -1044,11 +1080,11 @@ long count = list.parallelStream().count();
 
 ```java
 List<Student> students = Arrays.asList(
-    new Student("张三", 18, 85),
-    new Student("李四", 20, 92),
-    new Student("王五", 19, 78),
-    new Student("赵六", 21, 95),
-    new Student("钱七", 22, 88)
+    new Student("Alice", 18, 85),
+    new Student("Bob", 20, 92),
+    new Student("Carol", 19, 78),
+    new Student("Dave", 21, 95),
+    new Student("Eve", 22, 88)
 );
 
 // 1. Select students with scores greater than 80
@@ -1127,38 +1163,38 @@ Set<Character> chars = words.stream()
 ### 3. Grouped Statistics
 
 ```java
-List<Order> orders = getOrders();
+List<Employee> employees = getEmployees();
 
-// 1. Group by user
-Map<String, List<Order>> byUser = orders.stream()
-    .collect(Collectors.groupingBy(Order::getUserId));
+// 1. Group by department
+Map<String, List<Employee>> byDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::getDept));
 
-// 2. Sum order amounts by user
-Map<String, Double> totalByUser = orders.stream()
+// 2. Sum salaries by department
+Map<String, Double> totalByDept = employees.stream()
     .collect(Collectors.groupingBy(
-        Order::getUserId,
-        Collectors.summingDouble(Order::getAmount)
+        Employee::getDept,
+        Collectors.summingDouble(Employee::getSalary)
     ));
 
-// 3. Count orders by user
-Map<String, Long> countByUser = orders.stream()
+// 3. Count employees by department
+Map<String, Long> countByDept = employees.stream()
     .collect(Collectors.groupingBy(
-        Order::getUserId,
+        Employee::getDept,
         Collectors.counting()
     ));
 
-// 4. Find each user's largest order
-Map<String, Optional<Order>> maxByUser = orders.stream()
+// 4. Find the highest-paid employee in each department
+Map<String, Optional<Employee>> topByDept = employees.stream()
     .collect(Collectors.groupingBy(
-        Order::getUserId,
-        Collectors.maxBy(Comparator.comparingDouble(Order::getAmount))
+        Employee::getDept,
+        Collectors.maxBy(Comparator.comparingDouble(Employee::getSalary))
     ));
 
-// 5. Group by both date and user
-Map<LocalDate, Map<String, List<Order>>> byDateAndUser = orders.stream()
+// 5. Group by hire date, then by department
+Map<LocalDate, Map<String, List<Employee>>> byDateAndDept = employees.stream()
     .collect(Collectors.groupingBy(
-        Order::getDate,
-        Collectors.groupingBy(Order::getUserId)
+        Employee::getHireDate,
+        Collectors.groupingBy(Employee::getDept)
     ));
 ```
 
@@ -1190,7 +1226,7 @@ Map<LocalDate, Map<String, List<Order>>> byDateAndUser = orders.stream()
 ```java
 // Java Stream
 List<String> result = list.stream()
-    .filter(s -> s.startsWith("张"))
+    .filter(s -> s.startsWith("J"))
     .map(String::toUpperCase)
     .sorted()
     .collect(Collectors.toList());
@@ -1199,7 +1235,7 @@ List<String> result = list.stream()
 ```javascript
 // JavaScript
 const result = list
-    .filter(s => s.startsWith("张"))
+    .filter(s => s.startsWith("J"))
     .map(s => s.toUpperCase())
     .sort();
 ```

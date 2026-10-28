@@ -905,6 +905,8 @@ public class AuthFilter implements Filter {
 }
 ```
 
+> 💡 The `ObjectMapper` injected here is Jackson 2 (`com.fasterxml.jackson.databind`), which Spring Boot 3.x auto-configures. Spring Boot 4 auto-configures Jackson 3 instead: inject `tools.jackson.databind.json.JsonMapper`; `writeValueAsString()` works the same, and Jackson 3 exceptions are unchecked.
+
 **Filter registration configuration:**
 
 ```java

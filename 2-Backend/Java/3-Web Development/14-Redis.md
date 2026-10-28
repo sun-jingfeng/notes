@@ -154,7 +154,7 @@ The most basic type, implemented as a Simple Dynamic String (SDS). It can hold s
 
 ```bash
 # Set a value
-SET name "张三"
+SET name "Alice"
 SET age 25
 
 # Get a value
@@ -181,7 +181,7 @@ DECRBY counter 5
 INCRBYFLOAT price 0.5
 
 # Append to a string
-APPEND name " 先生"
+APPEND name " Smith"
 
 # Get the length
 STRLEN name
@@ -197,11 +197,11 @@ A field-value mapping stores multiple field-value pairs under one key, backed by
 
 ```bash
 # Set a single field
-HSET user:1001 name "张三"
+HSET user:1001 name "Alice"
 HSET user:1001 age 25
 
 # Set multiple fields at once
-HSET user:1001 name "张三" age 25 email "zhangsan@example.com"
+HSET user:1001 name "Alice" age 25 email "alice@example.com"
 
 # Get one field
 HGET user:1001 name
@@ -718,7 +718,7 @@ public class RedisService {
 ValueOperations<String, Object> ops = redisTemplate.opsForValue();
 
 // Set a value
-ops.set("name", "张三");
+ops.set("name", "Alice");
 
 // Set a value with expiration
 ops.set("token", "abc123", 30, TimeUnit.MINUTES);
@@ -749,12 +749,12 @@ List<Object> values = ops.multiGet(Arrays.asList("k1", "k2"));
 HashOperations<String, String, Object> ops = redisTemplate.opsForHash();
 
 // Set a field
-ops.put("user:1001", "name", "张三");
+ops.put("user:1001", "name", "Alice");
 ops.put("user:1001", "age", 25);
 
 // Set multiple fields
 Map<String, Object> userMap = new HashMap<>();
-userMap.put("name", "张三");
+userMap.put("name", "Alice");
 userMap.put("age", 25);
 ops.putAll("user:1001", userMap);
 
@@ -1026,7 +1026,7 @@ public class UserService {
 
 ```java
 @Service
-public class OrderService {
+public class DemoService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -1037,8 +1037,8 @@ public class OrderService {
             Long.class
         );
 
-    public boolean createOrder(Long productId, Long userId) {
-        String lockKey = "lock:order:" + productId;
+    public boolean process(Long resourceId) {
+        String lockKey = "lock:demo:" + resourceId;
         String lockValue = UUID.randomUUID().toString();
 
         try {
@@ -1095,8 +1095,11 @@ public class ApiController {
     @Autowired
     private RateLimitService rateLimitService;
 
+    @Autowired
+    private DemoService demoService;
+
     @GetMapping("/data")
-    public Result<Object> getData(HttpServletRequest request) {
+    public Result<List<String>> getData(HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         String key = "rate_limit:" + ip;
 
@@ -1106,7 +1109,7 @@ public class ApiController {
         }
 
         // Normal business logic
-        return Result.success(data);
+        return Result.success(demoService.listData());
     }
 }
 ```
@@ -1416,13 +1419,13 @@ public class DistributedLockService {
 
 ```java
 @Service
-public class OrderService {
+public class DemoService {
 
     @Autowired
     private DistributedLockService lockService;
 
-    public boolean createOrder(Long productId) {
-        String lockKey   = "lock:order:" + productId;
+    public boolean process(Long resourceId) {
+        String lockKey   = "lock:demo:" + resourceId;
         String lockValue = UUID.randomUUID().toString(); // Unique on each attempt
 
         // 1. Try to acquire the lock; return immediately on failure
@@ -1431,7 +1434,7 @@ public class OrderService {
         }
 
         try {
-            // 2. Execute business logic (decrement inventory, create an order, etc.)
+            // 2. Execute business logic (update the shared resource, etc.)
             // ...
             return true;
         } finally {
@@ -1494,13 +1497,13 @@ public class RedissonConfig {
 
 ```java
 @Service
-public class OrderService {
+public class DemoService {
 
     @Autowired
     private RedissonClient redissonClient;
 
-    public boolean createOrder(Long productId) {
-        RLock lock = redissonClient.getLock("lock:order:" + productId);
+    public boolean process(Long resourceId) {
+        RLock lock = redissonClient.getLock("lock:demo:" + resourceId);
 
         // Wait at most 3 seconds; omit leaseTime to enable automatic watchdog renewal
         boolean locked;
@@ -1925,8 +1928,8 @@ businessName:dataType:dataIdentifier
 
 Examples:
 user:info:1001          # User information
-order:detail:202401001  # Order details
-product:stock:5001      # Product inventory
+demo:detail:202401001   # Business record details
+counter:visit:5001      # Visit counter
 session:token:abc123    # Session token
 rate:limit:192.168.1.1  # Rate-limit counter
 ```

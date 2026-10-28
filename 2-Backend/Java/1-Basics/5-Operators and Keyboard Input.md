@@ -150,13 +150,13 @@ System.out.println("" + 'a' + 'b'); // "ab"
 ### 5. Concatenation Example
 
 ```java
-String name = "张三";
+String name = "Alice";
 int age = 18;
 double score = 95.5;
 
 // Concatenate output
 System.out.println("Name: " + name + ", age: " + age + ", score: " + score);
-// Output: Name: 张三, age: 18, score: 95.5
+// Output: Name: Alice, age: 18, score: 95.5
 
 // Concatenate into a variable
 String info = "Name: " + name + ", age: " + age;

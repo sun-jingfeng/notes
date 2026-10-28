@@ -75,7 +75,7 @@ DataType[] arrayName = new DataType[]{element1, element2, element3, ...};
 
 ```java
 int[] arr = new int[]{10, 20, 30, 40, 50};
-String[] names = new String[]{"张三", "李四", "王五"};
+String[] names = new String[]{"Alice", "Bob", "Carol"};
 double[] prices = new double[]{19.9, 29.9, 39.9};
 ```
 
@@ -87,7 +87,7 @@ DataType[] arrayName = {element1, element2, element3, ...};
 
 ```java
 int[] arr = {10, 20, 30, 40, 50};
-String[] names = {"张三", "李四", "王五"};
+String[] names = {"Alice", "Bob", "Carol"};
 double[] prices = {19.9, 29.9, 39.9};
 ```
 
@@ -138,7 +138,7 @@ public class ArrayDemo {
         char[] chars = {'a', 'b', 'c', 'd'};
 
         // String array
-        String[] names = {"张三", "李四", "王五"};
+        String[] names = {"Alice", "Bob", "Carol"};
 
         // Boolean array
         boolean[] flags = {true, false, true};
@@ -481,8 +481,8 @@ public class DynamicArrayDemo {
         // Assign values after dynamic initialization
         arr1[0] = 10;
         arr1[1] = 20;
-        arr4[0] = "张三";
-        arr4[1] = "李四";
+        arr4[0] = "Alice";
+        arr4[1] = "Bob";
     }
 }
 ```
@@ -1239,7 +1239,7 @@ public void method(String name, int... scores) { }
 List<String> list = Arrays.asList("A", "B", "C");
 
 // String.format() also uses varargs
-String result = String.format("Name: %s, age: %d", "张三", 18);
+String result = String.format("Name: %s, age: %d", "Alice", 18);
 
 // Custom utility method
 public static void printAll(Object... args) {

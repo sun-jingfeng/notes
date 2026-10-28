@@ -963,40 +963,104 @@ public class TCPServerMulti {
 
 ***
 
-## VII. Summary Mind Map
+## VII. HTTP Requests with HttpClient (JDK 11+)
 
-    Network programming
-        │
-        ├── Basic concepts
-        │     ├── C/S architecture (client/server)
-        │     ├── B/S architecture (browser/server)
-        │     └── Network models (OSI seven layers, TCP/IP four layers)
-        │
-        ├── Three essentials
-        │     ├── IP address: identifies a device (InetAddress)
-        │     │     └── getLocalHost(), getByName(), getAllByName()
-        │     ├── Port: identifies a program (0–65535)
-        │     └── Protocol: transmission rules (UDP/TCP)
-        │
-        ├── CMD commands
-        │     ├── ipconfig: display IP configuration
-        │     ├── ping: test connectivity
-        │     ├── netstat -ano: inspect port usage
-        │     ├── tracert: trace routes
-        │     └── nslookup: resolve domain IP addresses
-        │
-        ├── UDP communication
-        │     ├── Characteristics: connectionless, unreliable, fast
-        │     ├── Classes: DatagramSocket, DatagramPacket
-        │     ├── Send: create Socket → create Packet → send()
-        │     ├── Receive: create Socket(port) → create Packet → receive()
-        │     └── Extensions: broadcast (255.255.255.255), multicast (224.0.0.0–239.255.255.255)
-        │
-        └── TCP communication
-              ├── Characteristics: connection-oriented, reliable, three-way handshake, four-way termination
-              ├── Classes: Socket (client), ServerSocket (server)
-              ├── Client: create Socket → getOutputStream → getInputStream
-              ├── Server: create ServerSocket → accept() → obtain streams → process
-              ├── Character streams: BufferedReader + PrintWriter (recommended)
-              ├── Half-close: shutdownOutput() (signals sending is complete)
-              └── Settings: setSoTimeout(), setKeepAlive(), setTcpNoDelay()
+### 1. What Is HttpClient?
+
+**`java.net.http.HttpClient`** is the JDK's built-in HTTP client, standard since JDK 11. It works on top of TCP sockets, supports HTTP/1.1 and HTTP/2, sends requests synchronously or asynchronously, and replaces the older `HttpURLConnection`.
+
+| Aspect | `HttpURLConnection` | `HttpClient` |
+| ------------------ | ------------------------------------ | ------------------------------------------ |
+| **API style** | Mutable connection object with many setters | Immutable builders |
+| **HTTP/2** | ❌ | ✅ Default, falling back to HTTP/1.1 |
+| **HTTP/3** | ❌ | ✅ Opt-in since JDK 26 |
+| **Asynchronous calls** | ❌ | ✅ `sendAsync()` returns a `CompletableFuture` |
+| **Body handling** | Manual stream reading and writing | `BodyHandlers` and `BodyPublishers` |
+| **WebSocket** | ❌ | ✅ `newWebSocketBuilder()` |
+
+### 2. Core Classes
+
+| Class | Role |
+| ---------------------------- | ------------------------------------------------------------ |
+| `HttpClient` | Sends requests; immutable and thread-safe, so one instance is reused |
+| `HttpRequest` | Request: URI, method, headers, body, and timeout |
+| `HttpResponse<T>` | Response: status code, headers, and a body of type `T` |
+| `HttpResponse.BodyHandlers` | Converts the response body: `ofString()`, `ofByteArray()`, `ofFile(Path)`, `discarding()` |
+| `HttpRequest.BodyPublishers` | Supplies the request body: `ofString()`, `ofByteArray()`, `ofFile(Path)`, `noBody()` |
+
+### 3. Synchronous GET
+
+```java
+HttpClient client = HttpClient.newBuilder()
+        .connectTimeout(Duration.ofSeconds(5))         // Connection timeout
+        .followRedirects(HttpClient.Redirect.NORMAL)   // Follow redirects (the default is NEVER)
+        .build();
+
+HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("https://api.example.com/users/1"))
+        .timeout(Duration.ofSeconds(10))               // Timeout for this request
+        .header("Accept", "application/json")
+        .GET()                                         // GET is the default and may be omitted
+        .build();
+
+// send() blocks until the response arrives; it throws IOException and InterruptedException
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.statusCode());   // 200
+System.out.println(response.body());         // {"id":1,"name":"Alice"}
+```
+
+### 4. POST with a JSON Body
+
+```java
+String json = """
+        {"name": "Alice", "age": 18}
+        """;
+
+HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.example.com/users"))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(json))
+        .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+if (response.statusCode() >= 400) {   // send() returns normally for 4xx/5xx responses
+    throw new IllegalStateException("Request failed: " + response.statusCode());
+}
+```
+
+### 5. Asynchronous Requests
+
+```java
+// sendAsync() returns immediately with a CompletableFuture
+CompletableFuture<String> future = client
+        .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        .thenApply(HttpResponse::body);
+
+future.thenAccept(System.out::println)
+      .exceptionally(ex -> {
+          System.err.println("Request failed: " + ex.getMessage());
+          return null;
+      });
+
+// Send several requests concurrently and wait for all of them
+List<URI> uris = List.of(URI.create("https://api.example.com/users/1"),
+                         URI.create("https://api.example.com/users/2"));
+
+List<CompletableFuture<HttpResponse<String>>> futures = uris.stream()
+        .map(uri -> client.sendAsync(HttpRequest.newBuilder(uri).build(),
+                                     HttpResponse.BodyHandlers.ofString()))
+        .toList();
+
+CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+futures.forEach(f -> System.out.println(f.join().statusCode()));
+```
+
+### 6. Best Practices
+
+| Practice | Description |
+| ---------------------------- | ------------------------------------------------------------ |
+| **Reuse one client** | The client owns a connection pool; creating one per request wastes connections |
+| **Always set timeouts** | There is no default timeout; set `connectTimeout()` on the client and `timeout()` on each request |
+| **Check the status code** | `send()` does not throw for 4xx/5xx responses |
+| **Close the client (JDK 21+)** | `HttpClient` implements `AutoCloseable` since JDK 21; `close()` waits for in-flight requests |
+| **Blocking calls on virtual threads** | `send()` on virtual threads (JDK 21+) scales like asynchronous code while keeping a simple style |
+| **HTTP/3 (JDK 26+)** | Opt in with `HttpClient.newBuilder().version(HttpClient.Version.HTTP_3)`; unsupported servers fall back to HTTP/2 or HTTP/1.1 |

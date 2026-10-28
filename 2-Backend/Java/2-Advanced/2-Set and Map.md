@@ -70,12 +70,12 @@ public class HashSetDemo {
         Set<String> set = new HashSet<>();
 
         // Add elements
-        set.add("张三");
-        set.add("李四");
-        set.add("王五");
-        set.add("张三");  // Duplicate; addition fails
+        set.add("Alice");
+        set.add("Bob");
+        set.add("Carol");
+        set.add("Alice");  // Duplicate; addition fails
 
-        System.out.println(set);  // [李四, 张三, 王五] (order is unspecified)
+        System.out.println(set);  // [Bob, Alice, Carol] (order is unspecified)
         System.out.println(set.size());  // 3
     }
 }
@@ -178,9 +178,9 @@ public class HashSetDemo {
     public static void main(String[] args) {
         Set<Student> set = new HashSet<>();
 
-        set.add(new Student("张三", 18));
-        set.add(new Student("李四", 19));
-        set.add(new Student("张三", 18));  // Duplicate; addition fails
+        set.add(new Student("Alice", 18));
+        set.add(new Student("Bob", 19));
+        set.add(new Student("Alice", 18));  // Duplicate; addition fails
 
         System.out.println(set.size());  // 2 (provided hashCode and equals are overridden)
     }
@@ -235,12 +235,12 @@ public class LinkedHashSetDemo {
     public static void main(String[] args) {
         Set<String> set = new LinkedHashSet<>();
 
-        set.add("张三");
-        set.add("李四");
-        set.add("王五");
+        set.add("Alice");
+        set.add("Bob");
+        set.add("Carol");
 
         // Iteration follows insertion order
-        System.out.println(set);  // [张三, 李四, 王五]
+        System.out.println(set);  // [Alice, Bob, Carol]
     }
 }
 ```
@@ -261,9 +261,31 @@ public class LinkedHashSetDemo {
                         +
     ┌───────────────────────────────────────┐
     │            Doubly linked list         │
-    │   [张三] ←→ [李四] ←→ [王五]          │
+    │   [Alice] ←→ [Bob] ←→ [Carol]         │
     │   head                    tail        │
     └───────────────────────────────────────┘
+
+### 4. SequencedSet Methods (JDK 21+)
+
+`LinkedHashSet` implements **`SequencedSet`** (JDK 21+), so its first and last elements are directly accessible. Adding an element that already exists moves it to the requested end:
+
+```java
+LinkedHashSet<String> set = new LinkedHashSet<>(List.of("Alice", "Bob", "Carol"));
+
+set.addFirst("Carol");                  // Moves Carol to the front: [Carol, Alice, Bob]
+set.addLast("Alice");                   // Moves Alice to the back: [Carol, Bob, Alice]
+System.out.println(set.getFirst());     // Carol
+System.out.println(set.reversed());     // [Alice, Bob, Carol] (a reversed view)
+```
+
+| Method | Description |
+| ------------------------------ | -------------------------------------------- |
+| `getFirst()` / `getLast()` | Returns the first or last element |
+| `addFirst(E)` / `addLast(E)` | Adds at the front or back, or moves an existing element there |
+| `removeFirst()` / `removeLast()` | Removes and returns the first or last element |
+| `reversed()` | Returns a reverse-ordered view |
+
+> 💡 `TreeSet` is also a `SequencedSet`, but its order comes from sorting, so `addFirst()` / `addLast()` throw `UnsupportedOperationException`.
 
 ***
 
@@ -323,9 +345,9 @@ public class Student implements Comparable<Student> {
 
 // Usage
 Set<Student> set = new TreeSet<>();
-set.add(new Student("张三", 18));
-set.add(new Student("李四", 20));
-set.add(new Student("王五", 18));
+set.add(new Student("Alice", 18));
+set.add(new Student("Bob", 20));
+set.add(new Student("Carol", 18));
 // Results sorted by age
 ```
 
@@ -339,9 +361,9 @@ Set<Student> set = new TreeSet<>((s1, s2) -> {
     return result == 0 ? s1.getName().compareTo(s2.getName()) : result;
 });
 
-set.add(new Student("张三", 18));
-set.add(new Student("李四", 20));
-set.add(new Student("王五", 18));
+set.add(new Student("Alice", 18));
+set.add(new Student("Bob", 20));
+set.add(new Student("Carol", 18));
 // Results sorted by descending age
 
 // Use Comparator static methods
@@ -621,9 +643,9 @@ Map<String, Integer> mapCopy = Map.copyOf(originalMap);
     ┌──────────────────────────────────────┐
     │  Key        │    Value               │
     ├──────────────────────────────────────┤
-    │  "name"     │    "张三"              │
+    │  "name"     │    "Alice"             │
     │  "age"      │    18                  │
-    │  "gender"   │    "男"                │
+    │  "gender"   │    "female"            │
     └──────────────────────────────────────┘
 
     Keys must be unique; values can repeat
@@ -655,26 +677,26 @@ public class MapDemo {
         Map<String, Integer> map = new HashMap<>();
 
         // ========== Add ==========
-        map.put("张三", 18);
-        map.put("李四", 20);
-        map.put("王五", 22);
-        System.out.println(map);  // {李四=20, 张三=18, 王五=22}
+        map.put("Alice", 18);
+        map.put("Bob", 20);
+        map.put("Carol", 22);
+        System.out.println(map);  // {Bob=20, Alice=18, Carol=22}
 
         // An existing key's value is overwritten, and the old value is returned
-        Integer oldValue = map.put("张三", 25);
+        Integer oldValue = map.put("Alice", 25);
         System.out.println(oldValue);  // 18
-        System.out.println(map.get("张三"));  // 25
+        System.out.println(map.get("Alice"));  // 25
 
         // ========== Remove ==========
-        map.remove("李四");
+        map.remove("Bob");
 
         // Remove only if both key and value match
-        map.remove("张三", 25);  // Removal succeeds
-        map.remove("王五", 100);  // Removal fails (value does not match)
+        map.remove("Alice", 25);  // Removal succeeds
+        map.remove("Carol", 100);  // Removal fails (value does not match)
 
         // ========== Query ==========
-        Integer age = map.get("王五");  // 22 (returns null if the key is absent)
-        boolean hasKey = map.containsKey("张三");  // false (removed by remove("张三", 25))
+        Integer age = map.get("Carol");  // 22 (returns null if the key is absent)
+        boolean hasKey = map.containsKey("Alice");  // false (removed by remove("Alice", 25))
         boolean hasValue = map.containsValue(22);  // true
 
         // ========== Get all keys/values ==========
@@ -692,28 +714,28 @@ public class MapDemo {
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // Key exists: return its value
-Integer age1 = map.getOrDefault("张三", 0);  // 18
+Integer age1 = map.getOrDefault("Alice", 0);  // 18
 
 // Key absent: return the default value
-Integer age2 = map.getOrDefault("李四", 0);  // 0
+Integer age2 = map.getOrDefault("Bob", 0);  // 0
 ```
 
 ### 2. putIfAbsent: Add Only When Absent
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // Key absent: add and return null
-Integer result1 = map.putIfAbsent("李四", 20);  // null
-System.out.println(map);  // {李四=20, 张三=18}
+Integer result1 = map.putIfAbsent("Bob", 20);  // null
+System.out.println(map);  // {Bob=20, Alice=18}
 
 // Key exists: do not add; return the existing value
-Integer result2 = map.putIfAbsent("张三", 25);  // 18
-System.out.println(map.get("张三"));  // Still 18
+Integer result2 = map.putIfAbsent("Alice", 25);  // 18
+System.out.println(map.get("Alice"));  // Still 18
 ```
 
 ### 3. computeIfAbsent: Compute and Add When Absent
@@ -745,30 +767,30 @@ System.out.println(groups);  // {a=[apple, avocado], b=[banana, blueberry], c=[c
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // Key exists: calculate a new value
-map.computeIfPresent("张三", (k, v) -> v + 1);
-System.out.println(map.get("张三"));  // 19
+map.computeIfPresent("Alice", (k, v) -> v + 1);
+System.out.println(map.get("Alice"));  // 19
 
 // Key absent: do nothing
-map.computeIfPresent("李四", (k, v) -> v + 1);
-System.out.println(map.get("李四"));  // null
+map.computeIfPresent("Bob", (k, v) -> v + 1);
+System.out.println(map.get("Bob"));  // null
 ```
 
 ### 5. compute: Compute and Update Regardless of Presence
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // Key exists
-map.compute("张三", (k, v) -> v == null ? 1 : v + 1);
-System.out.println(map.get("张三"));  // 19
+map.compute("Alice", (k, v) -> v == null ? 1 : v + 1);
+System.out.println(map.get("Alice"));  // 19
 
 // Key absent
-map.compute("李四", (k, v) -> v == null ? 1 : v + 1);
-System.out.println(map.get("李四"));  // 1
+map.compute("Bob", (k, v) -> v == null ? 1 : v + 1);
+System.out.println(map.get("Bob"));  // 1
 
 // Count word occurrences
 Map<String, Integer> wordCount = new HashMap<>();
@@ -781,15 +803,15 @@ for (String word : words) {
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // Key exists: merge values
-map.merge("张三", 10, Integer::sum);  // 18 + 10 = 28
+map.merge("Alice", 10, Integer::sum);  // 18 + 10 = 28
 
 // Key absent: insert directly
-map.merge("李四", 20, Integer::sum);  // 20
+map.merge("Bob", 20, Integer::sum);  // 20
 
-System.out.println(map);  // {李四=20, 张三=28}
+System.out.println(map);  // {Bob=20, Alice=28}
 
 // Common use: count word occurrences
 Map<String, Integer> wordCount = new HashMap<>();
@@ -808,18 +830,18 @@ System.out.println(map2.get("key"));  // Hello World
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
+map.put("Alice", 18);
 
 // replace: replace only if the key exists
-map.replace("张三", 25);
-System.out.println(map.get("张三"));  // 25
+map.replace("Alice", 25);
+System.out.println(map.get("Alice"));  // 25
 
-map.replace("李四", 20);  // Absent; do nothing
-System.out.println(map.get("李四"));  // null
+map.replace("Bob", 20);  // Absent; do nothing
+System.out.println(map.get("Bob"));  // null
 
 // replace: replace only if the old value matches
-boolean success = map.replace("张三", 25, 30);  // true
-boolean fail = map.replace("张三", 100, 200);  // false (old value does not match)
+boolean success = map.replace("Alice", 25, 30);  // true
+boolean fail = map.replace("Alice", 100, 200);  // false (old value does not match)
 
 // replaceAll: replace every value
 map.replaceAll((k, v) -> v + 10);  // Add 10 to every value
@@ -829,8 +851,8 @@ map.replaceAll((k, v) -> v + 10);  // Add 10 to every value
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
-map.put("李四", 20);
+map.put("Alice", 18);
+map.put("Bob", 20);
 
 // Iterate with forEach
 map.forEach((key, value) -> {
@@ -846,9 +868,9 @@ map.forEach((key, value) -> {
 
 ```java
 Map<String, Integer> map = new HashMap<>();
-map.put("张三", 18);
-map.put("李四", 20);
-map.put("王五", 22);
+map.put("Alice", 18);
+map.put("Bob", 20);
+map.put("Carol", 22);
 
 // Get all keys, then retrieve the value for each key
 Set<String> keys = map.keySet();
@@ -1003,8 +1025,8 @@ public class Student {
 
 // Usage
 Map<Student, String> map = new HashMap<>();
-map.put(new Student("张三", 18), "北京");
-map.put(new Student("张三", 18), "上海");  // Duplicate key; the value is overwritten
+map.put(new Student("Alice", 18), "New York");
+map.put(new Student("Alice", 18), "London");  // Duplicate key; the value is overwritten
 System.out.println(map.size());  // 1
 ```
 
@@ -1024,15 +1046,15 @@ System.out.println(map.size());  // 1
 
 ```java
 Map<String, Integer> map = new LinkedHashMap<>();
-map.put("张三", 18);
-map.put("李四", 20);
-map.put("王五", 22);
+map.put("Alice", 18);
+map.put("Bob", 20);
+map.put("Carol", 22);
 
 // Iteration follows insertion order
 map.forEach((k, v) -> System.out.println(k + " = " + v));
-// 张三 = 18
-// 李四 = 20
-// 王五 = 22
+// Alice = 18
+// Bob = 20
+// Carol = 22
 ```
 
 #### 3. Access-Order Mode
@@ -1050,6 +1072,37 @@ map2.put("C", 3);
 map2.get("A");  // Access A
 System.out.println(map2.keySet());  // [B, C, A] (A moves to the end)
 ```
+
+#### 4. SequencedMap Methods (JDK 21+)
+
+`LinkedHashMap` implements **`SequencedMap`** (JDK 21+), which adds direct access to the first and last entries:
+
+```java
+LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
+map.put("Alice", 18);
+map.put("Bob", 20);
+map.put("Carol", 22);
+
+System.out.println(map.firstEntry());   // Alice=18
+System.out.println(map.lastEntry());    // Carol=22
+
+map.putFirst("Carol", 23);              // Moves Carol to the front: {Carol=23, Alice=18, Bob=20}
+map.putLast("Dave", 25);                // {Carol=23, Alice=18, Bob=20, Dave=25}
+
+Map.Entry<String, Integer> polled = map.pollFirstEntry();   // Removes and returns Carol=23
+System.out.println(map.reversed());     // {Dave=25, Bob=20, Alice=18} (a reversed view)
+System.out.println(map.sequencedKeySet().reversed());   // [Dave, Bob, Alice]
+```
+
+| Method | Description |
+| ------------------------------------------- | -------------------------------------------- |
+| `firstEntry()` / `lastEntry()` | Returns the first or last entry |
+| `pollFirstEntry()` / `pollLastEntry()` | Removes and returns the first or last entry |
+| `putFirst(K, V)` / `putLast(K, V)` | Inserts or moves an entry to the front or back |
+| `reversed()` | Returns a reverse-ordered view |
+| `sequencedKeySet()` / `sequencedValues()` / `sequencedEntrySet()` | Returns sequenced views of the keys, values, and entries |
+
+> 💡 `TreeMap` is also a `SequencedMap`, but `putFirst()` / `putLast()` throw `UnsupportedOperationException` because sorting decides the order.
 
 ***
 
@@ -1069,11 +1122,11 @@ System.out.println(map2.keySet());  // [B, C, A] (A moves to the end)
 ```java
 // Natural ordering (keys must implement Comparable)
 Map<Integer, String> map = new TreeMap<>();
-map.put(3, "三");
-map.put(1, "一");
-map.put(2, "二");
+map.put(3, "three");
+map.put(1, "one");
+map.put(2, "two");
 
-System.out.println(map);  // {1=一, 2=二, 3=三} (sorted by key)
+System.out.println(map);  // {1=one, 2=two, 3=three} (sorted by key)
 ```
 
 #### 3. Custom Ordering
@@ -1096,26 +1149,26 @@ map.put("abcd", 3);
 
 ```java
 TreeMap<Integer, String> map = new TreeMap<>();
-map.put(1, "一");
-map.put(3, "三");
-map.put(5, "五");
-map.put(7, "七");
-map.put(9, "九");
+map.put(1, "one");
+map.put(3, "three");
+map.put(5, "five");
+map.put(7, "seven");
+map.put(9, "nine");
 
 // Get the first and last entries
-Map.Entry<Integer, String> first = map.firstEntry();  // 1=一
-Map.Entry<Integer, String> last = map.lastEntry();    // 9=九
+Map.Entry<Integer, String> first = map.firstEntry();  // 1=one
+Map.Entry<Integer, String> last = map.lastEntry();    // 9=nine
 
 // ceiling / floor / higher / lower
-Map.Entry<Integer, String> ceiling = map.ceilingEntry(4);  // 5=五 (smallest key >= 4)
-Map.Entry<Integer, String> floor = map.floorEntry(4);      // 3=三 (largest key <= 4)
-Map.Entry<Integer, String> higher = map.higherEntry(5);    // 7=七 (smallest key > 5)
-Map.Entry<Integer, String> lower = map.lowerEntry(5);      // 3=三 (largest key < 5)
+Map.Entry<Integer, String> ceiling = map.ceilingEntry(4);  // 5=five (smallest key >= 4)
+Map.Entry<Integer, String> floor = map.floorEntry(4);      // 3=three (largest key <= 4)
+Map.Entry<Integer, String> higher = map.higherEntry(5);    // 7=seven (smallest key > 5)
+Map.Entry<Integer, String> lower = map.lowerEntry(5);      // 3=three (largest key < 5)
 
 // Range views
-SortedMap<Integer, String> head = map.headMap(5);   // {1=一, 3=三}
-SortedMap<Integer, String> tail = map.tailMap(5);   // {5=五, 7=七, 9=九}
-SortedMap<Integer, String> sub = map.subMap(3, 7);  // {3=三, 5=五}
+SortedMap<Integer, String> head = map.headMap(5);   // {1=one, 3=three}
+SortedMap<Integer, String> tail = map.tailMap(5);   // {5=five, 7=seven, 9=nine}
+SortedMap<Integer, String> sub = map.subMap(3, 7);  // {3=three, 5=five}
 ```
 
 ***
@@ -1169,11 +1222,11 @@ import java.util.concurrent.ConcurrentHashMap;
 Map<String, Integer> map = new ConcurrentHashMap<>();
 
 // Thread-safe; multiple threads can operate on different buckets simultaneously
-map.put("张三", 18);
-map.put("李四", 20);
+map.put("Alice", 18);
+map.put("Bob", 20);
 
 // Atomic operation: insert only when absent
-map.putIfAbsent("张三", 25);  // Does not overwrite because "张三" already exists
+map.putIfAbsent("Alice", 25);  // Does not overwrite because "Alice" already exists
 
 // Atomic compound operation
 map.compute("count", (k, v) -> v == null ? 1 : v + 1);

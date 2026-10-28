@@ -23,6 +23,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
 | 2023 | Java 21 (LTS: long-term support) |
 | 2024 | Java 22/23 released |
 | 2025 | Java 24/25 released; Java 25 is an LTS release |
+| 2026 | Java 26/27 released (non-LTS); the next planned LTS is Java 29 (2027) |
 
 **Release cadence**:
 
@@ -117,7 +118,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
 
 | Scenario | Recommended version |
 | --------- | -------------------------- |
-| **Beginners** | JDK 17 or JDK 21 (LTS) |
+| **Beginners** | JDK 21 or JDK 25 (LTS) |
 | **Enterprise development** | Choose JDK 8, 11, 17, 21, 25, etc. according to project and framework compatibility |
 | **New projects** | Consider JDK 25 (LTS), after confirming framework compatibility |
 | **Learning new features** | Refer to the current releases and corresponding feature documentation on the official website |
@@ -142,7 +143,7 @@ Java is an **object-oriented programming language** released by Sun Microsystems
     1. Download the JDK installer (.exe or .msi)
     2. Double-click to run it
     3. Choose an installation path (preferably without Chinese characters or spaces)
-       Recommended path: D:\Java\jdk-17
+       Recommended path: D:\Java\jdk-21
     4. Click "Next" to complete installation
     5. Configure the JAVA_HOME and Path environment variables
 
@@ -157,11 +158,11 @@ irm get.scoop.sh | iex
 scoop bucket add java
 
 # Install the JDK (environment variables are configured automatically)
-scoop install temurin17-jdk
+scoop install temurin21-jdk
 
 # Switch JDK versions
-scoop reset temurin17-jdk
 scoop reset temurin21-jdk
+scoop reset temurin25-jdk
 ```
 
 ### 3. macOS Installation
@@ -170,7 +171,7 @@ scoop reset temurin21-jdk
 
 ```bash
 # Download the .dmg file and double-click to install
-# Installation location: /Library/Java/JavaVirtualMachines/jdk-17.jdk
+# Installation location: /Library/Java/JavaVirtualMachines/jdk-21.jdk
 ```
 
 **Option 2: Install with Homebrew**
@@ -179,11 +180,11 @@ scoop reset temurin21-jdk
 # Install Homebrew (if not already installed)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Install JDK 17
-brew install openjdk@17
+# Install JDK 21
+brew install openjdk@21
 
 # Create a symbolic link (Apple Silicon path; Intel Macs use /usr/local/opt)
-sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk
 ```
 
 **Option 3: Install with SDKMAN (recommended; supports multiple versions)**
@@ -197,14 +198,14 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 sdk list java
 
 # Install a JDK (exact identifiers change over time; copy one from sdk list java)
-sdk install java 17.0.9-tem    # Eclipse Temurin 17
-sdk install java 21.0.1-tem    # Eclipse Temurin 21
+sdk install java 21.0.13-tem   # Eclipse Temurin 21
+sdk install java 25.0.5-tem    # Eclipse Temurin 25
 
 # Change the default version
-sdk default java 17.0.9-tem
+sdk default java 21.0.13-tem
 
 # Switch versions temporarily (current terminal only)
-sdk use java 21.0.1-tem
+sdk use java 25.0.5-tem
 ```
 
 ### 4. Linux Installation
@@ -214,16 +215,16 @@ sdk use java 21.0.1-tem
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install openjdk-17-jdk
+sudo apt install openjdk-21-jdk
 
 # CentOS/RHEL
-sudo yum install java-17-openjdk-devel
+sudo yum install java-21-openjdk-devel
 
 # Fedora
-sudo dnf install java-17-openjdk-devel
+sudo dnf install java-21-openjdk-devel
 
 # Arch Linux
-sudo pacman -S jdk17-openjdk
+sudo pacman -S jdk21-openjdk
 ```
 
 **Option 2: Install with SDKMAN (recommended)**
@@ -234,7 +235,7 @@ curl -s "https://get.sdkman.io" | bash
 source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # Install a JDK
-sdk install java 17.0.9-tem
+sdk install java 21.0.13-tem
 ```
 
 ### 5. Verify the Installation
@@ -253,9 +254,9 @@ echo %JAVA_HOME%       # Windows
 
 **Example output on success**:
 
-    openjdk version "17.0.9" 2023-10-17
-    OpenJDK Runtime Environment Temurin-17.0.9+9 (build 17.0.9+9)
-    OpenJDK 64-Bit Server VM Temurin-17.0.9+9 (build 17.0.9+9, mixed mode, sharing)
+    openjdk version "21.0.13" 2026-10-20 LTS
+    OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)
+    OpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)
 
 ***
 
@@ -275,7 +276,7 @@ echo %JAVA_HOME%       # Windows
 
     2. Create a system variable named JAVA_HOME
        Variable name: JAVA_HOME
-       Variable value: D:\Java\jdk-17 (the JDK installation path)
+       Variable value: D:\Java\jdk-21 (the JDK installation path)
 
     3. Edit the Path system variable
        Add: %JAVA_HOME%\bin
@@ -289,7 +290,7 @@ echo %JAVA_HOME%       # Windows
 **Temporary settings in PowerShell**:
 
 ```powershell
-$env:JAVA_HOME = "D:\Java\jdk-17"
+$env:JAVA_HOME = "D:\Java\jdk-21"
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 ```
 
@@ -309,9 +310,9 @@ nano ~/.bash_profile
 
 ```bash
 # Java environment variables
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 # Or specify the exact path
-# export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home
+# export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 
 export PATH=$JAVA_HOME/bin:$PATH
 ```
@@ -345,7 +346,7 @@ sudo nano /etc/profile
 
 ```bash
 # Java environment variables
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk   # Path varies by distribution (Ubuntu: java-17-openjdk-amd64)
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk   # Path varies by distribution (Ubuntu: java-21-openjdk-amd64)
 export PATH=$JAVA_HOME/bin:$PATH
 ```
 
@@ -375,10 +376,10 @@ source ~/.bashrc
 
 ```bash
 # Change the default version
-sdk default java 17.0.9-tem
+sdk default java 21.0.13-tem
 
 # Switch temporarily (current terminal only)
-sdk use java 21.0.1-tem
+sdk use java 25.0.5-tem
 
 # Show the current version
 sdk current java
@@ -391,8 +392,8 @@ sdk current java
 /usr/libexec/java_home -V
 
 # Switch temporarily
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export JAVA_HOME=$(/usr/libexec/java_home -v 25)
 ```
 
 ***
@@ -467,9 +468,10 @@ public class HelloWorld {
 }
 
 // Simplified syntax in a separate source file: a preview feature in JDK 21–24, finalized in JDK 25
-// No public, static, or String[] args required
+// No public, static, or String[] args required; java.base classes are imported automatically
 void main() {
     System.out.println("Hello, World!");
+    IO.println("Hello again!");   // JDK 25: java.lang.IO provides println(), print(), and readln()
 }
 
 // Enable preview features with JDK 21; for 22–24, use the matching JDK and --source version
@@ -660,7 +662,7 @@ jshell> /exit
 
 ### 1. JDK Installation Directory
 
-    jdk-17/
+    jdk-21/
     ├─ bin/              # Executables (javac, java, jshell, etc.)
     ├─ conf/             # Configuration files
     ├─ include/          # C header files (for JNI development)
@@ -719,51 +721,11 @@ du -sh custom-jre
 
 ***
 
-## VIII. Summary Mind Map
-
-    Java Fundamentals
-        │
-        ├── Background on Java
-        │     ├─ Released by Sun in 1995
-        │     ├─ Father of Java: James Gosling
-        │     ├─ Characteristics: cross-platform, object-oriented, secure, robust
-        │     ├─ Three editions: SE, EE, ME
-        │     └─ LTS releases: 8, 11, 17, 21, 25
-        │
-        ├── Choosing a JDK
-        │     ├─ Oracle JDK vs OpenJDK
-        │     ├─ Common distributions: Temurin, Corretto, Zulu
-        │     └─ Recommended: JDK 17 or JDK 21
-        │
-        ├── Downloading and installing the JDK
-        │     ├─ JDK = JRE + development tools
-        │     ├─ JRE = JVM + core class libraries
-        │     ├─ Installation: official packages, SDKMAN, Homebrew
-        │     └─ Verify: java -version
-        │
-        ├── Environment configuration
-        │     ├─ JAVA_HOME: JDK installation directory
-        │     ├─ PATH: add the JDK's bin directory
-        │     └─ Switch versions: SDKMAN
-        │
-        ├── HelloWorld
-        │     ├─ Write: HelloWorld.java
-        │     ├─ Compile and run: javac + java
-        │     ├─ Single-file execution: java HelloWorld.java (JDK 11+)
-        │     └─ Interactive: jshell (JDK 9+)
-        │
-        └── Execution principles
-              ├─ .java → javac → .class → java → JVM → execution
-              ├─ Cross-platform support: bytecode + a JVM for each platform
-              └─ Execution: interpretation + JIT compilation
-
-***
-
-## IX. Frequently Asked Questions
+## VIII. Frequently Asked Questions
 
 ### 1. Which Version Should I Use to Learn Java?
 
-**Recommended**: JDK 17 or JDK 21 (LTS: long-term support)
+**Recommended**: JDK 21 or JDK 25 (LTS: long-term support)
 
 ### 2. How Do the JDK and JRE Differ?
 

@@ -78,7 +78,7 @@ public class PhoneTest {
         System.out.println(p.brand);  // Huawei
 
         // 4. Call a method: objectName.methodName(arguments);
-        p.call("张三");    // Calling 张三
+        p.call("Alice");    // Calling Alice
         p.playGame();      // Playing a game
     }
 }
@@ -105,7 +105,7 @@ Phone p = null;  // The reference does not refer to any object
 
 // Check for null before use
 if (p != null) {
-    p.call("张三");
+    p.call("Alice");
 }
 ```
 
@@ -287,9 +287,9 @@ public class Builder {
 
 // Use method chaining
 new Builder()
-    .setName("张三")
+    .setName("Alice")
     .setAge(18)
-    .print();  // 张三, 18
+    .print();  // Alice, 18
 ```
 
 ***
@@ -649,7 +649,7 @@ public class User {
 
 // Create an object using a builder (method chaining)
 User user = User.builder()
-    .username("zhangsan")
+    .username("alice")
     .password("123456")
     .age(20)
     .build();
@@ -668,7 +668,7 @@ public class User {
 
 // Usage
 User user = new User()
-    .setUsername("张三")
+    .setUsername("Alice")
     .setAge(18);
 
 // fluent = true: omit get/set prefixes from getters/setters
@@ -679,7 +679,7 @@ public class User {
 }
 
 // Usage
-user.username("张三");   // setter
+user.username("Alice");   // setter
 user.username();         // getter
 ```
 
@@ -691,12 +691,12 @@ user.username();         // getter
 public class UserController {
 
     private final UserService userService;      // final field
-    private final OrderService orderService;    // final field
+    private final RoleService roleService;    // final field
 
     // Lombok generates:
-    // public UserController(UserService userService, OrderService orderService) {
+    // public UserController(UserService userService, RoleService roleService) {
     //     this.userService = userService;
-    //     this.orderService = orderService;
+    //     this.roleService = roleService;
     // }
 }
 ```
@@ -809,9 +809,9 @@ public class Student {
 ```java
 Student.school = "Tsinghua University";
 Student s1 = new Student();
-s1.name = "张三";
+s1.name = "Alice";
 Student s2 = new Student();
-s2.name = "李四";
+s2.name = "Bob";
 ```
 
     ┌───────────────────────────┐
@@ -825,7 +825,7 @@ s2.name = "李四";
     ┌──────────────────┐        ┌───────────────────────────────────┐
     │     Stack        │        │           Heap                    │
     │  ┌───────────┐   │        │  ┌────────────┐  ┌────────────┐   │
-    │  │s1 = 0x001 │───┼────────┼─→│name="张三" │  │name="李四" │←──┼── s2
+    │  │s1 = 0x001 │───┼────────┼─→│name="Alice"│  │name="Bob"  │←──┼── s2
     │  └───────────┘   │        │  └────────────┘  └────────────┘   │
     │  ┌───────────┐   │        │      @0x001         @0x002        │
     │  │s2 = 0x002 │───┼────────┼─────────────────────┘             │
@@ -1040,63 +1040,3 @@ int capacity = ArrayUtils.DEFAULT_CAPACITY;
 | `private`   |  ❌  |   ✅  |   ✅  |   ✅  |   ❌  |
 
 **Note**: A top-level class can be `public` or have default access; it cannot be `private` or `protected` (nested classes can use all four access levels).
-
-***
-
-## XII. Summary Mind Map
-
-    Object-Oriented Programming
-        │
-        ├── Classes and objects
-        │     ├── Class = template (fields + methods)
-        │     ├── Object = instance created with new
-        │     ├── Memory: references on the stack, objects on the heap
-        │     ├── null reference → NullPointerException
-        │     └── == compares references; equals compares contents
-        │
-        ├── Variable differences
-        │     ├── Fields: inside class, outside methods; default values; heap
-        │     └── Local variables: inside methods; no default value; stack
-        │
-        ├── this keyword
-        │     ├── Refers to the current object; resolves same-name variables
-        │     ├── this() calls a constructor in this class (first statement in JDK 17/21; restricted preceding statements allowed from 25)
-        │     └── return this enables chaining
-        │
-        ├── Constructors
-        │     ├── Name = class name; no return type
-        │     ├── Called automatically on object creation
-        │     ├── Constructor chaining: constructors call each other with this()
-        │     └── Recommendation: provide both no-argument and all-arguments constructors
-        │
-        ├── Encapsulation
-        │     ├── private fields
-        │     ├── public getters/setters
-        │     └── isXxx() for boolean fields
-        │
-        ├── JavaBean
-        │     ├── Standard entity class = private fields + constructors + getters/setters
-        │     └── Optional: toString, equals, Serializable
-        │
-        ├── Lombok
-        │     ├── @Data = getter/setter/toString/equals/hashCode
-        │     ├── @NoArgsConstructor = no-argument constructor
-        │     ├── @AllArgsConstructor = all-arguments constructor
-        │     ├── @RequiredArgsConstructor = constructor for final fields (recommended for Spring)
-        │     ├── @Builder = builder pattern
-        │     ├── @Value = immutable class
-        │     ├── @Accessors(chain=true) = method chaining
-        │     └── Note: use callSuper=true with inheritance
-        │
-        ├── static keyword
-        │     ├── Static members belong to the class and are shared by all objects
-        │     ├── Access through the class name
-        │     ├── Static methods cannot access non-static members
-        │     ├── Static initializer: runs once when the class loads
-        │     └── Static import: import static
-        │
-        └── Access modifiers
-              ├── private: this class
-              ├── default: this class + same package
-              ├── protected: this class + same package + subclasses
-              └── public: anywhere

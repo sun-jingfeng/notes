@@ -75,6 +75,8 @@ A **starter** is a core Spring Boot feature that groups related dependencies, si
 | `spring-boot-starter-amqp` | RabbitMQ messaging |
 | `spring-boot-starter-quartz` | Quartz scheduling |
 
+> 💡 Spring Boot 4 renames several starters (`spring-boot-starter-web` → `spring-boot-starter-webmvc`, `spring-boot-starter-aop` → `spring-boot-starter-aspectj`) and adds a test starter per technology, such as `spring-boot-starter-webmvc-test`. The old names still work but are deprecated.
+
 ***
 
 ### 1.4 Inside a Starter
@@ -115,6 +117,8 @@ Typical separation:
 spring-boot-starter-web           → Dependency aggregation (POM)
 spring-boot-autoconfigure         → Auto-configuration classes such as WebMvcAutoConfiguration
 ```
+
+> 💡 Spring Boot 4 splits `spring-boot-autoconfigure` into per-technology modules named `spring-boot-<technology>` (for example `spring-boot-webmvc`), and Jackson 3 replaces `com.fasterxml.jackson.core:jackson-databind` with `tools.jackson.core:jackson-databind`, so the tree printed by `mvn dependency:tree` differs.
 
 ***
 

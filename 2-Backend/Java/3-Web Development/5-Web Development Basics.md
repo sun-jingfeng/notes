@@ -34,7 +34,7 @@
            ↓
     7. The response reaches the client
 
-> 💡 `spring-boot-starter-web` provides Spring MVC auto-configuration, so you can begin by writing Controllers.
+> 💡 `spring-boot-starter-web` provides Spring MVC auto-configuration, so Controllers can be written right away. Spring Boot 4 renames it `spring-boot-starter-webmvc`; the old name still works but is deprecated.
 
 ***
 
@@ -59,7 +59,7 @@
     ├──────────────────────────────────────────────────┤
     │ Blank line                                       │
     ├──────────────────────────────────────────────────┤
-    │ Body          {"name": "张三", "age": 20}        │
+    │ Body          {"name": "Alice", "age": 20}       │
     └──────────────────────────────────────────────────┘
 
 #### HTTP Methods
@@ -236,7 +236,7 @@ public class UserController {
 #### Simple Parameters
 
 ```java
-// GET /user?name=张三&age=20 (sample name)
+// GET /user?name=Alice&age=20 (sample name)
 @GetMapping("/user")
 public String getUser(String name, Integer age) {
     return "Name: " + name + ", age: " + age;
@@ -248,7 +248,7 @@ public String getUser(String name, Integer age) {
 #### @RequestParam
 
 ```java
-// GET /user?user_name=张三 (sample name)
+// GET /user?user_name=Alice (sample name)
 @GetMapping("/user")
 public String getUser(
     @RequestParam("user_name") String name,  // Map the parameter name
@@ -280,11 +280,11 @@ public String getUserById(@PathVariable Integer id) {
     return "User ID: " + id;
 }
 
-// GET /user/1/orders/100
-@GetMapping("/user/{userId}/orders/{orderId}")
-public String getOrder(@PathVariable Integer userId,
-                       @PathVariable Integer orderId) {
-    return "Order " + orderId + " for user " + userId;
+// GET /user/1/roles/100
+@GetMapping("/user/{userId}/roles/{roleId}")
+public String getRole(@PathVariable Integer userId,
+                      @PathVariable Integer roleId) {
+    return "Role " + roleId + " of user " + userId;
 }
 
 // When the variable and parameter names differ
@@ -301,7 +301,7 @@ public String getUser(@PathVariable("user_id") Integer userId) {
 ```java
 // POST /user
 // Content-Type: application/json
-// {"name": "张三", "age": 20} — sample request data
+// {"name": "Alice", "age": 20} — sample request data
 @PostMapping("/user")
 public String addUser(@RequestBody User user) {
     return "Add user: " + user;
@@ -315,18 +315,18 @@ public Result batchAdd(@RequestBody List<User> users) {
 }
 
 // Nested objects
-@PostMapping("/orders")
-public Result createOrder(@RequestBody OrderDTO order) {
-    // OrderDTO contains List<OrderItem> items and Address address
+@PostMapping("/demo")
+public Result<Void> create(@RequestBody DemoDTO dto) {
+    // DemoDTO contains List<DemoItem> items and Address address
     return Result.success();
 }
 ```
 
 ```java
 @Data
-public class OrderDTO {
+public class DemoDTO {
     private Long userId;
-    private List<OrderItem> items;    // Nested collection
+    private List<DemoItem> items;     // Nested collection
     private Address address;           // Nested object
 }
 ```
@@ -361,7 +361,7 @@ public String getCookie(
 ### 3.5 Binding Parameters to an Object
 
 ```java
-// GET /user?name=张三&age=20&email=test@example.com — sample request
+// GET /user?name=Alice&age=20&email=test@example.com — sample request
 @GetMapping("/user")
 public String getUser(User user) {  // Bind request parameters to object properties
     return "User: " + user;
@@ -403,16 +403,16 @@ public Result delete(HttpServletRequest request) {
 Converts date/time strings from request parameters into Java date/time objects.
 
 ```java
-// GET /order?createTime=2024-01-15
-@GetMapping("/order")
-public Result getOrder(
+// GET /demo?createTime=2024-01-15
+@GetMapping("/demo")
+public Result<LocalDate> getByDate(
     @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate createTime) {
     return Result.success(createTime);
 }
 
 // GET /log?startTime=2024-01-15 10:30:00
 @GetMapping("/log")
-public Result getLogs(
+public Result<LocalDateTime> getLogs(
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime) {
     return Result.success(startTime);
 }
@@ -422,8 +422,8 @@ public Result getLogs(
 
 ```java
 @Data
-public class OrderQuery {
-    private String orderNo;
+public class DemoQuery {
+    private String code;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
@@ -439,15 +439,19 @@ Controls date/time formatting during JSON serialization and deserialization.
 
 ```java
 @Data
-public class Order {
+public class DemoVO {
     private Long id;
-    private String orderNo;
+    private String code;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate deliveryDate;
+    private LocalDate expireDate;
+
+    // Date is zone-based, so timezone applies
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private Date updateTime;
 }
 ```
 
@@ -464,13 +468,13 @@ public class Order {
 
 ```java
 @Data
-public class OrderDTO {
+public class EventDTO {
     private Long id;
 
     // Incoming URL parameter: ?createTime=2024-01-15%2010:30:00 (%20 is a space)
     // Outgoing JSON: {"createTime": "2024-01-15 10:30:00"}
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 }
 ```
@@ -483,12 +487,12 @@ public class OrderDTO {
 spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss   # Applies to java.util.Date only
-    time-zone: Asia/Shanghai
+    time-zone: UTC
     serialization:
       write-dates-as-timestamps: false
 ```
 
-> **Note**: `spring.jackson.date-format` does not affect `java.time` types such as `LocalDateTime`. Format those with `@JsonFormat` or register serializers through a `Jackson2ObjectMapperBuilderCustomizer` bean.
+> **Note**: `spring.jackson.date-format` does not affect `java.time` types such as `LocalDateTime`. Format those with `@JsonFormat` or register serializers through a `Jackson2ObjectMapperBuilderCustomizer` bean (`JsonMapperBuilderCustomizer` in Spring Boot 4).
 
 ***
 
@@ -496,10 +500,10 @@ spring:
 
 | Annotation/approach | Source | Example |
 | -------------------- | ----------------- | ----------------------------- |
-| No annotation | Query/form parameters | `?name=张三` |
-| `@RequestParam` | Query parameters | `?name=张三` |
+| No annotation | Query/form parameters | `?name=Alice` |
+| `@RequestParam` | Query parameters | `?name=Alice` |
 | `@PathVariable` | URL path | `/user/1` |
-| `@RequestBody` | JSON request body | `{"name":"张三"}` |
+| `@RequestBody` | JSON request body | `{"name":"Alice"}` |
 | `@RequestHeader` | Request header | `Authorization: Bearer token` |
 | `@CookieValue`       | Cookie            | `Cookie: JSESSIONID=xxx`      |
 | `@DateTimeFormat` | Date/time conversion | `?date=2024-01-15` |
@@ -710,7 +714,7 @@ public PageResult<User> page(UserQuery query) {
     "msg": "Operation succeeded",
     "data": {
         "id": 1,
-        "name": "张三",
+        "name": "Alice",
         "createTime": "2024-01-15 10:30:00"
     }
 }
@@ -722,8 +726,8 @@ public PageResult<User> page(UserQuery query) {
     "data": {
         "total": 100,
         "rows": [
-            {"id": 1, "name": "张三"},
-            {"id": 2, "name": "李四"}
+            {"id": 1, "name": "Alice"},
+            {"id": 2, "name": "Bob"}
         ]
     }
 }

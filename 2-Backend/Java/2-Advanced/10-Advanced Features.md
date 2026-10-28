@@ -639,11 +639,11 @@ Constructor<?> con3 = clazz.getDeclaredConstructor(String.class, int.class);  //
 
 // Create an object using the constructor
 Object obj1 = con1.newInstance();
-Object obj2 = con2.newInstance("张三");
+Object obj2 = con2.newInstance("Alice");
 
 // Access a private constructor
 con3.setAccessible(true);  // Override access checks
-Object obj3 = con3.newInstance("李四", 20);
+Object obj3 = con3.newInstance("Bob", 20);
 ```
 
 ***
@@ -665,9 +665,9 @@ Field nameField = clazz.getDeclaredField("name");
 // Set/get field values
 Object obj = clazz.getDeclaredConstructor().newInstance();
 nameField.setAccessible(true);  // Override access checks
-nameField.set(obj, "张三");     // Set value
+nameField.set(obj, "Alice");     // Set value
 Object value = nameField.get(obj);  // Get value
-System.out.println(value);  // 张三
+System.out.println(value);  // Alice
 ```
 
 ***
@@ -881,12 +881,12 @@ public @interface MyAnnotation {
 }
 
 // Use the annotation
-@MyAnnotation(value = "张三", age = 18, tags = {"Student", "Programmer"})
+@MyAnnotation(value = "Alice", age = 18, tags = {"Student", "Programmer"})
 public class Student {
 }
 
 // When only value is specified, value= can be omitted
-@MyAnnotation("张三")
+@MyAnnotation("Alice")
 public class Teacher {
 }
 ```
@@ -1403,21 +1403,21 @@ proxy.add();
 
 ```java
 // Interface
-public interface OrderService {
-    void createOrder();
-    void deleteOrder();
+public interface DemoService {
+    void create();
+    void delete();
 }
 
 // Implementation
-public class OrderServiceImpl implements OrderService {
+public class DemoServiceImpl implements DemoService {
     @Override
-    public void createOrder() {
-        System.out.println("Create order");
+    public void create() {
+        System.out.println("Create data");
     }
 
     @Override
-    public void deleteOrder() {
-        System.out.println("Delete order");
+    public void delete() {
+        System.out.println("Delete data");
     }
 }
 
@@ -1438,7 +1438,7 @@ public class AuthProxyFactory {
             target.getClass().getInterfaces(),
             (proxy, method, args) -> {
                 // Check permissions
-                if ("deleteOrder".equals(method.getName())) {
+                if ("delete".equals(method.getName())) {
                     if (!"admin".equals(currentUser)) {
                         throw new RuntimeException("Not authorized to perform this operation!");
                     }
@@ -1453,61 +1453,17 @@ public class AuthProxyFactory {
 // Test
 public class Demo {
     public static void main(String[] args) {
-        OrderService target = new OrderServiceImpl();
+        DemoService target = new DemoServiceImpl();
 
         // Ordinary user
-        OrderService proxy1 = (OrderService) new AuthProxyFactory(target, "user").getProxy();
-        proxy1.createOrder();   // ✅ Succeeds
-        // proxy1.deleteOrder(); // ❌ Throws an exception: Not authorized to perform this operation!
+        DemoService proxy1 = (DemoService) new AuthProxyFactory(target, "user").getProxy();
+        proxy1.create();   // ✅ Succeeds
+        // proxy1.delete(); // ❌ Throws an exception: Not authorized to perform this operation!
 
         // Administrator
-        OrderService proxy2 = (OrderService) new AuthProxyFactory(target, "admin").getProxy();
-        proxy2.createOrder();   // ✅ Succeeds
-        proxy2.deleteOrder();   // ✅ Succeeds
+        DemoService proxy2 = (DemoService) new AuthProxyFactory(target, "admin").getProxy();
+        proxy2.create();   // ✅ Succeeds
+        proxy2.delete();   // ✅ Succeeds
     }
 }
 ```
-
-***
-
-## VI. Summary Mind Map
-
-    Advanced Java features
-        │
-        ├── Enums
-        │     ├── Definition: a fixed set of constants
-        │     ├── Methods: values(), valueOf(), name(), ordinal(), compareTo()
-        │     ├── Can have fields, constructors and methods
-        │     ├── Underlying form: a class extending java.lang.Enum
-        │     └── Advanced: EnumSet, EnumMap, enum singletons
-        │
-        ├── Class loaders
-        │     ├── Process: loading → linking → initialization
-        │     ├── JDK 8: Bootstrap → Extension → Application
-        │     ├── JDK 9+: Bootstrap → Platform → Application
-        │     │           (Extension renamed to Platform)
-        │     ├── Parent delegation: delegate first; load locally only if the parent fails
-        │     └── Departures: SPI, Tomcat, OSGi, custom class loaders
-        │
-        ├── Reflection
-        │     ├── Get Class: ClassName.class, object.getClass(), Class.forName()
-        │     ├── Constructors: getConstructor(), getDeclaredConstructor()
-        │     ├── Fields: getField(), getDeclaredField()
-        │     ├── Methods: getMethod(), getDeclaredMethod()
-        │     ├── Override access checks: setAccessible(true)
-        │     ├── Performance: cache reflection objects, MethodHandle
-        │     └── Modules: JDK 9+ needs opens for reflective package access
-        │
-        ├── Annotations
-        │     ├── Definition: @interface
-        │     ├── Meta-annotations: @Target, @Retention, @Documented, @Inherited, @Repeatable
-        │     ├── Read annotations: isAnnotationPresent(), getAnnotation()
-        │     ├── JDK 8+: @Repeatable (repeated annotations), TYPE_USE
-        │     └── Uses: configuration, validation, test frameworks
-        │
-        └── Dynamic proxies
-              ├── JDK dynamic proxy: Proxy.newProxyInstance()
-              │     └── Requirement: target object implements an interface
-              ├── CGLIB: inheritance-based; no interface required
-              ├── InvocationHandler: invoke(proxy, method, args)
-              └── Uses: logging, authorization, transactions, Spring AOP

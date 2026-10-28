@@ -444,7 +444,8 @@ String result2 = switch (obj2) {
 | JDK 5  | enum support              |
 | JDK 7  | String support            |
 | JDK 14 | Arrow syntax, switch expressions, yield |
-| JDK 21 | Pattern matching and guards            |
+| JDK 21 | Pattern matching, `when` guards, record patterns, `case null` |
+| JDK 22 | Unnamed patterns (`case Point(int x, _)`) |
 
 ### 7. Choosing if or switch
 
@@ -642,7 +643,7 @@ for (int num : arr) {
 }
 
 // Iterate over a string array
-String[] names = {"张三", "李四", "王五"};
+String[] names = {"Alice", "Bob", "Carol"};
 
 for (String name : names) {
     System.out.println(name);
@@ -1225,7 +1226,7 @@ public class RandomCall {
     public static void main(String[] args) {
         Random random = new Random();
 
-        String[] students = {"张三", "李四", "王五", "赵六", "陈七"};
+        String[] students = {"Alice", "Bob", "Carol", "Dave", "Eve"};
 
         int index = random.nextInt(students.length);
 
@@ -1293,7 +1294,8 @@ public class Shuffle {
 | ------ | -------------------- |
 | JDK 7  | String support            |
 | JDK 14 | Arrow syntax, switch expressions, yield |
-| JDK 21 | Pattern matching and guards            |
+| JDK 21 | Pattern matching, `when` guards, record patterns, `case null` |
+| JDK 22 | Unnamed patterns (`case Point(int x, _)`) |
 
 ### 5. Common Random Operations
 

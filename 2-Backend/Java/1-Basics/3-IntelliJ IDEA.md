@@ -594,7 +594,7 @@ for (int i = 0; i < 100; i++) {
 
     Examples:
     com.example.demo
-    com.example.shop.order
+    com.example.demo.user
 
 ### 3. Project Structure Settings
 
@@ -744,9 +744,9 @@ for (int i = 0; i < 100; i++) {
 
 ***
 
-## XIV. Summary
+## XIV. Quick Reference
 
-### 1. Essential Shortcuts to Memorize
+### 1. Essential Shortcuts
 
 | Action        | Windows          | macOS              |
 | --------- | ---------------- | ------------------ |

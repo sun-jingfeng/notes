@@ -5,7 +5,7 @@
 **String** is Java's class for representing strings. It is in the `java.lang` package (no import required).
 
 ```java
-String name = "张三";
+String name = "Alice";
 String message = "Hello World";
 ```
 
@@ -241,7 +241,7 @@ String[] arr3 = "a  b  c".split("\\s+");     // ["a", "b", "c"] (split on whites
 // Conversion
 char[] chars = "Hello".toCharArray();        // ['H', 'e', 'l', 'l', 'o']
 byte[] bytes = "Hello".getBytes();           // [72, 101, 108, 108, 111]
-byte[] utf8 = "你好".getBytes(StandardCharsets.UTF_8);
+byte[] utf8 = "你好".getBytes(StandardCharsets.UTF_8);  // 6 bytes: each of these characters takes 3 bytes in UTF-8
 
 // JDK 11+: repetition
 System.out.println("Ha".repeat(3));          // "HaHaHa"
@@ -269,7 +269,7 @@ String s6 = String.join("-", Arrays.asList("2024", "01", "15"));  // "2024-01-15
 String s7 = String.join("", "Hello", " ", "World");  // "Hello World"
 
 // format: format a string
-String s8 = String.format("Name: %s, age: %d", "张三", 18);  // "Name: 张三, age: 18"
+String s8 = String.format("Name: %s, age: %d", "Alice", 18);  // "Name: Alice, age: 18"
 String s9 = String.format("Price: %.2f", 19.9);  // "Price: 19.90"
 String s10 = String.format("%05d", 42);  // "00042" (pad with zeros to 5 digits)
 
@@ -331,13 +331,13 @@ String sql = """
 // JSON example
 String json = """
         {
-            "name": "张三",
+            "name": "Alice",
             "age": 18
         }
         """;
 
 // Use variables in a text block
-String name = "张三";
+String name = "Alice";
 int age = 18;
 String formatted = """
         Name: %s
@@ -628,7 +628,7 @@ String s4 = list.stream().collect(Collectors.joining(",", "[", "]"));  // [a,b,c
 
 ```java
 // Strings that do not need modification
-String name = "张三";
+String name = "Alice";
 String message = "Welcome";
 
 // A few simple concatenations (automatically optimized by the compiler)

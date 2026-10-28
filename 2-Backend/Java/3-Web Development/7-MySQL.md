@@ -217,7 +217,7 @@ CREATE TABLE employee (
     id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT COMMENT 'Employee ID',
     emp_no VARCHAR(10) NOT NULL UNIQUE COMMENT 'Employee number',
     name VARCHAR(50) NOT NULL COMMENT 'Name',
-    gender CHAR(1) DEFAULT '男' COMMENT 'Gender',
+    gender CHAR(1) DEFAULT 'M' COMMENT 'Gender (M/F)',
     age TINYINT UNSIGNED COMMENT 'Age, 0-255; nonnegative',
     phone CHAR(11) COMMENT 'Phone number',
     salary DECIMAL(10, 2) COMMENT 'Salary; nonnegative' CHECK (salary >= 0),
@@ -302,7 +302,7 @@ INSERT INTO table_name (column1, column2) VALUES
 UPDATE table_name SET column1 = value1, column2 = value2 WHERE condition;
 
 -- Example
-UPDATE employee SET salary = 10000 WHERE name = '张三';
+UPDATE employee SET salary = 10000 WHERE name = 'Alice';
 UPDATE employee SET salary = salary + 1000 WHERE dept_id = 1;
 ```
 
@@ -377,7 +377,7 @@ SELECT DISTINCT dept_id FROM employee;             -- Remove duplicates
 -- Filtering examples
 SELECT * FROM employee WHERE age BETWEEN 25 AND 35;
 SELECT * FROM employee WHERE dept_id IN (1, 2, 3);
-SELECT * FROM employee WHERE name LIKE '张%';
+SELECT * FROM employee WHERE name LIKE 'A%';
 SELECT * FROM employee WHERE email IS NULL;
 SELECT * FROM employee WHERE age >= 25 AND salary >= 10000;
 ```
@@ -455,7 +455,7 @@ SELECT * FROM employee LIMIT 20, 10;   -- Page 3
 
 SELECT dept_id, COUNT(*) AS num, AVG(salary) AS avg_sal
 FROM employee
-WHERE age BETWEEN 25 AND 35 AND gender = '男'
+WHERE age BETWEEN 25 AND 35 AND gender = 'M'
 GROUP BY dept_id
 HAVING num >= 3
 ORDER BY avg_sal DESC
@@ -546,7 +546,7 @@ For `INDEX idx_abc (a, b, c)`:
 | ------------------ | ---------------------------- |
 | **Function/expression on an indexed column** | `WHERE YEAR(create_time) = 2024` or `WHERE id + 1 = 10` usually cannot use an ordinary index directly for that expression |
 | **Implicit type conversion** | Comparing a `VARCHAR` phone column with a number, such as `WHERE phone = 13800138000` |
-| **Leading wildcard** | `WHERE name LIKE '%张'` or `LIKE '%张%'` cannot use an ordinary prefix range lookup; `LIKE '张%'` can |
+| **Leading wildcard** | `WHERE name LIKE '%ce'` or `LIKE '%li%'` cannot use an ordinary prefix range lookup; `LIKE 'Al%'` can |
 | **An OR branch lacks an index** | `WHERE a = 1 OR b = 2` may trigger a table scan when b is unindexed |
 | **Inequality/NOT predicates** | The optimizer sometimes prefers a table scan for `<>`, `!=`, `NOT IN`, or `NOT LIKE` |
 
@@ -772,26 +772,26 @@ FROM employee e, department d;
 
 ### 7.3 Join Types at a Glance
 
-Consider these two tables (the Chinese names below are sample data):
+Consider these two tables:
 
-    employee                     department
-    +----+------+---------+      +----+--------+
-    | id | name | dept_id |      | id | name   |
-    +----+------+---------+      +----+--------+
-    | 1  | 张三 | 1       |      | 1  | 研发部 |
-    | 2  | 李四 | 2       |      | 2  | 市场部 |
-    | 3  | 王五 | NULL    |      | 3  | 财务部 |
-    +----+------+---------+      +----+--------+
-            ↑                           ↑
-        Wang Wu (王五) has no department; Finance (财务部) has no employees
+    employee                      department
+    +----+-------+---------+      +----+-----------+
+    | id | name  | dept_id |      | id | name      |
+    +----+-------+---------+      +----+-----------+
+    | 1  | Alice | 1       |      | 1  | R&D       |
+    | 2  | Bob   | 2       |      | 2  | Marketing |
+    | 3  | Carol | NULL    |      | 3  | Finance   |
+    +----+-------+---------+      +----+-----------+
+               ↑                         ↑
+        Carol has no department; Finance has no employees
 
 **Comparison:**
 
 | Join | Meaning | Result |
 | -------- | ---------------------------- | ---------------------- |
-| **INNER JOIN** | Only matching row pairs | 张三–研发部, 李四–市场部 |
-| **LEFT JOIN** | Matching pairs plus unmatched left rows | 张三–研发部, 李四–市场部, 王五–NULL |
-| **RIGHT JOIN** | Matching pairs plus unmatched right rows | 张三–研发部, 李四–市场部, NULL–财务部 |
+| **INNER JOIN** | Only matching row pairs | Alice–R&D, Bob–Marketing |
+| **LEFT JOIN** | Matching pairs plus unmatched left rows | Alice–R&D, Bob–Marketing, Carol–NULL |
+| **RIGHT JOIN** | Matching pairs plus unmatched right rows | Alice–R&D, Bob–Marketing, NULL–Finance |
 | **FULL OUTER JOIN** | Matching pairs and unmatched rows from both sides; no native MySQL FULL JOIN | All listed employees and departments |
 
 **Illustration:**
@@ -862,13 +862,13 @@ WHERE e.dept_id = d.id;
 
 **Result:**
 
-    +------+-----------+
-    | name | dept_name |
-    +------+-----------+
-    | 张三 | 研发部    |
-    | 李四 | 市场部    |
-    +------+-----------+
-    -- Wang Wu (王五), who has no department, and Finance (财务部), which has no employees, are omitted.
+    +-------+-----------+
+    | name  | dept_name |
+    +-------+-----------+
+    | Alice | R&D       |
+    | Bob   | Marketing |
+    +-------+-----------+
+    -- Carol, who has no department, and Finance, which has no employees, are omitted.
 
 ### 7.6 OUTER JOIN
 
@@ -892,13 +892,13 @@ LEFT OUTER JOIN department d ON e.dept_id = d.id;
 
 **Result:**
 
-    +------+-----------+
-    | name | dept_name |
-    +------+-----------+
-    | 张三 | 研发部    |
-    | 李四 | 市场部    |
-    | 王五 | NULL      |  ← Keep this employee; no matching department
-    +------+-----------+
+    +-------+-----------+
+    | name  | dept_name |
+    +-------+-----------+
+    | Alice | R&D       |
+    | Bob   | Marketing |
+    | Carol | NULL      |  ← Keep this employee; no matching department
+    +-------+-----------+
 
 #### RIGHT JOIN
 
@@ -914,13 +914,13 @@ RIGHT JOIN department d ON e.dept_id = d.id;
 
 **Result:**
 
-    +------+-----------+
-    | name | dept_name |
-    +------+-----------+
-    | 张三 | 研发部    |
-    | 李四 | 市场部    |
-    | NULL | 财务部    |  ← Keep this department; no matching employee
-    +------+-----------+
+    +-------+-----------+
+    | name  | dept_name |
+    +-------+-----------+
+    | Alice | R&D       |
+    | Bob   | Marketing |
+    | NULL  | Finance   |  ← Keep this department; no matching employee
+    +-------+-----------+
 
 > 💡 LEFT JOIN is more common because the main table is usually written on the left. A RIGHT JOIN can be rewritten by swapping table order and using LEFT JOIN.
 
@@ -932,14 +932,14 @@ Use separate aliases to distinguish the references to the same table.
 
 ```sql
 -- Employee table, including manager_id
--- +----+------+------------+
--- | id | name | manager_id |
--- +----+------+------------+
--- | 1  | 老板 | NULL       |  -- The boss
--- | 2  | 张三 | 1          |
--- | 3  | 李四 | 1          |
--- | 4  | 王五 | 2          |
--- +----+------+------------+
+-- +----+-------+------------+
+-- | id | name  | manager_id |
+-- +----+-------+------------+
+-- | 1  | Dave  | NULL       |  -- The boss
+-- | 2  | Alice | 1          |
+-- | 3  | Bob   | 1          |
+-- | 4  | Carol | 2          |
+-- +----+-------+------------+
 
 -- Query employee and manager names
 SELECT e.name AS 'Employee', m.name AS 'Manager'
@@ -952,10 +952,10 @@ LEFT JOIN employee m ON e.manager_id = m.id;
     +----------+---------+
     | Employee | Manager |
     +----------+---------+
-    | 老板     | NULL    |  ← The boss has no manager
-    | 张三     | 老板    |
-    | 李四     | 老板    |
-    | 王五     | 张三    |
+    | Dave     | NULL    |  ← The boss has no manager
+    | Alice    | Dave    |
+    | Bob      | Dave    |
+    | Carol    | Alice   |
     +----------+---------+
 
 ### 7.8 Combining Results with UNION
@@ -1005,9 +1005,9 @@ A **subquery** is a SELECT nested inside another SQL statement.
 Returns one value, usable in WHERE, SELECT, or HAVING.
 
 ```sql
--- Employees in the R&D department ('研发部')
+-- Employees in the R&D department
 SELECT * FROM employee
-WHERE dept_id = (SELECT id FROM department WHERE name = '研发部');
+WHERE dept_id = (SELECT id FROM department WHERE name = 'R&D');
 ```
 
 #### Column Subquery
@@ -1015,9 +1015,9 @@ WHERE dept_id = (SELECT id FROM department WHERE name = '研发部');
 Returns one column, commonly used with IN, ANY, or ALL.
 
 ```sql
--- Employees in R&D ('研发部') or Marketing ('市场部')
+-- Employees in R&D or Marketing
 SELECT * FROM employee
-WHERE dept_id IN (SELECT id FROM department WHERE name IN ('研发部', '市场部'));
+WHERE dept_id IN (SELECT id FROM department WHERE name IN ('R&D', 'Marketing'));
 
 -- Earns more than every R&D employee (ALL)
 SELECT * FROM employee
@@ -1033,9 +1033,9 @@ WHERE salary > ANY (SELECT salary FROM employee WHERE dept_id = 1);
 Returns one row for comparing several column values together.
 
 ```sql
--- Employees with the same salary and department as Zhang San ('张三')
+-- Employees with the same salary and department as Alice
 SELECT * FROM employee
-WHERE (salary, dept_id) = (SELECT salary, dept_id FROM employee WHERE name = '张三');
+WHERE (salary, dept_id) = (SELECT salary, dept_id FROM employee WHERE name = 'Alice');
 ```
 
 #### Table Subquery
@@ -1086,8 +1086,8 @@ For operations such as a transfer, commit or rollback provides atomicity across 
 
 ```sql
 START TRANSACTION;
-UPDATE account SET balance = balance - 1000 WHERE name = '张三';
-UPDATE account SET balance = balance + 1000 WHERE name = '李四';
+UPDATE account SET balance = balance - 1000 WHERE name = 'Alice';
+UPDATE account SET balance = balance + 1000 WHERE name = 'Bob';
 COMMIT;   -- Commit on success
 -- ROLLBACK;  -- Roll back on failure
 ```

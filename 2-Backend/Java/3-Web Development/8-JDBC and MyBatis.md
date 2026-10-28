@@ -44,7 +44,7 @@ public class JDBCDemo {
         Statement stmt = conn.createStatement();
 
         // 4. Execute SQL
-        String sql = "INSERT INTO user(name, age) VALUES('张三', 25)";
+        String sql = "INSERT INTO user(name, age) VALUES('Alice', 25)";
         int count = stmt.executeUpdate(sql);  // Number of affected rows
         System.out.println("Affected rows: " + count);
 
@@ -131,7 +131,7 @@ public class PreparedStatementDemo {
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
         // Bind parameters using one-based indexes
-        pstmt.setString(1, "张三");
+        pstmt.setString(1, "Alice");
         pstmt.setInt(2, 25);
 
         ResultSet rs = pstmt.executeQuery();
@@ -310,7 +310,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
     <dependency>
         <groupId>org.mybatis.spring.boot</groupId>
         <artifactId>mybatis-spring-boot-starter</artifactId>
-        <version>3.0.5</version>
+        <version>3.0.5</version>   <!-- 3.0.x for Spring Boot 3; 4.x for Spring Boot 4 -->
     </dependency>
 
     <!-- MySQL driver -->
@@ -601,7 +601,7 @@ int insert(User user);
 **Usage:**
 
 ```java
-User user = new User(null, "张三", 25);
+User user = new User(null, "Alice", 25);
 userMapper.insert(user);
 System.out.println("Generated primary key: " + user.getId());
 ```
@@ -1622,19 +1622,30 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 
 ### 3.2 Dependencies and Configuration
 
-**Dependency for Spring Boot 3:**
+**Dependencies for Spring Boot 3:**
 
 ```xml
 <dependency>
     <groupId>com.baomidou</groupId>
     <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-    <version>3.5.5</version>
+    <version>3.5.18.1</version>
+</dependency>
+
+<!-- Required by the pagination plugin (PaginationInnerInterceptor) since MyBatis-Plus 3.5.9 -->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-jsqlparser</artifactId>
+    <version>3.5.18.1</version>
 </dependency>
 ```
 
-> Spring Boot 2 uses `mybatis-plus-boot-starter`. MyBatis-Plus already includes MyBatis integration; ordinary Mapper/XML usage remains available without adding `mybatis-spring-boot-starter` again.
+| Spring Boot version | Starter artifact |
+| ------------------- | ------------------------------------- |
+| **2.x** | `mybatis-plus-boot-starter` |
+| **3.x** | `mybatis-plus-spring-boot3-starter` |
+| **4.x** | `mybatis-plus-spring-boot4-starter` |
 
-> **Note**: since MyBatis-Plus 3.5.9, `PaginationInnerInterceptor` lives in the separate `mybatis-plus-jsqlparser` module; add that dependency when using a newer version with the pagination plugin.
+> MyBatis-Plus already includes MyBatis integration; ordinary Mapper/XML usage remains available without adding `mybatis-spring-boot-starter` again.
 
 **Configuration: reuse Spring's data source settings and add MyBatis-Plus settings:**
 
@@ -1859,10 +1870,10 @@ public class User {
 Use **LambdaQueryWrapper** for ordinary predicates without hardcoded column-name strings:
 
 ```java
-// Equivalent to: WHERE status = 1 AND name LIKE '%张%' ORDER BY create_time DESC
+// Equivalent to: WHERE status = 1 AND name LIKE '%Al%' ORDER BY create_time DESC
 List<User> list = userService.lambdaQuery()
         .eq(User::getStatus, 1)
-        .like(User::getName, "张")
+        .like(User::getName, "Al")
         .orderByDesc(User::getCreateTime)
         .list();
 ```

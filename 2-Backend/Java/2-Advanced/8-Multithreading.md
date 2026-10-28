@@ -1590,7 +1590,7 @@ public class Demo {
 │          ↓               ↓               ↓                  │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
 │   │ Thread A    │    │ Thread B    │    │ Thread C    │     │
-│   │ name="张三" │    │ name="李四" │    │ name="王五" │     │
+│   │ name="Alice"│    │ name="Bob"  │    │ name="Carol"│     │
 │   └─────────────┘    └─────────────┘    └─────────────┘     │
 │   Each thread has an independent copy; no interference      │
 └─────────────────────────────────────────────────────────────┘
@@ -1687,12 +1687,12 @@ Thread object
 Example:
 Thread-1
     └── ThreadLocalMap
-            ├── Entry(nameLocal, "张三")
+            ├── Entry(nameLocal, "Alice")
             └── Entry(ageLocal, 18)
 
 Thread-2
     └── ThreadLocalMap
-            ├── Entry(nameLocal, "李四")
+            ├── Entry(nameLocal, "Bob")
             └── Entry(ageLocal, 20)
 ```
 
@@ -1836,15 +1836,16 @@ public class AuthInterceptor implements HandlerInterceptor {
 
 ```java
 @Service
-public class OrderService {
+public class DemoService {
 
-    public void createOrder(OrderDTO dto) {
+    public void create(DemoDTO dto) {
         // Retrieve the current user directly without passing a parameter
         Long userId = UserContext.getUserId();
 
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setCreateTime(LocalDateTime.now());
+        DemoEntity entity = new DemoEntity();
+        entity.setName(dto.getName());
+        entity.setCreateBy(userId);              // Record who created the data
+        entity.setCreateTime(LocalDateTime.now());
         // ...
     }
 }
@@ -1877,3 +1878,172 @@ new Thread(() -> {
 > ⚠️ **Note**: `InheritableThreadLocal` may not work as intended with thread pools because pool threads are reused rather than newly created for each task.
 
 ***
+
+## IX. Virtual Threads (JDK 21+)
+
+### 1. What Are Virtual Threads?
+
+**Virtual threads** are lightweight threads managed by the JVM rather than the operating system. The JVM runs many virtual threads on a small pool of OS-backed **carrier threads**; when a virtual thread blocks on I/O, the JVM unmounts it and the carrier runs another virtual thread.
+
+**Core idea:** keep the simple one-thread-per-request blocking style while scaling to very large numbers of concurrent tasks.
+
+| Aspect | Platform thread | Virtual thread |
+| ------------------ | ------------------------------------ | ------------------------------------------------ |
+| **Managed by** | The OS (one OS thread per Java thread) | The JVM (many virtual threads share carrier threads) |
+| **Creation cost** | High (large fixed stack) | Low (stack frames live on the heap and grow as needed) |
+| **Practical count** | Thousands | Millions |
+| **Pooling** | Pooled and reused | Never pooled; one per task |
+| **Best for** | CPU-bound work | I/O-bound, highly concurrent blocking work |
+| **Daemon** | Configurable | Always daemon (`setDaemon(false)` throws `IllegalArgumentException`) |
+| **Priority** | Configurable | Always `NORM_PRIORITY`; `setPriority()` has no effect |
+
+```text
+    VT1   VT2   VT3   VT4   ...   VT100000      Virtual threads (JVM)
+      ╲     │     │     ╱                ╱
+       Carrier threads (ForkJoinPool, about one per CPU core)
+                        │
+                 OS threads (kernel scheduling)
+```
+
+### 2. Creating Virtual Threads
+
+```java
+Runnable task = () -> System.out.println(Thread.currentThread().getName());
+
+// 1. Start a virtual thread directly
+Thread t1 = Thread.startVirtualThread(() -> System.out.println("Hello from a virtual thread"));
+
+// 2. Builder API: name("worker-", 0) numbers threads worker-0, worker-1, ...
+Thread t2 = Thread.ofVirtual().name("worker-", 0).start(task);
+
+// 3. Create first, start later
+Thread t3 = Thread.ofVirtual().unstarted(task);
+t3.start();
+
+// 4. A ThreadFactory for APIs that accept one
+ThreadFactory factory = Thread.ofVirtual().name("vt-", 0).factory();
+
+System.out.println(t1.isVirtual());  // true
+System.out.println(t1.isDaemon());   // true
+```
+
+| API | Description |
+| ------------------------------------------- | ------------------------------------------ |
+| `Thread.startVirtualThread(Runnable)` | Creates and starts a virtual thread |
+| `Thread.ofVirtual().name(...).start(...)` | Builder: name, then start |
+| `Thread.ofVirtual().unstarted(...)` | Builder: create without starting |
+| `Thread.ofVirtual().factory()` | Returns a `ThreadFactory` for virtual threads |
+| `Executors.newVirtualThreadPerTaskExecutor()` | `ExecutorService` that starts one virtual thread per task |
+| `Thread.isVirtual()` | Tests whether a thread is virtual |
+
+### 3. One Virtual Thread per Task
+
+```java
+try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    List<Future<String>> futures = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+        int id = i;
+        futures.add(executor.submit(() -> {
+            Thread.sleep(Duration.ofSeconds(1));   // Blocking call: the virtual thread unmounts from its carrier
+            return "task-" + id;
+        }));
+    }
+    for (Future<String> future : futures) {
+        future.get();
+    }
+}   // close() waits for all submitted tasks (ExecutorService is AutoCloseable since JDK 19)
+
+// 10,000 tasks that each block for 1 second finish in about 1 second in total
+```
+
+A fixed pool of 200 platform threads needs about 50 seconds for the same 10,000 tasks, because each thread is occupied while it sleeps.
+
+### 4. Virtual Threads in Spring Boot
+
+Spring Boot 3.2+ on JDK 21+ switches its executors to virtual threads with one property:
+
+```yaml
+spring:
+  threads:
+    virtual:
+      enabled: true
+  main:
+    keep-alive: true   # Virtual threads are daemon threads; keep the JVM alive (needed when only @Scheduled work runs)
+```
+
+| Component | Effect when enabled |
+| ------------------------------------- | -------------------------------------------------------------- |
+| **Embedded Tomcat / Jetty** | Each request is handled on a virtual thread |
+| **`applicationTaskExecutor` (`@Async`)** | Becomes a `SimpleAsyncTaskExecutor` that starts virtual threads |
+| **Task scheduling (`@Scheduled`)** | Becomes a `SimpleAsyncTaskScheduler` that uses virtual threads |
+| **Thread-pool properties** | `spring.task.execution.pool.*` and similar pool settings no longer apply |
+
+> 💡 Spring Boot strongly recommends JDK 24+ for virtual threads, because JDK 24 removed pinning on `synchronized`.
+
+### 5. Caveats
+
+| Issue | Description | Solution |
+| ------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Pooling virtual threads** | Pools exist to share scarce threads; virtual threads are not scarce | Create one virtual thread per task |
+| **Unbounded concurrency** | 100,000 tasks can overwhelm a database or downstream API | Limit access with a `Semaphore` (a connection pool already limits database access) |
+| **CPU-bound work** | Virtual threads do not make computation faster | Use a platform-thread pool sized to the CPU core count |
+| **Pinning (JDK 21–23)** | Blocking inside `synchronized` pins the carrier thread | Upgrade to JDK 24+; on JDK 21, use `ReentrantLock` around blocking I/O |
+| **Pinning (all versions)** | Native methods and foreign-function calls still pin the carrier | Monitor the JFR event `jdk.VirtualThreadPinned` (enabled by default, 20 ms threshold) |
+| **ThreadLocal caches** | Threads are never reused, so caching an object such as `SimpleDateFormat` in a `ThreadLocal` creates one per task | Share immutable objects such as `DateTimeFormatter` instead |
+
+```java
+// Limit concurrent calls to a downstream service to 50
+private final Semaphore permits = new Semaphore(50);
+
+public String callLimited() throws InterruptedException {
+    permits.acquire();
+    try {
+        return callRemoteService();
+    } finally {
+        permits.release();
+    }
+}
+```
+
+***
+
+### 6. ScopedValue (JDK 25+)
+
+A **scoped value** shares an immutable value with every method a thread calls, but only for a bounded scope. It is a safer and cheaper alternative to `ThreadLocal` for passing context such as the current user ID down a call chain, especially with many virtual threads.
+
+```java
+public class RequestContext {
+    public static final ScopedValue<Long> USER_ID = ScopedValue.newInstance();
+}
+
+// Bind the value; it is visible only while run() executes
+ScopedValue.where(RequestContext.USER_ID, 1001L).run(() -> handleRequest());
+
+void handleRequest() {
+    Long userId = RequestContext.USER_ID.get();   // 1001
+    boolean bound = RequestContext.USER_ID.isBound();   // true
+}
+
+// After run() returns, the value is unbound again; get() would throw NoSuchElementException
+
+// call() returns a result
+String result = ScopedValue.where(RequestContext.USER_ID, 1001L)
+        .call(() -> "user " + RequestContext.USER_ID.get());   // "user 1001"
+
+// Rebinding in a nested scope affects only that scope
+ScopedValue.where(RequestContext.USER_ID, 1L).run(() -> {
+    ScopedValue.where(RequestContext.USER_ID, 2L).run(() -> System.out.println(RequestContext.USER_ID.get()));  // 2
+    System.out.println(RequestContext.USER_ID.get());  // 1
+});
+```
+
+| Aspect | ThreadLocal | ScopedValue |
+| ------------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| **Mutability** | `set()` may be called at any time | Immutable within a binding |
+| **Lifetime** | Until `remove()` or thread exit (leak risk in pools) | Ends automatically when `run()` / `call()` returns |
+| **Cleanup** | Manual `remove()` | Not needed |
+| **Child threads** | Copied only by `InheritableThreadLocal` | Inherited by `StructuredTaskScope` subtasks (a preview API as of JDK 27) |
+| **Cost with many threads** | One copy per thread | Cheap to bind and read |
+| **Typical use** | Mutable per-thread state; framework holders such as `SecurityContextHolder` | Request context, user identity, tracing data |
+
+> **Note**: `ScopedValue.orElse()` does not accept `null` in the final JDK 25 API. Frameworks such as Spring MVC still expose request data through `ThreadLocal`-based holders, so `ScopedValue` fits code that controls the whole call scope.

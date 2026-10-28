@@ -126,12 +126,12 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 
 | Collector | Generation/region | Algorithm | Pause behavior | Concurrency | JDK availability/default |
 |--------|--------|------|----------|------|-------------|
-| **Serial** | Young + old | Copying / mark-compact | STW throughout | Single-threaded | Client-mode default |
+| **Serial** | Young + old | Copying / mark-compact | STW throughout | Single-threaded | Default on 1-CPU or < 1792 MB machines until JDK 26 |
 | **Parallel (Scavenge + Old)** | Young + old | Copying / mark-compact | STW throughout | Multithreaded | JDK 8 Server default |
 | **CMS** | Old | Mark-sweep | Initial/remark STW; concurrent marking | Concurrent marking + sweeping | Removed in JDK 14 |
-| **G1** | Entire heap (regions) | Copying between regions (evacuation); compacting overall | Predictable pause target (`-XX:MaxGCPauseMillis`) | Mixed | Default since JDK 9 |
+| **G1** | Entire heap (regions) | Copying between regions (evacuation); compacting overall | Predictable pause target (`-XX:MaxGCPauseMillis`) | Mixed | Default on server-class machines since JDK 9; default everywhere since JDK 27 |
 | **ZGC** | Entire heap | Colored pointers + load barriers | Almost entirely concurrent (< 1 ms) | Almost entirely concurrent | GA since JDK 15 |
-| **Shenandoah** | Entire heap | Concurrent compaction with load-reference barriers | Similar magnitude to ZGC | Almost entirely concurrent | JDK 12+ (production-ready since JDK 15) |
+| **Shenandoah** | Entire heap | Concurrent compaction with load-reference barriers | Similar magnitude to ZGC | Almost entirely concurrent | JDK 12+ (production-ready since JDK 15; generational mode since JDK 25; not in Oracle JDK builds) |
 
 ***
 
@@ -160,7 +160,7 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 - Uses mark-sweep and **does not compact memory**; fragmentation accumulates over time and may trigger Full GC.
 - Concurrent phases compete with application threads for CPU, reducing throughput somewhat.
 - Deprecated in JDK 9 and removed in JDK 14; G1 is its direct replacement.
-- Enable with `-XX:+UseConcMarkSweepGC`.
+- Enable with `-XX:+UseConcMarkSweepGC` (JDK 13 and earlier only).
 
 ***
 
@@ -170,7 +170,7 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 - Prioritizes regions with the most garbage (Garbage First), reclaiming as much as possible within the pause target.
 - `-XX:MaxGCPauseMillis` sets the target pause (default 200 ms); the JVM dynamically adjusts the collection set.
 - Suitable for most web applications (works better with heaps over 4 GB).
-- Default collector since JDK 9.
+- Default collector on server-class machines since JDK 9; JDK 27 (JEP 523) made it the default on every machine, including small containers that previously got Serial.
 - Enable with `-XX:+UseG1GC`.
 
 ***
@@ -182,7 +182,8 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 - Concurrent GC threads continuously consume CPU; overall throughput is slightly below Parallel / G1.
 - Suited to extremely latency-sensitive workloads: financial trading, real-time recommendations, large-model inference services.
 - ZGC became GA in JDK 15; generational ZGC arrived in JDK 21, became the default mode in JDK 23 and the only mode in JDK 24.
-- Enable with `-XX:+UseZGC`.
+- Shenandoah gained a production generational mode in JDK 25 (`-XX:+UseShenandoahGC -XX:ShenandoahGCMode=generational`). Oracle JDK builds do not include Shenandoah; OpenJDK builds such as Temurin and Corretto do.
+- Enable with `-XX:+UseZGC` or `-XX:+UseShenandoahGC`.
 
 ***
 
@@ -194,16 +195,17 @@ WeakReference<Object> weak = new WeakReference<>(new Object());
 | Ordinary web APIs, microservices (JDK 9+) | **G1 GC** | Balances throughput and latency; configurable pause target |
 | Extremely latency-sensitive (< 10 ms SLA) | **ZGC / Shenandoah** | Pauses < 1 ms; barely noticeable |
 | Very large heap (> 32 GB) with low latency | **ZGC** | Pauses independent of heap size; supports TB-scale heaps |
-| Very small container (< 256 MB) | **Serial GC** | Lowest overhead; no multiple GC threads |
+| Very small container (< 256 MB) | **Serial GC** | Lowest overhead; no multiple GC threads (select it explicitly with `-XX:+UseSerialGC` on JDK 27+) |
 
 Default collectors by JDK version:
 
 | JDK version | Default GC |
 |----------|---------|
 | JDK 8 | Parallel GC |
-| JDK 9 – present | G1 GC |
+| JDK 9 – 26 | G1 GC (Serial GC on machines or containers with a single CPU or less than 1792 MB of memory) |
+| JDK 27+ | G1 GC on every machine (JEP 523) |
 
-> **Note**: on a machine or container with fewer than 2 CPUs or less than 1792 MB of memory, the JVM treats the host as a client-class machine and selects Serial GC instead.
+> **Note**: an explicitly selected collector such as `-XX:+UseSerialGC` always overrides the default.
 
 ***
 
@@ -342,6 +344,8 @@ java -jar arthas-boot.jar <pid>
 | `-XX:+HeapDumpOnOutOfMemoryError` | Automatically dumps the heap on OOM | — |
 | `-XX:HeapDumpPath` | Dump file path | `-XX:HeapDumpPath=/dumps/heap.hprof` |
 | `-Xlog:gc*` | GC logging (JDK 9+ unified logging) | `-Xlog:gc*:file=gc.log` |
+| `-XX:MaxRAMPercentage` | Maximum heap as a percentage of container/machine memory (instead of a fixed `-Xmx`) | `-XX:MaxRAMPercentage=75.0` |
+| `-XX:+UseCompactObjectHeaders` | Shrinks object headers from 96 to 64 bits (product in JDK 25, default in JDK 27; disable with `-XX:-UseCompactObjectHeaders`) | — |
 
 **Typical Production Configuration (Spring Boot + G1):**
 

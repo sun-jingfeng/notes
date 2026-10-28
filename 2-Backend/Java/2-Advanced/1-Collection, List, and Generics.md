@@ -94,18 +94,18 @@ public class CollectionDemo {
         Collection<String> c = new ArrayList<>();
 
         // ========== Add ==========
-        c.add("张三");
-        c.add("李四");
-        c.add("王五");
-        System.out.println(c);  // [张三, 李四, 王五]
+        c.add("Alice");
+        c.add("Bob");
+        c.add("Carol");
+        System.out.println(c);  // [Alice, Bob, Carol]
 
         // ========== Remove ==========
-        boolean removed = c.remove("李四");
+        boolean removed = c.remove("Bob");
         System.out.println(removed);  // true
-        System.out.println(c);        // [张三, 王五]
+        System.out.println(c);        // [Alice, Carol]
 
         // ========== Query ==========
-        System.out.println(c.contains("张三"));  // true
+        System.out.println(c.contains("Alice"));  // true
         System.out.println(c.isEmpty());         // false
         System.out.println(c.size());            // 2
 
@@ -115,7 +115,7 @@ public class CollectionDemo {
 
         // ========== Obtain a Stream (JDK 8+) ==========
         c.stream()
-            .filter(s -> s.startsWith("张"))
+            .filter(s -> s.startsWith("A"))
             .forEach(System.out::println);
 
         // ========== Clear ==========
@@ -187,9 +187,9 @@ import java.util.Iterator;
 public class IteratorDemo {
     public static void main(String[] args) {
         Collection<String> c = new ArrayList<>();
-        c.add("张三");
-        c.add("李四");
-        c.add("王五");
+        c.add("Alice");
+        c.add("Bob");
+        c.add("Carol");
 
         // Obtain an iterator
         Iterator<String> it = c.iterator();
@@ -223,14 +223,14 @@ it.forEachRemaining(System.out::println);  // Iterate over the remaining element
 
 ```java
 Collection<String> c = new ArrayList<>();
-c.add("张三");
-c.add("李四");
-c.add("李四");
-c.add("王五");
+c.add("Alice");
+c.add("Bob");
+c.add("Bob");
+c.add("Carol");
 
 // ❌ Incorrect: removing inside an enhanced for loop causes an error
 for (String s : c) {
-    if ("李四".equals(s)) {
+    if ("Bob".equals(s)) {
         c.remove(s);  // ConcurrentModificationException
     }
 }
@@ -239,23 +239,23 @@ for (String s : c) {
 Iterator<String> it = c.iterator();
 while (it.hasNext()) {
     String s = it.next();
-    if ("李四".equals(s)) {
+    if ("Bob".equals(s)) {
         it.remove();  // Use the iterator's remove method
     }
 }
-System.out.println(c);  // [张三, 王五]
+System.out.println(c);  // [Alice, Carol]
 
 // ✅ Correct approach 2: use removeIf (JDK 8+, recommended)
-c.removeIf(s -> "李四".equals(s));
+c.removeIf(s -> "Bob".equals(s));
 ```
 
 ### 3. Enhanced for Iteration
 
 ```java
 Collection<String> c = new ArrayList<>();
-c.add("张三");
-c.add("李四");
-c.add("王五");
+c.add("Alice");
+c.add("Bob");
+c.add("Carol");
 
 // Enhanced for (uses an iterator internally)
 for (String s : c) {
@@ -269,9 +269,9 @@ for (String s : c) {
 
 ```java
 Collection<String> c = new ArrayList<>();
-c.add("张三");
-c.add("李四");
-c.add("王五");
+c.add("Alice");
+c.add("Bob");
+c.add("Carol");
 
 // Approach 1: lambda expression
 c.forEach(s -> System.out.println(s));
@@ -377,9 +377,9 @@ import java.util.Comparator;
 public class MethodRefDemo {
     public static void main(String[] args) {
         List<String> list = new ArrayList<>();
-        list.add("张三");
-        list.add("李四");
-        list.add("王五");
+        list.add("Alice");
+        list.add("Bob");
+        list.add("Carol");
 
         // Print
         list.forEach(System.out::println);
@@ -586,6 +586,51 @@ while (it3.hasNext()) {
 }
 System.out.println(list);  // [A, B, X, C]
 ```
+
+### 8. Sequenced Collections (JDK 21+)
+
+**Sequenced collections** are interfaces for collections with a defined encounter order. They give every ordered collection the same methods for the first and last elements and a reversed view.
+
+```text
+    SequencedCollection<E>
+        ├── List<E>              (ArrayList, LinkedList, ...)
+        ├── Deque<E>             (ArrayDeque, LinkedList, ...)
+        └── SequencedSet<E>      (LinkedHashSet)
+              └── SortedSet<E>   (TreeSet)
+
+    SequencedMap<K, V>           (LinkedHashMap)
+        └── SortedMap<K, V>      (TreeMap)
+```
+
+| Method | Description |
+| ------------------------------ | ------------------------------------------------------------ |
+| `getFirst()` / `getLast()` | Returns the first or last element; throws `NoSuchElementException` if empty |
+| `addFirst(E)` / `addLast(E)` | Adds at the front or back (unsupported by immutable and sorted collections) |
+| `removeFirst()` / `removeLast()` | Removes and returns the first or last element |
+| `reversed()` | Returns a reverse-ordered **view**; changes write through to the original |
+
+```java
+List<String> list = new ArrayList<>(List.of("A", "B", "C"));
+
+// Before JDK 21
+String first = list.get(0);
+String last = list.get(list.size() - 1);
+
+// JDK 21+
+String first2 = list.getFirst();   // A
+String last2 = list.getLast();     // C
+list.addFirst("Z");                // [Z, A, B, C]
+list.removeLast();                 // [Z, A, B]
+
+List<String> reversed = list.reversed();   // [B, A, Z] (a view, not a copy)
+reversed.add("X");                         // Adds at the end of the view, which is the front of list
+System.out.println(list);                  // [X, Z, A, B]
+
+// List.of(...).addFirst("B");             // ❌ UnsupportedOperationException (immutable)
+// new ArrayList<String>().getFirst();     // ❌ NoSuchElementException (empty)
+```
+
+> 💡 `HashSet` and `HashMap` have no defined order, so they do not implement the sequenced interfaces.
 
 ***
 
@@ -803,6 +848,8 @@ public class LinkedList<E>
 | `getLast()` | Returns the tail element |
 | `removeFirst()` | Removes the head element |
 | `removeLast()` | Removes the tail element |
+
+> 💡 Since JDK 21 these head and tail methods are declared by `SequencedCollection`, so `ArrayList` and other `List` implementations support them too.
 
 #### Queue Methods (Queue/Deque Operations)
 

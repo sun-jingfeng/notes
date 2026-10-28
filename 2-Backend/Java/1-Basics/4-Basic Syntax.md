@@ -81,7 +81,7 @@ public class Demo {
 /**
  * User service class
  *
- * @author zhangsan
+ * @author alice
  * @version 1.0
  * @since 1.0
  * @see UserDao
@@ -209,7 +209,7 @@ assert  // Assertion
 goto  const  // Reserved but unused; cannot be identifiers
 ```
 
-The 48 keywords in use plus these 2 reserved words make up Java's 50 traditional reserved keywords. Since JDK 9, the underscore `_` is also a keyword. Contextual keywords such as `var`, `record`, `sealed`, `non-sealed`, `permits`, `yield`, and `module` have special meaning only in specific positions.
+The 48 keywords in use plus these 2 reserved words make up Java's 50 traditional reserved keywords. Since JDK 9, the underscore `_` is also a keyword; JDK 22+ uses it for unnamed variables such as `catch (Exception _)`. Contextual keywords such as `var`, `record`, `sealed`, `non-sealed`, `permits`, `yield`, `when`, and `module` have special meaning only in specific positions.
 
 ### 4. Special Literals (Not Keywords)
 
@@ -334,9 +334,9 @@ String htmlBlock = """
 // JSON example
 String json = """
         {
-            "name": "张三",
+            "name": "Alice",
             "age": 18,
-            "city": "北京"
+            "city": "London"
         }
         """;
 
@@ -415,8 +415,8 @@ DataType variableName = initialValue;
 ```java
 int age = 18;           // Integer variable
 double price = 99.5;    // Decimal variable
-char gender = '男';     // Character variable
-String name = "张三";   // String variable
+char gender = 'F';      // Character variable
+String name = "Alice";   // String variable
 boolean flag = true;    // Boolean variable
 ```
 
@@ -485,7 +485,7 @@ public class Demo {
 ```java
 // JDK 10+ local variable type inference
 var age = 18;              // Inferred as int
-var name = "张三";          // Inferred as String
+var name = "Alice";          // Inferred as String
 var list = new ArrayList<String>();  // Inferred as ArrayList<String>
 var map = new HashMap<String, Integer>();
 
@@ -628,12 +628,12 @@ public class StudentManager {
 ```java
 // ❌ Poor names
 int a = 18;
-String s = "张三";
+String s = "Alice";
 int n = 100;
 
 // ✅ Good names
 int age = 18;
-String name = "张三";
+String name = "Alice";
 int maxScore = 100;
 
 // ❌ Excessive abbreviation
@@ -717,7 +717,7 @@ public class DataTypeDemo {
         boolean flag = true;
 
         // Reference type
-        String name = "张三";
+        String name = "Alice";
     }
 }
 ```
@@ -941,12 +941,12 @@ System.out.println(Integer.toString(100, 36));    // "2s" (base 36)
 
 ```java
 // String
-String name = "张三";
+String name = "Alice";
 String greeting = "Hello" + " " + "World";  // String concatenation
 
 // Arrays
 int[] nums = {1, 2, 3, 4, 5};
-String[] names = {"张三", "李四", "王五"};
+String[] names = {"Alice", "Bob", "Carol"};
 ```
 
 ***
@@ -973,9 +973,9 @@ public class BasicSyntaxDemo {
         long population = 1_400_000_000L;  // JDK 7+ underscore separators
         float height = 1.75F;
         double weight = 65.5;
-        char gender = '男';
+        char gender = 'F';
         boolean isStudent = true;
-        String name = "张三";
+        String name = "Alice";
 
         // 2. Type inference with var (JDK 10+)
         var score = 95;             // Inferred as int

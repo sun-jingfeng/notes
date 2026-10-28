@@ -843,7 +843,7 @@ for (String item : list) {
 
 ```java
 // FileNotFoundException - must handle or declare
-FileInputStream fis = new FileInputStream("不存在的文件.txt");
+FileInputStream fis = new FileInputStream("missing-file.txt");
 
 // ParseException - must handle or declare
 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -1077,7 +1077,7 @@ public class RegisterException extends RuntimeException {
 // 2. User service class
 public class UserService {
     // Simulate usernames already stored in the database
-    private static final String[] EXISTING_USERS = {"admin", "zhangsan", "lisi"};
+    private static final String[] EXISTING_USERS = {"admin", "alice", "bob"};
 
     /**
      * Register a user
@@ -1130,8 +1130,8 @@ public class RegisterTest {
         testRegister(service, null, "123456");       // Empty username
         testRegister(service, "ab", "123456");       // Username too short
         testRegister(service, "admin", "123456");    // Username already exists
-        testRegister(service, "wangwu", "123");      // Password too short
-        testRegister(service, "wangwu", "123456");   // Registration succeeds
+        testRegister(service, "carol", "123");      // Password too short
+        testRegister(service, "carol", "123456");   // Registration succeeds
     }
 
     private static void testRegister(UserService service, String username, String password) {
@@ -1160,7 +1160,7 @@ public class RegisterTest {
     Registration failed: [E004] Username already exists: admin
     Registration failed: [E003] Password must be at least 6 characters long
     Saving user to database...
-    Registration succeeded: wangwu
+    Registration succeeded: carol
 
 ***
 

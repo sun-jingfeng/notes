@@ -654,9 +654,9 @@ if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 
 ```java
 @Transactional(rollbackFor = Exception.class)
-public void createOrder(OrderDTO dto) {
-    orderMapper.insert(order);
-    stockMapper.decrease(productId, quantity);  // Roll back both operations if an exception triggers rollback
+public void create(DemoDTO dto) {
+    demoMapper.insert(entity);
+    detailMapper.insertBatch(details);  // Roll back both inserts if an exception triggers rollback
 }
 ```
 
@@ -726,15 +726,15 @@ public void process() {
 ```java
 // Write operation
 @Transactional(rollbackFor = Exception.class)
-public void createOrder(OrderDTO dto) { }
+public void create(DemoDTO dto) { }
 
 // Read operation
 @Transactional(readOnly = true)
-public Order getById(Long id) { }
+public DemoVO getById(Long id) { }
 
 // Batch operation
 @Transactional(rollbackFor = Exception.class, timeout = 60)
-public void batchImport(List<OrderDTO> list) { }
+public void batchImport(List<DemoDTO> list) { }
 ```
 
 **Keep transaction scope focused:**
@@ -742,15 +742,15 @@ public void batchImport(List<OrderDTO> list) { }
 ```java
 // ❌ Slow remote work inside a transaction
 @Transactional
-public void create(OrderDTO dto) {
-    orderMapper.insert(order);
-    paymentService.callThirdParty(order);  // Remote call
+public void create(DemoDTO dto) {
+    demoMapper.insert(entity);
+    notifyService.callThirdParty(entity);  // Remote call
 }
 
 // ✅ Keep slow work outside the transaction
-public void create(OrderDTO dto) {
-    Order order = doCreate(dto);           // This helper must delegate transaction work through a proxy
-    paymentService.callThirdParty(order);  // After the transaction has committed
+public void create(DemoDTO dto) {
+    DemoEntity entity = doCreate(dto);     // This helper must delegate transaction work through a proxy
+    notifyService.callThirdParty(entity);  // After the transaction has committed
 }
 ```
 

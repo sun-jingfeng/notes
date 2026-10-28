@@ -299,14 +299,14 @@ methodName(argument1, argument2);
 public class ParamDemo {
     public static void main(String[] args) {
         // Call a method with arguments
-        sayHello("张三");
-        sayHello("李四");
+        sayHello("Alice");
+        sayHello("Bob");
 
         // Multiple arguments
         add(10, 20);
 
         // Use variables as arguments
-        String name = "王五";
+        String name = "Carol";
         sayHello(name);
     }
 
@@ -540,7 +540,7 @@ public static int[] getArray() {
 
 // Return an object
 public static User getUser() {
-    return new User("张三", 18);
+    return new User("Alice", 18);
 }
 ```
 
@@ -573,7 +573,7 @@ modifiers ReturnType methodName(ParameterType parameter1, ParameterType paramete
 | Type         | Declaration                                        | Call                       |
 | ---------- | ----------------------------------------- | ------------------------ |
 | **No parameters, no return value** | `void sayHello() { }`                     | `sayHello();`            |
-| **Parameters, no return value** | `void sayHello(String name) { }`          | `sayHello("张三");`        |
+| **Parameters, no return value** | `void sayHello(String name) { }`          | `sayHello("Alice");`        |
 | **No parameters, with a return value** | `int getNumber() { return 10; }`          | `int n = getNumber();`   |
 | **Parameters and a return value** | `int add(int a, int b) { return a + b; }` | `int sum = add(10, 20);` |
 
@@ -1307,14 +1307,14 @@ public class CombineDemo {
 List<String> list = Arrays.asList("A", "B", "C");
 
 // String.format(): format a string
-String s = String.format("Name: %s, age: %d", "张三", 18);
+String s = String.format("Name: %s, age: %d", "Alice", 18);
 
 // Collections.addAll(): add in bulk
 List<String> list2 = new ArrayList<>();
 Collections.addAll(list2, "A", "B", "C");
 
 // System.out.printf(): formatted output
-System.out.printf("Name: %s, age: %d%n", "张三", 18);
+System.out.printf("Name: %s, age: %d%n", "Alice", 18);
 ```
 
 ### 10. Varargs Quick Reference

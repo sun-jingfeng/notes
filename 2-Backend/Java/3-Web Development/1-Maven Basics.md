@@ -431,36 +431,36 @@ public class UserServiceTest {
 | `DEFINED_PORT` | Starts a real server on the configured port |
 | `NONE` | Does not create a web environment |
 
-#### 3. @MockBean
+#### 3. @MockitoBean
 
-Mock a dependency instead of invoking the real implementation:
+Replace a bean in the context with a Mockito mock instead of invoking the real implementation:
 
 ```java
 @SpringBootTest
-public class OrderServiceTest {
+public class DemoServiceTest {
 
     @Autowired
-    private OrderService orderService;
+    private DemoService demoService;    // Real bean under test; it calls UserService internally
 
-    @MockBean
+    @MockitoBean                         // Replaces the UserService bean with a mock
     private UserService userService;
 
     @Test
-    void testCreateOrder() {
+    void testGetUserName() {
         // Configure mock behavior
-        when(userService.findById(1L)).thenReturn(new User(1L, "张三"));
+        when(userService.findById(1L)).thenReturn(new User(1L, "Alice"));
 
         // Execute the test
-        Order order = orderService.createOrder(1L, "商品A");
+        String name = demoService.getUserName(1L);
 
         // Verify
-        assertNotNull(order);
+        assertEquals("Alice", name);
         verify(userService, times(1)).findById(1L);
     }
 }
 ```
 
-> **Note**: `@MockBean` is deprecated since Spring Boot 3.4 and removed in 4.0. On Spring Boot 3.4+ use Spring Framework's `@MockitoBean` (`org.springframework.test.context.bean.override.mockito.MockitoBean`), which works the same way.
+> **Note**: `@MockitoBean` (`org.springframework.test.context.bean.override.mockito.MockitoBean`) and `@MockitoSpyBean` come from Spring Framework 6.2 (Spring Boot 3.4+). They replace Spring Boot's `@MockBean` and `@SpyBean`, which are deprecated since 3.4 and removed in 4.0.
 
 #### 4. @WebMvcTest
 
@@ -473,16 +473,16 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @Test
     void testGetUser() throws Exception {
-        when(userService.findById(1L)).thenReturn(new User(1L, "张三"));
+        when(userService.findById(1L)).thenReturn(new User(1L, "Alice"));
 
         mockMvc.perform(get("/users/1"))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.name").value("张三"));
+               .andExpect(jsonPath("$.name").value("Alice"));
     }
 }
 ```
@@ -500,7 +500,7 @@ public class UserRepositoryTest {
 
     @Test
     void testFindByName() {
-        User found = userRepository.findByName("张三");
+        User found = userRepository.findByName("Alice");
         assertNotNull(found);
     }
 }
@@ -527,6 +527,8 @@ For beans needed only in tests, define a `@TestConfiguration` class and import i
 | Full integration test | `@SpringBootTest` | Loads the complete context |
 | Controller test | `@WebMvcTest` | Loads only the web layer |
 | Repository test | `@DataJpaTest` | Loads only the JPA layer |
-| Mock dependency | `@MockBean` (`@MockitoBean` on Spring Boot 3.4+) | Replaces a bean in the container |
+| Mock dependency | `@MockitoBean` (`@MockBean` before Spring Boot 3.4) | Replaces a bean in the container |
 | Select configuration | `@ActiveProfiles` | Activates the specified profile |
 | Test-only beans | `@TestConfiguration` + `@Import` | Configuration that applies only in tests |
+
+> 💡 Spring Boot 4 adds a test starter per technology (for example `spring-boot-starter-webmvc-test` for `@WebMvcTest` and `spring-boot-starter-data-jpa-test` for `@DataJpaTest`), each of which includes `spring-boot-starter-test`. `@SpringBootTest` no longer provides `TestRestTemplate` automatically; add `@AutoConfigureTestRestTemplate` or use the new `RestTestClient`.
