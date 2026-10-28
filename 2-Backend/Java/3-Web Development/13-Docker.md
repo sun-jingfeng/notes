@@ -243,7 +243,7 @@ docker search nginx
 
 # Pull an image (latest tag by default)
 docker pull nginx
-docker pull nginx:1.24          # Specify a version
+docker pull nginx:1.30          # Specify a version
 
 # List local images
 docker images
@@ -278,8 +278,8 @@ Examples:
 | Image name | Description |
 | ---------------------------------------------- | -------------------------------- |
 | `nginx` | Official Docker Hub image with the latest tag |
-| `nginx:1.24` | Specific version tag |
-| `mysql:8.0` | MySQL version 8.0 |
+| `nginx:1.30` | Specific version tag |
+| `mysql:8.4` | MySQL 8.4 (long-term support release) |
 | `registry.cn-hangzhou.aliyuncs.com/xxx/app:v1` | Alibaba Cloud Container Registry |
 
 ### 3.4 Importing and Exporting Images
@@ -301,12 +301,12 @@ docker images
 
 | Image | Description | Common tags |
 | --------- | --------------------------- | -------------------------- |
-| `nginx` | Web server | `latest`, `1.24`, `alpine` |
-| `mysql` | MySQL database | `8.4`, `8.0` |
-| `redis` | Redis cache | `7`, `7-alpine` |
-| `eclipse-temurin` | Java runtime (replaces the deprecated `openjdk` image) | `21`, `17`, `17-jre` |
-| `node` | Node.js runtime | `22`, `20`, `alpine` |
-| `python` | Python runtime | `3.12`, `3.11`, `slim` |
+| `nginx` | Web server | `stable`, `1.30`, `alpine` |
+| `mysql` | MySQL database | `8.4`, `9.7` (both long-term support) |
+| `redis` | Redis cache | `8`, `7`, `7-alpine` |
+| `eclipse-temurin` | Java runtime (replaces the deprecated `openjdk` image) | `25`, `21`, `21-jre` |
+| `node` | Node.js runtime | `24`, `22`, `alpine` |
+| `python` | Python runtime | `3.14`, `3.13`, `slim` |
 | `ubuntu` | Ubuntu base image | `24.04`, `22.04` |
 | `alpine` | Ultra-lightweight Linux image (about 5MB) | `3.19`, `latest` |
 
@@ -348,7 +348,7 @@ docker run -d -p 8080:80 nginx          # Map host port 8080 to container port 8
 docker run -d -p 80:80 -p 443:443 nginx
 
 # Environment variables (-e)
-docker run -d -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0
+docker run -d -e MYSQL_ROOT_PASSWORD=123456 mysql:8.4
 
 # Volume mount (-v hostPath:containerPath; create a project directory under /srv with nginx/mysql subdirectories)
 docker run -d -v /srv/my-app/nginx/html:/usr/share/nginx/html nginx
@@ -359,7 +359,7 @@ docker run -d \
   -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=123456 \
   -v /srv/my-app/mysql/data:/var/lib/mysql \
-  mysql:8.0
+  mysql:8.4
 ```
 
 ### 4.3 Container Management
@@ -491,7 +491,7 @@ A Dockerfile is a text file containing all the instructions for building a Docke
 
 | Instruction | Description | Example |
 | ------------ | ---------------------------------- | -------------------------------------- |
-| `FROM` | Specify the base image (must be the first instruction) | `FROM eclipse-temurin:17` |
+| `FROM` | Specify the base image (must be the first instruction) | `FROM eclipse-temurin:21` |
 | `WORKDIR` | Set the working directory | `WORKDIR /app` |
 | `COPY` | Copy files into the image | `COPY target/*.jar app.jar` |
 | `ADD` | Copy files (supports URLs and automatic extraction) | `ADD app.tar.gz /app` |
@@ -511,7 +511,7 @@ A Dockerfile is a text file containing all the instructions for building a Docke
 
 ```dockerfile
 # Base image
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
 # Maintainer information
 LABEL maintainer="developer@example.com"
@@ -535,7 +535,7 @@ Build the source with Maven inside the image, then keep only a JRE and the jar i
 
 ```dockerfile
 # Stage 1: build
-FROM maven:3.9-eclipse-temurin-17 AS builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline
@@ -543,7 +543,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: run
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 RUN useradd -r -u 1001 appuser
 COPY --from=builder /build/target/*.jar app.jar
@@ -679,10 +679,10 @@ docker volume prune
 
 ```bash
 # Use a named volume
-docker run -d -v mydata:/var/lib/mysql mysql:8.0
+docker run -d -v mydata:/var/lib/mysql mysql:8.4
 
 # Use a bind mount (subdirectory of a project directory under /srv, e.g. /srv/my-app)
-docker run -d -v /srv/my-app/mysql/data:/var/lib/mysql mysql:8.0
+docker run -d -v /srv/my-app/mysql/data:/var/lib/mysql mysql:8.4
 
 # Read-only mount (configuration under the project's nginx directory, etc.)
 docker run -d -v /srv/my-app/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro nginx
@@ -691,7 +691,7 @@ docker run -d -v /srv/my-app/nginx/conf.d/default.conf:/etc/nginx/conf.d/default
 docker run -d \
   -v /srv/my-app/mysql/data:/var/lib/mysql \
   -v /var/log/mysql:/var/log/mysql \
-  mysql:8.0
+  mysql:8.4
 ```
 
 ### 6.5 Volume Examples
@@ -727,7 +727,7 @@ docker run -d \
   -v /srv/my-app/mysql/conf:/etc/mysql/conf.d \
   -v /srv/my-app/mysql/init:/docker-entrypoint-initdb.d \
   --restart unless-stopped \
-  mysql:8.0
+  mysql:8.4
 ```
 
 `MYSQL_ROOT_PASSWORD` is required. `.sql` and `.sh` files under `/docker-entrypoint-initdb.d` run only on initial startup (when the data directory is empty). MySQL 8 already defaults to `utf8mb4`; to choose a collation, append `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci` after the image name (`command:` in Compose).
@@ -859,7 +859,7 @@ docker run -d \
   --name mysql \
   --network app-net \
   -e MYSQL_ROOT_PASSWORD=123456 \
-  mysql:8.0
+  mysql:8.4
 
 # Start the application (it can access the database using the name mysql)
 docker run -d \
@@ -937,7 +937,7 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mydb?useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mydb?serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123456
       - SPRING_DATA_REDIS_HOST=redis   # Spring Boot 3 property spring.data.redis.host
@@ -951,7 +951,7 @@ services:
     restart: unless-stopped
 
   mysql:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: mysql
     ports:
       - "3306:3306"
@@ -1182,7 +1182,7 @@ docker network connect app-net <mysqlContainerName>
 Create a Dockerfile in the backend project directory containing the Maven-packaged jar (such as `target/*.jar`), then build the image. Example Dockerfile with the jar under `target/`:
 
 ```dockerfile
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080
@@ -1201,7 +1201,7 @@ docker build -t <backendImageName> .
 docker run -d --name <backendContainerName> --network app-net -p 8080:8080 <backendImageName>
 ```
 
-Application data source: `jdbc:mysql://<mysqlContainerName>:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai`. For multiple projects, change the container names, host ports, and database names.
+Application data source: `jdbc:mysql://<mysqlContainerName>:3306/<databaseName>?serverTimezone=Asia/Shanghai`. For multiple projects, change the container names, host ports, and database names.
 
 **5. Connect Nginx to the network if needed**
 
@@ -1239,7 +1239,7 @@ sudo mkdir -p /srv/my-app/nginx/html /srv/my-app/nginx/conf.d /srv/my-app/mysql/
 - **Backend:** Place the Maven-packaged jar (such as `target/*.jar`, or copied as `app.jar`) under the project's `backend/` directory, then create a file named `Dockerfile` there. Compose builds the backend image from it. The image is based on JDK 17 and only needs to copy and run the jar. If the jar is under `target/`, use this Dockerfile:
 
 ```dockerfile
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080
@@ -1274,7 +1274,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<mysqlRootPassword>
     depends_on:
@@ -1284,7 +1284,7 @@ services:
     restart: unless-stopped
 
   mysql:
-    image: mysql:8.0
+    image: mysql:8.4
     ports:
       - "3306:3306"   # A second project can use "3307:3306", etc.
     environment:
@@ -1371,10 +1371,10 @@ Create a project directory under `/srv` (such as `/srv/my-microservice`), then s
     └── target/*.jar or app.jar
 ```
 
-**Dockerfile for each microservice** (generic Spring Boot, JDK 17): Use `COPY target/*.jar app.jar` when the jar is under `target/`, or `COPY *.jar app.jar` when it shares the Dockerfile directory.
+**Dockerfile for each microservice** (generic Spring Boot, JDK 21): Use `COPY target/*.jar app.jar` when the jar is under `target/`, or `COPY *.jar app.jar` when it shares the Dockerfile directory.
 
 ```dockerfile
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY target/*.jar app.jar
 EXPOSE 8080
@@ -1392,7 +1392,7 @@ The YAML below defines Nacos, MySQL, Redis, Gateway, and two business services. 
 ```yaml
 services:
   nacos:
-    image: nacos/nacos-server:v2.5.2
+    image: nacos/nacos-server:v2.5.4
     container_name: nacos
     ports:
       - "8848:8848"
@@ -1427,7 +1427,7 @@ services:
       start_period: 30s
 
   mysql:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: mysql
     ports:
       - "3306:3306"
@@ -1491,7 +1491,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
       - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<mysqlRootPassword>
       - SPRING_DATA_REDIS_HOST=redis
@@ -1520,7 +1520,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
       - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/<databaseName>?serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=<mysqlRootPassword>
       - SPRING_DATA_REDIS_HOST=redis
@@ -1553,8 +1553,8 @@ volumes:
 **Notes:**
 
 - When Nacos stores configuration in MySQL, create its database and execute the official Nacos `schema.sql` beforehand (usually by placing `nacos-mysql.sql` under `mysql/init/`), or Nacos fails to start. For in-memory configuration only, remove Nacos's `SPRING_DATASOURCE_*`, `MYSQL_SERVICE_*`, and its `depends_on` dependency on `mysql`.
-- For services using Nacos configuration, set `spring.cloud.nacos.config.server-addr` to `nacos:8848` in `bootstrap.yml` or `application.yml`. To override it through the environment, use `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR` (the same name applies in Spring Boot 2).
-- With authentication enabled in Nacos 2.5.2, explicitly configure `NACOS_AUTH_TOKEN` on the server (the Base64 encoding of a random key at least 32 bytes long). `NACOS_AUTH_IDENTITY_KEY/VALUE` identifies Nacos servers to one another; these are not Java client login credentials.
+- For services using Nacos configuration, set `spring.cloud.nacos.config.server-addr` to `nacos:8848` in `application.yml` (or `bootstrap.yml` in legacy setups). To override it through the environment, use `SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR` (the same name applies in Spring Boot 2).
+- With authentication enabled in Nacos 2.5.x, explicitly configure `NACOS_AUTH_TOKEN` on the server (the Base64 encoding of a random key at least 32 bytes long). `NACOS_AUTH_IDENTITY_KEY/VALUE` identifies Nacos servers to one another; these are not Java client login credentials.
 - Each Java service configures its Nacos username/password separately through `spring.cloud.nacos.discovery.username/password` and `spring.cloud.nacos.config.username/password`, supplied here through the corresponding `SPRING_CLOUD_NACOS_*_USERNAME` / `*_PASSWORD` environment variables. Initialize the user in Nacos and grant the required permissions first. Clients do not configure the server identity key.
 
 ***
@@ -1570,7 +1570,7 @@ Microservices access one another by service name within the Compose network; do 
 | Redis address | `localhost:6379` | `redis:6379` |
 | Other business services (Feign/calls) | `localhost:808x` | Use the **service name**, such as `http://xxx-service` |
 
-**Approach 1:** Hardcode these hostnames in `application-prod.yml` or `bootstrap-prod.yml`; they take effect when the `prod` profile is active. Compose already sets `SPRING_PROFILES_ACTIVE=prod`.
+**Approach 1:** Hardcode these hostnames in `application-prod.yml`; they take effect when the `prod` profile is active. Compose already sets `SPRING_PROFILES_ACTIVE=prod`.
 
 **Approach 2:** Override all settings with environment variables (such as `SPRING_DATASOURCE_URL` and `SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR`) to reuse the same image across environments.
 

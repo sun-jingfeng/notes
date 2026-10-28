@@ -147,7 +147,7 @@ mvn archetype:generate \
     <dependency>
         <groupId>com.mysql</groupId>
         <artifactId>mysql-connector-j</artifactId>
-        <version>8.4.0</version>
+        <version>9.7.0</version>
     </dependency>
 
     <!-- JUnit 5 (test scope) -->
@@ -531,4 +531,4 @@ For beans needed only in tests, define a `@TestConfiguration` class and import i
 | Select configuration | `@ActiveProfiles` | Activates the specified profile |
 | Test-only beans | `@TestConfiguration` + `@Import` | Configuration that applies only in tests |
 
-> 💡 Spring Boot 4 adds a test starter per technology (for example `spring-boot-starter-webmvc-test` for `@WebMvcTest` and `spring-boot-starter-data-jpa-test` for `@DataJpaTest`), each of which includes `spring-boot-starter-test`. `@SpringBootTest` no longer provides `TestRestTemplate` automatically; add `@AutoConfigureTestRestTemplate` or use the new `RestTestClient`.
+> 💡 Spring Boot 4 adds a test starter per technology (for example `spring-boot-starter-webmvc-test` for `@WebMvcTest` and `spring-boot-starter-data-jpa-test` for `@DataJpaTest`), each of which includes `spring-boot-starter-test`. The slice annotations move with them, for example `@WebMvcTest` and `@AutoConfigureMockMvc` to `org.springframework.boot.webmvc.test.autoconfigure`. `@SpringBootTest` no longer provides `TestRestTemplate` automatically; add `@AutoConfigureTestRestTemplate` or use the new `RestTestClient`.

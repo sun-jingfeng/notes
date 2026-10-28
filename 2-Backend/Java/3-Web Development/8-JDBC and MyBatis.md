@@ -37,7 +37,7 @@ public class JDBCDemo {
         Class.forName("com.mysql.cj.jdbc.Driver");
 
         // 2. Open a connection
-        String url = "jdbc:mysql://localhost:3306/mydb?useSSL=false&serverTimezone=UTC";
+        String url = "jdbc:mysql://localhost:3306/mydb?serverTimezone=UTC";
         Connection conn = DriverManager.getConnection(url, "root", "123456");
 
         // 3. Create a Statement
@@ -59,10 +59,13 @@ public class JDBCDemo {
 
 | Parameter | Purpose |
 | ------------------- | -------------- |
-| `useSSL` | Whether to use an SSL connection |
 | `serverTimezone` | Server time zone |
 | `characterEncoding` | Character encoding, such as utf-8 |
+| `sslMode` | TLS mode: `PREFERRED` (default), `REQUIRED`, `VERIFY_CA`, `VERIFY_IDENTITY`, `DISABLED`; `useSSL` is the deprecated older switch |
+| `allowPublicKeyRetrieval` | Lets the driver fetch the server's RSA public key when TLS is off (development only) |
 | `allowMultiQueries` | Whether multiple statements may be executed together |
+
+> **Note**: keep the default TLS mode with MySQL 8.0 and later. Their default `caching_sha2_password` plugin needs either TLS or RSA key exchange for the first login after a server restart, so `useSSL=false` (or `sslMode=DISABLED`) without `allowPublicKeyRetrieval=true` fails with "Public Key Retrieval is not allowed".
 
 ***
 
@@ -123,8 +126,12 @@ String sql = "SELECT * FROM user WHERE name='" + userInput + "'";
 
 ```java
 public class PreparedStatementDemo {
+    private static final String URL = "jdbc:mysql://localhost:3306/mydb";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
     public static void main(String[] args) throws Exception {
-        Connection conn = DriverManager.getConnection(url, user, pwd);
+        Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
 
         // Use ? placeholders
         String sql = "SELECT * FROM user WHERE name = ? AND age = ?";
@@ -156,10 +163,14 @@ JDBC connections use auto-commit by default. Explicit transaction management pro
 
 ```java
 public class TransactionDemo {
+    private static final String URL = "jdbc:mysql://localhost:3306/mydb";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
     public static void main(String[] args) {
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection(url, user, pwd);
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
 
             // 1. Disable auto-commit
             conn.setAutoCommit(false);
@@ -204,10 +215,14 @@ Use **try-with-resources** to close resources automatically:
 
 ```java
 public class BestPracticeDemo {
+    private static final String URL = "jdbc:mysql://localhost:3306/mydb";
+    private static final String USER = "root";
+    private static final String PASSWORD = "123456";
+
     public static void main(String[] args) {
         String sql = "SELECT * FROM user WHERE id = ?";
 
-        try (Connection conn = DriverManager.getConnection(url, user, pwd);
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, 1);
@@ -342,7 +357,7 @@ MyBatis handles parameter binding, result mapping, and execution, while develope
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/database_name?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+    url: jdbc:mysql://localhost:3306/database_name?serverTimezone=Asia/Shanghai&characterEncoding=utf-8
     username: root
     password: your-password
 
@@ -1653,7 +1668,7 @@ Install **MybatisX** from IDEA's plugin marketplace. Features include:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/database_name?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+    url: jdbc:mysql://localhost:3306/database_name?serverTimezone=Asia/Shanghai&characterEncoding=utf-8
     username: root
     password: your-password
 

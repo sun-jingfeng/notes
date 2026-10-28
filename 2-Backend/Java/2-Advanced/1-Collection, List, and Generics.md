@@ -1281,15 +1281,16 @@ if (obj instanceof List<?>) { }  // ✅
 | `sort(Comparator)` | Sorts (JDK 8+) |
 | `replaceAll(UnaryOperator)` | Replaces every element (JDK 8+) |
 
-### 3. LinkedList-Specific Methods
+### 3. Head, Tail, Stack, and Queue Methods
 
 | Method | Description |
 | ------------------------ | ----- |
-| `addFirst/addLast` | Adds at the head/tail |
-| `getFirst/getLast` | Returns the head/tail |
-| `removeFirst/removeLast` | Removes the head/tail |
-| `push/pop` | Stack operations |
-| `offer/poll/peek` | Queue operations |
+| `addFirst/addLast` | Adds at the head/tail (every `List` since JDK 21) |
+| `getFirst/getLast` | Returns the head/tail (every `List` since JDK 21) |
+| `removeFirst/removeLast` | Removes the head/tail (every `List` since JDK 21) |
+| `reversed()` | Reverse-ordered view (JDK 21) |
+| `push/pop` | Stack operations (`Deque`: `LinkedList`, `ArrayDeque`) |
+| `offer/poll/peek` | Queue operations (`Deque`: `LinkedList`, `ArrayDeque`) |
 
 ### 4. Generic Wildcards
 
@@ -1303,9 +1304,8 @@ if (obj instanceof List<?>) { }  // ✅
 
 | Scenario | Recommendation |
 | ------- | ----------------------- |
-| Frequent lookups, few insertions/removals | ArrayList |
-| Frequent insertions/removals, few lookups | LinkedList |
-| Frequent operations at the head | LinkedList |
-| A stack is needed | LinkedList / ArrayDeque |
-| A queue is needed | LinkedList / ArrayDeque |
+| Most lists (lookups, appends, iteration) | ArrayList |
+| Frequent insertions/removals at both ends | ArrayDeque / LinkedList |
+| A stack is needed | ArrayDeque (instead of the legacy `Stack`) |
+| A queue is needed | ArrayDeque (LinkedList when `null` elements are needed) |
 | Thread safety | CopyOnWriteArrayList (read-heavy) / `Collections.synchronizedList` |

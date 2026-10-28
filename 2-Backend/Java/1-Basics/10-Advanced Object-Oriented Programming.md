@@ -1154,7 +1154,8 @@ public class Test {
             }
         });
 
-        // Scenario 2: Simplify button click handlers (Swing/Android)
+        // Scenario 2: Simplify button click handlers (Swing)
+        JButton button = new JButton("OK");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

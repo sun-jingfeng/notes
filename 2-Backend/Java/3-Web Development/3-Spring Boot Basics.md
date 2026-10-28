@@ -150,7 +150,7 @@ The examples use **Spring Boot 3.5** (`3.5.16`). Spring Boot 4.0, released in No
 | --------- | -------- | ------------------------ | ----------------------------------------------------------- |
 | **3.5.x** | 2025-05 | 2026-06-30 | Last 3.x line; commercial support runs until 2032-06-30 |
 | **4.0.x** | 2025-11 | 2026-12-31 | First Spring Framework 7 line |
-| **4.1.x** | 2026-06 | 2027-07-31 | Current line; 4.2 is scheduled for 2026-11 |
+| **4.1.x** | 2026-06 | 2027-07-31 | 4.2 is scheduled for November 2026 |
 
 | Aspect | Spring Boot 3.5 | Spring Boot 4.x |
 | ---------------------- | ----------------------------------- | ------------------------------------------------------------ |
@@ -1199,7 +1199,7 @@ spring:
 </dependency>
 ```
 
-> 💡 A plain Spring Boot application without Spring Cloud does not need `bootstrap.yml`; `application.yml` is sufficient. Since Spring Boot 2.4, the preferred alternative to bootstrap is `spring.config.import` in `application.yml` (for example, `spring.config.import: optional:configserver:http://config-server:8888`).
+> 💡 A plain Spring Boot application without Spring Cloud does not need `bootstrap.yml`; `application.yml` is sufficient. Since Spring Boot 2.4, the preferred alternative to bootstrap is `spring.config.import` in `application.yml` (for example, `spring.config.import: optional:configserver:http://config-server:8888`). Spring Cloud Alibaba 2025.1.x (for Spring Boot 4) removes bootstrap support, so Nacos configuration must use `spring.config.import`.
 
 ***
 

@@ -526,7 +526,7 @@ source ~/.bashrc
 ```bash
 # Ubuntu
 sudo apt update
-sudo apt install openjdk-17-jdk
+sudo apt install openjdk-21-jdk
 
 # Verify
 java -version
@@ -536,16 +536,16 @@ java -version
 
 ```bash
 # 1. Download the JDK (from Oracle or Adoptium)
-wget https://example.com/jdk-17_linux-x64.tar.gz
+wget https://example.com/jdk-21_linux-x64.tar.gz
 
 # 2. Extract to /opt
-sudo tar -xzvf jdk-17_linux-x64.tar.gz -C /opt
+sudo tar -xzvf jdk-21_linux-x64.tar.gz -C /opt
 
 # 3. Configure environment variables
 sudo nano /etc/profile.d/java.sh
 
-# Add the following (adjust the path to the extracted directory name, such as /opt/jdk-17.0.x):
-export JAVA_HOME=/opt/jdk-17
+# Add the following (adjust the path to the extracted directory name, such as /opt/jdk-21.0.x):
+export JAVA_HOME=/opt/jdk-21
 export PATH=$PATH:$JAVA_HOME/bin
 
 # 4. Apply the changes

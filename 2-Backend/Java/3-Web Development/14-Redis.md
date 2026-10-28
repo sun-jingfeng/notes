@@ -692,6 +692,8 @@ public class RedisConfig {
 
 > **Note**: `new GenericJackson2JsonRedisSerializer()` creates its own `ObjectMapper` without the JSR-310 module, so values with `LocalDateTime` fields fail to serialize. For such types, pass an `ObjectMapper` that registers `JavaTimeModule` and enables default typing.
 
+> 💡 Spring Data Redis 4 (Spring Boot 4) deprecates the Jackson 2 serializers in favor of Jackson 3 versions such as `GenericJacksonJsonRedisSerializer`. Build one with `GenericJacksonJsonRedisSerializer.builder().enableDefaultTyping(validator).build()`, where the `PolymorphicTypeValidator` restricts which classes may be deserialized; Jackson 3 handles `java.time` types without an extra module.
+
 ### 5.2 RedisTemplate Operations
 
 `RedisTemplate<K, V>` is Spring's Redis **facade**. It obtains connections from `RedisConnectionFactory`, exposes type-specific `*Operations` through `opsForValue()`, `opsForHash()`, etc., and uses configured serializers to convert Java objects to/from byte arrays. Keys are generally String; values may be Object with JSON or another serializer. For strings only, use `StringRedisTemplate` directly.

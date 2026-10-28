@@ -247,7 +247,7 @@ org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
 ...
 ```
 
-> ⚠️ Spring Boot 3.0 removed auto-configuration registration through `spring.factories`; use the `.imports` registration file.
+> ⚠️ Spring Boot 3.0 removed auto-configuration registration through `spring.factories`; use the `.imports` registration file. Spring Boot 4 keeps the same file path, but its own entries point to the new module packages, such as `org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration`.
 
 ***
 
@@ -467,7 +467,7 @@ Unconditional classes:  ← Configurations without conditions
 
 ### 2.8 Excluding Auto-configurations
 
-You can disable selected auto-configurations:
+Selected auto-configurations can be disabled:
 
 ```java
 // Option 1: exclude a class in the application annotation
@@ -489,6 +489,8 @@ spring:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 ```
+
+> **Note**: Spring Boot 4 moves auto-configurations into per-technology modules, so fully qualified names change: `org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration`, `org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration`, `org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration`, and `org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration` (renamed from `RedisAutoConfiguration`). An outdated name in `excludeName` or `spring.autoconfigure.exclude` is silently ignored, because Boot rejects only names of classes that exist but are not auto-configurations, so the configuration stays active.
 
 **Common reasons to exclude a configuration:**
 - The project does not need a feature, such as a DataSource for an application without a database

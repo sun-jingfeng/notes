@@ -1071,6 +1071,7 @@ public class BasicSyntaxDemo {
 | JDK 7  | Numeric underscores, String in switch |
 | JDK 10 | Local variable type inference with var    |
 | JDK 15 | Text blocks (finalized)         |
+| JDK 22 | Unnamed variables (`_`)         |
 
 ***
 

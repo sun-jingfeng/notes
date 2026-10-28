@@ -1265,6 +1265,7 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 | `addAll(c)` | Adds a collection (union) |
 | `retainAll(c)` | Keeps the intersection |
 | `removeAll(c)` | Removes the intersection (difference) |
+| `getFirst()/getLast()` | First/last element of a `LinkedHashSet` or `TreeSet` (JDK 21) |
 
 ### 2. TreeSet Navigation Methods
 
@@ -1292,6 +1293,8 @@ map.compute("count", (k, v) -> v == null ? 1 : v + 1);
 | `putIfAbsent(k, v)` | Adds when absent |
 | `computeIfAbsent(k, func)` | Computes and adds when absent |
 | `merge(k, v, func)` | Merges values |
+| `firstEntry()/lastEntry()` | First/last entry of a `LinkedHashMap` or `TreeMap` (JDK 21 for `LinkedHashMap`) |
+| `putFirst(k, v)/putLast(k, v)` | Inserts or moves an entry to the front/back of a `LinkedHashMap` (JDK 21) |
 
 ### 4. Selection Guide
 

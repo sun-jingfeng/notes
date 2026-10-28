@@ -793,6 +793,8 @@ Stream<Integer> stream = result.stream();
 ### 2. Avoiding Incorrect Optional Usage
 
 ```java
+List<Integer> list = List.of();   // May be empty
+
 // ❌ Incorrect: call get() directly
 Optional<Integer> opt = list.stream().findFirst();
 Integer value = opt.get();  // May throw NoSuchElementException
@@ -1279,6 +1281,8 @@ const result = list
 | `skip` | Skip first n | `.skip(3)` |
 | `takeWhile` | Take while true (JDK 9) | `.takeWhile(n -> n < 5)` |
 | `dropWhile` | Skip while true (JDK 9) | `.dropWhile(n -> n < 5)` |
+| `mapMulti` | Zero or more outputs per element (JDK 16) | `.mapMulti((n, sink) -> sink.accept(n))` |
+| `gather` | Custom/stateful operation (JDK 24) | `.gather(Gatherers.windowFixed(2))` |
 
 ### 3. Terminal Operations
 
