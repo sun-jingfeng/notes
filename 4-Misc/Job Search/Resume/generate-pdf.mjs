@@ -10,14 +10,12 @@ const targetRoles = [
   {
     zh: '智能体 Web 全栈开发（Vue + Java）',
     en: 'AI Agent Full-Stack Engineer (Vue + Java)',
-    expectedSalary: '30k',
     chinesePdfName: '智能体 Web 全栈开发(Vue+Java)-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Full-Stack Engineer (Vue+Java).pdf',
   },
   {
     zh: '智能体 Web 前端开发',
     en: 'AI Agent Frontend Engineer',
-    expectedSalary: '30k',
     chinesePdfName: '智能体 Web 前端开发-985统招-北京-孙景峰.pdf',
     englishPdfName: 'AI Agent Frontend Engineer.pdf',
   },
@@ -57,9 +55,7 @@ const a4UsableHeight = Math.round(297 * 96 / 25.4 - 2 * 12 * 96 / 25.4);
 for (const role of targetRoles) {
   for (const template of templateConfigs) {
     const rawHtml = readFileSync(path.join(__dirname, template.templateName), 'utf-8');
-    const htmlContent = rawHtml
-      .replace(template.placeholder, role[template.roleKey])
-      .replace('{{EXPECTED_SALARY}}', role.expectedSalary);
+    const htmlContent = rawHtml.replace(template.placeholder, role[template.roleKey]);
     const pdfPath = path.join(__dirname, role[template.pdfNameKey]);
     const page = await browser.newPage();
 
