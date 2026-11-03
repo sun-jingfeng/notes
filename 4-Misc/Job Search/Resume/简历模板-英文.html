@@ -281,7 +281,7 @@
           margin-bottom: 5px;
         }
         .project {
-          margin-bottom: 7px;
+          margin-bottom: 3px;
         }
         .project + .project {
           padding-top: 7px;
@@ -455,32 +455,6 @@
 
       <div class="project">
         <div class="project-header">
-          <span class="project-name">Intelligent Message Matching App</span>
-          <span class="project-period">2026.05 – 2026.10</span>
-          <span class="project-desc-inline">A social messaging app for people living alone, designed to use AI to understand messages and connect them with real people willing to respond, making it easier to start conversations. Responsible for both design and development.</span>
-        </div>
-        <div class="project-sub">Design Contributions</div>
-        <ul class="project-list">
-          <li>
-            <strong>Matching cost optimization:</strong> Designed structured profiles for user interests and reply behavior, with one model call to analyze the initial message and extract matching weights. Designed SQL queries to filter candidates and calculate weighted rankings for initial matching and timeout reassignment, replacing model processing in the matching stage to reduce repeated calls and token usage. Defined reply rate and response time metrics to evaluate matching effectiveness.
-          </li>
-          <li>
-            Defined product positioning, user scenarios, and requirements in four documents covering the product overview, feature design, data model, and admin console, clarifying the boundaries between initial messages, replies, and ongoing conversations.
-          </li>
-          <li>
-            Designed the flow from sending and content checks through recipient matching to conversation creation after a reply. Specified timeout reassignment, extended wait times when users are reading or typing, timer pauses during reply validation, and AI fallback interactions.
-          </li>
-          <li>
-            Created UI mockups in Figma, established color, typography, and icon foundations, and designed reusable buttons, inputs, avatars, chat bubbles, conversation lists, and admin navigation along with their component states. Defined distinct visuals for human messages and AI messages.
-          </li>
-          <li>
-            Designed business rules and related data models for earning and spending points, blocking and unblocking, and user profiles. Planned admin features for matching records, topic review, user management, AI usage statistics, and parameter configuration.
-          </li>
-        </ul>
-      </div>
-
-      <div class="project">
-        <div class="project-header">
           <span class="project-name">Meteorological Radar Monitoring &amp; Early Warning System Series</span>
           <span class="project-period">2025.02 – 2025.12</span>
           <span class="project-desc-inline">Originally delivered for Tianjin and later extended into multiple provincial editions and supporting management systems for Liaoning, Jiangsu, Shanxi, and Ningxia, with an added AI agent capability for weather warning message generation.</span>
@@ -563,6 +537,32 @@
           <li>Used RabbitMQ for asynchronous radar data pre-processing and warning notification delivery to improve responsiveness.</li>
           <li>
             Orchestrated all microservices and middleware with Docker Compose and completed containerized deployment on Linux servers.
+          </li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-header">
+          <span class="project-name">Intelligent Message Matching App</span>
+          <span class="project-period">2026.05 – 2026.10</span>
+          <span class="project-desc-inline">A social messaging app for people living alone, designed to use AI to understand messages and connect them with real people willing to respond, making it easier to start conversations. Responsible for both design and development.</span>
+        </div>
+        <div class="project-sub">Design Contributions</div>
+        <ul class="project-list">
+          <li>
+            <strong>Matching cost optimization:</strong> Designed structured profiles for user interests and reply behavior, with one model call to analyze the initial message and extract matching weights. Designed SQL queries to filter candidates and calculate weighted rankings for initial matching and timeout reassignment, replacing model processing in the matching stage to reduce repeated calls and token usage. Defined reply rate and response time metrics to evaluate matching effectiveness.
+          </li>
+          <li>
+            Defined product positioning, user scenarios, and requirements in four documents covering the product overview, feature design, data model, and admin console, clarifying the boundaries between initial messages, replies, and ongoing conversations.
+          </li>
+          <li>
+            Designed the flow from sending and content checks through recipient matching to conversation creation after a reply. Specified timeout reassignment, extended wait times when users are reading or typing, timer pauses during reply validation, and AI fallback interactions.
+          </li>
+          <li>
+            Created UI mockups in Figma, established color, typography, and icon foundations, and designed reusable buttons, inputs, avatars, chat bubbles, conversation lists, and admin navigation along with their component states. Defined distinct visuals for human messages and AI messages.
+          </li>
+          <li>
+            Designed business rules and related data models for earning and spending points, blocking and unblocking, and user profiles. Planned admin features for matching records, topic review, user management, AI usage statistics, and parameter configuration.
           </li>
         </ul>
       </div>
